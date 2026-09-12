@@ -54,10 +54,13 @@ RUN npm install -g pnpm@${PNPM_VERSION} \
     && pnpm --version
 
 # クールタイムのグローバル設定。リポジトリ内では pnpm-workspace.yaml の 10080 が優先され、
-# こちらは pnpm dlx などリポジトリの外での解決に効く。設定ファイルは実行ユーザーの
-# ホーム配下に書かれるので、root ではなく vscode で実行する。
+# こちらは pnpm dlx などリポジトリの外での解決に効く。設定は実行ユーザーのホーム配下に
+# 置かれるので、root ではなく vscode で書く。
+# pnpm config set --global は使わない。書かれる rc 形式は pnpm 11 以降では
+# pnpm config get で読めるだけで解決には効かず、設定したつもりの状態になる。
 USER $USERNAME
-RUN pnpm config set --global minimumReleaseAge 10080
+RUN mkdir -p "$HOME/.config/pnpm" \
+    && echo "minimumReleaseAge: 10080" >> "$HOME/.config/pnpm/config.yaml"
 
 # 最終 USER を root に戻す。コンテナ本体のプロセス(entrypoint.sh)が iptables を
 # 操作するため。開発セッションは devcontainer.json の remoteUser: vscode で動く。
