@@ -81,6 +81,20 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 - `npm config set ignore-scripts true` 済み（pnpm 10 以降は依存のライフサイクルスクリプトを
   既定で実行せず、必要なものだけ `onlyBuiltDependencies` で許可する）
 
+## Claude Code のフック
+
+`.claude/settings.json` に 2 つ登録してある。
+
+- **PreToolUse / Bash**（[`block-npm-and-dlx.mjs`](.claude/hooks/block-npm-and-dlx.mjs)）—
+  `npm` / `npx` / `pnpx` / `bunx` / `pnpm dlx` を拒否する。npm と npx にはクールタイムに
+  相当する設定が無く、`pnpm dlx` は一時インストールなのでロックファイルに残らない。
+  依存の追加は `pnpm add`、インストール済みバイナリの実行は `pnpm exec` を使う
+- **SessionStart**（[`session-start.sh`](.claude/hooks/session-start.sh)）—
+  クラウドのセッションで、リポジトリ外の解決にもクールタイムが効くようグローバル設定を書く。
+  ロックファイルがあれば `pnpm install --frozen-lockfile` も走らせる
+
+フックは**セッション開始時に読まれる**ので、変更は次のセッションから効く。
+
 ## ドキュメント
 
 - [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md) — IPA の過去問題を
