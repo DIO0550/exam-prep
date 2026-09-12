@@ -117,8 +117,9 @@ describe("QuizApp", () => {
     expect(screen.getByText("不正解")).toBeInTheDocument();
   });
 
-  it("全問正解すると結果画面が 100% を出す", async () => {
-    const user = userEvent.setup();
+  it("全問正解すると結果画面が 100% を出す", { timeout: 60_000 }, async () => {
+    // 80 問ぶんクリックするので、イベント間の既定の遅延を切る
+    const user = userEvent.setup({ delay: null });
     await startQuiz(user);
 
     for (const question of QUESTIONS) {

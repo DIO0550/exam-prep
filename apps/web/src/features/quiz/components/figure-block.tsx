@@ -78,15 +78,17 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
               </span>
             ))}
           </div>
-          {figure.rows.map((row) => (
+          {figure.rows.map((row, rowIndex) => (
             <div
-              key={row[0]}
+              // biome-ignore lint/suspicious/noArrayIndexKey: 表は静的で並べ替えないため添字で足りる
+              key={rowIndex}
               className="grid gap-3 border-line-softer border-b py-3"
               style={{ gridTemplateColumns: columns(figure.headers.length) }}
             >
               {row.map((cell, cellIndex) => (
                 <span
-                  key={cell}
+                  // biome-ignore lint/suspicious/noArrayIndexKey: 同じ行に同じ値が並ぶのでセルの値はキーにできない
+                  key={cellIndex}
                   className={`text-pretty leading-[1.7] ${size.cell} ${
                     cellIndex === 0 ? "font-bold text-ink" : "text-muted-soft"
                   }`}

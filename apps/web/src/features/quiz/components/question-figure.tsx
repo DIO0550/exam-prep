@@ -56,11 +56,13 @@ export const StemBlock = ({ stem }: { stem: Stem }) => {
                 </tr>
               </thead>
               <tbody>
-                {stem.table.rows.map((row) => (
-                  <tr key={row.join("|")}>
+                {stem.table.rows.map((row, rowIndex) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: 表は静的で並べ替えないため添字で足りる
+                  <tr key={rowIndex}>
                     {row.map((cell, i) => (
                       <td
-                        key={cell}
+                        // biome-ignore lint/suspicious/noArrayIndexKey: 同じ行に同じ値が並ぶのでセルの値はキーにできない
+                        key={i}
                         className={`border border-edge px-3.5 py-2 tabular-nums ${
                           i === 0 ? "text-ink" : "text-center text-ink-soft"
                         }`}

@@ -215,7 +215,7 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 
 ## 問題データ
 
-収録しているのは **応用情報技術者試験 令和3年度 春期 午前 問1〜問20**
+収録しているのは **応用情報技術者試験 令和3年度 春期 午前 全80問**
 （[`apps/web/src/features/quiz/data/ap-r03-haru-am.ts`](apps/web/src/features/quiz/data/ap-r03-haru-am.ts)）。
 過去問題を網羅したものではなく、画面下部にも収録範囲を出している。
 
@@ -250,7 +250,7 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 
 ## これから
 
-- 収録する問題を増やす（同じ回の問21〜問80、他の年度）。手順は上の表のとおりで、
+- 収録する回を増やす（他の年度・他の試験区分）。手順は上の表のとおりで、
   1 問ずつ原本と突き合わせながら足す
 - 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）
 - 学習状態の保存先（localStorage か外部か）。`data/progress.ts` のサンプル値もそこで差し替える
