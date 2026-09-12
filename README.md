@@ -21,9 +21,8 @@ pnpm-workspace.yaml workspace とクールタイムの設定
 
 | コマンド | 内容 |
 |---|---|
-| `pnpm dev` | dev サーバ（`http://localhost:4100`） |
-| `pnpm build` | 本番ビルド |
-| `pnpm start` | ビルド済みのものを起動 |
+| `pnpm dev` | dev サーバ（`http://localhost:4100/exam-prep/`。`basePath` は dev でも効く） |
+| `pnpm build` | static export を作る（出力は `apps/web/out`） |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm test` | Vitest（`pnpm --filter @exam-prep/web test:watch` で watch） |
 | `pnpm check` | Biome で lint / format / import 順を検査 |
@@ -34,6 +33,49 @@ pnpm-workspace.yaml workspace とクールタイムの設定
 
 `next dev` は `apps/web/AGENTS.md` と `apps/web/CLAUDE.md` を自動生成して毎回書き戻すので、
 追跡している。止めたいときは `next.config.ts` に `agentRules: false` を足す。
+
+## デプロイ（GitHub Pages）
+
+`main` への push で [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) が走り、
+static export（`apps/web/out`）を GitHub Pages へ出す。公開先は
+`https://dio0550.github.io/exam-prep/`。手動実行（`workflow_dispatch`）もできる。
+
+PR でも build まで（install / check / typecheck / test / build / artifact のアップロード）は
+流れる。デプロイ経路が壊れていたらマージ前に気づけるようにするため。実際に出すのは
+`main` への push と手動実行のときだけ。
+
+**リポジトリ設定が 1 つだけ要る。** Settings → Pages → Build and deployment → Source を
+**GitHub Actions** にする。ここが "Deploy from a branch" のままだと deploy ジョブが失敗する。
+
+### workflow の方針
+
+- **Action は GitHub 公式（`actions/*`）だけ**。pnpm 用のサードパーティ Action
+  （`pnpm/action-setup` など）は使わず、corepack が `package.json` の `packageManager`
+  （ハッシュ付きで固定）から pnpm を入れる
+- **すべてコミット SHA で固定**。タグは付け替えられるがコミット SHA は動かない。
+  更新するときは SHA と横のコメントのバージョンを一緒に書き換える
+- `pnpm install --frozen-lockfile` なので、ロックファイルのズレに加えて
+  **クールタイム（7 日）を満たさないバージョンが載っていれば CI で落ちる**
+- corepack は Node 24 に同梱されているものを使う。Node 25 以降へ上げるときは
+  corepack が外れるので、pnpm の入れ方を別途決める必要がある
+
+### static export の設定
+
+[`apps/web/next.config.ts`](apps/web/next.config.ts) に置いてある。
+
+| 設定 | 理由 |
+|---|---|
+| `output: 'export'` | 静的ファイルだけを吐く（出力は `apps/web/out`） |
+| `basePath: '/exam-prep'` | プロジェクトページはリポジトリ名の分だけパスが深くなる。リネームや独自ドメインを当てたら合わせる |
+| `trailingSlash: true` | `out/foo/index.html` の形にする。拡張子なし URL の解決はホストによって差があるため |
+| `images.unoptimized: true` | static export には画像最適化サーバが無い |
+
+`public/.nojekyll` を置いてある。Actions からの artifact デプロイでは Jekyll は走らないので
+本来は不要だが、`_next/` のようなアンダースコア始まりが無視される経路に迷い込むと
+原因が分かりにくいので、保険として残している。
+
+`output: 'export'` では `next start` が使えないので、ルートの `start` スクリプトは無い。
+ビルド結果を手元で見るときは `apps/web/out` を任意の静的サーバで配る。
 
 ## パッケージ取り込みのクールタイム
 
@@ -138,6 +180,5 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 
 ## これから
 
-- GitHub Pages 向けの static export（`output: 'export'` と `basePath`）とデプロイ用の workflow
 - 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）と、
   [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md) の条件を満たす出典表記

@@ -1,0 +1,104 @@
+# =============================================================================
+# GitHub Pages へ static export をデプロイする。
+#
+# 使う Action は GitHub 公式（actions/*）だけに絞り、すべてコミット SHA で固定する。
+# タグは付け替えられるがコミット SHA は動かないので、「昨日まで動いていた v4 が
+# 別の中身に差し替わる」形の攻撃を受けない。更新するときは SHA と横のコメントの
+# バージョンを一緒に書き換える。
+#
+# パッケージマネージャは pnpm だけ。pnpm 自体は corepack が package.json の
+# packageManager（ハッシュ付きで固定）から入れるので、サードパーティの
+# Action（pnpm/action-setup など）を足す必要がない。
+# =============================================================================
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  # PR でも build まで流して、デプロイ経路が壊れていないか先に気づけるようにする。
+  pull_request:
+  workflow_dispatch:
+
+# 既定は読み取りだけ。書き込みが要るのは deploy ジョブだけなので、そちらに足す。
+permissions:
+  contents: read
+
+# デプロイを重ねない。走行中のものは打ち切らない（途中で止めると Pages が半端な状態で残る）。
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+env:
+  # corepack が pnpm を取りに行くときの確認プロンプトを出さない（CI では答えられない）。
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # 以降のステップに認証情報を残さない。ここでは push しない。
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      # setup-node が Node を差し替えた後に有効化する（先に有効化しても shim が PATH から消える）。
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Resolve pnpm store path
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore pnpm store
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
+
+      # --frozen-lockfile はロックファイルのズレを弾くだけでなく、載っている各バージョンが
+      # クールタイム（7 日）を満たしているかも検査する。期限内の版が紛れ込んでいればここで落ちる。
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Check
+        run: pnpm check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: apps/web/out
+
+  deploy:
+    needs: build
+    # PR では build までで止める。実際に出すのは main への push と手動実行のときだけ。
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

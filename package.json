@@ -9,7 +9,6 @@
   "scripts": {
     "dev": "pnpm --filter @exam-prep/web dev",
     "build": "pnpm --filter @exam-prep/web build",
-    "start": "pnpm --filter @exam-prep/web start",
     "typecheck": "pnpm --filter @exam-prep/web typecheck",
     "test": "pnpm --filter @exam-prep/web test",
     "check": "biome check .",
