@@ -82,7 +82,8 @@ export type Choice = {
 export type Stem = {
   image?: QuestionImage;
   list?: { title?: string; items: string[] };
-  table?: { caption?: string; headers: string[]; rows: string[][] };
+  /** headers は省略可。原本に見出し行が無い表を、見出しを捏造せずに持つため。 */
+  table?: { caption?: string; headers?: string[]; rows: string[][] };
 };
 
 /** 登場人物と動きを順に並べる図。攻撃の成立手順や検証手順に使う。 */

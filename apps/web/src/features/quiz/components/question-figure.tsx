@@ -42,19 +42,21 @@ export const StemBlock = ({ stem }: { stem: Stem }) => {
           )}
           <div className="overflow-x-auto">
             <table className="min-w-[320px] border-collapse text-[13px]">
-              <thead>
-                <tr>
-                  {stem.table.headers.map((header) => (
-                    <th
-                      key={header}
-                      scope="col"
-                      className="border border-edge bg-canvas px-3.5 py-2 text-center font-bold text-ink"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
+              {stem.table.headers && (
+                <thead>
+                  <tr>
+                    {stem.table.headers.map((header) => (
+                      <th
+                        key={header}
+                        scope="col"
+                        className="border border-edge bg-canvas px-3.5 py-2 text-center font-bold text-ink"
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+              )}
               <tbody>
                 {stem.table.rows.map((row, rowIndex) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: 表は静的で並べ替えないため添字で足りる
