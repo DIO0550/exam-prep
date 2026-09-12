@@ -91,7 +91,9 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 - **PreToolUse / Bash**（[`block-npm-and-dlx.mjs`](.claude/hooks/block-npm-and-dlx.mjs)）—
   `npm` / `npx` / `pnpx` / `bunx` / `pnpm dlx` を拒否する。npm と npx にはクールタイムに
   相当する設定が無く、`pnpm dlx` は一時インストールなのでロックファイルに残らない。
-  依存の追加は `pnpm add`、インストール済みバイナリの実行は `pnpm exec` を使う
+  コマンド列の**どこに現れても**拒否するので、`bash -c "npx …"` や `xargs npx` のように
+  途中へ紛れた形も拾う。依存の追加は `pnpm add`、インストール済みバイナリの実行は
+  `pnpm exec` を使う
 - **SessionStart**（[`session-start.sh`](.claude/hooks/session-start.sh)）—
   クラウドのセッションで、リポジトリ外の解決にもクールタイムが効くようグローバル設定を書く。
   依存のインストールはしない（`pnpm install` は必要なときに手で実行する）
