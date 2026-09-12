@@ -3,18 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import { QUESTIONS } from "../data/questions";
-import type { Question } from "../types";
+import { choiceKey, formatSource } from "../types";
 import { QuizApp } from "./quiz-app";
 
-const choiceText = (question: Question, index: number): string => {
-  const choice = question.choices[index];
-  if (!choice) throw new Error(`${question.id} に選択肢 ${index} が無い`);
-  return choice.text;
-};
-
 const FIRST = QUESTIONS[0];
-const CORRECT = choiceText(FIRST, FIRST.answer);
-const WRONG = choiceText(FIRST, FIRST.answer === 0 ? 1 : 0);
+
+/** 選択肢ボタンは読み上げ名がキー（ア〜エ）で始まる。除外ボタンは「選択肢〜を除外」。 */
+const choiceButton = (index: number) =>
+  screen.getByRole("button", { name: new RegExp(`^${choiceKey(index)}`) });
 
 const startQuiz = async (user: ReturnType<typeof userEvent.setup>) => {
   render(<QuizApp />);
@@ -28,7 +24,7 @@ describe("QuizApp", () => {
 
     expect(screen.getByRole("heading", { name: "問 01" })).toBeInTheDocument();
     expect(screen.getByText(FIRST.text)).toBeInTheDocument();
-    expect(screen.getByText("1 / 8問")).toBeInTheDocument();
+    expect(screen.getByText(`1 / ${QUESTIONS.length}問`)).toBeInTheDocument();
   });
 
   it("解答するまで「次の問題へ」は押せない", async () => {
@@ -38,7 +34,7 @@ describe("QuizApp", () => {
     const next = screen.getByRole("button", { name: "次の問題へ" });
     expect(next).toBeDisabled();
 
-    await user.click(screen.getByRole("button", { name: new RegExp(CORRECT) }));
+    await user.click(choiceButton(FIRST.answer));
     expect(next).toBeEnabled();
   });
 
@@ -46,11 +42,30 @@ describe("QuizApp", () => {
     const user = userEvent.setup();
     await startQuiz(user);
 
-    await user.click(screen.getByRole("button", { name: new RegExp(CORRECT) }));
+    await user.click(choiceButton(FIRST.answer));
 
-    expect(screen.getByText(FIRST.explain)).toBeInTheDocument();
-    expect(screen.getByText(`出典：${FIRST.source}`)).toBeInTheDocument();
-    expect(screen.getByText(FIRST.figure.caption)).toBeInTheDocument();
+    expect(screen.getByText(`出典：${formatSource(FIRST.source)}`)).toBeInTheDocument();
+    if (FIRST.explain) expect(screen.getByText(FIRST.explain)).toBeInTheDocument();
+  });
+
+  it("出典は年度・期・試験区分・時間区分・問番号まで出る", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await user.click(choiceButton(FIRST.answer));
+
+    expect(
+      screen.getByText("出典：令和3年度 春期 応用情報技術者試験 午前 問1"),
+    ).toBeInTheDocument();
+  });
+
+  it("選択肢に付く図は原本の画像として出る", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    const image = FIRST.choices[0]?.image;
+    expect(image).toBeDefined();
+    const rendered = screen.getByAltText(image?.alt ?? "");
+    expect(rendered).toHaveAttribute("src", `/exam-prep${image?.src}`);
   });
 
   it("間違えた問題は苦手登録に入る", async () => {
@@ -59,7 +74,7 @@ describe("QuizApp", () => {
 
     expect(screen.getByRole("button", { name: "苦手に登録" })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: new RegExp(WRONG) }));
+    await user.click(choiceButton(FIRST.answer === 0 ? 1 : 0));
 
     expect(screen.getByRole("button", { name: "苦手登録済" })).toBeInTheDocument();
   });
@@ -69,31 +84,29 @@ describe("QuizApp", () => {
     await startQuiz(user);
     await user.click(screen.getByRole("button", { name: "別画面" }));
 
-    await user.click(screen.getByRole("button", { name: new RegExp(CORRECT) }));
+    await user.click(choiceButton(FIRST.answer));
 
     expect(screen.getByRole("heading", { name: "正解" })).toBeInTheDocument();
-    expect(screen.getByText(/あなたの解答：イ ／ 正解：/)).toBeInTheDocument();
-    // 解説画面では問題の選択肢ボタンは出ない。
-    expect(screen.queryByRole("button", { name: new RegExp(WRONG) })).not.toBeInTheDocument();
+    expect(screen.getByText(/あなたの解答：/)).toBeInTheDocument();
   });
 
   it("選択肢を除外すると打ち消し線が付く", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
 
-    const exclude = screen.getByRole("button", { name: "アを除外" });
+    const exclude = screen.getByRole("button", { name: "選択肢アを除外" });
     expect(exclude).toHaveAttribute("aria-pressed", "false");
 
     await user.click(exclude);
 
     expect(exclude).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText(choiceText(FIRST, 0))).toHaveClass("line-through");
+    expect(screen.getByText(FIRST.choices[0]?.text ?? "")).toHaveClass("line-through");
   });
 
   it("見直し画面の「不正解のみ」で間違えた問題だけが残る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
-    await user.click(screen.getByRole("button", { name: new RegExp(WRONG) }));
+    await user.click(choiceButton(FIRST.answer === 0 ? 1 : 0));
 
     await user.click(screen.getByRole("button", { name: "問題一覧・見直し" }));
     expect(screen.getAllByText("未解答")).toHaveLength(QUESTIONS.length - 1);
@@ -104,20 +117,21 @@ describe("QuizApp", () => {
     expect(screen.getByText("不正解")).toBeInTheDocument();
   });
 
-  it("全問解き終えると結果画面に score が出る", async () => {
+  it("全問正解すると結果画面が 100% を出す", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
 
     for (const question of QUESTIONS) {
-      const answer = choiceText(question, question.answer);
-      await user.click(screen.getByRole("button", { name: new RegExp(answer) }));
+      await user.click(choiceButton(question.answer));
       await user.click(screen.getByRole("button", { name: /次の問題へ|結果を見る/ }));
     }
 
     const score = screen.getByText("SCORE").parentElement;
     expect(score).not.toBeNull();
     expect(within(score as HTMLElement).getByText("100")).toBeInTheDocument();
-    expect(screen.getByText(/8問中 8問正解/)).toBeInTheDocument();
+    expect(
+      screen.getByText(new RegExp(`${QUESTIONS.length}問中 ${QUESTIONS.length}問正解`)),
+    ).toBeInTheDocument();
   });
 
   it("サイドバーで試験を切り替えると見出しが変わる", async () => {

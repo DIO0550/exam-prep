@@ -4,21 +4,12 @@ import type { Attempt, QuizItem } from "./stats";
 import { formatElapsed, isCorrect, summarize } from "./stats";
 import type { Question } from "./types";
 
-const question = (id: string, field: string, answer: number): Question => ({
-  id,
+const question = (no: number, field: string, answer: number): Question => ({
+  source: { exam: "AP", era: "令和", year: 3, term: "haru", section: "am", no },
   field,
-  year: "R7春 問1",
-  rate: "50%",
   answer,
   text: "問題文",
-  choices: [
-    { text: "ア", note: "アの解説" },
-    { text: "イ", note: "イの解説" },
-  ],
-  explain: "解説",
-  points: ["ポイント"],
-  source: "出典",
-  figure: { type: "table", caption: "図", headers: ["列"], rows: [["値"]] },
+  choices: [{ text: "ア" }, { text: "イ" }],
 });
 
 const attempt = (patch: Partial<Attempt> = {}): Attempt => ({
@@ -37,7 +28,7 @@ const item = (q: Question, a: Partial<Attempt> = {}): QuizItem => ({
 
 describe("isCorrect", () => {
   it("選んだ選択肢が正解と一致したときだけ true", () => {
-    const q = question("q1", "セキュリティ", 1);
+    const q = question(1, "セキュリティ", 1);
 
     expect(isCorrect(item(q, { picked: 1 }))).toBe(true);
     expect(isCorrect(item(q, { picked: 0 }))).toBe(false);
@@ -48,9 +39,9 @@ describe("isCorrect", () => {
 describe("summarize", () => {
   it("未解答は母数に入れない", () => {
     const summary = summarize([
-      item(question("q1", "セキュリティ", 0), { picked: 0, revealed: true }),
-      item(question("q2", "セキュリティ", 0), { picked: 1, revealed: true }),
-      item(question("q3", "セキュリティ", 0)),
+      item(question(1, "セキュリティ", 0), { picked: 0, revealed: true }),
+      item(question(2, "セキュリティ", 0), { picked: 1, revealed: true }),
+      item(question(3, "セキュリティ", 0)),
     ]);
 
     expect(summary.answered).toBe(2);
@@ -59,16 +50,16 @@ describe("summarize", () => {
   });
 
   it("1 問も解いていなければ 0% を返す", () => {
-    const summary = summarize([item(question("q1", "セキュリティ", 0))]);
+    const summary = summarize([item(question(1, "セキュリティ", 0))]);
 
     expect(summary).toEqual({ answered: 0, correct: 0, percent: 0, fieldStats: [] });
   });
 
   it("分野ごとに正答率をまとめる", () => {
     const summary = summarize([
-      item(question("q1", "セキュリティ", 0), { picked: 0, revealed: true }),
-      item(question("q2", "セキュリティ", 0), { picked: 1, revealed: true }),
-      item(question("q3", "ネットワーク", 1), { picked: 1, revealed: true }),
+      item(question(1, "セキュリティ", 0), { picked: 0, revealed: true }),
+      item(question(2, "セキュリティ", 0), { picked: 1, revealed: true }),
+      item(question(3, "ネットワーク", 1), { picked: 1, revealed: true }),
     ]);
 
     expect(summary.fieldStats).toEqual([

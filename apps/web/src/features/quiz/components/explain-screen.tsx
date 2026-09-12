@@ -1,10 +1,11 @@
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
-import { choiceKey } from "../types";
+import { choiceKey, formatSource } from "../types";
 import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
 import { KeyPointList } from "./key-point-list";
 import { MarkButtons } from "./mark-buttons";
+import { StemBlock } from "./question-figure";
 
 type ExplainScreenProps = {
   item: QuizItem;
@@ -43,7 +44,6 @@ export const ExplainScreen = ({
           あなたの解答：{attempt.picked === null ? "未解答" : choiceKey(attempt.picked)} ／ 正解：
           {choiceKey(question.answer)}
         </span>
-        <span className="text-[11.5px] text-muted-soft">この問題の全体正答率 {question.rate}</span>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-line bg-surface">
@@ -54,28 +54,39 @@ export const ExplainScreen = ({
           <p className="max-w-[62ch] text-pretty font-medium text-[15px] leading-[1.9]">
             {question.text}
           </p>
+          {question.stem && (
+            <div className="mt-5">
+              <StemBlock stem={question.stem} />
+            </div>
+          )}
         </div>
 
-        <div className="border-line-soft border-b px-[26px] py-6">
-          <h3 className="mb-2.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
-            ポイント
-          </h3>
-          <p className="mb-4 max-w-[74ch] text-pretty text-[14.5px] text-ink-soft leading-[1.95]">
-            {question.explain}
-          </p>
-          <KeyPointList points={question.points} tone="accent" />
-        </div>
+        {(question.explain || question.points) && (
+          <div className="border-line-soft border-b px-[26px] py-6">
+            <h3 className="mb-2.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
+              ポイント
+            </h3>
+            {question.explain && (
+              <p className="mb-4 max-w-[74ch] text-pretty text-[14.5px] text-ink-soft leading-[1.95]">
+                {question.explain}
+              </p>
+            )}
+            {question.points && <KeyPointList points={question.points} tone="accent" />}
+          </div>
+        )}
 
-        <div className="border-line-soft border-b bg-panel px-[26px] py-6">
-          <FigureBlock figure={question.figure} variant="page" />
-        </div>
+        {question.figure && (
+          <div className="border-line-soft border-b bg-panel px-[26px] py-6">
+            <FigureBlock figure={question.figure} variant="page" />
+          </div>
+        )}
 
         <div className="px-[26px] py-6">
           <h3 className="mb-4 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
             それぞれの選択肢の意味
           </h3>
           <ChoiceNotes question={question} picked={attempt.picked} variant="page" />
-          <div className="text-[11.5px] text-muted-soft">出典：{question.source}</div>
+          <div className="text-[11.5px] text-muted-soft">出典：{formatSource(question.source)}</div>
         </div>
       </div>
 

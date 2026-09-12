@@ -1,5 +1,6 @@
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
+import { sourceId } from "../types";
 
 type QuestionDotsProps = {
   items: QuizItem[];
@@ -23,7 +24,7 @@ export const QuestionDots = ({ items, index, onGoTo }: QuestionDotsProps) => {
 
         return (
           <button
-            key={item.question.id}
+            key={sourceId(item.question.source)}
             type="button"
             aria-current={current ? "true" : undefined}
             onClick={() => onGoTo(i)}

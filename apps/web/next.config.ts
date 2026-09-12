@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
-// GitHub Pages のプロジェクトページは https://<user>.github.io/<repo>/ に出るので、
-// リポジトリ名の分だけパスが深くなる。リポジトリをリネームしたり独自ドメインを
-// 当てたりしたら、この値も合わせる。
-const basePath = "/exam-prep";
+// public/ 配下を参照する側と値がずれないよう、定義は src/base-path.ts に置いてある。
+import { BASE_PATH as basePath } from "./src/base-path";
 
 const nextConfig: NextConfig = {
   // 静的ファイルだけを吐く。`next build` の出力は out/。

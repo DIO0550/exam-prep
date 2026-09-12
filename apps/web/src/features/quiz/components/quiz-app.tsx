@@ -11,6 +11,7 @@ import { ProgressBar } from "./progress-bar";
 import { QuizScreen } from "./quiz-screen";
 import { ResultScreen } from "./result-screen";
 import { ReviewScreen } from "./review-screen";
+import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
 export const QuizApp = () => {
@@ -112,6 +113,8 @@ export const QuizApp = () => {
           </div>
         </main>
       </div>
+
+      <SiteFooter />
     </div>
   );
 };

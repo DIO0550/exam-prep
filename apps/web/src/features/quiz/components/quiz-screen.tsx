@@ -1,12 +1,13 @@
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
-import { choiceKey } from "../types";
+import { choiceKey, formatSource, shortSource } from "../types";
 import { ChoiceList } from "./choice-list";
 import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
 import { KeyPointList } from "./key-point-list";
 import { MarkButtons } from "./mark-buttons";
 import { QuestionDots } from "./question-dots";
+import { StemBlock } from "./question-figure";
 
 type QuizScreenProps = {
   /** 演習全体。下部の問番号ボタンに使う。 */
@@ -55,7 +56,9 @@ export const QuizScreen = ({
             <span className="truncate rounded-[5px] bg-canvas px-2.5 py-[5px] text-[11px] text-muted-soft">
               {question.field}
             </span>
-            <span className="whitespace-nowrap text-[11px] text-muted-soft">{question.year}</span>
+            <span className="whitespace-nowrap text-[11px] text-muted-soft">
+              {shortSource(question.source)}
+            </span>
           </div>
           <MarkButtons
             size="sm"
@@ -70,6 +73,11 @@ export const QuizScreen = ({
           <p className="max-w-[62ch] text-pretty font-medium text-[17px] leading-[1.9] tracking-[0.01em]">
             {question.text}
           </p>
+          {question.stem && (
+            <div className="mt-5">
+              <StemBlock stem={question.stem} />
+            </div>
+          )}
         </div>
 
         <ChoiceList item={item} onPick={onPick} onToggleExclude={onToggleExclude} />
@@ -87,31 +95,36 @@ export const QuizScreen = ({
               <span className="text-[13px] text-muted-soft">
                 正解：{choiceKey(question.answer)}
               </span>
-              <span className="ml-auto text-[11.5px] text-muted-soft">
-                全体正答率 {question.rate}
-              </span>
             </div>
 
-            <div className="mb-[22px]">
-              <h3 className="mb-2.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
-                ポイント
-              </h3>
-              <p className="mb-3.5 max-w-[74ch] text-pretty text-[14px] text-ink-soft leading-[1.95]">
-                {question.explain}
-              </p>
-              <KeyPointList points={question.points} tone={tone} />
-            </div>
+            {(question.explain || question.points) && (
+              <div className="mb-[22px]">
+                <h3 className="mb-2.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
+                  ポイント
+                </h3>
+                {question.explain && (
+                  <p className="mb-3.5 max-w-[74ch] text-pretty text-[14px] text-ink-soft leading-[1.95]">
+                    {question.explain}
+                  </p>
+                )}
+                {question.points && <KeyPointList points={question.points} tone={tone} />}
+              </div>
+            )}
 
-            <div className="mb-[22px] max-w-[820px] rounded-xl border border-line bg-surface px-5 pt-5 pb-[18px]">
-              <FigureBlock figure={question.figure} variant="inline" />
-            </div>
+            {question.figure && (
+              <div className="mb-[22px] max-w-[820px] rounded-xl border border-line bg-surface px-5 pt-5 pb-[18px]">
+                <FigureBlock figure={question.figure} variant="inline" />
+              </div>
+            )}
 
             <div className={`border-t pt-[18px] ${correct ? "border-ok-line" : "border-ng-line"}`}>
               <h3 className="mb-3.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
                 それぞれの選択肢の意味
               </h3>
               <ChoiceNotes question={question} picked={attempt.picked} variant="inline" />
-              <div className="text-[11.5px] text-muted-soft">出典：{question.source}</div>
+              <div className="text-[11.5px] text-muted-soft">
+                出典：{formatSource(question.source)}
+              </div>
             </div>
           </div>
         )}

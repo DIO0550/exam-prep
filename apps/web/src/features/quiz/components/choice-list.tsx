@@ -1,5 +1,6 @@
 import type { QuizItem } from "../stats";
 import { choiceKey } from "../types";
+import { OriginalFigure } from "./question-figure";
 
 type ChoiceListProps = {
   item: QuizItem;
@@ -48,9 +49,11 @@ export const ChoiceList = ({ item, onPick, onToggleExclude }: ChoiceListProps) =
         const style = choiceStyle(item, index);
         const crossedOut = attempt.excluded.includes(index);
         const dimmed = crossedOut && !attempt.revealed;
+        const key = choiceKey(index);
 
         return (
-          <div key={choice.text} className="flex items-stretch gap-2">
+          // biome-ignore lint/suspicious/noArrayIndexKey: 選択肢は問題ごとに固定長で並べ替えもしない
+          <div key={index} className="flex items-stretch gap-2">
             <button
               type="button"
               disabled={attempt.revealed}
@@ -64,14 +67,19 @@ export const ChoiceList = ({ item, onPick, onToggleExclude }: ChoiceListProps) =
               <span
                 className={`flex size-[26px] flex-none items-center justify-center rounded-full font-bold text-[12px] ${style.key}`}
               >
-                {choiceKey(index)}
+                {key}
               </span>
-              <span
-                className={`flex-1 text-pretty pt-[3px] text-[14.5px] leading-[1.75] ${
-                  dimmed ? "text-muted-soft line-through" : "text-ink"
-                }`}
-              >
-                {choice.text}
+              <span className="flex flex-1 flex-col gap-2">
+                {choice.text && (
+                  <span
+                    className={`text-pretty pt-[3px] text-[14.5px] leading-[1.75] ${
+                      dimmed ? "text-muted-soft line-through" : "text-ink"
+                    }`}
+                  >
+                    {choice.text}
+                  </span>
+                )}
+                {choice.image && <OriginalFigure image={choice.image} />}
               </span>
               {style.mark && (
                 <span className={`flex-none pt-[5px] font-bold text-[12px] ${style.markColor}`}>
@@ -82,7 +90,7 @@ export const ChoiceList = ({ item, onPick, onToggleExclude }: ChoiceListProps) =
             <button
               type="button"
               aria-pressed={crossedOut}
-              aria-label={`${choiceKey(index)}を除外`}
+              aria-label={`選択肢${key}を除外`}
               title="この選択肢を除外"
               onClick={() => onToggleExclude(index)}
               className={`flex-[0_0_36px] cursor-pointer rounded-[9px] border border-edge bg-[#fbfcfd] font-bold text-[16px] hover:bg-[#f0f2f6] ${

@@ -10,11 +10,13 @@ pnpm workspace。アプリは `apps/` 配下、アプリ間で共有するもの
 ```
 apps/web/          Next.js 16（App Router / TypeScript / Tailwind v4）
   src/app/         ルーティングとページ。色トークンは globals.css の @theme
+  src/base-path.ts basePath の唯一の定義（next.config.ts と public/ 参照の両方が使う）
   src/features/    画面のまとまり
     quiz/          演習画面（学習ホーム / 演習 / 解説 / 結果 / 見直し）
       components/  画面と部品
       hooks/       画面の状態（useQuizSession）
-      data/        サンプルの問題・試験・学習記録
+      data/        問題データ。出典は types.ts の formatSource が組み立てる
+  public/questions/ 問題の図（公開 PDF から切り出し）と、そのライセンス表記
   vitest.config.ts テスト設定（jsdom + Testing Library）
 biome.json         lint / format（リポジトリ全体を 1 つの設定で見る）
 pnpm-workspace.yaml workspace とクールタイムの設定
@@ -211,23 +213,45 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 
 学習状態は今のところメモリ上だけで、リロードすると消える。
 
+## 問題データ
+
+収録しているのは **応用情報技術者試験 令和3年度 春期 午前 問1〜問20**
+（[`apps/web/src/features/quiz/data/ap-r03-haru-am.ts`](apps/web/src/features/quiz/data/ap-r03-haru-am.ts)）。
+過去問題を網羅したものではなく、画面下部にも収録範囲を出している。
+
+取り込み方は [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md) の 3.1 に従う。
+
+| もの | どうやって入れたか |
+|---|---|
+| 問題文・選択肢 | 公開 PDF のページを目視で書き起こし |
+| 図（ベン図・ブロック図・グラフ） | ページ画像から切り出し（`public/questions/`） |
+| 正解 | 同年度の解答例 PDF から |
+| 分野の細分類・解説 | 本リポジトリで作成 |
+
+**出典表記は手で書かない。** `Source`（試験区分・元号・年・期・時間区分・問番号）を持たせ、
+[`formatSource`](apps/web/src/features/quiz/types.ts) が
+`令和3年度 春期 応用情報技術者試験 午前 問1` の形に組み立てる。改変した問題は `modified`
+に内容を入れると、出典の末尾に併記される。問題 ID もこの `Source` から作るので、出典漏れが
+構造的に起きない。
+
+図は 2 通りの使い分けがある。原本が線画なら切り出し、表や箇条書きなら HTML で組む。
+線画を自作でなぞると描き間違いで正解が変わるため、なぞらない（docs 3.5）。
+
 ## ライセンス
 
 - **ソースコード**: MIT License（[`LICENSE`](LICENSE)）
-- **問題文・選択肢・解答例**: 独立行政法人情報処理推進機構（IPA）の著作物。MIT License の
-  対象外で、再利用するときは IPA の定める条件に従う
-  （<https://www.ipa.go.jp/shiken/faq.html>）。条件の整理は
-  [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md)
-- **解説**: 本サイトで書き起こしたもの
+- **問題文・選択肢・図・正解（解答例）**: 独立行政法人情報処理推進機構（IPA）の著作物。
+  MIT License の**対象外**で、再利用するときは IPA の定める条件に従う
+  （<https://www.ipa.go.jp/shiken/faq.html>）。詳細は
+  [`apps/web/public/questions/LICENSE.md`](apps/web/public/questions/LICENSE.md)
+- **分野の細分類・解説**: 本リポジトリで作成したもの（MIT）
 
 本サイトは IPA とは無関係の個人制作。
 
 ## これから
 
-- 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）。今は画面確認用の
-  サンプル 8 問を [`apps/web/src/features/quiz/data/questions.ts`](apps/web/src/features/quiz/data/questions.ts)
-  に直接置いてある。実データを入れるときに移す
-- 出典表記を問題 ID から機械的に組み立てる（今は `source` に文字列で持っている）
+- 収録する問題を増やす（同じ回の問21〜問80、他の年度）。手順は上の表のとおりで、
+  1 問ずつ原本と突き合わせながら足す
+- 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）
 - 学習状態の保存先（localStorage か外部か）。`data/progress.ts` のサンプル値もそこで差し替える
-- IPA 非公式である旨のフッター表示など、[公開前チェックリスト](docs/ipa-kakomon-usage-notes.md#5-公開前チェックリスト)
-  の未達項目
+- 学習ホームの数値（累計正答率・連続学習・苦手登録）はまだサンプル値

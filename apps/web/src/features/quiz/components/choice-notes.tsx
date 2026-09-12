@@ -1,4 +1,5 @@
 import { choiceKey, type Question } from "../types";
+import { OriginalFigure } from "./question-figure";
 
 type Variant = "inline" | "page";
 
@@ -25,7 +26,8 @@ export const ChoiceNotes = ({ question, picked, variant }: ChoiceNotesProps) => 
         const isPicked = index === picked;
 
         return (
-          <div key={choice.text} className={`flex items-start ${size.gap}`}>
+          // biome-ignore lint/suspicious/noArrayIndexKey: 選択肢は問題ごとに固定長で並べ替えもしない
+          <div key={index} className={`flex items-start ${size.gap}`}>
             <span
               className={`flex flex-none items-center justify-center rounded-full font-bold ${size.key} ${
                 isAnswer
@@ -46,15 +48,20 @@ export const ChoiceNotes = ({ question, picked, variant }: ChoiceNotesProps) => 
                 {choice.text}
                 {(isAnswer || isPicked) && (
                   <span
-                    className={`ml-2 font-bold text-[11px] ${isAnswer ? "text-ok" : "text-ng"}`}
+                    className={`font-bold text-[11px] ${choice.text ? "ml-2" : ""} ${
+                      isAnswer ? "text-ok" : "text-ng"
+                    }`}
                   >
                     {isAnswer ? "正解" : "あなたの解答"}
                   </span>
                 )}
               </span>
-              <span className="text-pretty text-[12.5px] text-muted-soft leading-[1.85]">
-                {choice.note}
-              </span>
+              {choice.image && <OriginalFigure image={choice.image} />}
+              {choice.note && (
+                <span className="text-pretty text-[12.5px] text-muted-soft leading-[1.85]">
+                  {choice.note}
+                </span>
+              )}
             </div>
           </div>
         );

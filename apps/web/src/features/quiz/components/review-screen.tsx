@@ -2,6 +2,7 @@ import type { ReviewFilter } from "../hooks/use-quiz-session";
 import { REVIEW_FILTERS } from "../hooks/use-quiz-session";
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
+import { sourceId } from "../types";
 
 type ReviewScreenProps = {
   items: QuizItem[];
@@ -55,7 +56,7 @@ export const ReviewScreen = ({ items, filter, onChangeFilter, onGoTo }: ReviewSc
       <div className="overflow-hidden rounded-2xl border border-line bg-surface">
         {rows.map(({ question, attempt, index, good, tags }) => (
           <button
-            key={question.id}
+            key={sourceId(question.source)}
             type="button"
             onClick={() => onGoTo(index)}
             className="flex w-full cursor-pointer items-start gap-4 border-line-softer border-b px-6 py-[18px] text-left hover:bg-[#fafbfc]"
