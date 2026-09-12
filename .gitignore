@@ -145,3 +145,6 @@ vite.config.ts.timestamp-*
 # devcontainer
 .devcontainer/.init-done
 .devcontainer/.codex/
+
+# Next.js が生成する型定義（ビルド時に作られるので追跡しない）
+next-env.d.ts

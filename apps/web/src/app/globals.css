@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Tailwind v4 の設定は CSS 側に書く（tailwind.config.js は使わない）。
+   トークンを足すときはここへ `@theme { --color-... }` の形で追加する。 */
+
+:root {
+  color-scheme: light dark;
+}

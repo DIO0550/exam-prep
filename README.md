@@ -2,8 +2,38 @@
 
 試験対策用の GitHub Pages 管理サイト（Next.js）。
 
-現時点ではアプリ本体はまだ無く、このリポジトリに入っているのは開発環境とパッケージ取り込みの
-設定だけ。
+## 構成
+
+pnpm workspace。アプリは `apps/` 配下、アプリ間で共有するものは `packages/` 配下に置く
+（`packages/` はまだ空で、問題データや採点ロジックを切り出すときに作る）。
+
+```
+apps/web/          Next.js 16（App Router / TypeScript / Tailwind v4）
+  src/app/         ルーティングとページ
+  vitest.config.ts テスト設定（jsdom + Testing Library）
+biome.json         lint / format（リポジトリ全体を 1 つの設定で見る）
+pnpm-workspace.yaml workspace とクールタイムの設定
+```
+
+## コマンド
+
+ルートから実行する。`--filter` で `apps/web` に流すだけなので、アプリの中で直接叩いてもよい。
+
+| コマンド | 内容 |
+|---|---|
+| `pnpm dev` | dev サーバ（`http://localhost:4100`） |
+| `pnpm build` | 本番ビルド |
+| `pnpm start` | ビルド済みのものを起動 |
+| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm test` | Vitest（`pnpm --filter @exam-prep/web test:watch` で watch） |
+| `pnpm check` | Biome で lint / format / import 順を検査 |
+| `pnpm fix` | Biome で自動修正 |
+
+依存を足すときは `pnpm --filter @exam-prep/web add <pkg>`。`npm` / `npx` / `pnpm dlx` は
+フックで拒否される（後述）。
+
+`next dev` は `apps/web/AGENTS.md` と `apps/web/CLAUDE.md` を自動生成して毎回書き戻すので、
+追跡している。止めたいときは `next.config.ts` に `agentRules: false` を足す。
 
 ## パッケージ取り込みのクールタイム
 
@@ -108,6 +138,6 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 
 ## これから
 
-- Next.js 16（App Router / TypeScript / Tailwind）の雛形
 - GitHub Pages 向けの static export（`output: 'export'` と `basePath`）とデプロイ用の workflow
-- Biome の導入（`.vscode/extensions.json` に推奨拡張だけ入れてある）
+- 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）と、
+  [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md) の条件を満たす出典表記
