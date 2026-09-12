@@ -21,6 +21,10 @@ IFS=$'\n\t'
 ALLOWED_DOMAINS=(
   # --- npm / pnpm ---
   "registry.npmjs.org"
+  # --- Aikido safe-chain（install のたびにマルウェア一覧を取りに行く）---
+  "malware-list.aikido.dev"
+  # --- GitHub Copilot CLI ---
+  "api.githubcopilot.com"
   # --- GitHub（raw / gist は Fastly のため meta の範囲外。個別に許可）---
   "raw.githubusercontent.com"
   "gist.githubusercontent.com"
