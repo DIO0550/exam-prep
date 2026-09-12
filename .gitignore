@@ -141,3 +141,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# devcontainer
+.devcontainer/.init-done
+.devcontainer/.codex/

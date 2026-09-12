@@ -49,9 +49,3 @@ else
 fi
 
 echo "[session-start] pnpm minimumReleaseAge (global) = ${MINIMUM_RELEASE_AGE}"
-
-# 依存はロックファイルがあるときだけ入れる（アプリ本体を入れるまでは存在しない）。
-cd "${CLAUDE_PROJECT_DIR:-.}"
-if [ -f pnpm-lock.yaml ]; then
-  pnpm install --frozen-lockfile
-fi

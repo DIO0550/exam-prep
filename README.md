@@ -71,14 +71,17 @@ npm 側にはクールタイムに相当する設定が無い（12.0.2 時点。
 
 VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 
-- Ubuntu 24.04 + Node 24 + pnpm 12.3.4（`package.json` の `packageManager` と一致。ハッシュ付きで固定）
+- Ubuntu 24.04 + Node 24 + CJK フォント。gh / pnpm + safe-chain / AI ツール（Copilot CLI・
+  Claude Code）/ tmux / Playwright は spec-board と同じスクリプトで入れる
+- リポジトリの中で動く pnpm は `package.json` の `packageManager`（12.3.4、ハッシュ付きで固定）。
+  イメージに入るグローバルの pnpm は 10 系なので、クールタイムは rc と config.yaml の両方に書いてある
 - 起動時に [`init-firewall.sh`](.devcontainer/init-firewall.sh) が外向き通信を許可リストへ絞る。
   許可先を足すときは同ファイルの `ALLOWED_DOMAINS`
 - ファイアウォールは root の [`entrypoint.sh`](.devcontainer/entrypoint.sh) が適用し、開発ユーザー
   （`vscode`）には sudo を与えない（与えると許可リストを自分で外せてしまうため）
 - ポート 4100 を転送。コンテナの中なので `next dev -p 4100 -H 0.0.0.0` で起動する
   （Next.js は HMR も dev サーバと同じポートを使うので、転送は 1 つでよい）
-- `npm config set ignore-scripts true` 済み（pnpm 10 以降は依存のライフサイクルスクリプトを
+- セットアップスクリプトが `npm config set ignore-scripts true` を入れる（pnpm 10 以降は依存のライフサイクルスクリプトを
   既定で実行せず、必要なものだけ `onlyBuiltDependencies` で許可する）
 
 ## Claude Code のフック
@@ -91,7 +94,7 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
   依存の追加は `pnpm add`、インストール済みバイナリの実行は `pnpm exec` を使う
 - **SessionStart**（[`session-start.sh`](.claude/hooks/session-start.sh)）—
   クラウドのセッションで、リポジトリ外の解決にもクールタイムが効くようグローバル設定を書く。
-  ロックファイルがあれば `pnpm install --frozen-lockfile` も走らせる
+  依存のインストールはしない（`pnpm install` は必要なときに手で実行する）
 
 フックは**セッション開始時に読まれる**ので、変更は次のセッションから効く。
 
@@ -106,5 +109,3 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 - Next.js 16（App Router / TypeScript / Tailwind）の雛形
 - GitHub Pages 向けの static export（`output: 'export'` と `basePath`）とデプロイ用の workflow
 - Biome の導入（`.vscode/extensions.json` に推奨拡張だけ入れてある）
-- 任意: [safe-chain](https://github.com/AikidoSec/safe-chain)（インストール時のマルウェア検査）。
-  入れる場合は `init-firewall.sh` の `ALLOWED_DOMAINS` に `malware-list.aikido.dev` を足す
