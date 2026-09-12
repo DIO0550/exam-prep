@@ -9,41 +9,33 @@
 // 残らず、何を入れて動かしたかが後から辿れない。
 //
 // 依存の追加は pnpm add、インストール済みバイナリの実行は pnpm exec を使う。
+//
+// 判定はコマンド列全体の語を見る。先頭に来たときだけでなく `bash -c "npx foo"` や
+// `xargs npx` のように途中へ紛れた形も拾う。取りこぼすと素通りしてしまうので、
+// 「読み違えて余分に弾く」側へ倒している（弾かれたら書き方を変えればよい）。
 // =============================================================================
 
-/** 先頭に来たら拒否するコマンド名 */
+/** 語として現れたら拒否するコマンド名 */
 const DeniedCommands = new Set(["npm", "npx", "pnpx", "bunx"]);
 
-/** 第 1 引数まで見て拒否するもの（コマンド名 → サブコマンド） */
+/** コマンド名より後ろに現れたら拒否するサブコマンド（コマンド名 → サブコマンド） */
 const DeniedSubcommands = new Map([["pnpm", "dlx"]]);
 
 const Replacement =
   "依存の追加は `pnpm add`、インストール済みバイナリの実行は `pnpm exec` を使う。";
 
 /**
- * コマンド列を、実行される単位へ分割する。
- * `&&` `||` `;` `|` と改行で切るだけの粗い分割で、引用符の中までは見ない。
+ * コマンド列を語へ分割し、コマンド名として比較できる形へ揃える。
+ * 空白とシェルの区切り記号で切り、`/usr/bin/npm` のようなパス付きは末尾だけを見る。
+ * URL（`https://registry.npmjs.org/npm` など）はコマンドではないので除く。
  * @param {string} command
  * @returns {string[]}
  */
-const splitSegments = (command) =>
+const tokenize = (command) =>
   command
-    .split(/&&|\|\||[;\n|]/)
-    .map((segment) => segment.replace(/^[\s(){]+/, "").trim())
-    .filter((segment) => segment.length > 0);
-
-/**
- * 1 セグメントの語のうち、実行されるコマンドから始まる部分を返す。
- * 先頭の環境変数代入（`FOO=bar`）と `sudo` は読み飛ばす。
- * @param {string} segment
- * @returns {string[]}
- */
-const wordsFromCommand = (segment) => {
-  const words = segment.split(/\s+/);
-  const isPrefix = (word) => word === "sudo" || /^[A-Za-z_][A-Za-z0-9_]*=/.test(word);
-  const start = words.findIndex((word) => !isPrefix(word));
-  return start === -1 ? [] : words.slice(start);
-};
+    .split(/[\s;|&()<>{}"'`]+/)
+    .filter((token) => token.length > 0 && !token.includes("://"))
+    .map((token) => token.split("/").pop() ?? token);
 
 /**
  * 拒否する理由。拒否しないなら null。
@@ -51,19 +43,20 @@ const wordsFromCommand = (segment) => {
  * @returns {string | null}
  */
 const denialReason = (command) => {
-  for (const segment of splitSegments(command)) {
-    const [head, ...rest] = wordsFromCommand(segment);
-    if (head === undefined) continue;
+  const tokens = tokenize(command);
 
-    // /usr/bin/npm のようなパス付きでも名前で判定する
-    const name = head.split("/").pop() ?? head;
-    if (DeniedCommands.has(name)) {
-      return `${name} はこのリポジトリでは使わない。${Replacement}`;
-    }
-    if (DeniedSubcommands.get(name) === rest[0]) {
-      return `${name} ${rest[0]} はこのリポジトリでは使わない。${Replacement}`;
+  const denied = tokens.find((token) => DeniedCommands.has(token));
+  if (denied !== undefined) {
+    return `${denied} はこのリポジトリでは使わない。${Replacement}`;
+  }
+
+  for (const [name, subcommand] of DeniedSubcommands) {
+    const at = tokens.indexOf(name);
+    if (at !== -1 && tokens.includes(subcommand, at + 1)) {
+      return `${name} ${subcommand} はこのリポジトリでは使わない。${Replacement}`;
     }
   }
+
   return null;
 };
 

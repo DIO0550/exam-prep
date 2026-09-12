@@ -2,8 +2,90 @@
 
 試験対策用の GitHub Pages 管理サイト（Next.js）。
 
-現時点ではアプリ本体はまだ無く、このリポジトリに入っているのは開発環境とパッケージ取り込みの
-設定だけ。
+## 構成
+
+pnpm workspace。アプリは `apps/` 配下、アプリ間で共有するものは `packages/` 配下に置く
+（`packages/` はまだ空で、問題データや採点ロジックを切り出すときに作る）。
+
+```
+apps/web/          Next.js 16（App Router / TypeScript / Tailwind v4）
+  src/app/         ルーティングとページ
+  vitest.config.ts テスト設定（jsdom + Testing Library）
+biome.json         lint / format（リポジトリ全体を 1 つの設定で見る）
+pnpm-workspace.yaml workspace とクールタイムの設定
+```
+
+## コマンド
+
+ルートから実行する。`--filter` で `apps/web` に流すだけなので、アプリの中で直接叩いてもよい。
+
+| コマンド | 内容 |
+|---|---|
+| `pnpm dev` | dev サーバ（`http://localhost:4100/exam-prep/`。`basePath` は dev でも効く） |
+| `pnpm build` | static export を作る（出力は `apps/web/out`） |
+| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm test` | Vitest（`pnpm --filter @exam-prep/web test:watch` で watch） |
+| `pnpm check` | Biome で lint / format / import 順を検査 |
+| `pnpm fix` | Biome で自動修正 |
+
+依存を足すときは `pnpm --filter @exam-prep/web add <pkg>`。`npm` / `npx` / `pnpm dlx` は
+フックで拒否される（後述）。
+
+`next dev` は `apps/web/AGENTS.md` と `apps/web/CLAUDE.md` を自動生成して毎回書き戻すので、
+追跡している。止めたいときは `next.config.ts` に `agentRules: false` を足す。
+
+## CI とデプロイ
+
+workflow は 2 つに分けてある。見たいものが違い（片方は「壊れていないか」、もう片方は
+「出せたか」）、必要な権限も違うため。
+
+| workflow | いつ走るか | やること | 権限 |
+|---|---|---|---|
+| [`ci.yml`](.github/workflows/ci.yml) | PR / `main` への push / 手動 | `pnpm check` / `typecheck` / `test` / `build` | `contents: read` |
+| [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) | `main` への push / 手動 | static export を作って GitHub Pages へ出す | deploy ジョブにだけ `pages: write` と `id-token: write` |
+
+公開先は `https://dio0550.github.io/exam-prep/`。
+
+**この 2 つは `main` への push で並行して走る。** デプロイ側はテストの成否を待たないので、
+検査を通らないものを出したくないなら、**ブランチ保護で CI を必須チェックにする**
+（Settings → Branches → `main` → Require status checks to pass → `verify`）。
+main へ直接 push せず PR を通す運用であれば、PR の時点で CI が通っている。
+
+**リポジトリ設定が 1 つ要る。** Settings → Pages → Build and deployment → Source を
+**GitHub Actions** にする。ここが "Deploy from a branch" のままだと deploy ジョブが失敗する。
+
+### workflow の方針
+
+- **Action は GitHub 公式（`actions/*`）だけ**。pnpm 用のサードパーティ Action
+  （`pnpm/action-setup` など）は使わず、corepack が `package.json` の `packageManager`
+  （ハッシュ付きで固定）から pnpm を入れる
+- **すべてコミット SHA で固定**。タグは付け替えられるがコミット SHA は動かない。
+  更新するときは SHA と横のコメントのバージョンを一緒に書き換える
+- `pnpm install --frozen-lockfile` なので、ロックファイルのズレに加えて
+  **クールタイム（7 日）を満たさないバージョンが載っていれば CI で落ちる**
+- corepack は Node 24 に同梱されているものを使う。Node 25 以降へ上げるときは
+  corepack が外れるので、pnpm の入れ方を別途決める必要がある
+- セットアップ（checkout / Node / corepack / キャッシュ / install）は 2 ファイルに
+  同じ内容が並ぶ。まとめるにはローカルの composite action を挟むことになるので、
+  1 ファイルを読めば何が動くか分かる状態を優先した。**片方を直したらもう片方も直す**
+
+### static export の設定
+
+[`apps/web/next.config.ts`](apps/web/next.config.ts) に置いてある。
+
+| 設定 | 理由 |
+|---|---|
+| `output: 'export'` | 静的ファイルだけを吐く（出力は `apps/web/out`） |
+| `basePath: '/exam-prep'` | プロジェクトページはリポジトリ名の分だけパスが深くなる。リネームや独自ドメインを当てたら合わせる |
+| `trailingSlash: true` | `out/foo/index.html` の形にする。拡張子なし URL の解決はホストによって差があるため |
+| `images.unoptimized: true` | static export には画像最適化サーバが無い |
+
+`public/.nojekyll` を置いてある。Actions からの artifact デプロイでは Jekyll は走らないので
+本来は不要だが、`_next/` のようなアンダースコア始まりが無視される経路に迷い込むと
+原因が分かりにくいので、保険として残している。
+
+`output: 'export'` では `next start` が使えないので、ルートの `start` スクリプトは無い。
+ビルド結果を手元で見るときは `apps/web/out` を任意の静的サーバで配る。
 
 ## パッケージ取り込みのクールタイム
 
@@ -91,7 +173,9 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 - **PreToolUse / Bash**（[`block-npm-and-dlx.mjs`](.claude/hooks/block-npm-and-dlx.mjs)）—
   `npm` / `npx` / `pnpx` / `bunx` / `pnpm dlx` を拒否する。npm と npx にはクールタイムに
   相当する設定が無く、`pnpm dlx` は一時インストールなのでロックファイルに残らない。
-  依存の追加は `pnpm add`、インストール済みバイナリの実行は `pnpm exec` を使う
+  コマンド列の**どこに現れても**拒否するので、`bash -c "npx …"` や `xargs npx` のように
+  途中へ紛れた形も拾う。依存の追加は `pnpm add`、インストール済みバイナリの実行は
+  `pnpm exec` を使う
 - **SessionStart**（[`session-start.sh`](.claude/hooks/session-start.sh)）—
   クラウドのセッションで、リポジトリ外の解決にもクールタイムが効くようグローバル設定を書く。
   依存のインストールはしない（`pnpm install` は必要なときに手で実行する）
@@ -106,6 +190,5 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 
 ## これから
 
-- Next.js 16（App Router / TypeScript / Tailwind）の雛形
-- GitHub Pages 向けの static export（`output: 'export'` と `basePath`）とデプロイ用の workflow
-- Biome の導入（`.vscode/extensions.json` に推奨拡張だけ入れてある）
+- 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）と、
+  [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md) の条件を満たす出典表記
