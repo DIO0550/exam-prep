@@ -35,9 +35,37 @@ $ pnpm install --frozen-lockfile   # 期限内の版が載ったロックファ�
 クールタイムを待たずに入れたいものがあるときだけ、`minimumReleaseAgeExclude` に
 パッケージ名 / パターン（`'@myorg/*'`）/ バージョン指定（`'next@16.3.5'`）で例外を足す。
 
-コンテナのグローバル設定にも同じ 7 日を入れてある（[Dockerfile](.devcontainer/node/Dockerfile)）。
-リポジトリ内では `pnpm-workspace.yaml` の値が優先され、グローバル側は `pnpm dlx` など
-リポジトリの外での解決に効く。
+### どこに書くと効くか
+
+同じ設定でも、置き場所によって効いたり効かなかったりする。しかも **pnpm 10 と 11 以降で
+逆転している**。`pnpm add next` の解決結果で実測した（✅ = 解決に効く）。
+
+| 置き場所 | pnpm 10.33 | pnpm 12.3.4 |
+|---|---|---|
+| リポジトリの `pnpm-workspace.yaml` | ✅ | ✅ |
+| リポジトリの `.npmrc` | ✅ | ❌ |
+| グローバルの `~/.config/pnpm/rc`（`pnpm config set --global` が書く形式） | ✅ | ❌ |
+| グローバルの `~/.config/pnpm/config.yaml` | ❌ | ✅ |
+| 環境変数 `PNPM_CONFIG_MINIMUM_RELEASE_AGE` | - | ✅（リポジトリの設定より強い） |
+
+`pnpm config get minimumReleaseAge` は判定に使えない。rc に書いた値は解決に効かなくても
+読めてしまい、config.yaml に書いた値は効いていても `undefined` を返す。確かめるなら
+実際に `pnpm add` して入るバージョンを見る。
+
+そのため、このリポジトリでは次のように置いている。
+
+- **リポジトリ内の install**: `pnpm-workspace.yaml`。どのマシン・どの環境でも効くので、
+  クラウドのセッションや CI もこれでカバーされる。`.npmrc` は置かない（`packageManager` が
+  pnpm 12 なので効かないうえ、10 系へ落としたときだけ効く設定はかえって紛らわしい）
+- **リポジトリ外の解決（`pnpm dlx` など）**: devcontainer では
+  [Dockerfile](.devcontainer/node/Dockerfile) が `config.yaml` に書く。クラウドのセッションは
+  そのイメージを使わないので、[`.claude/hooks/session-start.sh`](.claude/hooks/session-start.sh)
+  が rc と config.yaml の両方へ書く（どちらの pnpm が載っているか決められないため）
+- 環境変数は使わない。リポジトリの `pnpm-workspace.yaml` より強く、リポジトリ側の指定を
+  上書きしてしまうため
+
+npm 側にはクールタイムに相当する設定が無い（12.0.2 時点。`before` は指定日時点の解決に
+固定するもので別物）ので、依存の追加は pnpm で行う。
 
 ## 開発環境（devcontainer）
 
