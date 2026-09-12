@@ -3,6 +3,70 @@
 /* Tailwind v4 の設定は CSS 側に書く（tailwind.config.js は使わない）。
    トークンを足すときはここへ `@theme { --color-... }` の形で追加する。 */
 
+@theme {
+  /* 面と文字。canvas が下地、surface がカード。 */
+  --color-canvas: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-panel: #fafbfd;
+  --color-ink: #16181d;
+  --color-ink-soft: #2b313c;
+  --color-muted: #4a515e;
+  --color-muted-soft: #59606e;
+
+  /* 罫線。line が外枠、line-soft がカード内の仕切り、edge が操作要素の枠。 */
+  --color-line: #e3e6ec;
+  --color-line-soft: #edeff3;
+  --color-line-softer: #f0f2f6;
+  --color-edge: #dfe2e9;
+  --color-edge-strong: #d8dbe2;
+
+  /* 淡い塗り。 */
+  --color-chip: #eef0f4;
+  --color-track: #e7e9ee;
+  --color-hover: #f2f4f8;
+  --color-disabled: #c3c8d2;
+
+  /* アクセント（選択中・進行中）。 */
+  --color-accent: #2f5fa8;
+  --color-accent-hover: #27508e;
+  --color-accent-soft: #eef3fb;
+  --color-accent-deep: #1d3f75;
+
+  /* 正誤。ok/ng それぞれ 文字色・選択肢の塗り・解説帯の塗り・帯の罫線。 */
+  --color-ok: #1f6b52;
+  --color-ok-soft: #eef7f2;
+  --color-ok-bg: #f3f9f6;
+  --color-ok-line: #d7e8de;
+  --color-ng: #b3392f;
+  --color-ng-soft: #fdf0ef;
+  --color-ng-bg: #fdf5f4;
+  --color-ng-line: #f0d8d5;
+
+  /* 「後で見直す」フラグ。 */
+  --color-flag: #c98a1e;
+  --color-flag-soft: #fdf7e9;
+  --color-flag-ink: #8d6112;
+
+  /* 解説中の図（フロー／計算／表）。 */
+  --color-figure: #f7f9fc;
+  --color-figure-line: #e3e8f1;
+  --color-figure-head: #dfe4ec;
+
+  --animate-rise-in: rise-in 0.3s ease both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 :root {
-  color-scheme: light dark;
+  /* デザインはライト 1 本。フォームコントロールが OS 設定で暗転しないよう固定する。 */
+  color-scheme: light;
 }

@@ -9,7 +9,12 @@ pnpm workspace。アプリは `apps/` 配下、アプリ間で共有するもの
 
 ```
 apps/web/          Next.js 16（App Router / TypeScript / Tailwind v4）
-  src/app/         ルーティングとページ
+  src/app/         ルーティングとページ。色トークンは globals.css の @theme
+  src/features/    画面のまとまり
+    quiz/          演習画面（学習ホーム / 演習 / 解説 / 結果 / 見直し）
+      components/  画面と部品
+      hooks/       画面の状態（useQuizSession）
+      data/        サンプルの問題・試験・学習記録
   vitest.config.ts テスト設定（jsdom + Testing Library）
 biome.json         lint / format（リポジトリ全体を 1 つの設定で見る）
 pnpm-workspace.yaml workspace とクールタイムの設定
@@ -188,7 +193,41 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
   再利用するときに満たすべき条件（出典表記・コードとデータのライセンス分離・公式と誤認させない等）と、
   公開前チェックリスト。問題データを入れる前に読む
 
+## 画面
+
+`apps/web/src/features/quiz` に演習まわりの 5 画面が入っている。ページは
+`src/app/page.tsx` の 1 枚だけで、画面の出し分けは `useQuizSession` の `screen` が持つ。
+
+| 画面 | 中身 |
+|---|---|
+| 学習ホーム | 累計の学習記録と分野別の到達度。ここから演習を始める |
+| 演習 | 問題・選択肢・正誤・解説。解説は「同画面」「別画面」を切り替えられる |
+| 解説 | 「別画面」設定のときに解答後へ挟まる、解説だけの画面 |
+| 結果 | 得点と分野別の内訳、所要時間 |
+| 問題一覧・見直し | 全問の正誤一覧。不正解・フラグ・苦手登録で絞り込める |
+
+色は `src/app/globals.css` の `@theme` にトークンとして置いてある（`bg-accent` /
+`text-ok` / `border-line` など）。個別の色を直に書かず、ここへ足してから使う。
+
+学習状態は今のところメモリ上だけで、リロードすると消える。
+
+## ライセンス
+
+- **ソースコード**: MIT License（[`LICENSE`](LICENSE)）
+- **問題文・選択肢・解答例**: 独立行政法人情報処理推進機構（IPA）の著作物。MIT License の
+  対象外で、再利用するときは IPA の定める条件に従う
+  （<https://www.ipa.go.jp/shiken/faq.html>）。条件の整理は
+  [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md)
+- **解説**: 本サイトで書き起こしたもの
+
+本サイトは IPA とは無関係の個人制作。
+
 ## これから
 
-- 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）と、
-  [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md) の条件を満たす出典表記
+- 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）。今は画面確認用の
+  サンプル 8 問を [`apps/web/src/features/quiz/data/questions.ts`](apps/web/src/features/quiz/data/questions.ts)
+  に直接置いてある。実データを入れるときに移す
+- 出典表記を問題 ID から機械的に組み立てる（今は `source` に文字列で持っている）
+- 学習状態の保存先（localStorage か外部か）。`data/progress.ts` のサンプル値もそこで差し替える
+- IPA 非公式である旨のフッター表示など、[公開前チェックリスト](docs/ipa-kakomon-usage-notes.md#5-公開前チェックリスト)
+  の未達項目

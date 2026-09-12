@@ -1,0 +1,117 @@
+"use client";
+
+import { EXAM_GROUPS, EXAMS } from "../data/exams";
+import { STREAK_LABEL } from "../data/progress";
+import { QUESTIONS } from "../data/questions";
+import { useQuizSession } from "../hooks/use-quiz-session";
+import { ExamSidebar } from "./exam-sidebar";
+import { ExplainScreen } from "./explain-screen";
+import { HomeScreen } from "./home-screen";
+import { ProgressBar } from "./progress-bar";
+import { QuizScreen } from "./quiz-screen";
+import { ResultScreen } from "./result-screen";
+import { ReviewScreen } from "./review-screen";
+import { SiteHeader } from "./site-header";
+
+export const QuizApp = () => {
+  const session = useQuizSession(QUESTIONS);
+  const exam = EXAMS[session.examIndex] ?? EXAMS[0];
+
+  return (
+    <div className="flex min-h-dvh flex-col text-ink">
+      <SiteHeader
+        screen={session.screen}
+        feedback={session.feedback}
+        streakLabel={STREAK_LABEL}
+        onNavigate={session.setScreen}
+        onFeedbackChange={session.setFeedback}
+      />
+
+      <div className="flex flex-1 flex-wrap items-stretch">
+        <ExamSidebar
+          exams={EXAMS}
+          groups={EXAM_GROUPS}
+          examIndex={session.examIndex}
+          closedGroups={session.closedGroups}
+          onSelectExam={session.setExamIndex}
+          onToggleGroup={session.toggleGroup}
+        />
+
+        <main className="flex min-w-0 flex-[999_1_520px] justify-center px-7 pb-16">
+          <div className="flex w-full max-w-[1180px] flex-col gap-6">
+            <header className="flex flex-wrap items-baseline gap-3 border-line border-b pt-6 pb-3.5">
+              <span className="font-bold text-[10.5px] text-muted tracking-[0.14em]">
+                {exam.code}
+              </span>
+              <h1 className="font-bold text-[17px] leading-[1.4] tracking-[0.01em]">{exam.name}</h1>
+              <span className="text-[11.5px] text-muted">{exam.sub}</span>
+            </header>
+
+            {(session.screen === "quiz" || session.screen === "explain") && (
+              <ProgressBar
+                answered={session.summary.answered}
+                total={QUESTIONS.length}
+                index={session.index}
+              />
+            )}
+
+            {session.screen === "home" && (
+              <HomeScreen
+                questionCount={QUESTIONS.length}
+                onStart={session.start}
+                onGoReview={() => session.setScreen("review")}
+              />
+            )}
+
+            {session.screen === "quiz" && session.current && (
+              <QuizScreen
+                items={session.items}
+                item={session.current}
+                index={session.index}
+                isLast={session.isLast}
+                showFeedback={session.feedback === "inline"}
+                onPick={session.pick}
+                onToggleExclude={session.toggleExclude}
+                onToggleFlag={session.toggleFlag}
+                onToggleWeak={session.toggleWeak}
+                onPrev={session.goPrev}
+                onNext={session.goNext}
+                onGoTo={session.goTo}
+              />
+            )}
+
+            {session.screen === "explain" && session.current && (
+              <ExplainScreen
+                item={session.current}
+                index={session.index}
+                isLast={session.isLast}
+                onToggleFlag={session.toggleFlag}
+                onToggleWeak={session.toggleWeak}
+                onNext={session.goNext}
+              />
+            )}
+
+            {session.screen === "result" && (
+              <ResultScreen
+                summary={session.summary}
+                total={QUESTIONS.length}
+                elapsed={session.elapsed}
+                onRestart={session.start}
+                onGoReview={() => session.setScreen("review")}
+              />
+            )}
+
+            {session.screen === "review" && (
+              <ReviewScreen
+                items={session.items}
+                filter={session.filter}
+                onChangeFilter={session.setFilter}
+                onGoTo={session.goTo}
+              />
+            )}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
