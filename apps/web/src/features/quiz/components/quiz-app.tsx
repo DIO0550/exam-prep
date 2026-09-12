@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
+
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
 import { STREAK_LABEL } from "../data/progress";
-import { QUESTIONS } from "../data/questions";
+import { QUESTION_SETS } from "../data/questions";
 import { useQuizSession } from "../hooks/use-quiz-session";
 import { ExamSidebar } from "./exam-sidebar";
 import { ExplainScreen } from "./explain-screen";
@@ -15,7 +17,9 @@ import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
 export const QuizApp = () => {
-  const session = useQuizSession(QUESTIONS);
+  const [setId, setSetId] = useState(QUESTION_SETS[0].id);
+  const questionSet = QUESTION_SETS.find((s) => s.id === setId) ?? QUESTION_SETS[0];
+  const session = useQuizSession(questionSet.questions);
   const exam = EXAMS[session.examIndex] ?? EXAMS[0];
 
   return (
@@ -46,19 +50,33 @@ export const QuizApp = () => {
               </span>
               <h1 className="font-bold text-[17px] leading-[1.4] tracking-[0.01em]">{exam.name}</h1>
               <span className="text-[11.5px] text-muted">{exam.sub}</span>
+              <label className="ml-auto flex items-center gap-2 text-[11.5px] text-muted">
+                出題する回
+                <select
+                  value={setId}
+                  onChange={(event) => setSetId(event.target.value)}
+                  className="cursor-pointer rounded-[7px] border border-edge bg-surface px-2.5 py-1.5 font-medium text-[12px] text-ink"
+                >
+                  {QUESTION_SETS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </header>
 
             {(session.screen === "quiz" || session.screen === "explain") && (
               <ProgressBar
                 answered={session.summary.answered}
-                total={QUESTIONS.length}
+                total={questionSet.questions.length}
                 index={session.index}
               />
             )}
 
             {session.screen === "home" && (
               <HomeScreen
-                questionCount={QUESTIONS.length}
+                questionCount={questionSet.questions.length}
                 onStart={session.start}
                 onGoReview={() => session.setScreen("review")}
               />
@@ -95,7 +113,7 @@ export const QuizApp = () => {
             {session.screen === "result" && (
               <ResultScreen
                 summary={session.summary}
-                total={QUESTIONS.length}
+                total={questionSet.questions.length}
                 elapsed={session.elapsed}
                 onRestart={session.start}
                 onGoReview={() => session.setScreen("review")}

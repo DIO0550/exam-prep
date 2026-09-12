@@ -2,10 +2,12 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
-import { QUESTIONS } from "../data/questions";
+import { QUESTION_SETS } from "../data/questions";
 import { choiceKey, formatSource } from "../types";
 import { QuizApp } from "./quiz-app";
 
+const FIRST_SET = QUESTION_SETS[0];
+const QUESTIONS = FIRST_SET.questions;
 const FIRST = QUESTIONS[0];
 
 /** 選択肢ボタンは読み上げ名がキー（ア〜エ）で始まる。除外ボタンは「選択肢〜を除外」。 */
@@ -54,18 +56,24 @@ describe("QuizApp", () => {
     await user.click(choiceButton(FIRST.answer));
 
     expect(
-      screen.getByText("出典：令和3年度 春期 応用情報技術者試験 午前 問1"),
+      screen.getByText(/^出典：令和\d年度 (春|秋)期 応用情報技術者試験 午前 問1/),
     ).toBeInTheDocument();
   });
 
-  it("選択肢に付く図は原本の画像として出る", async () => {
+  it("図のある問題では、原本から切り出した画像が basePath 付きで出る", async () => {
+    // どの回が既定でも動くよう、図を持つ最初の問題を探して開く
+    const target = QUESTIONS.findIndex((q) => q.stem?.image || q.choices.some((c) => c.image));
+    expect(target).toBeGreaterThanOrEqual(0);
+    const question = QUESTIONS[target];
+    if (!question) throw new Error("図のある問題が無い");
+    const image = question.stem?.image ?? question.choices.find((c) => c.image)?.image;
+    if (!image) throw new Error("画像が取れない");
+
     const user = userEvent.setup();
     await startQuiz(user);
+    await user.click(screen.getByRole("button", { name: new RegExp(`^${target + 1}$`) }));
 
-    const image = FIRST.choices[0]?.image;
-    expect(image).toBeDefined();
-    const rendered = screen.getByAltText(image?.alt ?? "");
-    expect(rendered).toHaveAttribute("src", `/exam-prep${image?.src}`);
+    expect(screen.getByAltText(image.alt)).toHaveAttribute("src", `/exam-prep${image.src}`);
   });
 
   it("間違えた問題は苦手登録に入る", async () => {
@@ -133,6 +141,24 @@ describe("QuizApp", () => {
     expect(
       screen.getByText(new RegExp(`${QUESTIONS.length}問中 ${QUESTIONS.length}問正解`)),
     ).toBeInTheDocument();
+  });
+
+  it("出題する回を切り替えると問題が入れ替わり、解答状況が消える", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await user.click(choiceButton(FIRST.answer));
+    expect(screen.getByRole("button", { name: "次の問題へ" })).toBeEnabled();
+
+    const other = QUESTION_SETS[1];
+    if (!other) throw new Error("収録回が2つ以上必要");
+    await user.selectOptions(screen.getByLabelText("出題する回"), other.id);
+
+    // 学習ホームへ戻る
+    expect(screen.getByRole("button", { name: "演習を開始" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "演習を開始" }));
+    expect(screen.getByText(other.questions[0].text)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "次の問題へ" })).toBeDisabled();
   });
 
   it("サイドバーで試験を切り替えると見出しが変わる", async () => {

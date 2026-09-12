@@ -34,6 +34,18 @@ export const useQuizSession = (questions: Question[]) => {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState("—");
 
+  // 収録回を切り替えたら解答状況を捨てて学習ホームへ戻す。
+  // 描画中に state を直すのは、回が変わった最初の描画で古い解答を見せないため。
+  const [loadedFor, setLoadedFor] = useState(questions);
+  if (loadedFor !== questions) {
+    setLoadedFor(questions);
+    setItems(questions.map((question) => ({ question, attempt: freshAttempt() })));
+    setIndex(0);
+    setScreen("home");
+    setStartedAt(null);
+    setElapsed("—");
+  }
+
   const current = items[index];
   const summary = useMemo(() => summarize(items), [items]);
 

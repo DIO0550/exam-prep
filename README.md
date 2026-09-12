@@ -215,8 +215,13 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 
 ## 問題データ
 
-収録しているのは **応用情報技術者試験 令和3年度 春期 午前 全80問**
-（[`apps/web/src/features/quiz/data/ap-r03-haru-am.ts`](apps/web/src/features/quiz/data/ap-r03-haru-am.ts)）。
+収録しているのは **応用情報技術者試験 午前の8回分（令和3年度 春期〜令和6年度 秋期、各80問・計640問）**。
+1回＝1ファイルで `apps/web/src/features/quiz/data/ap-<元号><年>-<期>-am.ts` に置き、
+[`data/questions.ts`](apps/web/src/features/quiz/data/questions.ts) の `QUESTION_SETS` に並べる。
+画面のヘッダーにある「出題する回」で切り替える（切り替えると解答状況は破棄して学習ホームに戻る）。
+
+IPA が公開しているのは令和3年度以降なので、午前に限れば公開ぶんはひととおり入っている。
+午後と、他の試験区分（基本情報・情報セキュリティマネジメント）は未収録。
 過去問題を網羅したものではなく、画面下部にも収録範囲を出している。
 
 取り込み方は [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md) の 3.1 に従う。
@@ -250,8 +255,10 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 
 ## これから
 
-- 収録する回を増やす（他の年度・他の試験区分）。手順は上の表のとおりで、
-  1 問ずつ原本と突き合わせながら足す
+- 午後問題と、他の試験区分（基本情報・情報セキュリティマネジメント）の収録。
+  手順は上の表のとおりで、1 問ずつ原本と突き合わせながら足す
+- 分野（`field`）は本リポジトリで付けた細分類なので、回をまたぐと粒度がぶれている可能性がある。
+  結果画面の分野別集計を回横断で使うなら、いちど揃え直す必要がある
 - 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）
 - 学習状態の保存先（localStorage か外部か）。`data/progress.ts` のサンプル値もそこで差し替える
 - 学習ホームの数値（累計正答率・連続学習・苦手登録）はまだサンプル値
