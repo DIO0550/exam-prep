@@ -34,17 +34,24 @@ pnpm-workspace.yaml workspace とクールタイムの設定
 `next dev` は `apps/web/AGENTS.md` と `apps/web/CLAUDE.md` を自動生成して毎回書き戻すので、
 追跡している。止めたいときは `next.config.ts` に `agentRules: false` を足す。
 
-## デプロイ（GitHub Pages）
+## CI とデプロイ
 
-`main` への push で [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) が走り、
-static export（`apps/web/out`）を GitHub Pages へ出す。公開先は
-`https://dio0550.github.io/exam-prep/`。手動実行（`workflow_dispatch`）もできる。
+workflow は 2 つに分けてある。見たいものが違い（片方は「壊れていないか」、もう片方は
+「出せたか」）、必要な権限も違うため。
 
-PR でも build まで（install / check / typecheck / test / build / artifact のアップロード）は
-流れる。デプロイ経路が壊れていたらマージ前に気づけるようにするため。実際に出すのは
-`main` への push と手動実行のときだけ。
+| workflow | いつ走るか | やること | 権限 |
+|---|---|---|---|
+| [`ci.yml`](.github/workflows/ci.yml) | PR / `main` への push / 手動 | `pnpm check` / `typecheck` / `test` / `build` | `contents: read` |
+| [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) | `main` への push / 手動 | static export を作って GitHub Pages へ出す | deploy ジョブにだけ `pages: write` と `id-token: write` |
 
-**リポジトリ設定が 1 つだけ要る。** Settings → Pages → Build and deployment → Source を
+公開先は `https://dio0550.github.io/exam-prep/`。
+
+**この 2 つは `main` への push で並行して走る。** デプロイ側はテストの成否を待たないので、
+検査を通らないものを出したくないなら、**ブランチ保護で CI を必須チェックにする**
+（Settings → Branches → `main` → Require status checks to pass → `verify`）。
+main へ直接 push せず PR を通す運用であれば、PR の時点で CI が通っている。
+
+**リポジトリ設定が 1 つ要る。** Settings → Pages → Build and deployment → Source を
 **GitHub Actions** にする。ここが "Deploy from a branch" のままだと deploy ジョブが失敗する。
 
 ### workflow の方針
@@ -58,6 +65,9 @@ PR でも build まで（install / check / typecheck / test / build / artifact �
   **クールタイム（7 日）を満たさないバージョンが載っていれば CI で落ちる**
 - corepack は Node 24 に同梱されているものを使う。Node 25 以降へ上げるときは
   corepack が外れるので、pnpm の入れ方を別途決める必要がある
+- セットアップ（checkout / Node / corepack / キャッシュ / install）は 2 ファイルに
+  同じ内容が並ぶ。まとめるにはローカルの composite action を挟むことになるので、
+  1 ファイルを読めば何が動くか分かる状態を優先した。**片方を直したらもう片方も直す**
 
 ### static export の設定
 

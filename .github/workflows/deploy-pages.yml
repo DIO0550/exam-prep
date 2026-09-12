@@ -1,5 +1,12 @@
 # =============================================================================
-# GitHub Pages へ static export をデプロイする。
+# static export を GitHub Pages へ出す。検査（lint / 型 / テスト）はしない。
+#
+# 検査は ci.yml が持つ。分けてあるのは、見たいものが違い（あちらは「壊れていないか」、
+# こちらは「出せたか」）、必要な権限も違うため。書き込み権限（pages / id-token）が要るのは
+# この workflow の deploy ジョブだけで、ci.yml は contents: read のままでいられる。
+#
+# 注意: main への push では ci.yml と並行して走るので、この workflow 自体は
+# テストの成否を待たない。main を守るのはブランチ保護（CI を必須チェックにする）側の役目。
 #
 # 使う Action は GitHub 公式（actions/*）だけに絞り、すべてコミット SHA で固定する。
 # タグは付け替えられるがコミット SHA は動かないので、「昨日まで動いていた v4 が
@@ -16,8 +23,6 @@ on:
   push:
     branches:
       - main
-  # PR でも build まで流して、デプロイ経路が壊れていないか先に気づけるようにする。
-  pull_request:
   workflow_dispatch:
 
 # 既定は読み取りだけ。書き込みが要るのは deploy ジョブだけなので、そちらに足す。
@@ -70,15 +75,6 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Check
-        run: pnpm check
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Test
-        run: pnpm test
-
       - name: Build
         run: pnpm build
 
@@ -89,8 +85,6 @@ jobs:
 
   deploy:
     needs: build
-    # PR では build までで止める。実際に出すのは main への push と手動実行のときだけ。
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pages: write
