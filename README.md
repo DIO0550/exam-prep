@@ -81,6 +81,12 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 - `npm config set ignore-scripts true` 済み（pnpm 10 以降は依存のライフサイクルスクリプトを
   既定で実行せず、必要なものだけ `onlyBuiltDependencies` で許可する）
 
+## ドキュメント
+
+- [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md) — IPA の過去問題を
+  再利用するときに満たすべき条件（出典表記・コードとデータのライセンス分離・公式と誤認させない等）と、
+  公開前チェックリスト。問題データを入れる前に読む
+
 ## これから
 
 - Next.js 16（App Router / TypeScript / Tailwind）の雛形
