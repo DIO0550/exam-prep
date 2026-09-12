@@ -11,12 +11,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
 
 # iptables / ipset / dnsutils / aggregate は init-firewall.sh が使う。
+# fonts-noto-cjk: ubuntu:24.04 には CJK フォントが無く、ブラウザでの目視確認で
+# 日本語が豆腐(□)になる。
+
 # 開発ユーザー(vscode)には sudo を与えない。与えると firewall を張り替えられてしまい、
 # 許可リストが「自分で外せる制限」になる。特権が要る初期化は entrypoint.sh が root で行う。
 RUN apt-get update \
     && apt-get install -y \
         curl \
         ca-certificates \
+        fonts-noto-cjk \
         gnupg \
         git \
         jq \

@@ -76,7 +76,8 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
   許可先を足すときは同ファイルの `ALLOWED_DOMAINS`
 - ファイアウォールは root の [`entrypoint.sh`](.devcontainer/entrypoint.sh) が適用し、開発ユーザー
   （`vscode`）には sudo を与えない（与えると許可リストを自分で外せてしまうため）
-- ポート 3000 を転送。`next dev` はコンテナの中なので `-H 0.0.0.0` で起動する
+- ポート 4100 を転送。コンテナの中なので `next dev -p 4100 -H 0.0.0.0` で起動する
+  （Next.js は HMR も dev サーバと同じポートを使うので、転送は 1 つでよい）
 - `npm config set ignore-scripts true` 済み（pnpm 10 以降は依存のライフサイクルスクリプトを
   既定で実行せず、必要なものだけ `onlyBuiltDependencies` で許可する）
 

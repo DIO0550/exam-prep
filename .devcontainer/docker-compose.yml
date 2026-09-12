@@ -3,10 +3,17 @@ services:
     build:
       context: ./node
       dockerfile: Dockerfile
+    container_name: exam-prep
+    # Codex CLI の SQLite をコンテナ内の tmpfs へ逃がす（バインドマウント上だと遅い）
+    tmpfs:
+      - /var/tmp/codex-sqlite:size=1g
+    environment:
+      CODEX_SQLITE_HOME: /var/tmp/codex-sqlite
     volumes:
       - ..:/workspace:cached
+    # Next.js の dev サーバ。HMR も同じポートを使うので 1 つでよい。
     ports:
-      - "3000:3000"
+      - "4100:4100"
     # init-firewall.sh が iptables/ipset を操作するために必要な権限
     cap_add:
       - NET_ADMIN

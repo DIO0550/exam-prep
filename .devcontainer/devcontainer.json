@@ -21,6 +21,6 @@
   ],
   "initializeCommand": "bash -lc 'if [ ! -f \"$HOME/.gitconfig-shared\" ]; then if [ -f \"$HOME/.gitconfig\" ]; then cp \"$HOME/.gitconfig\" \"$HOME/.gitconfig-shared\"; else touch \"$HOME/.gitconfig-shared\"; fi; fi'",
   "postCreateCommand": "bash -lc 'if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; fi'",
-  "forwardPorts": [3000],
+  "forwardPorts": [4100],
   "remoteUser": "vscode"
 }
