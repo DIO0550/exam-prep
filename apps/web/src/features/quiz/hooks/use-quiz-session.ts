@@ -3,12 +3,16 @@
 import { useCallback, useMemo, useState } from "react";
 
 import { choiceOrder } from "../choice-order";
+import type { Stroke } from "../notes/note";
+import { EMPTY_NOTE, noteOf } from "../notes/note";
+import { noteStore } from "../notes/store";
 import { attemptOf } from "../progress/record";
 import { progressStore } from "../progress/store";
 import type { Attempt, QuizItem } from "../stats";
 import { formatElapsed, summarize } from "../stats";
 import type { Question } from "../types";
 import { sourceId } from "../types";
+import { useNotes } from "./use-notes";
 import { useProgress } from "./use-progress";
 
 export type Screen = "home" | "quiz" | "explain" | "result" | "review";
@@ -27,8 +31,10 @@ export type ReviewFilter = (typeof REVIEW_FILTERS)[number];
  */
 export const useQuizSession = (questions: Question[]) => {
   const record = useProgress();
+  const notes = useNotes();
   const [screen, setScreen] = useState<Screen>("home");
   const [feedback, setFeedbackMode] = useState<FeedbackMode>("inline");
+  const [notesOpen, setNotesOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [filter, setFilter] = useState<ReviewFilter>("すべて");
   const [examIndex, setExamIndex] = useState(0);
@@ -74,6 +80,36 @@ export const useQuizSession = (questions: Question[]) => {
         : [],
     [current, record.shuffle, record.shuffleSeed],
   );
+
+  // 今の問題のメモ。書き込み先も問題ごとなので、ここで問題 ID を閉じ込めておく。
+  const questionId = current ? sourceId(current.question.source) : null;
+  const note = questionId ? noteOf(notes, questionId) : EMPTY_NOTE;
+
+  const toggleNotes = useCallback(() => setNotesOpen((open) => !open), []);
+  /** メモが 1 つでもあるか。学習ホームの「学習記録を消す」を出すかの判断に使う。 */
+  const hasNotes = Object.keys(notes.notes).length > 0;
+
+  const setNoteText = useCallback(
+    (text: string) => {
+      if (questionId) noteStore.setText(questionId, text);
+    },
+    [questionId],
+  );
+
+  const addStroke = useCallback(
+    (stroke: Stroke) => {
+      if (questionId) noteStore.addStroke(questionId, stroke);
+    },
+    [questionId],
+  );
+
+  const undoStroke = useCallback(() => {
+    if (questionId) noteStore.undoStroke(questionId);
+  }, [questionId]);
+
+  const clearSketch = useCallback(() => {
+    if (questionId) noteStore.clearSketch(questionId);
+  }, [questionId]);
 
   /** 今の問題の解答状況だけを差し替える。 */
   const patchCurrent = useCallback(
@@ -180,6 +216,14 @@ export const useQuizSession = (questions: Question[]) => {
     shuffle: record.shuffle,
     setShuffle: progressStore.setShuffle,
     order,
+    note,
+    hasNotes,
+    notesOpen,
+    toggleNotes,
+    setNoteText,
+    addStroke,
+    undoStroke,
+    clearSketch,
     index,
     items,
     current,

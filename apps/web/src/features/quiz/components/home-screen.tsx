@@ -18,6 +18,8 @@ type HomeScreenProps = {
   /** この回の解答済み数。0 なら「開始」、途中なら「再開」を出す。 */
   answered: number;
   summary: ProgressSummary;
+  /** メモが 1 つでもあるか。解答が無くてもメモだけは消せるようにする。 */
+  hasNotes: boolean;
   onStart: () => void;
   onRestart: () => void;
   onGoReview: () => void;
@@ -29,6 +31,7 @@ export const HomeScreen = ({
   questionCount,
   answered,
   summary,
+  hasNotes,
   onStart,
   onRestart,
   onGoReview,
@@ -119,7 +122,7 @@ export const HomeScreen = ({
         )}
       </section>
 
-      {summary.hasRecord && (
+      {(summary.hasRecord || hasNotes) && (
         <div className="flex justify-end">
           <ClearRecordButton onClear={onClearRecord} />
         </div>

@@ -29,7 +29,7 @@ export const ClearRecordButton = ({ onClear }: ClearRecordButtonProps) => {
 
   return (
     <span className="flex items-center gap-2.5 text-[11.5px] text-muted-soft">
-      このブラウザに保存した記録をすべて消します。
+      このブラウザに保存した記録とメモをすべて消します。
       <button
         type="button"
         onClick={() => {

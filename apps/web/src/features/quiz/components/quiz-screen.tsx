@@ -7,6 +7,7 @@ import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
 import { KeyPointList } from "./key-point-list";
 import { MarkButtons } from "./mark-buttons";
+import { NoteButton } from "./note-button";
 import { QuestionDots } from "./question-dots";
 import { StemBlock } from "./question-figure";
 
@@ -25,6 +26,11 @@ type QuizScreenProps = {
   onToggleExclude: (index: number) => void;
   onToggleFlag: () => void;
   onToggleWeak: () => void;
+  /** メモの枠が開いているか。 */
+  notesOpen: boolean;
+  /** この問題にメモが書いてあるか。 */
+  written: boolean;
+  onToggleNotes: () => void;
   onPrev: () => void;
   onNext: () => void;
   onGoTo: (index: number) => void;
@@ -41,6 +47,9 @@ export const QuizScreen = ({
   onToggleExclude,
   onToggleFlag,
   onToggleWeak,
+  notesOpen,
+  written,
+  onToggleNotes,
   onPrev,
   onNext,
   onGoTo,
@@ -66,13 +75,16 @@ export const QuizScreen = ({
               {shortSource(question.source)}
             </span>
           </div>
-          <MarkButtons
-            size="sm"
-            flagged={attempt.flagged}
-            weak={attempt.weak}
-            onToggleFlag={onToggleFlag}
-            onToggleWeak={onToggleWeak}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <MarkButtons
+              size="sm"
+              flagged={attempt.flagged}
+              weak={attempt.weak}
+              onToggleFlag={onToggleFlag}
+              onToggleWeak={onToggleWeak}
+            />
+            <NoteButton size="sm" open={notesOpen} written={written} onToggle={onToggleNotes} />
+          </div>
         </div>
 
         <div className="px-[26px] pt-[30px] pb-1.5">

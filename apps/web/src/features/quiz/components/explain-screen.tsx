@@ -6,6 +6,7 @@ import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
 import { KeyPointList } from "./key-point-list";
 import { MarkButtons } from "./mark-buttons";
+import { NoteButton } from "./note-button";
 import { StemBlock } from "./question-figure";
 
 type ExplainScreenProps = {
@@ -16,6 +17,11 @@ type ExplainScreenProps = {
   isLast: boolean;
   onToggleFlag: () => void;
   onToggleWeak: () => void;
+  /** メモの枠が開いているか。 */
+  notesOpen: boolean;
+  /** この問題にメモが書いてあるか。 */
+  written: boolean;
+  onToggleNotes: () => void;
   onNext: () => void;
 };
 
@@ -27,6 +33,9 @@ export const ExplainScreen = ({
   isLast,
   onToggleFlag,
   onToggleWeak,
+  notesOpen,
+  written,
+  onToggleNotes,
   onNext,
 }: ExplainScreenProps) => {
   const { question, attempt } = item;
@@ -99,13 +108,16 @@ export const ExplainScreen = ({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <MarkButtons
-          size="md"
-          flagged={attempt.flagged}
-          weak={attempt.weak}
-          onToggleFlag={onToggleFlag}
-          onToggleWeak={onToggleWeak}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <MarkButtons
+            size="md"
+            flagged={attempt.flagged}
+            weak={attempt.weak}
+            onToggleFlag={onToggleFlag}
+            onToggleWeak={onToggleWeak}
+          />
+          <NoteButton size="md" open={notesOpen} written={written} onToggle={onToggleNotes} />
+        </div>
         <button
           type="button"
           onClick={onNext}

@@ -1,8 +1,9 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { QUESTION_SETS } from "../data/questions";
+import { NOTES_KEY } from "../notes/storage";
 import { dayKey, RECORD_VERSION } from "../progress/record";
 import { STORAGE_KEY } from "../progress/storage";
 import { choiceKey, formatSource, sourceId } from "../types";
@@ -41,6 +42,31 @@ const startQuiz = async (user: ReturnType<typeof userEvent.setup>) => {
 const selectSet = async (user: ReturnType<typeof userEvent.setup>, label: string) => {
   await user.click(screen.getByRole("button", { name: /^出題する回/ }));
   await user.click(screen.getByRole("option", { name: label }));
+};
+
+/** メモを開く（開いていれば閉じる）。 */
+const toggleNotes = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(screen.getByRole("button", { name: "メモ" }));
+};
+
+/**
+ * 手書きの枠。jsdom は要素の大きさを持たないので、表示されているつもりの大きさを教える
+ * （枠の幅が 0 のままだと、どこを触っても座標に直せない）。
+ */
+const sketchPad = () => {
+  const pad = screen.getByLabelText("メモ（手書き）");
+  vi.spyOn(pad, "getBoundingClientRect").mockReturnValue({
+    left: 0,
+    top: 0,
+    width: 400,
+    height: 300,
+    right: 400,
+    bottom: 300,
+    x: 0,
+    y: 0,
+    toJSON: () => ({}),
+  } as DOMRect);
+  return pad;
 };
 
 /** 学習ホームの記録カード（累計正答率・連続学習・苦手登録）。値と単位は別の要素で出る。 */
@@ -235,6 +261,76 @@ describe("QuizApp", () => {
       "aria-pressed",
       "true",
     );
+  });
+
+  it("メモを開くと、自由入力と手書きの枠が出る", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    expect(screen.queryByLabelText("メモ（文章）")).not.toBeInTheDocument();
+
+    await toggleNotes(user);
+
+    expect(screen.getByRole("complementary", { name: "メモ" })).toBeInTheDocument();
+    expect(screen.getByLabelText("メモ（文章）")).toBeInTheDocument();
+    expect(screen.getByLabelText("メモ（手書き）")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "メモを閉じる" }));
+
+    expect(screen.queryByLabelText("メモ（文章）")).not.toBeInTheDocument();
+  });
+
+  it("書いたメモは問題ごとに保存され、開き直しても残る", async () => {
+    const user = userEvent.setup();
+    const view = await startQuiz(user);
+    await toggleNotes(user);
+    await user.type(screen.getByLabelText("メモ（文章）"), "桁落ちに注意");
+
+    // 次の問題へ移るとメモも切り替わる（前の問題の書き込みは出てこない）
+    await user.click(choiceButton(FIRST.answer));
+    await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+    expect(screen.getByLabelText("メモ（文章）")).toHaveValue("");
+
+    // 開き直しても、1 問目のメモは残っている
+    view.unmount();
+    render(<QuizApp />);
+    await user.click(screen.getByRole("button", { name: "演習を再開" }));
+    await user.click(screen.getByRole("button", { name: /^1$/ }));
+    await toggleNotes(user);
+
+    expect(screen.getByLabelText("メモ（文章）")).toHaveValue("桁落ちに注意");
+  });
+
+  it("手書きはドラッグで足され、一つ戻す・全部消すで減らせる", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await toggleNotes(user);
+    expect(screen.getByRole("button", { name: "全部消す" })).toBeDisabled();
+
+    const pad = sketchPad();
+    fireEvent.pointerDown(pad, { clientX: 40, clientY: 30 });
+    fireEvent.pointerMove(pad, { clientX: 200, clientY: 150 });
+    fireEvent.pointerUp(pad, { clientX: 200, clientY: 150 });
+
+    expect(screen.getByRole("button", { name: "全部消す" })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "一つ戻す" }));
+
+    expect(screen.getByRole("button", { name: "全部消す" })).toBeDisabled();
+  });
+
+  it("学習記録を消すとメモも消える", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await toggleNotes(user);
+    await user.type(screen.getByLabelText("メモ（文章）"), "あとで見る");
+    expect(window.localStorage.getItem(NOTES_KEY)).not.toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "学習ホーム" }));
+    await user.click(screen.getByRole("button", { name: "学習記録を消す" }));
+    await user.click(screen.getByRole("button", { name: "消す" }));
+
+    expect(window.localStorage.getItem(NOTES_KEY)).toBeNull();
   });
 
   it("見直し画面の「不正解のみ」で間違えた問題だけが残る", async () => {
