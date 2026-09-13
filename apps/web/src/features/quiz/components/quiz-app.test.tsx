@@ -56,6 +56,24 @@ describe("QuizApp", () => {
     expect(next).toBeEnabled();
   });
 
+  it("次の問題へ進むと、読む位置が先頭に戻る", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    // 長い問題を下まで読んだ状態を作る（右側の枠と、枠が積まれる狭い幅でのページの両方）
+    const content = screen.getByRole("main").parentElement;
+    if (!content) throw new Error("右側の枠が無い");
+    content.scrollTop = 400;
+    document.documentElement.scrollTop = 400;
+
+    await user.click(choiceButton(FIRST.answer));
+    await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+
+    expect(screen.getByRole("heading", { name: "問 02" })).toBeInTheDocument();
+    expect(content.scrollTop).toBe(0);
+    expect(document.documentElement.scrollTop).toBe(0);
+  });
+
   it("正解すると同じ画面に解説と出典が出る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
@@ -243,6 +261,14 @@ describe("QuizApp", () => {
     expect(statCard("苦手登録").getByText("0")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "演習を開始" })).toBeInTheDocument();
     expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
+  });
+
+  it("サイドバーと右側は、幅があるときそれぞれスクロールする", () => {
+    render(<QuizApp />);
+
+    const content = screen.getByRole("main").parentElement;
+    expect(screen.getByRole("complementary")).toHaveClass("md:overflow-y-auto");
+    expect(content).toHaveClass("md:overflow-y-auto");
   });
 
   it("サイドバーには収録済みの試験だけが並ぶ", () => {
