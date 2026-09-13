@@ -29,7 +29,7 @@ export const ChoiceNotes = ({ question, picked, order, variant }: ChoiceNotesPro
   const shuffled = isShuffled(order);
 
   return (
-    <div className="mb-[18px] flex max-w-[82ch] flex-col gap-3.5">
+    <div className="mb-[18px] flex max-w-[118ch] flex-col gap-3.5">
       {order.map((index, position) => {
         const choice = question.choices[index];
         if (!choice) return null;

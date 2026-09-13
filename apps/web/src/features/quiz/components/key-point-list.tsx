@@ -9,7 +9,7 @@ type KeyPointListProps = {
 
 export const KeyPointList = ({ points, tone }: KeyPointListProps) => {
   return (
-    <div className="flex max-w-[78ch] flex-col gap-2">
+    <div className="flex max-w-[116ch] flex-col gap-2">
       {points.map((point) => (
         <div key={point} className="flex items-start gap-2.5">
           <span

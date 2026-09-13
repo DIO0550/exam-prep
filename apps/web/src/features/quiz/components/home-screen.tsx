@@ -49,7 +49,7 @@ export const HomeScreen = ({
                 ? "続きから再開する"
                 : "本日の演習を始める"}
           </h2>
-          <p className="max-w-[46ch] text-pretty text-[13.5px] text-muted-soft leading-[1.9]">
+          <p className="max-w-[100ch] text-pretty text-[13.5px] text-muted-soft leading-[1.9]">
             {setLabel}・全{questionCount}
             問・4択単一選択。1問あたりの目安は90秒です。解答すると即座に正誤と解説が表示されます。
             {answered > 0 && `（${questionCount}問中 ${answered}問 解答済み）`}

@@ -76,7 +76,7 @@ export const QuizScreen = ({
         </div>
 
         <div className="px-[26px] pt-[30px] pb-1.5">
-          <p className="max-w-[62ch] text-pretty font-medium text-[17px] leading-[1.9] tracking-[0.01em]">
+          <p className="max-w-[92ch] text-pretty font-medium text-[17px] leading-[1.9] tracking-[0.01em]">
             {question.text}
           </p>
           {question.stem && (
@@ -109,7 +109,7 @@ export const QuizScreen = ({
                   ポイント
                 </h3>
                 {question.explain && (
-                  <p className="mb-3.5 max-w-[74ch] text-pretty text-[14px] text-ink-soft leading-[1.95]">
+                  <p className="mb-3.5 max-w-[110ch] text-pretty text-[14px] text-ink-soft leading-[1.95]">
                     {question.explain}
                   </p>
                 )}
@@ -118,7 +118,7 @@ export const QuizScreen = ({
             )}
 
             {question.figure && (
-              <div className="mb-[22px] max-w-[820px] rounded-xl border border-line bg-surface px-5 pt-5 pb-[18px]">
+              <div className="mb-[22px] max-w-[1000px] rounded-xl border border-line bg-surface px-5 pt-5 pb-[18px]">
                 <FigureBlock figure={question.figure} variant="inline" />
               </div>
             )}

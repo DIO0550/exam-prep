@@ -46,7 +46,7 @@ export const ChoiceList = ({ item, order, onPick, onToggleExclude }: ChoiceListP
   const { question, attempt } = item;
 
   return (
-    <div className="flex max-w-[860px] flex-col gap-[11px] px-[26px] pt-[22px] pb-[26px]">
+    <div className="flex max-w-[1000px] flex-col gap-[11px] px-[26px] pt-[22px] pb-[26px]">
       {order.map((index, position) => {
         const choice = question.choices[index];
         if (!choice) return null;

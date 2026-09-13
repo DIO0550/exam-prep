@@ -57,7 +57,7 @@ export const ExplainScreen = ({
           <div className="mb-2.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
             問 {String(index + 1).padStart(2, "0")}　{question.field}
           </div>
-          <p className="max-w-[62ch] text-pretty font-medium text-[15px] leading-[1.9]">
+          <p className="max-w-[104ch] text-pretty font-medium text-[15px] leading-[1.9]">
             {question.text}
           </p>
           {question.stem && (
@@ -73,7 +73,7 @@ export const ExplainScreen = ({
               ポイント
             </h3>
             {question.explain && (
-              <p className="mb-4 max-w-[74ch] text-pretty text-[14.5px] text-ink-soft leading-[1.95]">
+              <p className="mb-4 max-w-[110ch] text-pretty text-[14.5px] text-ink-soft leading-[1.95]">
                 {question.explain}
               </p>
             )}
