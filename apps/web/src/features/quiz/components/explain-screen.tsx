@@ -1,3 +1,4 @@
+import { isShuffled, positionOf, SHUFFLED_NOTE } from "../choice-order";
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
 import { choiceKey, formatSource } from "../types";
@@ -9,6 +10,8 @@ import { StemBlock } from "./question-figure";
 
 type ExplainScreenProps = {
   item: QuizItem;
+  /** 選択肢を出す順。値は原本での添字。 */
+  order: number[];
   index: number;
   isLast: boolean;
   onToggleFlag: () => void;
@@ -19,6 +22,7 @@ type ExplainScreenProps = {
 /** 解説表示を「別画面」にしているときに、解答後へ挟まる画面。 */
 export const ExplainScreen = ({
   item,
+  order,
   index,
   isLast,
   onToggleFlag,
@@ -27,6 +31,9 @@ export const ExplainScreen = ({
 }: ExplainScreenProps) => {
   const { question, attempt } = item;
   const correct = isCorrect(item);
+  const shuffled = isShuffled(order);
+  const pickedLabel =
+    attempt.picked === null ? "未解答" : choiceKey(positionOf(order, attempt.picked));
 
   return (
     <div className="flex animate-rise-in flex-col gap-4">
@@ -41,8 +48,7 @@ export const ExplainScreen = ({
           {correct ? "正解" : "不正解"}
         </h2>
         <span className="text-[13.5px] text-ink-soft">
-          あなたの解答：{attempt.picked === null ? "未解答" : choiceKey(attempt.picked)} ／ 正解：
-          {choiceKey(question.answer)}
+          あなたの解答：{pickedLabel} ／ 正解：{choiceKey(positionOf(order, question.answer))}
         </span>
       </div>
 
@@ -85,8 +91,10 @@ export const ExplainScreen = ({
           <h3 className="mb-4 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
             それぞれの選択肢の意味
           </h3>
-          <ChoiceNotes question={question} picked={attempt.picked} variant="page" />
-          <div className="text-[11.5px] text-muted-soft">出典：{formatSource(question.source)}</div>
+          <ChoiceNotes question={question} picked={attempt.picked} order={order} variant="page" />
+          <div className="text-[11.5px] text-muted-soft">
+            出典：{formatSource(question.source, shuffled ? SHUFFLED_NOTE : undefined)}
+          </div>
         </div>
       </div>
 

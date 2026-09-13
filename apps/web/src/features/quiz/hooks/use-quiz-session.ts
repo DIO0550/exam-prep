@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 
+import { choiceOrder } from "../choice-order";
 import { attemptOf } from "../progress/record";
 import { progressStore } from "../progress/store";
 import type { Attempt, QuizItem } from "../stats";
@@ -58,6 +59,21 @@ export const useQuizSession = (questions: Question[]) => {
 
   const current = items[index];
   const summary = useMemo(() => summarize(items), [items]);
+
+  // 今の問題の選択肢をどの順で出すか。値は原本での添字で、記録した解答はこの並びに影響されない。
+  // keepChoiceOrder が付いた問題だけは、設定にかかわらず原本の並びのまま出す。
+  const order = useMemo(
+    () =>
+      current
+        ? choiceOrder(
+            current.question.choices.length,
+            sourceId(current.question.source),
+            record.shuffleSeed,
+            record.shuffle && !current.question.keepChoiceOrder,
+          )
+        : [],
+    [current, record.shuffle, record.shuffleSeed],
+  );
 
   /** 今の問題の解答状況だけを差し替える。 */
   const patchCurrent = useCallback(
@@ -161,6 +177,9 @@ export const useQuizSession = (questions: Question[]) => {
     setScreen,
     feedback,
     setFeedback,
+    shuffle: record.shuffle,
+    setShuffle: progressStore.setShuffle,
+    order,
     index,
     items,
     current,

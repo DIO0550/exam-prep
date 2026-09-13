@@ -1,3 +1,4 @@
+import { isShuffled, positionOf, SHUFFLED_NOTE } from "../choice-order";
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
 import { choiceKey, formatSource, shortSource } from "../types";
@@ -13,6 +14,8 @@ type QuizScreenProps = {
   /** 演習全体。下部の問番号ボタンに使う。 */
   items: QuizItem[];
   item: QuizItem;
+  /** 選択肢を出す順。値は原本での添字。 */
+  order: number[];
   /** 通し番号（0 始まり）。ラベルの「問 03」に使う。 */
   index: number;
   isLast: boolean;
@@ -30,6 +33,7 @@ type QuizScreenProps = {
 export const QuizScreen = ({
   items,
   item,
+  order,
   index,
   isLast,
   showFeedback,
@@ -44,6 +48,8 @@ export const QuizScreen = ({
   const { question, attempt } = item;
   const correct = isCorrect(item);
   const tone = correct ? "ok" : "ng";
+  // 並べ替えたときは、出典にもその旨を併記する（改変は理由を問わず明記する。docs 2.3）。
+  const shuffled = isShuffled(order);
 
   return (
     <div className="flex animate-rise-in flex-col gap-4">
@@ -80,7 +86,7 @@ export const QuizScreen = ({
           )}
         </div>
 
-        <ChoiceList item={item} onPick={onPick} onToggleExclude={onToggleExclude} />
+        <ChoiceList item={item} order={order} onPick={onPick} onToggleExclude={onToggleExclude} />
 
         {attempt.revealed && showFeedback && (
           <div
@@ -93,7 +99,7 @@ export const QuizScreen = ({
                 {correct ? "正解" : "不正解"}
               </span>
               <span className="text-[13px] text-muted-soft">
-                正解：{choiceKey(question.answer)}
+                正解：{choiceKey(positionOf(order, question.answer))}
               </span>
             </div>
 
@@ -121,9 +127,14 @@ export const QuizScreen = ({
               <h3 className="mb-3.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
                 それぞれの選択肢の意味
               </h3>
-              <ChoiceNotes question={question} picked={attempt.picked} variant="inline" />
+              <ChoiceNotes
+                question={question}
+                picked={attempt.picked}
+                order={order}
+                variant="inline"
+              />
               <div className="text-[11.5px] text-muted-soft">
-                出典：{formatSource(question.source)}
+                出典：{formatSource(question.source, shuffled ? SHUFFLED_NOTE : undefined)}
               </div>
             </div>
           </div>

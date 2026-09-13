@@ -14,25 +14,77 @@ const NAV_ITEMS: NavItem[] = [
   { label: "問題一覧・見直し", target: "review", actives: ["review"] },
 ];
 
-const FEEDBACK_OPTIONS: { label: string; value: FeedbackMode }[] = [
+type ToggleOption<T> = { label: string; value: T };
+
+const FEEDBACK_OPTIONS: ToggleOption<FeedbackMode>[] = [
   { label: "同画面", value: "inline" },
   { label: "別画面", value: "page" },
 ];
 
+/** 原本（IPA の PDF）の並びのまま出すか、並べ替えて出すか。 */
+const SHUFFLE_OPTIONS: ToggleOption<boolean>[] = [
+  { label: "原本順", value: false },
+  { label: "シャッフル", value: true },
+];
+
+type ToggleProps<T> = {
+  label: string;
+  options: ToggleOption<T>[];
+  value: T;
+  onChange: (value: T) => void;
+};
+
+/** ヘッダー右側の 2 択。押しているほうが白く浮く。 */
+const Toggle = <T extends string | boolean>({
+  label,
+  options,
+  value,
+  onChange,
+}: ToggleProps<T>) => (
+  <div className="flex items-center gap-[7px]">
+    <span className="whitespace-nowrap text-[11px] text-muted">{label}</span>
+    <div className="flex rounded-[7px] bg-chip p-0.5">
+      {options.map((option) => {
+        const active = value === option.value;
+        return (
+          <button
+            key={option.label}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onChange(option.value)}
+            className={`cursor-pointer whitespace-nowrap rounded-[5px] px-2.5 py-[5px] font-bold text-[11px] ${
+              active
+                ? "bg-surface text-accent shadow-[0_1px_2px_rgba(22,24,29,0.12)]"
+                : "text-muted"
+            }`}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
+
 type SiteHeaderProps = {
   screen: Screen;
   feedback: FeedbackMode;
+  /** 選択肢をシャッフルして出しているか。 */
+  shuffle: boolean;
   streakLabel: string;
   onNavigate: (screen: Screen) => void;
   onFeedbackChange: (mode: FeedbackMode) => void;
+  onShuffleChange: (shuffle: boolean) => void;
 };
 
 export const SiteHeader = ({
   screen,
   feedback,
+  shuffle,
   streakLabel,
   onNavigate,
   onFeedbackChange,
+  onShuffleChange,
 }: SiteHeaderProps) => {
   return (
     <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-4 border-line border-b bg-surface px-6">
@@ -65,30 +117,19 @@ export const SiteHeader = ({
         </nav>
       </div>
 
-      <div className="flex items-center gap-3.5 py-2.5">
-        <div className="flex items-center gap-[7px]">
-          <span className="text-[11px] text-muted">解説表示</span>
-          <div className="flex rounded-[7px] bg-chip p-0.5">
-            {FEEDBACK_OPTIONS.map((option) => {
-              const active = feedback === option.value;
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => onFeedbackChange(option.value)}
-                  className={`cursor-pointer rounded-[5px] px-2.5 py-[5px] font-bold text-[11px] ${
-                    active
-                      ? "bg-surface text-accent shadow-[0_1px_2px_rgba(22,24,29,0.12)]"
-                      : "text-muted"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 py-2.5">
+        <Toggle
+          label="選択肢"
+          options={SHUFFLE_OPTIONS}
+          value={shuffle}
+          onChange={onShuffleChange}
+        />
+        <Toggle
+          label="解説表示"
+          options={FEEDBACK_OPTIONS}
+          value={feedback}
+          onChange={onFeedbackChange}
+        />
         <span className="h-[18px] w-px bg-edge" />
         <span className="text-[12px] text-muted">学習 {streakLabel}</span>
       </div>

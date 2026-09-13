@@ -4,6 +4,8 @@ import { OriginalFigure } from "./question-figure";
 
 type ChoiceListProps = {
   item: QuizItem;
+  /** 選択肢を出す順。値は原本での添字で、押したときもその添字で返す。 */
+  order: number[];
   onPick: (index: number) => void;
   onToggleExclude: (index: number) => void;
 };
@@ -40,19 +42,21 @@ const choiceStyle = ({ question, attempt }: QuizItem, index: number) => {
   return { box: "border-edge bg-surface", key: "bg-chip text-muted-soft", mark: "", markColor: "" };
 };
 
-export const ChoiceList = ({ item, onPick, onToggleExclude }: ChoiceListProps) => {
+export const ChoiceList = ({ item, order, onPick, onToggleExclude }: ChoiceListProps) => {
   const { question, attempt } = item;
 
   return (
     <div className="flex max-w-[860px] flex-col gap-[11px] px-[26px] pt-[22px] pb-[26px]">
-      {question.choices.map((choice, index) => {
+      {order.map((index, position) => {
+        const choice = question.choices[index];
+        if (!choice) return null;
         const style = choiceStyle(item, index);
         const crossedOut = attempt.excluded.includes(index);
         const dimmed = crossedOut && !attempt.revealed;
-        const key = choiceKey(index);
+        // ラベルは並べた順に振る。原本での記号は解説側（ChoiceNotes）で併記する。
+        const key = choiceKey(position);
 
         return (
-          // biome-ignore lint/suspicious/noArrayIndexKey: 選択肢は問題ごとに固定長で並べ替えもしない
           <div key={index} className="flex items-stretch gap-2">
             <button
               type="button"

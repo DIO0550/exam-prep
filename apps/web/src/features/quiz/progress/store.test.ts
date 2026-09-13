@@ -60,6 +60,20 @@ describe("progressStore", () => {
     expect(loadRecord().setId).toBe("ap-r06-haru-am");
   });
 
+  it("選択肢をシャッフルするかを覚える", () => {
+    progressStore.setShuffle(true);
+
+    expect(loadRecord().shuffle).toBe(true);
+  });
+
+  it("解き直すと並びの種が進む", () => {
+    progressStore.answer(QUESTION, 2, true);
+
+    progressStore.restart([QUESTION]);
+
+    expect(loadRecord().shuffleSeed).toBe(1);
+  });
+
   it("別タブの更新を取り込んで購読側に知らせる", () => {
     const listener = vi.fn();
     const unsubscribe = progressStore.subscribe(listener);

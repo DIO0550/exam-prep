@@ -11,10 +11,25 @@ import { QuizApp } from "./quiz-app";
 const FIRST_SET = QUESTION_SETS[0];
 const QUESTIONS = FIRST_SET.questions;
 const FIRST = QUESTIONS[0];
+const ANSWER_TEXT = FIRST.choices[FIRST.answer]?.text ?? "";
 
 /** 選択肢ボタンは読み上げ名がキー（ア〜エ）で始まる。除外ボタンは「選択肢〜を除外」。 */
 const choiceButton = (index: number) =>
   screen.getByRole("button", { name: new RegExp(`^${choiceKey(index)}`) });
+
+/** 今出ている選択肢ボタンを、画面に並んでいる順で返す。 */
+const choiceButtons = () => screen.getAllByRole("button", { name: /^[アイウエ]/ });
+
+/** 選択肢の中身だけを並び順に取り出す（先頭のラベルは落とす）。 */
+const choiceTexts = () =>
+  choiceButtons().map((button) => (button.textContent ?? "").replace(/^[アイウエ]/, ""));
+
+/** 中身で選択肢ボタンを引く。並べ替えるとラベルが変わるので、こちらで引く。 */
+const choiceButtonOf = (text: string) => {
+  const button = choiceButtons().find((candidate) => candidate.textContent?.includes(text));
+  if (!button) throw new Error(`「${text}」の選択肢が無い`);
+  return button;
+};
 
 const startQuiz = async (user: ReturnType<typeof userEvent.setup>) => {
   const view = render(<QuizApp />);
@@ -143,6 +158,83 @@ describe("QuizApp", () => {
 
     expect(exclude).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText(FIRST.choices[0]?.text ?? "")).toHaveClass("line-through");
+  });
+
+  it("選択肢をシャッフルすると並びが変わり、正誤は選んだ中身で決まる", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    const original = choiceTexts();
+
+    await user.click(screen.getByRole("button", { name: "シャッフル" }));
+
+    const shuffled = choiceTexts();
+    expect(shuffled).not.toEqual(original);
+    expect([...shuffled].sort()).toEqual([...original].sort());
+
+    const position = shuffled.findIndex((text) => text.includes(ANSWER_TEXT));
+    await user.click(choiceButtonOf(ANSWER_TEXT));
+
+    // 「正解：ウ」のラベルも、原本の記号ではなく並べ替えた後の位置で出る
+    expect(screen.getByText(`正解：${choiceKey(position)}`)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "次の問題へ" })).toBeEnabled();
+  });
+
+  it("シャッフル中は、出典に並べ替えた旨が出て、解説に原本の記号も併記される", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await user.click(screen.getByRole("button", { name: "シャッフル" }));
+
+    await user.click(choiceButtonOf(ANSWER_TEXT));
+
+    expect(
+      screen.getByText(`出典：${formatSource(FIRST.source, "選択肢の順序を入れ替えて表示")}`),
+    ).toBeInTheDocument();
+    expect(screen.getByText(`原本 ${choiceKey(FIRST.answer)}`)).toBeInTheDocument();
+  });
+
+  it("解答したあとに切り替えても、正解と自分の解答は同じ選択肢に付く", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await user.click(choiceButton(FIRST.answer));
+
+    await user.click(screen.getByRole("button", { name: "シャッフル" }));
+
+    expect(choiceButtonOf(ANSWER_TEXT).textContent).toContain("正解");
+    await user.click(screen.getByRole("button", { name: "原本順" }));
+    expect(choiceButtonOf(ANSWER_TEXT).textContent).toContain("正解");
+  });
+
+  it("原本の図が選択肢の記号を指す問題は、シャッフル中でも原本の並びのまま出す", async () => {
+    const set = QUESTION_SETS.find((candidate) =>
+      candidate.questions.some((question) => question.keepChoiceOrder),
+    );
+    if (!set) throw new Error("並べ替えを止めている問題が無い");
+    const target = set.questions.findIndex((question) => question.keepChoiceOrder);
+    const question = set.questions[target];
+    if (!question) throw new Error("問題が取れない");
+
+    const user = userEvent.setup();
+    render(<QuizApp />);
+    await user.click(screen.getByRole("button", { name: "シャッフル" }));
+    await selectSet(user, set.label);
+    await user.click(screen.getByRole("button", { name: /^演習を(開始|再開)/ }));
+    await user.click(screen.getByRole("button", { name: new RegExp(`^${target + 1}$`) }));
+
+    expect(choiceTexts()).toEqual(question.choices.map((choice) => choice.text));
+  });
+
+  it("シャッフルの設定は保存され、開き直しても残る", async () => {
+    const user = userEvent.setup();
+    const view = render(<QuizApp />);
+    await user.click(screen.getByRole("button", { name: "シャッフル" }));
+
+    view.unmount();
+    render(<QuizApp />);
+
+    expect(screen.getByRole("button", { name: "シャッフル" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 
   it("見直し画面の「不正解のみ」で間違えた問題だけが残る", async () => {

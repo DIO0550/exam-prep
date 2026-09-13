@@ -1,6 +1,14 @@
 import type { Attempt } from "../stats";
 import type { ProgressRecord } from "./record";
-import { attemptOf, EMPTY_RECORD, withAnswer, withAttempt, withRestart, withSetId } from "./record";
+import {
+  attemptOf,
+  EMPTY_RECORD,
+  withAnswer,
+  withAttempt,
+  withRestart,
+  withSetId,
+  withShuffle,
+} from "./record";
 import { clearRecord, loadRecord, STORAGE_KEY, saveRecord } from "./storage";
 
 /**
@@ -61,6 +69,12 @@ export const progressStore = {
   selectSet: (setId: string): void => {
     if (snapshot().setId === setId) return;
     update(withSetId(snapshot(), setId));
+  },
+
+  /** 選択肢をシャッフルして出すかを覚える。 */
+  setShuffle: (shuffle: boolean): void => {
+    if (snapshot().shuffle === shuffle) return;
+    update(withShuffle(snapshot(), shuffle));
   },
 
   /** 解答状況の一部を差し替える（フラグ・苦手登録・選択肢の消し込み）。 */

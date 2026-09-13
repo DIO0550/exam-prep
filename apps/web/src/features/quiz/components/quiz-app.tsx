@@ -42,9 +42,11 @@ export const QuizApp = () => {
       <SiteHeader
         screen={session.screen}
         feedback={session.feedback}
+        shuffle={session.shuffle}
         streakLabel={streakLabel(progress.streak)}
         onNavigate={session.setScreen}
         onFeedbackChange={session.setFeedback}
+        onShuffleChange={session.setShuffle}
       />
 
       <div className="flex flex-1 flex-col md:min-h-0 md:flex-row">
@@ -109,6 +111,7 @@ export const QuizApp = () => {
                 <QuizScreen
                   items={session.items}
                   item={session.current}
+                  order={session.order}
                   index={session.index}
                   isLast={session.isLast}
                   showFeedback={session.feedback === "inline"}
@@ -125,6 +128,7 @@ export const QuizApp = () => {
               {session.screen === "explain" && session.current && (
                 <ExplainScreen
                   item={session.current}
+                  order={session.order}
                   index={session.index}
                   isLast={session.isLast}
                   onToggleFlag={session.toggleFlag}
