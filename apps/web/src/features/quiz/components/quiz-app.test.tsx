@@ -162,11 +162,13 @@ describe("QuizApp", () => {
     expect(screen.getByRole("button", { name: "次の問題へ" })).toBeDisabled();
   });
 
-  it("収録しているのは応用情報だけなので、試験を選ぶメニューは出さない", () => {
+  it("サイドバーには収録済みの試験だけが並ぶ", () => {
     render(<QuizApp />);
 
+    const sidebar = within(screen.getByRole("complementary"));
+    expect(sidebar.getByRole("button", { name: /応用情報技術者試験/ })).toBeInTheDocument();
+    // 問題を収録していない区分は載せない（押しても中身が無い項目にしないため）
+    expect(sidebar.queryByRole("button", { name: /基本情報技術者試験/ })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("応用情報技術者試験");
-    expect(screen.queryByText(/基本情報技術者試験/)).not.toBeInTheDocument();
-    expect(screen.queryByRole("complementary")).not.toBeInTheDocument();
   });
 });

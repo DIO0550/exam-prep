@@ -29,6 +29,8 @@ export const useQuizSession = (questions: Question[]) => {
     questions.map((question) => ({ question, attempt: freshAttempt() })),
   );
   const [filter, setFilter] = useState<ReviewFilter>("すべて");
+  const [examIndex, setExamIndex] = useState(0);
+  const [closedGroups, setClosedGroups] = useState<string[]>([]);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState("—");
 
@@ -139,6 +141,12 @@ export const useQuizSession = (questions: Question[]) => {
     [current, screen],
   );
 
+  const toggleGroup = useCallback((group: string) => {
+    setClosedGroups((prev) =>
+      prev.includes(group) ? prev.filter((g) => g !== group) : [...prev, group],
+    );
+  }, []);
+
   return {
     screen,
     setScreen,
@@ -151,6 +159,10 @@ export const useQuizSession = (questions: Question[]) => {
     elapsed,
     filter,
     setFilter,
+    examIndex,
+    setExamIndex,
+    closedGroups,
+    toggleGroup,
     isLast: index + 1 >= items.length,
     start,
     pick,
