@@ -3,7 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import { QUESTION_SETS } from "../data/questions";
-import { choiceKey, formatSource } from "../types";
+import { dayKey, RECORD_VERSION } from "../progress/record";
+import { STORAGE_KEY } from "../progress/storage";
+import { choiceKey, formatSource, sourceId } from "../types";
 import { QuizApp } from "./quiz-app";
 
 const FIRST_SET = QUESTION_SETS[0];
@@ -15,8 +17,22 @@ const choiceButton = (index: number) =>
   screen.getByRole("button", { name: new RegExp(`^${choiceKey(index)}`) });
 
 const startQuiz = async (user: ReturnType<typeof userEvent.setup>) => {
-  render(<QuizApp />);
+  const view = render(<QuizApp />);
   await user.click(screen.getByRole("button", { name: "演習を開始" }));
+  return view;
+};
+
+/** 出題する回を選び直す。 */
+const selectSet = async (user: ReturnType<typeof userEvent.setup>, label: string) => {
+  await user.click(screen.getByRole("button", { name: /^出題する回/ }));
+  await user.click(screen.getByRole("option", { name: label }));
+};
+
+/** 学習ホームの記録カード（累計正答率・連続学習・苦手登録）。値と単位は別の要素で出る。 */
+const statCard = (label: string) => {
+  const card = screen.getByText(label).parentElement;
+  if (!card) throw new Error(`${label} のカードが無い`);
+  return within(card);
 };
 
 describe("QuizApp", () => {
@@ -143,7 +159,7 @@ describe("QuizApp", () => {
     ).toBeInTheDocument();
   });
 
-  it("出題する回を切り替えると問題が入れ替わり、解答状況が消える", async () => {
+  it("出題する回を切り替えると問題が入れ替わり、戻すと解答状況が残る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
     await user.click(choiceButton(FIRST.answer));
@@ -151,15 +167,82 @@ describe("QuizApp", () => {
 
     const other = QUESTION_SETS[1];
     if (!other) throw new Error("収録回が2つ以上必要");
-    await user.click(screen.getByRole("button", { name: /^出題する回/ }));
-    await user.click(screen.getByRole("option", { name: other.label }));
+    await selectSet(user, other.label);
 
-    // 学習ホームへ戻る
+    // 学習ホームへ戻る。切り替えた先はまだ手つかず
     expect(screen.getByRole("button", { name: "演習を開始" })).toBeInTheDocument();
-
     await user.click(screen.getByRole("button", { name: "演習を開始" }));
     expect(screen.getByText(other.questions[0].text)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "次の問題へ" })).toBeDisabled();
+
+    // 元の回へ戻すと、さっきの解答から続けられる
+    await selectSet(user, FIRST_SET.label);
+    await user.click(screen.getByRole("button", { name: "演習を再開" }));
+    expect(screen.getByRole("heading", { name: "問 02" })).toBeInTheDocument();
+  });
+
+  it("解答は保存され、開き直しても続きから解ける", async () => {
+    const user = userEvent.setup();
+    const view = await startQuiz(user);
+    await user.click(choiceButton(FIRST.answer));
+
+    view.unmount();
+    render(<QuizApp />);
+
+    expect(
+      screen.getByText(new RegExp(`${QUESTIONS.length}問中 1問 解答済み`)),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "演習を再開" }));
+    expect(screen.getByRole("heading", { name: "問 02" })).toBeInTheDocument();
+  });
+
+  it("学習記録は localStorage から読み直す", () => {
+    const other = QUESTION_SETS[1];
+    if (!other) throw new Error("収録回が2つ以上必要");
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: RECORD_VERSION,
+        setId: other.id,
+        attempts: {
+          [sourceId(other.questions[0].source)]: {
+            picked: other.questions[0].answer,
+            revealed: true,
+            flagged: false,
+            weak: false,
+            excluded: [],
+          },
+        },
+        recent: [true],
+        days: [dayKey(new Date())],
+      }),
+    );
+
+    render(<QuizApp />);
+
+    // 前に選んでいた回・累計正答率・連続学習日数が、サンプル値ではなく記録から出る
+    expect(screen.getByRole("button", { name: /^出題する回/ })).toHaveAccessibleName(
+      `出題する回 ${other.label}`,
+    );
+    expect(statCard("累計正答率").getByText("100")).toBeInTheDocument();
+    expect(statCard("連続学習").getByText("1")).toBeInTheDocument();
+    expect(screen.getByText("学習 1日連続")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "演習を再開" })).toBeInTheDocument();
+  });
+
+  it("学習記録を消すと、数字も解答状況も戻る", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await user.click(choiceButton(FIRST.answer === 0 ? 1 : 0));
+    await user.click(screen.getByRole("button", { name: "学習ホーム" }));
+    expect(statCard("苦手登録").getByText("1")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "学習記録を消す" }));
+    await user.click(screen.getByRole("button", { name: "消す" }));
+
+    expect(statCard("苦手登録").getByText("0")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "演習を開始" })).toBeInTheDocument();
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
   it("サイドバーには収録済みの試験だけが並ぶ", () => {

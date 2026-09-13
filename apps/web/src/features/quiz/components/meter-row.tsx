@@ -17,7 +17,7 @@ export const MeterRow = ({ name, percent, value, tone }: MeterRowProps) => {
       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-track">
         <div className={`h-full rounded-full ${TONE_BG[tone]}`} style={{ width: `${percent}%` }} />
       </div>
-      <span className="flex-[0_0_46px] text-right text-[12px] text-muted-soft tabular-nums">
+      <span className="flex-[0_0_58px] text-right text-[12px] text-muted-soft tabular-nums">
         {value ?? `${percent}%`}
       </span>
     </div>
