@@ -9,7 +9,14 @@ pnpm workspace。アプリは `apps/` 配下、アプリ間で共有するもの
 
 ```
 apps/web/          Next.js 16（App Router / TypeScript / Tailwind v4）
-  src/app/         ルーティングとページ
+  src/app/         ルーティングとページ。色トークンは globals.css の @theme
+  src/base-path.ts basePath の唯一の定義（next.config.ts と public/ 参照の両方が使う）
+  src/features/    画面のまとまり
+    quiz/          演習画面（学習ホーム / 演習 / 解説 / 結果 / 見直し）
+      components/  画面と部品
+      hooks/       画面の状態（useQuizSession）
+      data/        問題データ。出典は types.ts の formatSource が組み立てる
+  public/questions/ 問題の図（公開 PDF から切り出し）と、そのライセンス表記
   vitest.config.ts テスト設定（jsdom + Testing Library）
 biome.json         lint / format（リポジトリ全体を 1 つの設定で見る）
 pnpm-workspace.yaml workspace とクールタイムの設定
@@ -188,7 +195,70 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
   再利用するときに満たすべき条件（出典表記・コードとデータのライセンス分離・公式と誤認させない等）と、
   公開前チェックリスト。問題データを入れる前に読む
 
+## 画面
+
+`apps/web/src/features/quiz` に演習まわりの 5 画面が入っている。ページは
+`src/app/page.tsx` の 1 枚だけで、画面の出し分けは `useQuizSession` の `screen` が持つ。
+
+| 画面 | 中身 |
+|---|---|
+| 学習ホーム | 累計の学習記録と分野別の到達度。ここから演習を始める |
+| 演習 | 問題・選択肢・正誤・解説。解説は「同画面」「別画面」を切り替えられる |
+| 解説 | 「別画面」設定のときに解答後へ挟まる、解説だけの画面 |
+| 結果 | 得点と分野別の内訳、所要時間 |
+| 問題一覧・見直し | 全問の正誤一覧。不正解・フラグ・苦手登録で絞り込める |
+
+色は `src/app/globals.css` の `@theme` にトークンとして置いてある（`bg-accent` /
+`text-ok` / `border-line` など）。個別の色を直に書かず、ここへ足してから使う。
+
+学習状態は今のところメモリ上だけで、リロードすると消える。
+
+## 問題データ
+
+収録しているのは **応用情報技術者試験 午前の10回分（令和3年度 春期〜令和7年度 秋期、各80問・計800問）**。
+1回＝1ファイルで `apps/web/src/features/quiz/data/ap-<元号><年>-<期>-am.ts` に置き、
+[`data/questions.ts`](apps/web/src/features/quiz/data/questions.ts) の `QUESTION_SETS` に並べる。
+画面のヘッダーにある「出題する回」で切り替える（切り替えると解答状況は破棄して学習ホームに戻る）。
+
+IPA が公開しているのは令和3年度以降なので、**午前については公開ぶんを全部収録している**（平成分は公開されていない）。
+午後と、他の試験区分（基本情報・情報セキュリティマネジメント）は未収録。
+過去問題を網羅したものではなく、画面下部にも収録範囲を出している。
+
+取り込み方は [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md) の 3.1 に従う。
+
+| もの | どうやって入れたか |
+|---|---|
+| 問題文・選択肢 | 公開 PDF のページを目視で書き起こし |
+| 図（ベン図・ブロック図・グラフ） | ページ画像から切り出し（`public/questions/`） |
+| 正解 | 同年度の解答例 PDF から |
+| 分野の細分類・解説 | 本リポジトリで作成 |
+
+**出典表記は手で書かない。** `Source`（試験区分・元号・年・期・時間区分・問番号）を持たせ、
+[`formatSource`](apps/web/src/features/quiz/types.ts) が
+`令和3年度 春期 応用情報技術者試験 午前 問1` の形に組み立てる。改変した問題は `modified`
+に内容を入れると、出典の末尾に併記される。問題 ID もこの `Source` から作るので、出典漏れが
+構造的に起きない。
+
+図は 2 通りの使い分けがある。原本が線画なら切り出し、表や箇条書きなら HTML で組む。
+線画を自作でなぞると描き間違いで正解が変わるため、なぞらない（docs 3.5）。
+
+## ライセンス
+
+- **ソースコード**: MIT License（[`LICENSE`](LICENSE)）
+- **問題文・選択肢・図・正解（解答例）**: 独立行政法人情報処理推進機構（IPA）の著作物。
+  MIT License の**対象外**で、再利用するときは IPA の定める条件に従う
+  （<https://www.ipa.go.jp/shiken/faq.html>）。詳細は
+  [`apps/web/public/questions/LICENSE.md`](apps/web/public/questions/LICENSE.md)
+- **分野の細分類・解説**: 本リポジトリで作成したもの（MIT）
+
+本サイトは IPA とは無関係の個人制作。
+
 ## これから
 
-- 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）と、
-  [`docs/ipa-kakomon-usage-notes.md`](docs/ipa-kakomon-usage-notes.md) の条件を満たす出典表記
+- 午後問題と、他の試験区分（基本情報・情報セキュリティマネジメント）の収録。
+  手順は上の表のとおりで、1 問ずつ原本と突き合わせながら足す
+- 分野（`field`）は本リポジトリで付けた細分類なので、回をまたぐと粒度がぶれている可能性がある。
+  結果画面の分野別集計を回横断で使うなら、いちど揃え直す必要がある
+- 問題データの置き場（`packages/` へ切り出すか `apps/web` に持つか）
+- 学習状態の保存先（localStorage か外部か）。`data/progress.ts` のサンプル値もそこで差し替える
+- 学習ホームの数値（累計正答率・連続学習・苦手登録）はまだサンプル値
