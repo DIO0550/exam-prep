@@ -21,7 +21,8 @@ export const ExamSidebar = ({
   onToggleGroup,
 }: ExamSidebarProps) => {
   return (
-    <aside className="flex flex-[1_1_232px] flex-col gap-5 self-stretch border-line border-r bg-surface px-4 pt-5 pb-8">
+    // 幅があるときは右側と別に動く枠。狭いときは上に積まれ、ページと一緒に動く。
+    <aside className="flex flex-col gap-5 self-stretch border-line border-r bg-surface px-4 pt-5 pb-8 md:flex-[1_1_232px] md:overflow-y-auto md:overscroll-contain">
       <nav className="flex flex-col gap-3.5">
         {groups.map((group) => {
           const open = !closedGroups.includes(group);
