@@ -2,6 +2,11 @@
 
 試験対策用の GitHub Pages 管理サイト（Next.js）。
 
+**公開ページ: <https://dio0550.github.io/exam-prep/>**
+
+`main` へ push すると [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) が static export を
+作って上の URL へ出す（詳しくは「[CI とデプロイ](#ci-とデプロイ)」）。
+
 ## 構成
 
 pnpm workspace。アプリは `apps/` 配下、アプリ間で共有するものは `packages/` 配下に置く
@@ -51,7 +56,8 @@ workflow は 2 つに分けてある。見たいものが違い（片方は「�
 | [`ci.yml`](.github/workflows/ci.yml) | PR / `main` への push / 手動 | `pnpm check` / `typecheck` / `test` / `build` | `contents: read` |
 | [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) | `main` への push / 手動 | static export を作って GitHub Pages へ出す | deploy ジョブにだけ `pages: write` と `id-token: write` |
 
-公開先は `https://dio0550.github.io/exam-prep/`。
+公開先は <https://dio0550.github.io/exam-prep/>。パスが `/exam-prep` の分だけ深くなるのは
+プロジェクトページだからで、`basePath` をそれに合わせてある（後述）。
 
 **この 2 つは `main` への push で並行して走る。** デプロイ側はテストの成否を待たないので、
 検査を通らないものを出したくないなら、**ブランチ保護で CI を必須チェックにする**

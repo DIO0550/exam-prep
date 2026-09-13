@@ -130,7 +130,6 @@ export type Exam = {
   code: string;
   name: string;
   sub: string;
-  group: string;
 };
 
 /** 分野ごとの到達度（学習ホームの棒グラフ）。 */
