@@ -7,6 +7,8 @@ import { AP_R05_AKI_AM } from "./ap-r05-aki-am";
 import { AP_R05_HARU_AM } from "./ap-r05-haru-am";
 import { AP_R06_AKI_AM } from "./ap-r06-aki-am";
 import { AP_R06_HARU_AM } from "./ap-r06-haru-am";
+import { AP_R07_AKI_AM } from "./ap-r07-aki-am";
+import { AP_R07_HARU_AM } from "./ap-r07-haru-am";
 
 /**
  * 収録している回。
@@ -24,6 +26,8 @@ export type QuestionSet = {
 
 /** 新しい回を上に置く。 */
 export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
+  { id: "ap-r07-aki-am", label: "令和7年 秋期", questions: AP_R07_AKI_AM },
+  { id: "ap-r07-haru-am", label: "令和7年 春期", questions: AP_R07_HARU_AM },
   { id: "ap-r06-aki-am", label: "令和6年 秋期", questions: AP_R06_AKI_AM },
   { id: "ap-r06-haru-am", label: "令和6年 春期", questions: AP_R06_HARU_AM },
   { id: "ap-r05-aki-am", label: "令和5年 秋期", questions: AP_R05_AKI_AM },
@@ -35,4 +39,4 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
 ];
 
 /** 画面に出す収録範囲。網羅していると誤解させないため、範囲を明示する（docs 5）。 */
-export const COVERAGE = `応用情報技術者試験 午前 ${QUESTION_SETS.length}回分（令和3年度春期〜令和6年度秋期、各80問）`;
+export const COVERAGE = `応用情報技術者試験 午前 ${QUESTION_SETS.length}回分（令和3年度春期〜令和7年度秋期、各80問）`;
