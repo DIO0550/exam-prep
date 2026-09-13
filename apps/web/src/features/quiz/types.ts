@@ -132,10 +132,3 @@ export type Exam = {
   sub: string;
   group: string;
 };
-
-/** 分野ごとの到達度（学習ホームの棒グラフ）。 */
-export type Mastery = {
-  name: string;
-  /** 0〜100。 */
-  percent: number;
-};

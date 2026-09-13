@@ -1,4 +1,5 @@
 import type { Question } from "../types";
+import { sourceId } from "../types";
 import { AP_R03_AKI_AM } from "./ap-r03-aki-am";
 import { AP_R03_HARU_AM } from "./ap-r03-haru-am";
 import { AP_R04_AKI_AM } from "./ap-r04-aki-am";
@@ -37,6 +38,18 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "ap-r03-aki-am", label: "令和3年 秋期", questions: AP_R03_AKI_AM },
   { id: "ap-r03-haru-am", label: "令和3年 春期", questions: AP_R03_HARU_AM },
 ];
+
+/**
+ * 問題 ID から問題を引く。
+ *
+ * 保存した解答状況は問題 ID しか持たない（回をまたいで 1 つの表に入れている）ので、
+ * 分野別の集計をするときにここから分野と正解を引き直す。
+ */
+export const QUESTION_BY_ID: ReadonlyMap<string, Question> = new Map(
+  QUESTION_SETS.flatMap((set) =>
+    set.questions.map((question) => [sourceId(question.source), question] as const),
+  ),
+);
 
 /** 画面に出す収録範囲。網羅していると誤解させないため、範囲を明示する（docs 5）。 */
 export const COVERAGE = `応用情報技術者試験 午前 ${QUESTION_SETS.length}回分（令和3年度春期〜令和7年度秋期、各80問）`;

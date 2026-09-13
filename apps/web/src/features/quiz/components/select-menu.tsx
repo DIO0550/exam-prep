@@ -22,6 +22,10 @@ type SelectMenuProps = {
  * `<select>` は見た目と開いたときの挙動が OS 依存で、他の操作要素と揃えられないので、
  * WAI-ARIA の listbox パターンで自前に組んでいる。フォーカスは開いている間リストが持ち、
  * どの項目を指しているかは aria-activedescendant で伝える。
+ *
+ * 自前にすると、OS のセレクトが持っている「押せる箱」の見え方も自分で作ることになる。
+ * 見出しを箱の上に出し、枠と三角をアクセント色にしてあるのは、周りの文字に紛れて
+ * 「ここで切り替えられる」と気付かれないのを避けるため。
  */
 export const SelectMenu = ({ label, value, options, onChange }: SelectMenuProps) => {
   const id = useId();
@@ -124,8 +128,8 @@ export const SelectMenu = ({ label, value, options, onChange }: SelectMenuProps)
   };
 
   return (
-    <div ref={rootRef} className="relative flex items-center gap-2">
-      <span id={labelId} className="text-[11.5px] text-muted">
+    <div ref={rootRef} className="relative flex flex-col items-stretch gap-[5px]">
+      <span id={labelId} className="font-bold text-[10px] text-muted tracking-[0.14em]">
         {label}
       </span>
 
@@ -138,12 +142,12 @@ export const SelectMenu = ({ label, value, options, onChange }: SelectMenuProps)
         aria-labelledby={`${labelId} ${buttonId}`}
         onClick={() => (open ? close() : openList(selectedIndex))}
         onKeyDown={handleButtonKeyDown}
-        className="flex cursor-pointer items-center gap-2 rounded-[7px] border border-edge bg-surface py-1.5 pr-2 pl-2.5 font-medium text-[12px] text-ink hover:bg-hover"
+        className="flex min-w-[190px] cursor-pointer items-center justify-between gap-3 rounded-[9px] border border-accent/45 bg-accent-soft py-2 pr-2 pl-3.5 font-bold text-[13.5px] text-accent-deep shadow-[0_1px_2px_rgba(22,24,29,0.06)] hover:border-accent hover:bg-surface"
       >
         {selected?.label}
         <span
           aria-hidden="true"
-          className={`text-[8px] text-muted-soft transition-transform duration-150 ${
+          className={`flex size-[19px] flex-none items-center justify-center rounded-full bg-accent text-[7px] text-surface transition-transform duration-150 ${
             open ? "rotate-180" : ""
           }`}
         >
@@ -159,7 +163,7 @@ export const SelectMenu = ({ label, value, options, onChange }: SelectMenuProps)
           aria-labelledby={labelId}
           aria-activedescendant={optionId(activeIndex)}
           onKeyDown={handleListKeyDown}
-          className="absolute top-full right-0 z-30 mt-1.5 max-h-[290px] min-w-[168px] overflow-y-auto rounded-[9px] border border-edge bg-surface py-1 shadow-[0_6px_20px_rgba(22,24,29,0.12)] outline-none"
+          className="absolute top-full right-0 z-30 mt-1.5 max-h-[290px] min-w-[190px] overflow-y-auto rounded-[9px] border border-edge bg-surface py-1 shadow-[0_6px_20px_rgba(22,24,29,0.12)] outline-none"
         >
           {options.map((option, index) => {
             const isSelected = index === selectedIndex;
@@ -174,10 +178,13 @@ export const SelectMenu = ({ label, value, options, onChange }: SelectMenuProps)
                 aria-selected={isSelected}
                 onClick={() => choose(index)}
                 onPointerMove={() => setActiveIndex(index)}
-                className={`cursor-pointer px-3 py-2 text-[12px] ${
+                className={`flex cursor-pointer items-center gap-2 px-3 py-2 text-[12.5px] ${
                   isSelected ? "font-bold text-accent-deep" : "font-medium text-ink"
                 } ${isActive ? "bg-hover" : ""}`}
               >
+                <span aria-hidden="true" className="w-3 flex-none text-[10px] text-accent">
+                  {isSelected ? "✓" : ""}
+                </span>
                 {option.label}
               </div>
             );

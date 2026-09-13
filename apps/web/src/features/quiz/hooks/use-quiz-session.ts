@@ -1,9 +1,14 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+
+import { attemptOf } from "../progress/record";
+import { progressStore } from "../progress/store";
 import type { Attempt, QuizItem } from "../stats";
 import { formatElapsed, summarize } from "../stats";
 import type { Question } from "../types";
+import { sourceId } from "../types";
+import { useProgress } from "./use-progress";
 
 export type Screen = "home" | "quiz" | "explain" | "result" | "review";
 
@@ -13,33 +18,38 @@ export type FeedbackMode = "inline" | "page";
 export const REVIEW_FILTERS = ["すべて", "不正解のみ", "フラグ", "苦手登録"] as const;
 export type ReviewFilter = (typeof REVIEW_FILTERS)[number];
 
-const freshAttempt = (): Attempt => ({
-  picked: null,
-  revealed: false,
-  flagged: false,
-  weak: false,
-  excluded: [],
-});
-
+/**
+ * 演習画面の状態。
+ *
+ * 解答状況（選んだ選択肢・フラグ・苦手登録）は progressStore が持ち、リロードしても残る。
+ * ここが持つのは、その回を今どう見ているか（画面・何問目・計測）だけ。
+ */
 export const useQuizSession = (questions: Question[]) => {
+  const record = useProgress();
   const [screen, setScreen] = useState<Screen>("home");
   const [feedback, setFeedbackMode] = useState<FeedbackMode>("inline");
   const [index, setIndex] = useState(0);
-  const [items, setItems] = useState<QuizItem[]>(() =>
-    questions.map((question) => ({ question, attempt: freshAttempt() })),
-  );
   const [filter, setFilter] = useState<ReviewFilter>("すべて");
   const [examIndex, setExamIndex] = useState(0);
   const [closedGroups, setClosedGroups] = useState<string[]>([]);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState("—");
 
-  // 収録回を切り替えたら解答状況を捨てて学習ホームへ戻す。
-  // 描画中に state を直すのは、回が変わった最初の描画で古い解答を見せないため。
+  const items = useMemo<QuizItem[]>(
+    () =>
+      questions.map((question) => ({
+        question,
+        attempt: attemptOf(record, sourceId(question.source)),
+      })),
+    [questions, record],
+  );
+
+  // 収録回を切り替えたら、見ている位置と計測をその回のものに戻して学習ホームへ出す。
+  // 解答状況は問題ごとに保存してあるので捨てない（戻ってくればその続きから解ける）。
+  // 描画中に state を直すのは、回が変わった最初の描画で前の回の位置を見せないため。
   const [loadedFor, setLoadedFor] = useState(questions);
   if (loadedFor !== questions) {
     setLoadedFor(questions);
-    setItems(questions.map((question) => ({ question, attempt: freshAttempt() })));
     setIndex(0);
     setScreen("home");
     setStartedAt(null);
@@ -51,64 +61,63 @@ export const useQuizSession = (questions: Question[]) => {
 
   /** 今の問題の解答状況だけを差し替える。 */
   const patchCurrent = useCallback(
-    (patch: (attempt: Attempt, question: Question) => Partial<Attempt>) => {
-      setItems((prev) =>
-        prev.map((item, i) =>
-          i === index
-            ? { ...item, attempt: { ...item.attempt, ...patch(item.attempt, item.question) } }
-            : item,
-        ),
-      );
+    (patch: Partial<Attempt>) => {
+      if (!current) return;
+      progressStore.patchAttempt(sourceId(current.question.source), patch);
     },
-    [index],
+    [current],
   );
 
-  /** 解答をすべて捨てて 1 問目から始める。フラグと苦手登録は学習記録なので残す。 */
+  /** 未解答の最初の問題から始める。全問解き終わっていれば 1 問目から見直す。 */
   const start = useCallback(() => {
-    setItems((prev) =>
-      prev.map((item) => ({
-        ...item,
-        attempt: { ...item.attempt, picked: null, revealed: false, excluded: [] },
-      })),
-    );
+    const next = items.findIndex((item) => !item.attempt.revealed);
+    setIndex(next < 0 ? 0 : next);
+    setScreen("quiz");
+    setStartedAt(Date.now());
+  }, [items]);
+
+  /** 解答をすべて捨てて 1 問目から始める。フラグと苦手登録は学習記録なので残す。 */
+  const restart = useCallback(() => {
+    progressStore.restart(questions.map((question) => sourceId(question.source)));
     setIndex(0);
     setScreen("quiz");
     setStartedAt(Date.now());
-  }, []);
+  }, [questions]);
 
   /** 選択肢を選ぶ。選んだ時点で正誤が確定し、間違えた問題は苦手登録に入る。 */
   const pick = useCallback(
     (choice: number) => {
-      if (current?.attempt.revealed) return;
-      patchCurrent((attempt, question) => ({
-        picked: choice,
-        revealed: true,
-        weak: attempt.weak || choice !== question.answer,
-      }));
+      if (!current || current.attempt.revealed) return;
+      progressStore.answer(
+        sourceId(current.question.source),
+        choice,
+        choice === current.question.answer,
+      );
       if (feedback === "page") setScreen("explain");
     },
-    [current, feedback, patchCurrent],
+    [current, feedback],
   );
 
   /** 明らかに違う選択肢を消し込む。 */
   const toggleExclude = useCallback(
     (choice: number) => {
-      patchCurrent((attempt) => ({
-        excluded: attempt.excluded.includes(choice)
-          ? attempt.excluded.filter((c) => c !== choice)
-          : [...attempt.excluded, choice],
-      }));
+      const excluded = current?.attempt.excluded ?? [];
+      patchCurrent({
+        excluded: excluded.includes(choice)
+          ? excluded.filter((c) => c !== choice)
+          : [...excluded, choice],
+      });
     },
-    [patchCurrent],
+    [current, patchCurrent],
   );
 
   const toggleFlag = useCallback(() => {
-    patchCurrent((attempt) => ({ flagged: !attempt.flagged }));
-  }, [patchCurrent]);
+    patchCurrent({ flagged: !current?.attempt.flagged });
+  }, [current, patchCurrent]);
 
   const toggleWeak = useCallback(() => {
-    patchCurrent((attempt) => ({ weak: !attempt.weak }));
-  }, [patchCurrent]);
+    patchCurrent({ weak: !current?.attempt.weak });
+  }, [current, patchCurrent]);
 
   const goTo = useCallback((next: number) => {
     setIndex(next);
@@ -165,6 +174,7 @@ export const useQuizSession = (questions: Question[]) => {
     toggleGroup,
     isLast: index + 1 >= items.length,
     start,
+    restart,
     pick,
     toggleExclude,
     toggleFlag,

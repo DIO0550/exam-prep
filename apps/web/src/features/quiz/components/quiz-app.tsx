@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
-import { STREAK_LABEL } from "../data/progress";
-import { QUESTION_SETS } from "../data/questions";
+import { QUESTION_BY_ID, QUESTION_SETS } from "../data/questions";
+import { useProgress } from "../hooks/use-progress";
 import { useQuizSession } from "../hooks/use-quiz-session";
+import { progressStore } from "../progress/store";
+import { streakLabel, summarizeProgress } from "../progress/summary";
 import { ExamSidebar } from "./exam-sidebar";
 import { ExplainScreen } from "./explain-screen";
 import { HomeScreen } from "./home-screen";
@@ -18,9 +20,14 @@ import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
 export const QuizApp = () => {
-  const [setId, setSetId] = useState(QUESTION_SETS[0].id);
-  const questionSet = QUESTION_SETS.find((s) => s.id === setId) ?? QUESTION_SETS[0];
+  // 選んでいる回も学習記録の一部として保存する（次に開いたとき同じ回から始められる）。
+  const record = useProgress();
+  const questionSet = QUESTION_SETS.find((set) => set.id === record.setId) ?? QUESTION_SETS[0];
   const session = useQuizSession(questionSet.questions);
+  const progress = useMemo(
+    () => summarizeProgress(record, (id) => QUESTION_BY_ID.get(id)),
+    [record],
+  );
   const exam = EXAMS[session.examIndex] ?? EXAMS[0];
 
   return (
@@ -28,7 +35,7 @@ export const QuizApp = () => {
       <SiteHeader
         screen={session.screen}
         feedback={session.feedback}
-        streakLabel={STREAK_LABEL}
+        streakLabel={streakLabel(progress.streak)}
         onNavigate={session.setScreen}
         onFeedbackChange={session.setFeedback}
       />
@@ -54,12 +61,12 @@ export const QuizApp = () => {
               <div className="ml-auto self-center">
                 <SelectMenu
                   label="出題する回"
-                  value={setId}
+                  value={questionSet.id}
                   options={QUESTION_SETS.map((option) => ({
                     value: option.id,
                     label: option.label,
                   }))}
-                  onChange={setSetId}
+                  onChange={progressStore.selectSet}
                 />
               </div>
             </header>
@@ -74,9 +81,14 @@ export const QuizApp = () => {
 
             {session.screen === "home" && (
               <HomeScreen
+                setLabel={questionSet.label}
                 questionCount={questionSet.questions.length}
+                answered={session.summary.answered}
+                summary={progress}
                 onStart={session.start}
+                onRestart={session.restart}
                 onGoReview={() => session.setScreen("review")}
+                onClearRecord={progressStore.clear}
               />
             )}
 
@@ -113,7 +125,7 @@ export const QuizApp = () => {
                 summary={session.summary}
                 total={questionSet.questions.length}
                 elapsed={session.elapsed}
-                onRestart={session.start}
+                onRestart={session.restart}
                 onGoReview={() => session.setScreen("review")}
               />
             )}
