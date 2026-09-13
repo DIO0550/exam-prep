@@ -13,6 +13,7 @@ import { ProgressBar } from "./progress-bar";
 import { QuizScreen } from "./quiz-screen";
 import { ResultScreen } from "./result-screen";
 import { ReviewScreen } from "./review-screen";
+import { SelectMenu } from "./select-menu";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
@@ -50,20 +51,17 @@ export const QuizApp = () => {
               </span>
               <h1 className="font-bold text-[17px] leading-[1.4] tracking-[0.01em]">{exam.name}</h1>
               <span className="text-[11.5px] text-muted">{exam.sub}</span>
-              <label className="ml-auto flex items-center gap-2 text-[11.5px] text-muted">
-                出題する回
-                <select
+              <div className="ml-auto self-center">
+                <SelectMenu
+                  label="出題する回"
                   value={setId}
-                  onChange={(event) => setSetId(event.target.value)}
-                  className="cursor-pointer rounded-[7px] border border-edge bg-surface px-2.5 py-1.5 font-medium text-[12px] text-ink"
-                >
-                  {QUESTION_SETS.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  options={QUESTION_SETS.map((option) => ({
+                    value: option.id,
+                    label: option.label,
+                  }))}
+                  onChange={setSetId}
+                />
+              </div>
             </header>
 
             {(session.screen === "quiz" || session.screen === "explain") && (
