@@ -5,7 +5,8 @@
 **公開ページ: <https://dio0550.github.io/exam-prep/>**
 
 `main` へ push すると [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) が static export を
-作って上の URL へ出す（詳しくは「[CI とデプロイ](#ci-とデプロイ)」）。
+作って上の URL へ出す。PR には**そのブランチのサイトを触れるプレビュー**が
+`…/exam-prep/pr-preview/pr-<番号>/` に出る（詳しくは「[CI とデプロイ](#ci-とデプロイ)」）。
 
 ## 構成
 
@@ -54,26 +55,42 @@ pnpm-workspace.yaml workspace とクールタイムの設定
 
 ## CI とデプロイ
 
-workflow は 2 つに分けてある。見たいものが違い（片方は「壊れていないか」、もう片方は
-「出せたか」）、必要な権限も違うため。
+workflow は目的ごとに分けてある。見たいものが違い（「壊れていないか」「出せたか」
+「見た目が変わっていないか」「触って確かめられるか」）、必要な権限も違うため。
 
 | workflow | いつ走るか | やること | 権限 |
 |---|---|---|---|
 | [`ci.yml`](.github/workflows/ci.yml) | PR / `main` への push / 手動 | `pnpm check` / `typecheck` / `test` / `build` | `contents: read` |
-| [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) | `main` への push / 手動 | static export を作って GitHub Pages へ出す | deploy ジョブにだけ `pages: write` と `id-token: write` |
+| [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) | `main` への push / 手動 | static export を作って `gh-pages` のルートへ出す | `contents: write` と `pages: read`（設定の確認） |
+| [`pr-preview.yml`](.github/workflows/pr-preview.yml) | PR | その PR のサイトを `gh-pages/pr-preview/pr-<番号>/` へ出し、URL を PR に貼る | `contents: write` と PR コメント |
 | [`visual-regression.yml`](.github/workflows/visual-regression.yml) | PR / 手動 | 主要画面を撮って main と比べ、差分を PR に貼る | `contents: write`（画像置き場のブランチ）と PR コメント |
 | [`visual-baseline.yml`](.github/workflows/visual-baseline.yml) | `main` への push / 手動 | 比べる相手（baseline）を撮り直す | `contents: write` |
 
 公開先は <https://dio0550.github.io/exam-prep/>。パスが `/exam-prep` の分だけ深くなるのは
 プロジェクトページだからで、`basePath` をそれに合わせてある（後述）。
 
-**この 2 つは `main` への push で並行して走る。** デプロイ側はテストの成否を待たないので、
+**`main` への push では、検査（ci）とデプロイと baseline 撮り直しが並行して走る。**
+デプロイ側はテストの成否を待たないので、
 検査を通らないものを出したくないなら、**ブランチ保護で CI を必須チェックにする**
 （Settings → Branches → `main` → Require status checks to pass → `verify`）。
 main へ直接 push せず PR を通す運用であれば、PR の時点で CI が通っている。
 
 **リポジトリ設定が 1 つ要る。** Settings → Pages → Build and deployment → Source を
-**GitHub Actions** にする。ここが "Deploy from a branch" のままだと deploy ジョブが失敗する。
+**Deploy from a branch**、Branch を **`gh-pages` / (root)** にする。ここが "GitHub Actions" の
+ままだと、push しても公開内容が変わらないまま古いサイトが出続ける（黙って古いものが出るのが
+一番困るので、`deploy-pages.yml` の最後で今の配信元を読んで、違っていれば落とすようにしてある）。
+
+ブランチ方式にしてあるのは、**PR のプレビューを同じサイトに同居させる**ため。Pages の配信元は
+リポジトリにつき 1 つしか選べないので、Actions から直接デプロイする方式のままでは
+`main` のサイトと PR のプレビューを両方出せない。
+
+| gh-pages の中身 | 誰が置くか |
+|---|---|
+| ルート（`index.html` など） | `deploy-pages.yml`（`main` への push） |
+| `pr-preview/pr-<番号>/` | `pr-preview.yml`（PR ごと。閉じたら消す） |
+
+ブランチは毎回 1 コミットに作り直す（force push）。サイト 1 回分が 14MB あり、履歴を積むと
+リポジトリが太り続けるため。
 
 ### workflow の方針
 
@@ -86,9 +103,9 @@ main へ直接 push せず PR を通す運用であれば、PR の時点で CI �
   **クールタイム（7 日）を満たさないバージョンが載っていれば CI で落ちる**
 - corepack は Node 24 に同梱されているものを使う。Node 25 以降へ上げるときは
   corepack が外れるので、pnpm の入れ方を別途決める必要がある
-- セットアップ（checkout / Node / corepack / キャッシュ / install）は 2 ファイルに
+- セットアップ（checkout / Node / corepack / キャッシュ / install）は各 workflow に
   同じ内容が並ぶ。まとめるにはローカルの composite action を挟むことになるので、
-  1 ファイルを読めば何が動くか分かる状態を優先した。**片方を直したらもう片方も直す**
+  1 ファイルを読めば何が動くか分かる状態を優先した。**1 つを直したら他も直す**
 
 ### static export の設定
 
@@ -97,13 +114,13 @@ main へ直接 push せず PR を通す運用であれば、PR の時点で CI �
 | 設定 | 理由 |
 |---|---|
 | `output: 'export'` | 静的ファイルだけを吐く（出力は `apps/web/out`） |
-| `basePath: '/exam-prep'` | プロジェクトページはリポジトリ名の分だけパスが深くなる。リネームや独自ドメインを当てたら合わせる |
+| `basePath` | プロジェクトページはリポジトリ名の分だけパスが深くなる。既定は `/exam-prep`。PR プレビューのビルドだけ `NEXT_PUBLIC_BASE_PATH` で差し替える（[`base-path.ts`](apps/web/src/base-path.ts)） |
 | `trailingSlash: true` | `out/foo/index.html` の形にする。拡張子なし URL の解決はホストによって差があるため |
 | `images.unoptimized: true` | static export には画像最適化サーバが無い |
 
-`public/.nojekyll` を置いてある。Actions からの artifact デプロイでは Jekyll は走らないので
-本来は不要だが、`_next/` のようなアンダースコア始まりが無視される経路に迷い込むと
-原因が分かりにくいので、保険として残している。
+`public/.nojekyll` を置いてある。ブランチから配信すると Jekyll を通るので、これが無いと
+`_next/` のようなアンダースコア始まりが配信されず、JS と CSS が 404 になる
+（workflow 側でもルートに `.nojekyll` を作っている）。
 
 `output: 'export'` では `next start` が使えないので、ルートの `start` スクリプトは無い。
 ビルド結果を手元で見るときは `apps/web/out` を任意の静的サーバで配る。
@@ -295,6 +312,21 @@ static export した HTML には誰の記録も入らないので、保存した
 
 localStorage を購読する部分（同期で読む・書いたら保存する・別タブに追従する）は学習記録と
 同じなので、[`local-store.ts`](apps/web/src/features/quiz/local-store.ts) にまとめてある。
+
+## PR のプレビュー
+
+PR を出すと、そのブランチのサイトが
+`https://dio0550.github.io/exam-prep/pr-preview/pr-<番号>/` に出て、URL が PR にコメントされる
+（[`pr-preview.yml`](.github/workflows/pr-preview.yml)）。画像で見る差分と違い、こちらは
+**実際に触って確かめる**ためのもの。PR を閉じるとフォルダごと消える。
+
+- `basePath` はビルド時に焼き込まれるので、プレビュー用に `NEXT_PUBLIC_BASE_PATH` を
+  与えてビルドする。本番と同じ値のままだと、資材の URL が `/exam-prep/...` を指したままになり
+  プレビューでは 404 になる
+- 学習記録とメモは localStorage に入るが、**URL（オリジン＋パス）が本番と違うので混ざらない**。
+  プレビューで解いた記録は本番には出ない
+- 反映まで 1〜数分かかる。Pages のデプロイは同時に 1 本しか走らないので、`main` への push と
+  PR の push が重なると、後から入ったほうはその分待つ
 
 ## 見た目の差分（PR で確認する）
 
