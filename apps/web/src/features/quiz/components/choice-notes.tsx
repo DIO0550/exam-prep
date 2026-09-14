@@ -4,9 +4,10 @@ import { OriginalFigure } from "./question-figure";
 
 type Variant = "inline" | "page";
 
+/** inline は問題カードの中、page は解説画面。記号の大きさと間隔だけ変わる（本文は共通）。 */
 const SIZES = {
-  inline: { key: "size-6 text-[11.5px]", text: "text-[13.5px]", gap: "gap-3" },
-  page: { key: "size-[26px] text-[12px]", text: "text-[14px]", gap: "gap-[13px]" },
+  inline: { key: "size-6 text-[11.5px]", gap: "gap-3" },
+  page: { key: "size-[26px] text-[12px]", gap: "gap-[13px]" },
 } as const;
 
 type ChoiceNotesProps = {
@@ -51,14 +52,14 @@ export const ChoiceNotes = ({ question, picked, order, variant }: ChoiceNotesPro
                 {choiceKey(position)}
               </span>
               {shuffled && (
-                <span className="whitespace-nowrap text-[10px] text-muted-soft">
+                <span className="whitespace-nowrap text-read-xs text-muted-soft">
                   原本 {choiceKey(index)}
                 </span>
               )}
             </span>
             <div className="flex flex-1 flex-col gap-1">
               <span
-                className={`text-pretty leading-[1.7] ${size.text} ${
+                className={`text-pretty text-read-md leading-[1.7] ${
                   isAnswer ? "font-bold text-ok" : "text-ink"
                 }`}
               >
@@ -75,7 +76,7 @@ export const ChoiceNotes = ({ question, picked, order, variant }: ChoiceNotesPro
               </span>
               {choice.image && <OriginalFigure image={choice.image} />}
               {choice.note && (
-                <span className="text-pretty text-[12.5px] text-muted-soft leading-[1.85]">
+                <span className="text-pretty text-read-sm text-muted-soft leading-[1.85]">
                   {choice.note}
                 </span>
               )}

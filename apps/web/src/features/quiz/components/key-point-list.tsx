@@ -18,7 +18,7 @@ export const KeyPointList = ({ points, tone }: KeyPointListProps) => {
           >
             ▸
           </span>
-          <span className="flex-1 text-pretty text-[13.5px] text-ink-soft leading-[1.85]">
+          <span className="flex-1 text-pretty text-read-md text-ink-soft leading-[1.85]">
             {point}
           </span>
         </div>

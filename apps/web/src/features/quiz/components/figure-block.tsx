@@ -1,17 +1,7 @@
 import type { Figure } from "../types";
 
-/** inline は問題カードの中、page は解説画面。文字サイズと図の地色だけ変わる。 */
+/** inline は問題カードの中、page は解説画面。図の地色だけ変わる（文字は text-read-* で共通）。 */
 type Variant = "inline" | "page";
-
-const SIZES = {
-  inline: {
-    actor: "text-[12px]",
-    step: "text-[12.5px]",
-    expr: "text-[13.5px]",
-    cell: "text-[12.5px]",
-  },
-  page: { actor: "text-[12.5px]", step: "text-[13px]", expr: "text-[14px]", cell: "text-[13px]" },
-} as const;
 
 /** 表の列幅。4 列のときだけ最終列（安定性など短い語）を詰める。 */
 const columns = (count: number) => (count === 4 ? "1.3fr 1fr 1fr 0.8fr" : "0.9fr 1fr 1.4fr");
@@ -22,7 +12,6 @@ type FigureBlockProps = {
 };
 
 export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
-  const size = SIZES[variant];
   const stepBg = variant === "inline" ? "bg-figure" : "bg-surface";
 
   return (
@@ -34,10 +23,10 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
               key={step.actor}
               className={`flex items-start gap-3.5 rounded-[9px] border border-figure-line px-3.5 py-3 ${stepBg}`}
             >
-              <span className={`flex-[0_0_96px] font-bold text-accent leading-[1.6] ${size.actor}`}>
+              <span className="flex-[0_0_96px] font-bold text-read-sm text-accent leading-[1.6]">
                 {step.actor}
               </span>
-              <span className={`flex-1 text-pretty text-ink-soft leading-[1.8] ${size.step}`}>
+              <span className="flex-1 text-pretty text-read-sm text-ink-soft leading-[1.8]">
                 {step.text}
               </span>
             </div>
@@ -52,12 +41,10 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
               key={line.expr}
               className="flex flex-wrap items-baseline gap-4 border-line border-b border-dashed pb-[9px]"
             >
-              <span
-                className={`min-w-[220px] flex-1 font-medium text-ink leading-[1.7] tabular-nums ${size.expr}`}
-              >
+              <span className="min-w-[220px] flex-1 font-medium text-read-md text-ink leading-[1.7] tabular-nums">
                 {line.expr}
               </span>
-              <span className="flex-none text-[11.5px] text-muted-soft">{line.note}</span>
+              <span className="flex-none text-read-xs text-muted-soft">{line.note}</span>
             </div>
           ))}
         </div>
@@ -72,7 +59,7 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
             {figure.headers.map((header) => (
               <span
                 key={header}
-                className="font-bold text-[11.5px] text-muted-soft tracking-[0.04em]"
+                className="font-bold text-read-xs text-muted-soft tracking-[0.04em]"
               >
                 {header}
               </span>
@@ -89,7 +76,7 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
                 <span
                   // biome-ignore lint/suspicious/noArrayIndexKey: 同じ行に同じ値が並ぶのでセルの値はキーにできない
                   key={cellIndex}
-                  className={`text-pretty leading-[1.7] ${size.cell} ${
+                  className={`text-pretty text-read-sm leading-[1.7] ${
                     cellIndex === 0 ? "font-bold text-ink" : "text-muted-soft"
                   }`}
                 >
@@ -101,7 +88,7 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
         </div>
       )}
 
-      <div className="mt-3.5 text-[11.5px] text-muted-soft">{figure.caption}</div>
+      <div className="mt-3.5 text-read-xs text-muted-soft">{figure.caption}</div>
     </div>
   );
 };
