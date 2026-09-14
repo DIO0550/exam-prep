@@ -5,8 +5,8 @@
 # ビルド・フォント・撮影コマンドは visual-regression.yml と揃えておく（片方を直したら
 # もう片方も直す）。
 #
-# 置き場は visual-snapshots ブランチの baseline/。本番サイトのデプロイ（deploy-pages.yml）
-# には触らない。
+# 置き場は gh-pages ブランチの visual-baseline/。本番サイト（ルート）や PR のプレビューには
+# 触らない。
 # =============================================================================
 name: Visual Baseline
 
@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 env:
-  SNAPSHOT_BRANCH: visual-snapshots
+  PAGES_BRANCH: gh-pages
   COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
   NEXT_TELEMETRY_DISABLED: "1"
 
@@ -84,28 +84,29 @@ jobs:
 
           published=false
           for attempt in 1 2 3 4 5; do
-            git worktree remove --force /tmp/snapshots 2>/dev/null || true
+            git worktree remove --force /tmp/pages 2>/dev/null || true
 
-            if git fetch --depth 1 origin "+refs/heads/${SNAPSHOT_BRANCH}:refs/remotes/origin/${SNAPSHOT_BRANCH}" 2>/dev/null; then
-              git worktree add --detach /tmp/snapshots "origin/${SNAPSHOT_BRANCH}"
+            if git fetch --depth 1 origin "+refs/heads/${PAGES_BRANCH}:refs/remotes/origin/${PAGES_BRANCH}" 2>/dev/null; then
+              git worktree add --detach /tmp/pages "origin/${PAGES_BRANCH}"
             else
-              git worktree add --detach /tmp/snapshots
-              git -C /tmp/snapshots rm -rf --quiet . || true
+              git worktree add --detach /tmp/pages
+              git -C /tmp/pages rm -rf --quiet . || true
             fi
 
-            # baseline だけ差し替える。PR ごとの画像（pr-*）はそのまま残す。
-            rm -rf /tmp/snapshots/baseline
-            mkdir -p /tmp/snapshots/baseline
-            cp -r visual-baseline/. /tmp/snapshots/baseline/
+            # baseline だけ差し替える。本番サイト・PR のプレビュー・PR のレポートは残す。
+            rm -rf /tmp/pages/visual-baseline
+            mkdir -p /tmp/pages/visual-baseline
+            cp -r visual-baseline/. /tmp/pages/visual-baseline/
+            touch /tmp/pages/.nojekyll
 
-            cd /tmp/snapshots
+            cd /tmp/pages
             # 履歴は持たない。画像を積むと重くなる一方なので、毎回 1 コミットに作り直す。
             # 作り直す前に前の試行のブランチを消す（残っていると --orphan が名前で衝突する）。
-            git branch -D snapshot 2>/dev/null || true
-            git checkout --quiet --orphan snapshot
+            git branch -D pages 2>/dev/null || true
+            git checkout --quiet --orphan pages
             git add -A
             git commit --quiet -m "visual baseline (${SHA})" || true
-            if git push --force origin "HEAD:${SNAPSHOT_BRANCH}"; then
+            if git push --force origin "HEAD:${PAGES_BRANCH}"; then
               published=true
               break
             fi

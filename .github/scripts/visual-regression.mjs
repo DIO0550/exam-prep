@@ -639,6 +639,7 @@ const compare = async (options) => {
   // 数十 MB になる。差分の大きいものから残し、残りは件数だけ伝える。
   const maxImages = Number(options["max-images"] ?? 10);
   const version = options["report-version"] ?? "";
+  const pr = options.pr ?? "";
 
   rmSync(out, { recursive: true, force: true });
   for (const sub of ["before", "after", "diff"]) mkdirSync(join(out, sub), { recursive: true });
@@ -720,6 +721,7 @@ const compare = async (options) => {
   const count = (status) => results.filter((result) => result.status === status).length;
   const summary = {
     reportVersion: version,
+    pr,
     changed: count("changed"),
     new: count("new"),
     deleted: count("deleted"),
@@ -730,6 +732,7 @@ const compare = async (options) => {
     results,
   };
   writeFileSync(join(out, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
+  writeFileSync(join(out, "index.html"), report(summary));
 
   for (const result of results) {
     if (result.status !== "passed") console.log(`${result.status}: ${result.name}`);
@@ -746,6 +749,171 @@ const compare = async (options) => {
 const copy = (from, to) => writeFileSync(to, readFileSync(from));
 
 // ---------------------------------------------------------------------------
+// レポート（GitHub Pages に置いて、ブラウザで見比べるページ）
+// ---------------------------------------------------------------------------
+
+const REPORT_STYLE = `
+  :root { color-scheme: light; --line: #e3e6ec; --muted: #59606e; --ink: #16181d; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f5f7; color: var(--ink);
+    font: 14px/1.7 system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; }
+  header { position: sticky; top: 0; z-index: 2; background: #fff; border-bottom: 1px solid var(--line); padding: 18px 24px; }
+  h1 { margin: 0 0 6px; font-size: 17px; letter-spacing: .02em; }
+  .meta { color: var(--muted); font-size: 12px; }
+  .counts { display: flex; gap: 14px; margin: 12px 0 0; font-size: 12.5px; font-weight: 700; }
+  .counts span { color: var(--muted); font-weight: 500; }
+  .tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 12px; }
+  input[type=search] { border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 12.5px; min-width: 220px; }
+  label { font-size: 12.5px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+  main { padding: 20px 24px 60px; display: flex; flex-direction: column; gap: 18px; }
+  section { background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .head { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; padding: 14px 18px; border-bottom: 1px solid #edeff3; }
+  .name { font-weight: 700; }
+  .viewport { font-size: 11.5px; color: var(--muted); }
+  .badge { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+  .changed { background: #fdf0ef; color: #b3392f; }
+  .new { background: #eef3fb; color: #2f5fa8; }
+  .deleted { background: #eef0f4; color: #4a515e; }
+  .passed { background: #eef7f2; color: #1f6b52; }
+  .ratio { margin-left: auto; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .modes { display: flex; gap: 6px; padding: 12px 18px 0; }
+  .modes button { cursor: pointer; border: 1px solid var(--line); background: #fff; border-radius: 7px; padding: 5px 11px; font: inherit; font-size: 11.5px; color: var(--muted); }
+  .modes button[aria-pressed=true] { border-color: #2f5fa8; background: #eef3fb; color: #2f5fa8; font-weight: 700; }
+  .view { padding: 12px 18px 18px; }
+  .view img { max-width: 100%; border: 1px solid var(--line); border-radius: 8px; display: block; background: #fff; }
+  .side { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .side figure { margin: 0; }
+  figcaption { font-size: 11.5px; color: var(--muted); margin-bottom: 5px; }
+  .wipe { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; }
+  .wipe img { border: 0; border-radius: 0; }
+  .wipe .after { position: absolute; inset: 0; overflow: hidden; }
+  .wipe .after img { max-width: none; }
+  .wipe input { width: 100%; margin-top: 10px; }
+  .empty { padding: 18px; color: var(--muted); font-size: 12.5px; }
+`;
+
+const REPORT_SCRIPT = `
+  const STATUS = { changed: "変わった", new: "新規", deleted: "消えた", passed: "同じ" };
+  const list = document.getElementById("list");
+  const filter = document.getElementById("filter");
+  const onlyChanged = document.getElementById("only-changed");
+
+  const image = (kind, name) => \`<img loading="lazy" src="\${kind}/\${name}.png" alt="\${kind}">\`;
+
+  const view = (result, mode) => {
+    const { name, status } = result;
+    if (status === "passed") return '<p class="empty">差分はありません。</p>';
+    if (!result.published) {
+      return '<p class="empty">画像は差分の大きいものから ' + DATA.maxImages +
+        ' 件までしか残していないので、この画面の絵はありません。</p>';
+    }
+    if (status === "new") return image("after", name);
+    if (status === "deleted") return image("before", name);
+    if (mode === "diff") return image("diff", name);
+    if (mode === "side") {
+      return '<div class="side">' +
+        '<figure><figcaption>前（main）</figcaption>' + image("before", name) + '</figure>' +
+        '<figure><figcaption>後（この PR）</figcaption>' + image("after", name) + '</figure></div>';
+    }
+    return '<div class="wipe" data-wipe><div class="base">' + image("before", name) + '</div>' +
+      '<div class="after" style="width:50%">' + image("after", name) + '</div></div>' +
+      '<input type="range" min="0" max="100" value="50" aria-label="境目を動かす">';
+  };
+
+  const card = (result) => {
+    const section = document.createElement("section");
+    section.dataset.name = result.name + " " + result.label;
+    section.dataset.status = result.status;
+    const ratio = result.ratio === undefined ? "" :
+      \`<span class="ratio">\${(result.ratio * 100).toFixed(3)}% / \${(result.changedPixels ?? 0).toLocaleString("ja-JP")}px</span>\`;
+    const modes = result.status === "changed" && result.published
+      ? '<div class="modes"><button aria-pressed="true" data-mode="diff">差分</button>' +
+        '<button aria-pressed="false" data-mode="side">並べて</button>' +
+        '<button aria-pressed="false" data-mode="wipe">重ねて</button></div>'
+      : "";
+    section.innerHTML =
+      \`<div class="head"><span class="name">\${result.label}</span>\` +
+      \`<span class="viewport">\${result.viewport}</span>\` +
+      \`<span class="badge \${result.status}">\${STATUS[result.status]}</span>\${ratio}</div>\` +
+      modes + '<div class="view"></div>';
+    const body = section.querySelector(".view");
+    const draw = (mode) => {
+      body.innerHTML = view(result, mode);
+      const wipe = body.querySelector("[data-wipe]");
+      const range = body.querySelector("input[type=range]");
+      if (wipe && range) {
+        const apply = () => { wipe.querySelector(".after").style.width = range.value + "%"; };
+        range.addEventListener("input", apply);
+        apply();
+      }
+    };
+    for (const button of section.querySelectorAll(".modes button")) {
+      button.addEventListener("click", () => {
+        for (const other of section.querySelectorAll(".modes button")) {
+          other.setAttribute("aria-pressed", String(other === button));
+        }
+        draw(button.dataset.mode);
+      });
+    }
+    draw("diff");
+    return section;
+  };
+
+  const order = { changed: 0, new: 1, deleted: 2, passed: 3 };
+  const sorted = [...DATA.results].sort((a, b) =>
+    order[a.status] - order[b.status] || (b.ratio ?? 0) - (a.ratio ?? 0) || a.name.localeCompare(b.name));
+  const cards = sorted.map((result) => [result, card(result)]);
+  for (const [, node] of cards) list.append(node);
+
+  const apply = () => {
+    const word = filter.value.trim();
+    for (const [result, node] of cards) {
+      const hitWord = word === "" || node.dataset.name.includes(word);
+      const hitStatus = !onlyChanged.checked || result.status !== "passed";
+      node.hidden = !(hitWord && hitStatus);
+    }
+  };
+  filter.addEventListener("input", apply);
+  onlyChanged.addEventListener("change", apply);
+  apply();
+`;
+
+/**
+ * 見比べるためのページ。GitHub Pages に置いて開く前提で、外から何も読み込まない
+ * （画像は同じフォルダの before/ after/ diff/ を相対パスで指す）。
+ */
+const report = (summary) => {
+  const data = JSON.stringify(summary).replace(/</g, "\\u003c");
+  return `<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>見た目の差分${summary.pr ? ` — PR #${summary.pr}` : ""}</title>
+<style>${REPORT_STYLE}</style>
+<header>
+  <h1>見た目の差分</h1>
+  <p class="meta">${summary.pr ? `PR #${summary.pr} / ` : ""}コミット ${summary.reportVersion || "—"} / ${summary.results.length} 枚</p>
+  <p class="counts">
+    🔴 ${summary.changed} <span>変わった</span>
+    ⚪ ${summary.new} <span>新規</span>
+    ⚫ ${summary.deleted} <span>消えた</span>
+    🔵 ${summary.passed} <span>同じ</span>
+  </p>
+  <div class="tools">
+    <input id="filter" type="search" placeholder="画面名でしぼる">
+    <label><input id="only-changed" type="checkbox" checked> 変わったものだけ出す</label>
+  </div>
+</header>
+<main id="list"></main>
+<script>
+const DATA = ${data};
+${REPORT_SCRIPT}
+</script>
+</html>
+`;
+};
+
+// ---------------------------------------------------------------------------
 // comment
 // ---------------------------------------------------------------------------
 
@@ -755,6 +923,7 @@ const comment = (options) => {
   const summary = JSON.parse(readFileSync(options.summary ?? "visual-report/summary.json", "utf8"));
   const imageBase = (options["image-base"] ?? "").replace(/\/$/, "");
   const runUrl = options["run-url"] ?? "";
+  const reportUrl = options["report-url"] ?? "";
   const label = options.label ?? "visual-approved";
   const approved = options.approved === "true";
 
@@ -779,6 +948,14 @@ const comment = (options) => {
     `| ${summary.changed} | ${summary.new} | ${summary.deleted} | ${summary.passed} |`,
     "",
   );
+  if (reportUrl) {
+    lines.push(
+      `**[📊 全部まとめて見る（差分 / 並べて / 重ねて）](${reportUrl})**`,
+      "",
+      "> 下の画像は変化の大きいものだけ。撮った 18 枚すべてと、重ねて境目を動かす見方はレポート側にある。",
+      "",
+    );
+  }
 
   // 画像は差分の大きい順。先頭だけ開いておき、残りは畳む（コメントが縦に伸びすぎないように）。
   const OPEN_COUNT = 3;
@@ -832,6 +1009,7 @@ const comment = (options) => {
     );
   }
 
+  if (reportUrl) lines.push(`- [レポート](${reportUrl})`);
   if (runUrl) lines.push(`- [Actions](${runUrl})`);
   return `${lines.join("\n")}\n`;
 };

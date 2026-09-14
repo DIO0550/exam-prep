@@ -63,7 +63,7 @@ workflow は目的ごとに分けてある。見たいものが違い（「壊�
 | [`ci.yml`](.github/workflows/ci.yml) | PR / `main` への push / 手動 | `pnpm check` / `typecheck` / `test` / `build` | `contents: read` |
 | [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) | `main` への push / 手動 | static export を作って `gh-pages` のルートへ出す | `contents: write` と `pages: read`（設定の確認） |
 | [`pr-preview.yml`](.github/workflows/pr-preview.yml) | PR | その PR のサイトを `gh-pages/pr-preview/pr-<番号>/` へ出し、URL を PR に貼る | `contents: write` と PR コメント |
-| [`visual-regression.yml`](.github/workflows/visual-regression.yml) | PR / 手動 | 主要画面を撮って main と比べ、差分を PR に貼る | `contents: write`（画像置き場のブランチ）と PR コメント |
+| [`visual-regression.yml`](.github/workflows/visual-regression.yml) | PR / 手動 | 主要画面を撮って main と比べ、レポートを `gh-pages` へ出し PR に貼る | `contents: write` と PR コメント |
 | [`visual-baseline.yml`](.github/workflows/visual-baseline.yml) | `main` への push / 手動 | 比べる相手（baseline）を撮り直す | `contents: write` |
 
 公開先は <https://dio0550.github.io/exam-prep/>。パスが `/exam-prep` の分だけ深くなるのは
@@ -88,6 +88,13 @@ main へ直接 push せず PR を通す運用であれば、PR の時点で CI �
 |---|---|
 | ルート（`index.html` など） | `deploy-pages.yml`（`main` への push） |
 | `pr-preview/pr-<番号>/` | `pr-preview.yml`（PR ごと。閉じたら消す） |
+| `visual-regression/pr-<番号>/<SHA>/` | `visual-regression.yml`（見た目の差分のレポートと画像。閉じたら消す） |
+| `visual-baseline/` | `visual-baseline.yml`（比べる相手の画像） |
+
+**どの workflow も自分の場所しか触らない。** 出し直すときも、他の 3 つのフォルダはそのまま残す。
+
+Pages のビルドは 1 時間に 10 回までという緩い上限がある。PR に push すると
+プレビューと差分レポートで 2 回 push されるので、立て続けに直すと数分待たされることがある。
 
 ブランチは毎回 1 コミットに作り直す（force push）。サイト 1 回分が 14MB あり、履歴を積むと
 リポジトリが太り続けるため。
@@ -349,8 +356,13 @@ pnpm visual:compare -- --expected visual-baseline --actual visual-actual --out v
 ### 差分が出たとき
 
 チェックは**落ちる**。壊したのか意図して変えたのかは絵を見ないと分からないので、既定では
-レビューを止める。PR コメントの画像を見て、意図した変更なら `visual-approved` ラベルを付ける
-（付けるとチェックが通る）。意図しない変更ならコードを直す。
+レビューを止める。PR コメントの画像か、そこからリンクしている**レポートのページ**
+（`…/exam-prep/visual-regression/pr-<番号>/<SHA>/`）を見て、意図した変更なら
+`visual-approved` ラベルを付ける（付けるとチェックが通る）。意図しない変更ならコードを直す。
+
+レポートのページでは、撮った 18 枚すべてを **差分 / 並べて / 重ねて（境目を動かす）** の
+3 通りで見られる。画面名でしぼり込みもできる。コメントに貼る画像は変化の大きいものだけなので、
+全部見たいときはこちらを開く。
 
 ### 作りと、そう作った理由
 
@@ -361,8 +373,10 @@ pnpm visual:compare -- --expected visual-baseline --actual visual-actual --out v
 - **学習記録は localStorage に直接置く**。80 問解いた状態を画面の操作だけで作ると時間がかかりすぎる
 - **日本語フォントを入れてから撮る**。入っていないと日本語が豆腐（□）になる。豆腐は毎回同じ絵なので
   差分としては出ず、気づかないまま baseline に焼き付く
-- **画像は `visual-snapshots` ブランチに置く**。GitHub Pages は本番サイトを Actions から出しているので、
-  そこには触らない。コメントからは raw.githubusercontent.com の URL で参照する
+- **レポートと画像は `gh-pages` の `visual-regression/pr-<番号>/<SHA>/` に置く**。
+  一覧は Pages の URL で開き（`index.html` は同じフォルダの画像を相対パスで読む）、
+  PR コメントに貼る画像だけは raw.githubusercontent.com を指す。
+  Pages のデプロイが終わる前でもコメントの画像が見えるようにするためで、実体は同じファイル
 - ブランチは**毎回 1 コミットに作り直す**（force push）。画像を積み上げるとリポジトリが太り続けるため。
   PR ごとの画像は閉じたときに消す
 

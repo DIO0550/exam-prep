@@ -4,9 +4,10 @@
 # static export をビルドし、主要な画面を headless Chrome で撮って、main で撮ってある
 # baseline と画素で突き合わせる。変わった画面は 前 / 後 / 差分 の 3 枚を PR コメントに貼る。
 #
-# 画像の置き場は visual-snapshots ブランチ。GitHub Pages（deploy-pages.yml）は
-# Actions からのデプロイで本番サイトを出しているので、そこには一切触らない。
-# コメントからは raw.githubusercontent.com の URL で参照する（公開リポジトリなので出る）。
+# 置き場は gh-pages ブランチ（本番サイトと同じ）。visual-regression/pr-<番号>/<SHA>/ に
+# レポート（index.html）と画像を置き、GitHub Pages の URL で見比べられるようにする。
+# PR コメントの画像だけは raw.githubusercontent.com を指す。Pages のデプロイが終わる前でも
+# 見えるようにするためで、実体は同じファイル。
 #
 # 差分が出ている間はこのチェックを落とす。壊したのか意図して変えたのかは絵を見ないと
 # 分からないので、既定ではレビューを止め、意図した変更だと確認できたらラベルで通す。
@@ -22,15 +23,15 @@ on:
     types: [opened, reopened, synchronize, closed, labeled, unlabeled]
   workflow_dispatch:
 
-# 画像を置くブランチと、差分を承認するラベル。
+# 画像とレポートを置くブランチ（本番サイトと同じ）と、差分を承認するラベル。
 env:
-  SNAPSHOT_BRANCH: visual-snapshots
+  PAGES_BRANCH: gh-pages
   VISUAL_APPROVAL_LABEL: visual-approved
   COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
   NEXT_TELEMETRY_DISABLED: "1"
 
 permissions:
-  # visual-snapshots ブランチへ画像を push する。
+  # gh-pages ブランチへレポートと画像を push する。
   contents: write
   # コメントとラベルの付け外し。
   issues: write
@@ -110,12 +111,14 @@ jobs:
         if: github.event.action != 'closed'
         run: |
           mkdir -p visual-baseline
-          if git fetch --depth 1 origin "+refs/heads/${SNAPSHOT_BRANCH}:refs/remotes/origin/${SNAPSHOT_BRANCH}" 2>/dev/null; then
-            git checkout "origin/${SNAPSHOT_BRANCH}" -- baseline 2>/dev/null && cp -r baseline/. visual-baseline/ || true
-            rm -rf baseline
-            git reset --quiet
+          if git fetch --depth 1 origin "+refs/heads/${PAGES_BRANCH}:refs/remotes/origin/${PAGES_BRANCH}" 2>/dev/null; then
+            if git checkout "origin/${PAGES_BRANCH}" -- visual-baseline 2>/dev/null; then
+              git reset --quiet
+            else
+              echo "baseline がまだ無い（最初の 1 回はすべて新規として出る）"
+            fi
           else
-            echo "baseline がまだ無い（最初の 1 回はすべて新規として出る）"
+            echo "gh-pages がまだ無い（最初の 1 回はすべて新規として出る）"
           fi
 
       - name: Capture screens
@@ -133,10 +136,11 @@ jobs:
           --actual visual-actual
           --out visual-report
           --report-version ${{ github.event.pull_request.head.sha }}
+          --pr ${{ github.event.pull_request.number }}
 
-      # 画像は PR 番号と head の SHA で分ける。SHA を挟むのは、GitHub がコメントの画像を
+      # レポートは PR 番号と head の SHA で分ける。SHA を挟むのは、GitHub がコメントの画像を
       # URL ごとにキャッシュするため（同じ URL で中身を差し替えると古い絵が出続ける）。
-      - name: Publish images
+      - name: Publish report
         if: always() && github.event_name == 'pull_request'
         env:
           PR: ${{ github.event.pull_request.number }}
@@ -148,30 +152,32 @@ jobs:
 
           published=false
           for attempt in 1 2 3 4 5; do
-            git worktree remove --force /tmp/snapshots 2>/dev/null || true
+            git worktree remove --force /tmp/pages 2>/dev/null || true
 
-            if git fetch --depth 1 origin "+refs/heads/${SNAPSHOT_BRANCH}:refs/remotes/origin/${SNAPSHOT_BRANCH}" 2>/dev/null; then
-              git worktree add --detach /tmp/snapshots "origin/${SNAPSHOT_BRANCH}"
+            if git fetch --depth 1 origin "+refs/heads/${PAGES_BRANCH}:refs/remotes/origin/${PAGES_BRANCH}" 2>/dev/null; then
+              git worktree add --detach /tmp/pages "origin/${PAGES_BRANCH}"
             else
-              git worktree add --detach /tmp/snapshots
-              git -C /tmp/snapshots rm -rf --quiet . || true
+              git worktree add --detach /tmp/pages
+              git -C /tmp/pages rm -rf --quiet . || true
             fi
 
             # この PR の古い撮影ごと捨ててから置き直す（PR あたり最新の 1 回だけ残す）。
-            rm -rf "/tmp/snapshots/pr-${PR}"
+            # 触るのは自分の場所だけで、本番サイトや他の PR には手を出さない。
+            rm -rf "/tmp/pages/visual-regression/pr-${PR}"
             if [ "$CLOSED" != "true" ] && [ -d visual-report ]; then
-              mkdir -p "/tmp/snapshots/pr-${PR}/${SHA}"
-              cp -r visual-report/. "/tmp/snapshots/pr-${PR}/${SHA}/"
+              mkdir -p "/tmp/pages/visual-regression/pr-${PR}/${SHA}"
+              cp -r visual-report/. "/tmp/pages/visual-regression/pr-${PR}/${SHA}/"
             fi
+            touch /tmp/pages/.nojekyll
 
-            cd /tmp/snapshots
+            cd /tmp/pages
             # 履歴は持たない。画像を積むと重くなる一方なので、毎回 1 コミットに作り直す。
             # 作り直す前に前の試行のブランチを消す（残っていると --orphan が名前で衝突する）。
-            git branch -D snapshot 2>/dev/null || true
-            git checkout --quiet --orphan snapshot
+            git branch -D pages 2>/dev/null || true
+            git checkout --quiet --orphan pages
             git add -A
-            git commit --quiet -m "visual snapshots (PR #${PR})" || true
-            if git push --force origin "HEAD:${SNAPSHOT_BRANCH}"; then
+            git commit --quiet -m "visual report (PR #${PR})" || true
+            if git push --force origin "HEAD:${PAGES_BRANCH}"; then
               published=true
               break
             fi
@@ -182,12 +188,12 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           [ "$published" = "true" ]
 
-          # 他の PR の run と同時に force push すると、こちらの分が消えることがある。
-          # コメントの画像が 404 になるので、置けているかを取り直して確かめる。
+          # 他の run と同時に force push すると、こちらの分が消えることがある。
+          # コメントの画像とレポートが 404 になるので、置けているかを取り直して確かめる。
           if [ "$CLOSED" != "true" ] && [ -d visual-report ]; then
-            git fetch --depth 1 origin "+refs/heads/${SNAPSHOT_BRANCH}:refs/remotes/origin/${SNAPSHOT_BRANCH}"
-            git cat-file -e "origin/${SNAPSHOT_BRANCH}:pr-${PR}/${SHA}/summary.json" || {
-              echo "画像が残っていない。もう一度 workflow を回す必要がある"
+            git fetch --depth 1 origin "+refs/heads/${PAGES_BRANCH}:refs/remotes/origin/${PAGES_BRANCH}"
+            git cat-file -e "origin/${PAGES_BRANCH}:visual-regression/pr-${PR}/${SHA}/summary.json" || {
+              echo "レポートが残っていない。もう一度 workflow を回す必要がある"
               exit 1
             }
           fi
@@ -220,10 +226,16 @@ jobs:
               | grep -Fxq "$VISUAL_APPROVAL_LABEL"; then
               APPROVED=true
             fi
-            IMAGE_BASE="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${SNAPSHOT_BRANCH}/pr-${PR}/${SHA}"
+            OWNER="${GITHUB_REPOSITORY%%/*}"
+            REPO="${GITHUB_REPOSITORY#*/}"
+            # 画像は raw を指す（Pages のデプロイを待たずに出る）。
+            IMAGE_BASE="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${PAGES_BRANCH}/visual-regression/pr-${PR}/${SHA}"
+            # 一覧のページは Pages で開く（相対パスで画像を読むので、こちらは Pages 側）。
+            REPORT_URL="https://${OWNER}.github.io/${REPO}/visual-regression/pr-${PR}/${SHA}/"
             node .github/scripts/visual-regression.mjs comment \
               --summary visual-report/summary.json \
               --image-base "$IMAGE_BASE" \
+              --report-url "$REPORT_URL" \
               --run-url "$RUN_URL" \
               --label "$VISUAL_APPROVAL_LABEL" \
               --approved "$APPROVED" > "$BODY"

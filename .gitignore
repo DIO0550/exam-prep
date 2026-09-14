@@ -150,7 +150,7 @@ vite.config.ts.timestamp-*
 next-env.d.ts
 
 # 見た目の差分（VRT）の出力。撮った PNG とレポートは commit しない
-# （main のぶんは visual-snapshots ブランチに置く。README の「見た目の差分」を参照）
+# （CI で撮ったぶんは gh-pages ブランチに置く。README の「見た目の差分」を参照）
 visual-actual/
 visual-baseline/
 visual-report/

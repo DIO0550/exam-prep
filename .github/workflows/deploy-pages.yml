@@ -100,9 +100,10 @@ jobs:
               git -C /tmp/pages rm -rf --quiet . || true
             fi
 
-            # main のサイトはルートに出す。PR プレビュー（pr-preview/）はそのまま残す。
+            # main のサイトはルートに出す。PR のプレビューと見た目の差分のぶんは残す。
             find /tmp/pages -mindepth 1 -maxdepth 1 \
-              ! -name pr-preview ! -name .git -exec rm -rf {} +
+              ! -name pr-preview ! -name visual-regression ! -name visual-baseline \
+              ! -name .git -exec rm -rf {} +
             cp -r apps/web/out/. /tmp/pages/
             # Jekyll に通させない。Next.js の出力は _next/ を使うが、Jekyll は
             # _ で始まるものを配信しないため、これが無いと JS と CSS が 404 になる。
