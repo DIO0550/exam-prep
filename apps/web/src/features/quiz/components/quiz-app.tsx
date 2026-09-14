@@ -7,11 +7,14 @@ import { QUESTION_BY_ID, QUESTION_SETS } from "../data/questions";
 import { useProgress } from "../hooks/use-progress";
 import { useQuizSession } from "../hooks/use-quiz-session";
 import { useScrollReset } from "../hooks/use-scroll-reset";
+import { isEmptyNote } from "../notes/note";
+import { noteStore } from "../notes/store";
 import { progressStore } from "../progress/store";
 import { streakLabel, summarizeProgress } from "../progress/summary";
 import { ExamSidebar } from "./exam-sidebar";
 import { ExplainScreen } from "./explain-screen";
 import { HomeScreen } from "./home-screen";
+import { NotePanel } from "./note-panel";
 import { ProgressBar } from "./progress-bar";
 import { QuizScreen } from "./quiz-screen";
 import { ResultScreen } from "./result-screen";
@@ -19,6 +22,12 @@ import { ReviewScreen } from "./review-screen";
 import { SelectMenu } from "./select-menu";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
+
+/** 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。 */
+const clearEverything = (): void => {
+  progressStore.clear();
+  noteStore.clear();
+};
 
 export const QuizApp = () => {
   // 選んでいる回も学習記録の一部として保存する（次に開いたとき同じ回から始められる）。
@@ -30,6 +39,9 @@ export const QuizApp = () => {
     [record],
   );
   const exam = EXAMS[session.examIndex] ?? EXAMS[0];
+  // メモの枠は、問題が出ている画面でだけ開く（学習ホームや結果には書く相手がいない）。
+  const notesVisible =
+    session.notesOpen && session.current !== undefined && session.screen !== "review";
 
   // 問題や画面が替わったら、右側を上まで戻してから見せる。
   const contentRef = useRef<HTMLDivElement>(null);
@@ -42,9 +54,11 @@ export const QuizApp = () => {
       <SiteHeader
         screen={session.screen}
         feedback={session.feedback}
+        shuffle={session.shuffle}
         streakLabel={streakLabel(progress.streak)}
         onNavigate={session.setScreen}
         onFeedbackChange={session.setFeedback}
+        onShuffleChange={session.setShuffle}
       />
 
       <div className="flex flex-1 flex-col md:min-h-0 md:flex-row">
@@ -98,10 +112,11 @@ export const QuizApp = () => {
                   questionCount={questionSet.questions.length}
                   answered={session.summary.answered}
                   summary={progress}
+                  hasNotes={session.hasNotes}
                   onStart={session.start}
                   onRestart={session.restart}
                   onGoReview={() => session.setScreen("review")}
-                  onClearRecord={progressStore.clear}
+                  onClearRecord={clearEverything}
                 />
               )}
 
@@ -109,6 +124,7 @@ export const QuizApp = () => {
                 <QuizScreen
                   items={session.items}
                   item={session.current}
+                  order={session.order}
                   index={session.index}
                   isLast={session.isLast}
                   showFeedback={session.feedback === "inline"}
@@ -116,6 +132,9 @@ export const QuizApp = () => {
                   onToggleExclude={session.toggleExclude}
                   onToggleFlag={session.toggleFlag}
                   onToggleWeak={session.toggleWeak}
+                  notesOpen={notesVisible}
+                  written={!isEmptyNote(session.note)}
+                  onToggleNotes={session.toggleNotes}
                   onPrev={session.goPrev}
                   onNext={session.goNext}
                   onGoTo={session.goTo}
@@ -125,10 +144,14 @@ export const QuizApp = () => {
               {session.screen === "explain" && session.current && (
                 <ExplainScreen
                   item={session.current}
+                  order={session.order}
                   index={session.index}
                   isLast={session.isLast}
                   onToggleFlag={session.toggleFlag}
                   onToggleWeak={session.toggleWeak}
+                  notesOpen={notesVisible}
+                  written={!isEmptyNote(session.note)}
+                  onToggleNotes={session.toggleNotes}
                   onNext={session.goNext}
                 />
               )}
@@ -156,6 +179,18 @@ export const QuizApp = () => {
 
           <SiteFooter />
         </div>
+
+        {notesVisible && session.current && (
+          <NotePanel
+            index={session.index}
+            note={session.note}
+            onChangeText={session.setNoteText}
+            onAddStroke={session.addStroke}
+            onUndoStroke={session.undoStroke}
+            onClearSketch={session.clearSketch}
+            onClose={session.toggleNotes}
+          />
+        )}
       </div>
     </div>
   );

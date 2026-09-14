@@ -1,3 +1,4 @@
+import { isShuffled } from "../choice-order";
 import { choiceKey, type Question } from "../types";
 import { OriginalFigure } from "./question-figure";
 
@@ -12,32 +13,48 @@ type ChoiceNotesProps = {
   question: Question;
   /** 利用者が選んだ選択肢。未解答なら null。 */
   picked: number | null;
+  /** 選択肢を出す順。値は原本での添字。 */
+  order: number[];
   variant: Variant;
 };
 
-/** 解説の「それぞれの選択肢の意味」。正解・自分の解答が一目で分かるよう色を振る。 */
-export const ChoiceNotes = ({ question, picked, variant }: ChoiceNotesProps) => {
+/**
+ * 解説の「それぞれの選択肢の意味」。正解・自分の解答が一目で分かるよう色を振る。
+ *
+ * シャッフル中は原本での記号も併記する。解説の本文や計算式には「選択肢 ウ」のように
+ * 原本の記号で書いたものがあり、併記が無いと本文と画面のラベルが食い違って読めなくなるため。
+ */
+export const ChoiceNotes = ({ question, picked, order, variant }: ChoiceNotesProps) => {
   const size = SIZES[variant];
+  const shuffled = isShuffled(order);
 
   return (
-    <div className="mb-[18px] flex max-w-[82ch] flex-col gap-3.5">
-      {question.choices.map((choice, index) => {
+    <div className="mb-[18px] flex max-w-[118ch] flex-col gap-3.5">
+      {order.map((index, position) => {
+        const choice = question.choices[index];
+        if (!choice) return null;
         const isAnswer = index === question.answer;
         const isPicked = index === picked;
 
         return (
-          // biome-ignore lint/suspicious/noArrayIndexKey: 選択肢は問題ごとに固定長で並べ替えもしない
           <div key={index} className={`flex items-start ${size.gap}`}>
-            <span
-              className={`flex flex-none items-center justify-center rounded-full font-bold ${size.key} ${
-                isAnswer
-                  ? "bg-ok text-surface"
-                  : isPicked
-                    ? "bg-ng text-surface"
-                    : "bg-chip text-muted-soft"
-              }`}
-            >
-              {choiceKey(index)}
+            <span className="flex flex-none flex-col items-center gap-1">
+              <span
+                className={`flex items-center justify-center rounded-full font-bold ${size.key} ${
+                  isAnswer
+                    ? "bg-ok text-surface"
+                    : isPicked
+                      ? "bg-ng text-surface"
+                      : "bg-chip text-muted-soft"
+                }`}
+              >
+                {choiceKey(position)}
+              </span>
+              {shuffled && (
+                <span className="whitespace-nowrap text-[10px] text-muted-soft">
+                  原本 {choiceKey(index)}
+                </span>
+              )}
             </span>
             <div className="flex flex-1 flex-col gap-1">
               <span

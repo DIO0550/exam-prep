@@ -1,3 +1,4 @@
+import { isShuffled, positionOf, SHUFFLED_NOTE } from "../choice-order";
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
 import { choiceKey, formatSource, shortSource } from "../types";
@@ -6,6 +7,7 @@ import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
 import { KeyPointList } from "./key-point-list";
 import { MarkButtons } from "./mark-buttons";
+import { NoteButton } from "./note-button";
 import { QuestionDots } from "./question-dots";
 import { StemBlock } from "./question-figure";
 
@@ -13,6 +15,8 @@ type QuizScreenProps = {
   /** 演習全体。下部の問番号ボタンに使う。 */
   items: QuizItem[];
   item: QuizItem;
+  /** 選択肢を出す順。値は原本での添字。 */
+  order: number[];
   /** 通し番号（0 始まり）。ラベルの「問 03」に使う。 */
   index: number;
   isLast: boolean;
@@ -22,6 +26,11 @@ type QuizScreenProps = {
   onToggleExclude: (index: number) => void;
   onToggleFlag: () => void;
   onToggleWeak: () => void;
+  /** メモの枠が開いているか。 */
+  notesOpen: boolean;
+  /** この問題にメモが書いてあるか。 */
+  written: boolean;
+  onToggleNotes: () => void;
   onPrev: () => void;
   onNext: () => void;
   onGoTo: (index: number) => void;
@@ -30,6 +39,7 @@ type QuizScreenProps = {
 export const QuizScreen = ({
   items,
   item,
+  order,
   index,
   isLast,
   showFeedback,
@@ -37,6 +47,9 @@ export const QuizScreen = ({
   onToggleExclude,
   onToggleFlag,
   onToggleWeak,
+  notesOpen,
+  written,
+  onToggleNotes,
   onPrev,
   onNext,
   onGoTo,
@@ -44,6 +57,8 @@ export const QuizScreen = ({
   const { question, attempt } = item;
   const correct = isCorrect(item);
   const tone = correct ? "ok" : "ng";
+  // 並べ替えたときは、出典にもその旨を併記する（改変は理由を問わず明記する。docs 2.3）。
+  const shuffled = isShuffled(order);
 
   return (
     <div className="flex animate-rise-in flex-col gap-4">
@@ -60,17 +75,20 @@ export const QuizScreen = ({
               {shortSource(question.source)}
             </span>
           </div>
-          <MarkButtons
-            size="sm"
-            flagged={attempt.flagged}
-            weak={attempt.weak}
-            onToggleFlag={onToggleFlag}
-            onToggleWeak={onToggleWeak}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <MarkButtons
+              size="sm"
+              flagged={attempt.flagged}
+              weak={attempt.weak}
+              onToggleFlag={onToggleFlag}
+              onToggleWeak={onToggleWeak}
+            />
+            <NoteButton size="sm" open={notesOpen} written={written} onToggle={onToggleNotes} />
+          </div>
         </div>
 
         <div className="px-[26px] pt-[30px] pb-1.5">
-          <p className="max-w-[62ch] text-pretty font-medium text-[17px] leading-[1.9] tracking-[0.01em]">
+          <p className="max-w-[92ch] text-pretty font-medium text-[17px] leading-[1.9] tracking-[0.01em]">
             {question.text}
           </p>
           {question.stem && (
@@ -80,7 +98,7 @@ export const QuizScreen = ({
           )}
         </div>
 
-        <ChoiceList item={item} onPick={onPick} onToggleExclude={onToggleExclude} />
+        <ChoiceList item={item} order={order} onPick={onPick} onToggleExclude={onToggleExclude} />
 
         {attempt.revealed && showFeedback && (
           <div
@@ -93,7 +111,7 @@ export const QuizScreen = ({
                 {correct ? "正解" : "不正解"}
               </span>
               <span className="text-[13px] text-muted-soft">
-                正解：{choiceKey(question.answer)}
+                正解：{choiceKey(positionOf(order, question.answer))}
               </span>
             </div>
 
@@ -103,7 +121,7 @@ export const QuizScreen = ({
                   ポイント
                 </h3>
                 {question.explain && (
-                  <p className="mb-3.5 max-w-[74ch] text-pretty text-[14px] text-ink-soft leading-[1.95]">
+                  <p className="mb-3.5 max-w-[110ch] text-pretty text-[14px] text-ink-soft leading-[1.95]">
                     {question.explain}
                   </p>
                 )}
@@ -112,7 +130,7 @@ export const QuizScreen = ({
             )}
 
             {question.figure && (
-              <div className="mb-[22px] max-w-[820px] rounded-xl border border-line bg-surface px-5 pt-5 pb-[18px]">
+              <div className="mb-[22px] max-w-[1000px] rounded-xl border border-line bg-surface px-5 pt-5 pb-[18px]">
                 <FigureBlock figure={question.figure} variant="inline" />
               </div>
             )}
@@ -121,9 +139,14 @@ export const QuizScreen = ({
               <h3 className="mb-3.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
                 それぞれの選択肢の意味
               </h3>
-              <ChoiceNotes question={question} picked={attempt.picked} variant="inline" />
+              <ChoiceNotes
+                question={question}
+                picked={attempt.picked}
+                order={order}
+                variant="inline"
+              />
               <div className="text-[11.5px] text-muted-soft">
-                出典：{formatSource(question.source)}
+                出典：{formatSource(question.source, shuffled ? SHUFFLED_NOTE : undefined)}
               </div>
             </div>
           </div>

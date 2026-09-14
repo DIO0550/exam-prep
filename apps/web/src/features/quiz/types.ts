@@ -38,10 +38,16 @@ const EXAM_NAMES: Record<ExamCode, string> = {
 const TERM_NAMES: Record<Term, string> = { haru: "春期", aki: "秋期" };
 const SECTION_NAMES: Record<Section, string> = { am: "午前", pm: "午後" };
 
-/** 出典表記。IPA が FAQ で示している形式に合わせる。 */
-export const formatSource = (source: Source): string => {
+/**
+ * 出典表記。IPA が FAQ で示している形式に合わせる。
+ *
+ * extra は、データではなく表示のしかたで原本と変わっている分（選択肢の並べ替えなど）。
+ * 改変は理由を問わず併記する決まりなので、modified と同じ括弧に並べる（docs 2.3）。
+ */
+export const formatSource = (source: Source, extra?: string): string => {
   const base = `${source.era}${source.year}年度 ${TERM_NAMES[source.term]} ${EXAM_NAMES[source.exam]} ${SECTION_NAMES[source.section]} 問${source.no}`;
-  return source.modified ? `${base}（${source.modified}）` : base;
+  const notes = [source.modified, extra].filter((note): note is string => Boolean(note));
+  return notes.length > 0 ? `${base}（${notes.join("、")}）` : base;
 };
 
 const ERA_SHORT: Record<Era, string> = { 令和: "R", 平成: "H" };
@@ -120,6 +126,11 @@ export type Question = {
   text: string;
   stem?: Stem;
   choices: Choice[];
+  /**
+   * 選択肢を並べ替えずに出す。原本の図が「ア〜エ」で選択肢を指しているなど、
+   * 並べ替えると問題そのものが成り立たなくなるものに付ける。
+   */
+  keepChoiceOrder?: boolean;
   /** 以下は本サイトで書いた解説。IPA の解答例ではない（docs 3.4）。 */
   explain?: string;
   points?: string[];

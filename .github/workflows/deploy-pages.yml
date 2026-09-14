@@ -2,20 +2,25 @@
 # static export を GitHub Pages へ出す。検査（lint / 型 / テスト）はしない。
 #
 # 検査は ci.yml が持つ。分けてあるのは、見たいものが違い（あちらは「壊れていないか」、
-# こちらは「出せたか」）、必要な権限も違うため。書き込み権限（pages / id-token）が要るのは
-# この workflow の deploy ジョブだけで、ci.yml は contents: read のままでいられる。
+# こちらは「出せたか」）、必要な権限も違うため。
+#
+# 出し方は「gh-pages ブランチへ push する」方式。Actions から直接デプロイする方式
+# （actions/deploy-pages）から切り替えたのは、PR ごとのプレビューを同じサイトの
+# /pr-preview/pr-<番号>/ に置くため。Pages の配信元はリポジトリにつき 1 つしか選べず、
+# Actions 方式のままでは main のサイトと PR のプレビューを同居させられない。
+#
+# ！！リポジトリ設定を 1 回だけ変える必要がある！！
+#   Settings → Pages → Build and deployment → Source を
+#   「Deploy from a branch」にして、Branch を gh-pages / (root) にする。
+# 切り替えるまで、この workflow が push しても公開内容は変わらない（最後に Actions から
+# 出したものが出続ける）。下の「Verify Pages source」がその状態を見つけて落とす。
 #
 # 注意: main への push では ci.yml と並行して走るので、この workflow 自体は
 # テストの成否を待たない。main を守るのはブランチ保護（CI を必須チェックにする）側の役目。
 #
 # 使う Action は GitHub 公式（actions/*）だけに絞り、すべてコミット SHA で固定する。
-# タグは付け替えられるがコミット SHA は動かないので、「昨日まで動いていた v4 が
-# 別の中身に差し替わる」形の攻撃を受けない。更新するときは SHA と横のコメントの
-# バージョンを一緒に書き換える。
-#
 # パッケージマネージャは pnpm だけ。pnpm 自体は corepack が package.json の
-# packageManager（ハッシュ付きで固定）から入れるので、サードパーティの
-# Action（pnpm/action-setup など）を足す必要がない。
+# packageManager（ハッシュ付きで固定）から入れる。
 # =============================================================================
 name: Deploy to GitHub Pages
 
@@ -25,29 +30,28 @@ on:
       - main
   workflow_dispatch:
 
-# 既定は読み取りだけ。書き込みが要るのは deploy ジョブだけなので、そちらに足す。
+# gh-pages ブランチへ push する。Pages の設定を読むのに pages: read も要る。
 permissions:
-  contents: read
+  contents: write
+  pages: read
 
-# デプロイを重ねない。走行中のものは打ち切らない（途中で止めると Pages が半端な状態で残る）。
+# デプロイを重ねない。走行中のものは打ち切らない（途中で止めると公開内容が半端になる）。
 concurrency:
   group: github-pages
   cancel-in-progress: false
 
 env:
-  # corepack が pnpm を取りに行くときの確認プロンプトを出さない（CI では答えられない）。
+  PAGES_BRANCH: gh-pages
   COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
   NEXT_TELEMETRY_DISABLED: "1"
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # 以降のステップに認証情報を残さない。ここでは push しない。
-          persist-credentials: false
+        # gh-pages へ push するので認証情報を残す（ci.yml は push しないので消している）。
 
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -78,21 +82,73 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          path: apps/web/out
+      - name: Publish to gh-pages
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+          published=false
+          for attempt in 1 2 3 4 5; do
+            git worktree remove --force /tmp/pages 2>/dev/null || true
+
+            if git fetch --depth 1 origin "+refs/heads/${PAGES_BRANCH}:refs/remotes/origin/${PAGES_BRANCH}" 2>/dev/null; then
+              git worktree add --detach /tmp/pages "origin/${PAGES_BRANCH}"
+            else
+              git worktree add --detach /tmp/pages
+              git -C /tmp/pages rm -rf --quiet . || true
+            fi
+
+            # main のサイトはルートに出す。PR のプレビューと見た目の差分のぶんは残す。
+            find /tmp/pages -mindepth 1 -maxdepth 1 \
+              ! -name pr-preview ! -name visual-regression ! -name visual-baseline \
+              ! -name .git -exec rm -rf {} +
+            cp -r apps/web/out/. /tmp/pages/
+            # Jekyll に通させない。Next.js の出力は _next/ を使うが、Jekyll は
+            # _ で始まるものを配信しないため、これが無いと JS と CSS が 404 になる。
+            touch /tmp/pages/.nojekyll
+
+            cd /tmp/pages
+            # 履歴は持たない。サイト 1 回分が 14MB あり、積み上げるとリポジトリが太り続ける。
+            # 作り直す前に前の試行のブランチを消す（残っていると --orphan が名前で衝突する）。
+            git branch -D pages 2>/dev/null || true
+            git checkout --quiet --orphan pages
+            git add -A
+            git commit --quiet -m "deploy ${SHA}" || true
+            if git push --force origin "HEAD:${PAGES_BRANCH}"; then
+              published=true
+              break
+            fi
+            echo "push できなかった（${attempt} 回目）。取り直して再試行する"
+            cd "$GITHUB_WORKSPACE"
+            sleep $((attempt * 3))
+          done
+          cd "$GITHUB_WORKSPACE"
+          [ "$published" = "true" ]
+
+      # 配信元がブランチになっていないと、push しても公開内容は変わらない。
+      # 黙って古いサイトが出続けるのが一番困るので、ここで気づけるようにする。
+      - name: Verify Pages source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! config=$(gh api "repos/${GITHUB_REPOSITORY}/pages" 2>/dev/null); then
+            echo "Pages の設定を読めなかった（まだ有効になっていないかもしれない）。"
+            echo "Settings → Pages → Source を「Deploy from a branch」にして、"
+            echo "Branch を ${PAGES_BRANCH} / (root) にすること。"
+            exit 1
+          fi
+          branch=$(printf '%s' "$config" | node -e 'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>{const p=JSON.parse(s);console.log(`${p.build_type ?? ""}:${p.source?.branch ?? ""}:${p.source?.path ?? ""}`)})')
+          echo "今の配信元: ${branch}"
+          case "$branch" in
+            legacy:${PAGES_BRANCH}:/) echo "配信元は ${PAGES_BRANCH} / (root)。問題なし。" ;;
+            *)
+              echo "::error::公開先が ${PAGES_BRANCH} / (root) になっていない（今: ${branch}）。"
+              echo "::error::Settings → Pages → Build and deployment → Source を「Deploy from a branch」、"
+              echo "::error::Branch を ${PAGES_BRANCH} / (root) にすると、この push の内容が公開される。"
+              echo "::error::切り替え方式にしてから最初の 1 回はここで必ず落ちる（想定どおり）。"
+              echo "::error::設定を変えたあと、この workflow を Re-run すれば緑になる。"
+              exit 1
+              ;;
+          esac

@@ -5,7 +5,8 @@
 **公開ページ: <https://dio0550.github.io/exam-prep/>**
 
 `main` へ push すると [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) が static export を
-作って上の URL へ出す（詳しくは「[CI とデプロイ](#ci-とデプロイ)」）。
+作って上の URL へ出す。PR には**そのブランチのサイトを触れるプレビュー**が
+`…/exam-prep/pr-preview/pr-<番号>/` に出る（詳しくは「[CI とデプロイ](#ci-とデプロイ)」）。
 
 ## 構成
 
@@ -21,7 +22,10 @@ apps/web/          Next.js 16（App Router / TypeScript / Tailwind v4）
       components/  画面と部品
       hooks/       画面の状態（useQuizSession）と学習記録の購読（useProgress）
       progress/    学習記録。localStorage への保存と、そこから作る集計
+      notes/       問題ごとのメモ（自由入力と手書き）。保存先は学習記録と分けてある
       data/        問題データ。出典は types.ts の formatSource が組み立てる
+      choice-order.ts 選択肢の表示順（原本順 / シャッフル）
+      local-store.ts  localStorage の値を React の外から購読する土台（progress と notes が使う）
   public/questions/ 問題の図（公開 PDF から切り出し）と、そのライセンス表記
   vitest.config.ts テスト設定（jsdom + Testing Library）
 biome.json         lint / format（リポジトリ全体を 1 つの設定で見る）
@@ -40,6 +44,8 @@ pnpm-workspace.yaml workspace とクールタイムの設定
 | `pnpm test` | Vitest（`pnpm --filter @exam-prep/web test:watch` で watch） |
 | `pnpm check` | Biome で lint / format / import 順を検査 |
 | `pnpm fix` | Biome で自動修正 |
+| `pnpm visual:capture` | 主要画面のスクリーンショットを撮る（先に `pnpm build`） |
+| `pnpm visual:compare` | 撮った画像を baseline と比べ、差分の画像を作る |
 
 依存を足すときは `pnpm --filter @exam-prep/web add <pkg>`。`npm` / `npx` / `pnpm dlx` は
 フックで拒否される（後述）。
@@ -49,24 +55,49 @@ pnpm-workspace.yaml workspace とクールタイムの設定
 
 ## CI とデプロイ
 
-workflow は 2 つに分けてある。見たいものが違い（片方は「壊れていないか」、もう片方は
-「出せたか」）、必要な権限も違うため。
+workflow は目的ごとに分けてある。見たいものが違い（「壊れていないか」「出せたか」
+「見た目が変わっていないか」「触って確かめられるか」）、必要な権限も違うため。
 
 | workflow | いつ走るか | やること | 権限 |
 |---|---|---|---|
 | [`ci.yml`](.github/workflows/ci.yml) | PR / `main` への push / 手動 | `pnpm check` / `typecheck` / `test` / `build` | `contents: read` |
-| [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) | `main` への push / 手動 | static export を作って GitHub Pages へ出す | deploy ジョブにだけ `pages: write` と `id-token: write` |
+| [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) | `main` への push / 手動 | static export を作って `gh-pages` のルートへ出す | `contents: write` と `pages: read`（設定の確認） |
+| [`pr-preview.yml`](.github/workflows/pr-preview.yml) | PR | その PR のサイトを `gh-pages/pr-preview/pr-<番号>/` へ出し、URL を PR に貼る | `contents: write` と PR コメント |
+| [`visual-regression.yml`](.github/workflows/visual-regression.yml) | PR / 手動 | 主要画面を撮って main と比べ、レポートを `gh-pages` へ出し PR に貼る | `contents: write` と PR コメント |
+| [`visual-baseline.yml`](.github/workflows/visual-baseline.yml) | `main` への push / 手動 | 比べる相手（baseline）を撮り直す | `contents: write` |
 
 公開先は <https://dio0550.github.io/exam-prep/>。パスが `/exam-prep` の分だけ深くなるのは
 プロジェクトページだからで、`basePath` をそれに合わせてある（後述）。
 
-**この 2 つは `main` への push で並行して走る。** デプロイ側はテストの成否を待たないので、
+**`main` への push では、検査（ci）とデプロイと baseline 撮り直しが並行して走る。**
+デプロイ側はテストの成否を待たないので、
 検査を通らないものを出したくないなら、**ブランチ保護で CI を必須チェックにする**
 （Settings → Branches → `main` → Require status checks to pass → `verify`）。
 main へ直接 push せず PR を通す運用であれば、PR の時点で CI が通っている。
 
 **リポジトリ設定が 1 つ要る。** Settings → Pages → Build and deployment → Source を
-**GitHub Actions** にする。ここが "Deploy from a branch" のままだと deploy ジョブが失敗する。
+**Deploy from a branch**、Branch を **`gh-pages` / (root)** にする。ここが "GitHub Actions" の
+ままだと、push しても公開内容が変わらないまま古いサイトが出続ける（黙って古いものが出るのが
+一番困るので、`deploy-pages.yml` の最後で今の配信元を読んで、違っていれば落とすようにしてある）。
+
+ブランチ方式にしてあるのは、**PR のプレビューを同じサイトに同居させる**ため。Pages の配信元は
+リポジトリにつき 1 つしか選べないので、Actions から直接デプロイする方式のままでは
+`main` のサイトと PR のプレビューを両方出せない。
+
+| gh-pages の中身 | 誰が置くか |
+|---|---|
+| ルート（`index.html` など） | `deploy-pages.yml`（`main` への push） |
+| `pr-preview/pr-<番号>/` | `pr-preview.yml`（PR ごと。閉じたら消す） |
+| `visual-regression/pr-<番号>/<SHA>/` | `visual-regression.yml`（見た目の差分のレポートと画像。閉じたら消す） |
+| `visual-baseline/` | `visual-baseline.yml`（比べる相手の画像） |
+
+**どの workflow も自分の場所しか触らない。** 出し直すときも、他の 3 つのフォルダはそのまま残す。
+
+Pages のビルドは 1 時間に 10 回までという緩い上限がある。PR に push すると
+プレビューと差分レポートで 2 回 push されるので、立て続けに直すと数分待たされることがある。
+
+ブランチは毎回 1 コミットに作り直す（force push）。サイト 1 回分が 14MB あり、履歴を積むと
+リポジトリが太り続けるため。
 
 ### workflow の方針
 
@@ -79,9 +110,9 @@ main へ直接 push せず PR を通す運用であれば、PR の時点で CI �
   **クールタイム（7 日）を満たさないバージョンが載っていれば CI で落ちる**
 - corepack は Node 24 に同梱されているものを使う。Node 25 以降へ上げるときは
   corepack が外れるので、pnpm の入れ方を別途決める必要がある
-- セットアップ（checkout / Node / corepack / キャッシュ / install）は 2 ファイルに
+- セットアップ（checkout / Node / corepack / キャッシュ / install）は各 workflow に
   同じ内容が並ぶ。まとめるにはローカルの composite action を挟むことになるので、
-  1 ファイルを読めば何が動くか分かる状態を優先した。**片方を直したらもう片方も直す**
+  1 ファイルを読めば何が動くか分かる状態を優先した。**1 つを直したら他も直す**
 
 ### static export の設定
 
@@ -90,13 +121,20 @@ main へ直接 push せず PR を通す運用であれば、PR の時点で CI �
 | 設定 | 理由 |
 |---|---|
 | `output: 'export'` | 静的ファイルだけを吐く（出力は `apps/web/out`） |
-| `basePath: '/exam-prep'` | プロジェクトページはリポジトリ名の分だけパスが深くなる。リネームや独自ドメインを当てたら合わせる |
+| `basePath` | プロジェクトページはリポジトリ名の分だけパスが深くなる。既定は `/exam-prep`。PR プレビューのビルドだけ `NEXT_PUBLIC_BASE_PATH` で差し替える（[`base-path.ts`](apps/web/src/base-path.ts)） |
 | `trailingSlash: true` | `out/foo/index.html` の形にする。拡張子なし URL の解決はホストによって差があるため |
 | `images.unoptimized: true` | static export には画像最適化サーバが無い |
 
-`public/.nojekyll` を置いてある。Actions からの artifact デプロイでは Jekyll は走らないので
-本来は不要だが、`_next/` のようなアンダースコア始まりが無視される経路に迷い込むと
-原因が分かりにくいので、保険として残している。
+ファビコンは [`apps/web/src/app/icon.svg`](apps/web/src/app/icon.svg)（本と ✓ のアイコン）。
+SVG なので拡大しても荒れず、1KB 未満で済む。`apple-icon.png`（ホーム画面用・180px・角丸なしで
+全面を塗る。丸めるのは iOS 側）と `favicon.ico`（16/32px。SVG のファビコンに対応していない
+ブラウザ向け）も同じ絵から作って app/ に置き、`layout.tsx` の `metadata.icons` で
+まとめて指している。プロジェクトページは `/exam-prep/` 配下なので、ブラウザ任せの
+「サイト直下の /favicon.ico」には落ちてこない。だから ico も明示的に指す必要がある。
+
+`public/.nojekyll` を置いてある。ブランチから配信すると Jekyll を通るので、これが無いと
+`_next/` のようなアンダースコア始まりが配信されず、JS と CSS が 404 になる
+（workflow 側でもルートに `.nojekyll` を作っている）。
 
 `output: 'export'` では `next start` が使えないので、ルートの `start` スクリプトは無い。
 ビルド結果を手元で見るときは `apps/web/out` を任意の静的サーバで配る。
@@ -210,7 +248,7 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 | 画面 | 中身 |
 |---|---|
 | 学習ホーム | 累計の学習記録と分野別の到達度。ここから演習を始める（途中なら再開） |
-| 演習 | 問題・選択肢・正誤・解説。解説は「同画面」「別画面」を切り替えられる |
+| 演習 | 問題・選択肢・正誤・解説。解説は「同画面」「別画面」、選択肢は「原本順」「シャッフル」を切り替えられる。右にメモを開ける |
 | 解説 | 「別画面」設定のときに解答後へ挟まる、解説だけの画面 |
 | 結果 | 得点と分野別の内訳、所要時間 |
 | 問題一覧・見直し | 全問の正誤一覧。不正解・フラグ・苦手登録で絞り込める |
@@ -230,6 +268,9 @@ VS Code / Cursor で「Reopen in Container」。中身は次の通り。
 | 直近200問の正誤 | 累計正答率 |
 | 解答した日（最大400日） | 連続学習日数と最長記録 |
 | 最後に選んでいた回 | 次に開いたときの出題 |
+| 選択肢をシャッフルするか・並びの種 | 次に開いたときも同じ設定・同じ並びで出す |
+
+問題ごとのメモは別のキー（`exam-prep:notes:v1`）に置く。理由は「[メモ](#メモ)」を参照。
 
 分野別の到達度は、保存した解答状況を問題 ID から引き直して回をまたいで集計する
 （`data/questions.ts` の `QUESTION_BY_ID`）。
@@ -242,6 +283,109 @@ IndexedDB ではなく localStorage なのは、記録が 1 件（800問すべ�
 
 static export した HTML には誰の記録も入らないので、保存した値が出るのは hydration の後。
 `useSyncExternalStore` の `getServerSnapshot` に空の記録を返して、そこを揃えている。
+
+保存形式には版（`RECORD_VERSION`）を持たせてある。読めない版は捨てて作り直すが、設定が
+増えただけの古い版は既定値を足して読む（設定 1 つのために学習記録を消さないため）。
+
+## 選択肢のシャッフル
+
+ヘッダーの「選択肢」で **原本順 / シャッフル** を切り替える。既定は原本順（IPA の PDF と
+同じ並び）で、シャッフルにすると「答えはウだった」という位置の記憶では解けなくなる。
+
+並べ替えは [`choice-order.ts`](apps/web/src/features/quiz/choice-order.ts) が作る
+「表示順 → 原本での添字」の配列だけで表し、**保存する解答も正解も原本の添字のまま**扱う。
+だから途中で設定を切り替えても、解答済みの問題で「正解」「あなたの解答」が別の選択肢に
+付いてしまうことがない。並びは問題 ID と種から毎回同じものを作るので、リロードしても同じ順で
+出る。種は「はじめから解き直す」で進むので、解き直すと並びが変わる。
+
+原本と違う並びで出している間は、次の 2 つで原本との対応が追えるようにしてある。
+
+- 出典に「選択肢の順序を入れ替えて表示」と併記する（改変は理由を問わず明記する。docs 2.3）
+- 解説の選択肢一覧に、原本での記号（「原本 ウ」）を小さく添える。解説本文や計算式には
+  「選択肢 ウ」と原本の記号で書いたものがあるため
+
+原本の図が「ア〜エ」で選択肢そのものを指している問題は、並べ替えると問題が成立しない。
+そういう問題には `Question` の `keepChoiceOrder` を付けて、設定にかかわらず原本順で出す。
+
+## メモ
+
+問題カードの「メモ」を押すと、右側にメモの枠が開く（狭い幅では画面の下から出る）。中身は
+**自由入力**と、**ドラッグで描ける手書き**の 2 つで、どちらも問題ごとに保存される。解き直しや
+見直しで同じ問題を開けば、そのときのメモがそのまま出る。
+
+- **手書きは点の並びで持つ**（画像にしない）。PNG にすると 1 問で数十 KB になり、localStorage に
+  入らなくなる。点なら線 3 本と 2 行の文章で 300 バイト程度に収まり、拡大しても線が荒れない
+- 点は 1000×750 の論理座標で持ち、描くときに枠の幅へ合わせて拡大縮小する。画面の幅が変わっても
+  同じ絵が出る（実寸で持つと、別の幅で開いたときにずれる）
+- **保存先のキーは学習記録と分ける**（`exam-prep:notes:v1`）。メモは人によって伸び方が違うので、
+  容量を使い切ったときに解答履歴まで道連れにしないため
+- 崩れた値が入っていたときは、その問題のメモだけを落として残りは読む。学習記録が「1 か所でも
+  崩れていたら全部捨てる」なのは半端な記録から集計を出さないためで、メモは集計しないので
+  巻き添えにしない
+- 「学習記録を消す」でメモも一緒に消える
+
+localStorage を購読する部分（同期で読む・書いたら保存する・別タブに追従する）は学習記録と
+同じなので、[`local-store.ts`](apps/web/src/features/quiz/local-store.ts) にまとめてある。
+
+## PR のプレビュー
+
+PR を出すと、そのブランチのサイトが
+`https://dio0550.github.io/exam-prep/pr-preview/pr-<番号>/` に出て、URL が PR にコメントされる
+（[`pr-preview.yml`](.github/workflows/pr-preview.yml)）。画像で見る差分と違い、こちらは
+**実際に触って確かめる**ためのもの。PR を閉じるとフォルダごと消える。
+
+- `basePath` はビルド時に焼き込まれるので、プレビュー用に `NEXT_PUBLIC_BASE_PATH` を
+  与えてビルドする。本番と同じ値のままだと、資材の URL が `/exam-prep/...` を指したままになり
+  プレビューでは 404 になる
+- 学習記録とメモは localStorage に入るが、**URL（オリジン＋パス）が本番と違うので混ざらない**。
+  プレビューで解いた記録は本番には出ない
+- 反映まで 1〜数分かかる。Pages のデプロイは同時に 1 本しか走らないので、`main` への push と
+  PR の push が重なると、後から入ったほうはその分待つ
+
+## 見た目の差分（PR で確認する）
+
+コードの差分だけでは画面がどう変わったか分からないので、PR に **前 / 後 / 差分** の画像を貼る。
+[`visual-regression.yml`](.github/workflows/visual-regression.yml) が PR のたびに走り、
+static export をビルドして主要画面を撮り、main の画像（baseline）と画素で突き合わせる。
+
+撮る画面は [`visual-scenarios.mjs`](.github/scripts/visual-scenarios.mjs) に並べてある。
+学習ホーム・演習・解説・結果・見直し・メモ・シャッフルを **PC 幅（1440px）とスマホ幅（430px）**の
+2 通りで撮る。画面を足したいときはこのファイルに 1 つ足すだけでよく、workflow は触らない。
+
+手元でも同じものが撮れる。
+
+```
+pnpm build
+pnpm visual:capture -- --out visual-actual
+pnpm visual:compare -- --expected visual-baseline --actual visual-actual --out visual-report
+```
+
+### 差分が出たとき
+
+チェックは**落ちる**。壊したのか意図して変えたのかは絵を見ないと分からないので、既定では
+レビューを止める。PR コメントの画像か、そこからリンクしている**レポートのページ**
+（`…/exam-prep/visual-regression/pr-<番号>/<SHA>/`）を見て、意図した変更なら
+`visual-approved` ラベルを付ける（付けるとチェックが通る）。意図しない変更ならコードを直す。
+
+レポートのページでは、撮った 18 枚すべてを **差分 / 並べて / 重ねて（境目を動かす）** の
+3 通りで見られる。画面名でしぼり込みもできる。コメントに貼る画像は変化の大きいものだけなので、
+全部見たいときはこちらを開く。
+
+### 作りと、そう作った理由
+
+- **撮影はブラウザを直に動かす**（CDP）。Playwright などを足していないのは、この検査のために
+  依存を増やしたくないため。画素の比較も同じブラウザの canvas でやるので、追加の依存はゼロ
+- **撮るたびに同じ絵になるよう、時刻を固定する**。結果画面の所要時間や連続学習日数が実時刻から
+  作られるので、固定しないと毎回差分として出る。アニメーションも止めて撮る
+- **学習記録は localStorage に直接置く**。80 問解いた状態を画面の操作だけで作ると時間がかかりすぎる
+- **日本語フォントを入れてから撮る**。入っていないと日本語が豆腐（□）になる。豆腐は毎回同じ絵なので
+  差分としては出ず、気づかないまま baseline に焼き付く
+- **レポートと画像は `gh-pages` の `visual-regression/pr-<番号>/<SHA>/` に置く**。
+  一覧は Pages の URL で開き（`index.html` は同じフォルダの画像を相対パスで読む）、
+  PR コメントに貼る画像だけは raw.githubusercontent.com を指す。
+  Pages のデプロイが終わる前でもコメントの画像が見えるようにするためで、実体は同じファイル
+- ブランチは**毎回 1 コミットに作り直す**（force push）。画像を積み上げるとリポジトリが太り続けるため。
+  PR ごとの画像は閉じたときに消す
 
 ## 問題データ
 
@@ -267,8 +411,9 @@ IPA が公開しているのは令和3年度以降なので、**午前につい�
 **出典表記は手で書かない。** `Source`（試験区分・元号・年・期・時間区分・問番号）を持たせ、
 [`formatSource`](apps/web/src/features/quiz/types.ts) が
 `令和3年度 春期 応用情報技術者試験 午前 問1` の形に組み立てる。改変した問題は `modified`
-に内容を入れると、出典の末尾に併記される。問題 ID もこの `Source` から作るので、出典漏れが
-構造的に起きない。
+に内容を入れると、出典の末尾に併記される。データではなく表示のしかたで変えている分
+（選択肢のシャッフル）も、同じ括弧に並べて出す。問題 ID もこの `Source` から作るので、
+出典漏れが構造的に起きない。
 
 図は 2 通りの使い分けがある。原本が線画なら切り出し、表や箇条書きなら HTML で組む。
 線画を自作でなぞると描き間違いで正解が変わるため、なぞらない（docs 3.5）。

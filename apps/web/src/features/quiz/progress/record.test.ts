@@ -12,6 +12,7 @@ import {
   withAnswer,
   withAttempt,
   withRestart,
+  withShuffle,
 } from "./record";
 
 const ANSWERED: Attempt = { picked: 1, revealed: true, flagged: true, weak: true, excluded: [0] };
@@ -106,6 +107,15 @@ describe("withAnswer", () => {
   });
 });
 
+describe("withShuffle", () => {
+  it("設定だけを切り替え、並びの種は動かさない", () => {
+    const record = withShuffle({ ...emptyRecord(), shuffleSeed: 4 }, true);
+
+    expect(record.shuffle).toBe(true);
+    expect(record.shuffleSeed).toBe(4);
+  });
+});
+
 describe("withRestart", () => {
   it("解答は消すが、フラグと苦手登録は残す", () => {
     const record = withRestart(withAttempt(emptyRecord(), "q1", ANSWERED), ["q1"]);
@@ -124,6 +134,10 @@ describe("withRestart", () => {
 
     expect(withRestart(before, ["q1"]).attempts.q2).toEqual(ANSWERED);
   });
+
+  it("並びの種を進める（解き直すと選択肢の並びも変わる）", () => {
+    expect(withRestart(emptyRecord(), ["q1"]).shuffleSeed).toBe(1);
+  });
 });
 
 describe("parseRecord", () => {
@@ -133,6 +147,8 @@ describe("parseRecord", () => {
     attempts: { q1: ANSWERED },
     recent: [true, false],
     days: ["2026-09-13"],
+    shuffle: true,
+    shuffleSeed: 2,
   };
 
   it("保存した形をそのまま戻す", () => {
@@ -141,6 +157,25 @@ describe("parseRecord", () => {
 
   it("版が違う記録は捨てる", () => {
     expect(parseRecord({ ...stored, version: RECORD_VERSION + 1 })).toEqual(emptyRecord());
+  });
+
+  it("選択肢シャッフルが無かったころの記録（版 1）は、既定値を足して読む", () => {
+    const { shuffle, shuffleSeed, ...old } = stored;
+
+    expect(parseRecord({ ...old, version: 1 })).toEqual({
+      ...stored,
+      version: RECORD_VERSION,
+      shuffle: false,
+      shuffleSeed: 0,
+    });
+  });
+
+  it("シャッフルの設定が壊れていても、そこだけ既定値に落とす", () => {
+    const record = parseRecord({ ...stored, shuffle: "する", shuffleSeed: "2" });
+
+    expect(record.shuffle).toBe(false);
+    expect(record.shuffleSeed).toBe(0);
+    expect(record.attempts.q1).toEqual(ANSWERED);
   });
 
   it("解答状況の形が崩れていたら、部分的に読まずに捨てる", () => {

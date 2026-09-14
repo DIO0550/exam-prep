@@ -1,3 +1,4 @@
+import { isShuffled, positionOf, SHUFFLED_NOTE } from "../choice-order";
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
 import { choiceKey, formatSource } from "../types";
@@ -5,28 +6,43 @@ import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
 import { KeyPointList } from "./key-point-list";
 import { MarkButtons } from "./mark-buttons";
+import { NoteButton } from "./note-button";
 import { StemBlock } from "./question-figure";
 
 type ExplainScreenProps = {
   item: QuizItem;
+  /** 選択肢を出す順。値は原本での添字。 */
+  order: number[];
   index: number;
   isLast: boolean;
   onToggleFlag: () => void;
   onToggleWeak: () => void;
+  /** メモの枠が開いているか。 */
+  notesOpen: boolean;
+  /** この問題にメモが書いてあるか。 */
+  written: boolean;
+  onToggleNotes: () => void;
   onNext: () => void;
 };
 
 /** 解説表示を「別画面」にしているときに、解答後へ挟まる画面。 */
 export const ExplainScreen = ({
   item,
+  order,
   index,
   isLast,
   onToggleFlag,
   onToggleWeak,
+  notesOpen,
+  written,
+  onToggleNotes,
   onNext,
 }: ExplainScreenProps) => {
   const { question, attempt } = item;
   const correct = isCorrect(item);
+  const shuffled = isShuffled(order);
+  const pickedLabel =
+    attempt.picked === null ? "未解答" : choiceKey(positionOf(order, attempt.picked));
 
   return (
     <div className="flex animate-rise-in flex-col gap-4">
@@ -41,8 +57,7 @@ export const ExplainScreen = ({
           {correct ? "正解" : "不正解"}
         </h2>
         <span className="text-[13.5px] text-ink-soft">
-          あなたの解答：{attempt.picked === null ? "未解答" : choiceKey(attempt.picked)} ／ 正解：
-          {choiceKey(question.answer)}
+          あなたの解答：{pickedLabel} ／ 正解：{choiceKey(positionOf(order, question.answer))}
         </span>
       </div>
 
@@ -51,7 +66,7 @@ export const ExplainScreen = ({
           <div className="mb-2.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
             問 {String(index + 1).padStart(2, "0")}　{question.field}
           </div>
-          <p className="max-w-[62ch] text-pretty font-medium text-[15px] leading-[1.9]">
+          <p className="max-w-[104ch] text-pretty font-medium text-[15px] leading-[1.9]">
             {question.text}
           </p>
           {question.stem && (
@@ -67,7 +82,7 @@ export const ExplainScreen = ({
               ポイント
             </h3>
             {question.explain && (
-              <p className="mb-4 max-w-[74ch] text-pretty text-[14.5px] text-ink-soft leading-[1.95]">
+              <p className="mb-4 max-w-[110ch] text-pretty text-[14.5px] text-ink-soft leading-[1.95]">
                 {question.explain}
               </p>
             )}
@@ -85,19 +100,24 @@ export const ExplainScreen = ({
           <h3 className="mb-4 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
             それぞれの選択肢の意味
           </h3>
-          <ChoiceNotes question={question} picked={attempt.picked} variant="page" />
-          <div className="text-[11.5px] text-muted-soft">出典：{formatSource(question.source)}</div>
+          <ChoiceNotes question={question} picked={attempt.picked} order={order} variant="page" />
+          <div className="text-[11.5px] text-muted-soft">
+            出典：{formatSource(question.source, shuffled ? SHUFFLED_NOTE : undefined)}
+          </div>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <MarkButtons
-          size="md"
-          flagged={attempt.flagged}
-          weak={attempt.weak}
-          onToggleFlag={onToggleFlag}
-          onToggleWeak={onToggleWeak}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <MarkButtons
+            size="md"
+            flagged={attempt.flagged}
+            weak={attempt.weak}
+            onToggleFlag={onToggleFlag}
+            onToggleWeak={onToggleWeak}
+          />
+          <NoteButton size="md" open={notesOpen} written={written} onToggle={onToggleNotes} />
+        </div>
         <button
           type="button"
           onClick={onNext}

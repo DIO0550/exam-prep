@@ -12,7 +12,10 @@
     "typecheck": "pnpm --filter @exam-prep/web typecheck",
     "test": "pnpm --filter @exam-prep/web test",
     "check": "biome check .",
-    "fix": "biome check --write ."
+    "fix": "biome check --write .",
+    "visual:capture": "node .github/scripts/visual-regression.mjs capture",
+    "visual:compare": "node .github/scripts/visual-regression.mjs compare",
+    "visual:comment": "node .github/scripts/visual-regression.mjs comment"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.12"

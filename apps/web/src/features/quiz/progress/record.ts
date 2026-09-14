@@ -8,7 +8,13 @@ import type { Attempt } from "../stats";
  */
 
 /** 保存形式の版。形を変えたら上げる。読めない版は捨てて作り直す。 */
-export const RECORD_VERSION = 1;
+export const RECORD_VERSION = 2;
+
+/**
+ * 読める版。版 1 は選択肢シャッフルの設定を持たないだけなので、既定値を足して読む。
+ * ここで捨てると、設定が 1 つ増えただけで学習記録が消えてしまうため。
+ */
+const READABLE_VERSIONS: readonly number[] = [1, RECORD_VERSION];
 
 /** 累計正答率の母数。直近この件数までを見る。 */
 export const RECENT_LIMIT = 200;
@@ -29,6 +35,10 @@ export type ProgressRecord = {
   recent: boolean[];
   /** 解答した日。古い順・重複なしで、DAY_LIMIT 件で打ち切る。 */
   days: DayKey[];
+  /** 選択肢をシャッフルして出すか。 */
+  shuffle: boolean;
+  /** シャッフルの並びを決める種。解き直すたびに進めて、前と違う並びにする。 */
+  shuffleSeed: number;
 };
 
 /** まだ触れていない問題の解答状況。共有するので、更新は必ず新しい値を作る。 */
@@ -46,6 +56,8 @@ export const emptyRecord = (): ProgressRecord => ({
   attempts: {},
   recent: [],
   days: [],
+  shuffle: false,
+  shuffleSeed: 0,
 });
 
 /** 記録が空のときに返す値。参照を固定する（useSyncExternalStore が同一性で見るため）。 */
@@ -100,6 +112,12 @@ export const withSetId = (record: ProgressRecord, setId: string): ProgressRecord
   setId,
 });
 
+/** 選択肢をシャッフルするかを切り替える。並びの種は変えない（解答済みのラベルを動かさないため）。 */
+export const withShuffle = (record: ProgressRecord, shuffle: boolean): ProgressRecord => ({
+  ...record,
+  shuffle,
+});
+
 export const withAttempt = (
   record: ProgressRecord,
   questionId: string,
@@ -130,7 +148,9 @@ export const withRestart = (record: ProgressRecord, questionIds: string[]): Prog
     if (!attempt) continue;
     attempts[id] = { ...attempt, picked: null, revealed: false, excluded: [] };
   }
-  return { ...record, attempts };
+  // 種を進めて、シャッフル中なら前回と違う並びで出す。種は回をまたいで 1 つなので他の回の
+  // 並びも変わるが、解答は原本の添字で持っているので、どれを選んだかは変わらない。
+  return { ...record, attempts, shuffleSeed: record.shuffleSeed + 1 };
 };
 
 const isNumberArray = (value: unknown): value is number[] =>
@@ -158,9 +178,11 @@ const isAttempt = (value: unknown): value is Attempt => {
 export const parseRecord = (raw: unknown): ProgressRecord => {
   if (typeof raw !== "object" || raw === null) return emptyRecord();
   const value = raw as Record<string, unknown>;
-  if (value.version !== RECORD_VERSION) return emptyRecord();
+  if (typeof value.version !== "number" || !READABLE_VERSIONS.includes(value.version)) {
+    return emptyRecord();
+  }
 
-  const { setId, attempts, recent, days } = value;
+  const { setId, attempts, recent, days, shuffle, shuffleSeed } = value;
   if (typeof attempts !== "object" || attempts === null) return emptyRecord();
   if (!Array.isArray(recent) || !recent.every((item) => typeof item === "boolean")) {
     return emptyRecord();
@@ -181,5 +203,7 @@ export const parseRecord = (raw: unknown): ProgressRecord => {
     attempts: parsed,
     recent: recent.slice(-RECENT_LIMIT),
     days: days.slice(-DAY_LIMIT),
+    shuffle: shuffle === true,
+    shuffleSeed: typeof shuffleSeed === "number" && Number.isFinite(shuffleSeed) ? shuffleSeed : 0,
   };
 };
