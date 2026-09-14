@@ -1,4 +1,6 @@
 import type { FeedbackMode, Screen } from "../hooks/use-quiz-session";
+import type { TextScale } from "../text-scale";
+import { TEXT_SCALE_LABELS, TEXT_SCALES } from "../text-scale";
 
 type NavItem = {
   label: string;
@@ -27,6 +29,12 @@ const SHUFFLE_OPTIONS: ToggleOption<boolean>[] = [
   { label: "シャッフル", value: true },
 ];
 
+/** 問題文と解説を出す文字の大きさ。 */
+const TEXT_SCALE_OPTIONS: ToggleOption<TextScale>[] = TEXT_SCALES.map((scale) => ({
+  label: TEXT_SCALE_LABELS[scale],
+  value: scale,
+}));
+
 type ToggleProps<T> = {
   label: string;
   options: ToggleOption<T>[];
@@ -34,7 +42,7 @@ type ToggleProps<T> = {
   onChange: (value: T) => void;
 };
 
-/** ヘッダー右側の 2 択。押しているほうが白く浮く。 */
+/** ヘッダー右側の切り替え。押しているものが白く浮く。 */
 const Toggle = <T extends string | boolean>({
   label,
   options,
@@ -71,20 +79,25 @@ type SiteHeaderProps = {
   feedback: FeedbackMode;
   /** 選択肢をシャッフルして出しているか。 */
   shuffle: boolean;
+  /** 問題文と解説を出す文字の大きさ。 */
+  textScale: TextScale;
   streakLabel: string;
   onNavigate: (screen: Screen) => void;
   onFeedbackChange: (mode: FeedbackMode) => void;
   onShuffleChange: (shuffle: boolean) => void;
+  onTextScaleChange: (scale: TextScale) => void;
 };
 
 export const SiteHeader = ({
   screen,
   feedback,
   shuffle,
+  textScale,
   streakLabel,
   onNavigate,
   onFeedbackChange,
   onShuffleChange,
+  onTextScaleChange,
 }: SiteHeaderProps) => {
   return (
     <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-4 border-line border-b bg-surface px-6">
@@ -129,6 +142,12 @@ export const SiteHeader = ({
           options={FEEDBACK_OPTIONS}
           value={feedback}
           onChange={onFeedbackChange}
+        />
+        <Toggle
+          label="文字サイズ"
+          options={TEXT_SCALE_OPTIONS}
+          value={textScale}
+          onChange={onTextScaleChange}
         />
         <span className="h-[18px] w-px bg-edge" />
         <span className="text-[12px] text-muted">学習 {streakLabel}</span>

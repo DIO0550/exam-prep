@@ -76,7 +76,7 @@ export const ChoiceList = ({ item, order, onPick, onToggleExclude }: ChoiceListP
               <span className="flex flex-1 flex-col gap-2">
                 {choice.text && (
                   <span
-                    className={`text-pretty pt-[3px] text-[14.5px] leading-[1.75] ${
+                    className={`text-pretty pt-[3px] text-read-md leading-[1.75] ${
                       dimmed ? "text-muted-soft line-through" : "text-ink"
                     }`}
                   >

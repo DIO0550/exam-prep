@@ -1,4 +1,6 @@
 import type { Attempt } from "../stats";
+import type { TextScale } from "../text-scale";
+import { DEFAULT_TEXT_SCALE, isTextScale } from "../text-scale";
 
 /**
  * 保存する学習記録の形と、その上の純粋な操作。
@@ -8,13 +10,13 @@ import type { Attempt } from "../stats";
  */
 
 /** 保存形式の版。形を変えたら上げる。読めない版は捨てて作り直す。 */
-export const RECORD_VERSION = 2;
+export const RECORD_VERSION = 3;
 
 /**
- * 読める版。版 1 は選択肢シャッフルの設定を持たないだけなので、既定値を足して読む。
- * ここで捨てると、設定が 1 つ増えただけで学習記録が消えてしまうため。
+ * 読める版。版 1 は選択肢シャッフル、版 2 は文字サイズの設定を持たないだけなので、
+ * 既定値を足して読む。ここで捨てると、設定が 1 つ増えただけで学習記録が消えてしまうため。
  */
-const READABLE_VERSIONS: readonly number[] = [1, RECORD_VERSION];
+const READABLE_VERSIONS: readonly number[] = [1, 2, RECORD_VERSION];
 
 /** 累計正答率の母数。直近この件数までを見る。 */
 export const RECENT_LIMIT = 200;
@@ -39,6 +41,8 @@ export type ProgressRecord = {
   shuffle: boolean;
   /** シャッフルの並びを決める種。解き直すたびに進めて、前と違う並びにする。 */
   shuffleSeed: number;
+  /** 問題文と解説を出す文字の大きさ。 */
+  textScale: TextScale;
 };
 
 /** まだ触れていない問題の解答状況。共有するので、更新は必ず新しい値を作る。 */
@@ -58,6 +62,7 @@ export const emptyRecord = (): ProgressRecord => ({
   days: [],
   shuffle: false,
   shuffleSeed: 0,
+  textScale: DEFAULT_TEXT_SCALE,
 });
 
 /** 記録が空のときに返す値。参照を固定する（useSyncExternalStore が同一性で見るため）。 */
@@ -116,6 +121,12 @@ export const withSetId = (record: ProgressRecord, setId: string): ProgressRecord
 export const withShuffle = (record: ProgressRecord, shuffle: boolean): ProgressRecord => ({
   ...record,
   shuffle,
+});
+
+/** 問題文と解説の文字の大きさを覚える。 */
+export const withTextScale = (record: ProgressRecord, textScale: TextScale): ProgressRecord => ({
+  ...record,
+  textScale,
 });
 
 export const withAttempt = (
@@ -182,7 +193,7 @@ export const parseRecord = (raw: unknown): ProgressRecord => {
     return emptyRecord();
   }
 
-  const { setId, attempts, recent, days, shuffle, shuffleSeed } = value;
+  const { setId, attempts, recent, days, shuffle, shuffleSeed, textScale } = value;
   if (typeof attempts !== "object" || attempts === null) return emptyRecord();
   if (!Array.isArray(recent) || !recent.every((item) => typeof item === "boolean")) {
     return emptyRecord();
@@ -205,5 +216,6 @@ export const parseRecord = (raw: unknown): ProgressRecord => {
     days: days.slice(-DAY_LIMIT),
     shuffle: shuffle === true,
     shuffleSeed: typeof shuffleSeed === "number" && Number.isFinite(shuffleSeed) ? shuffleSeed : 0,
+    textScale: isTextScale(textScale) ? textScale : DEFAULT_TEXT_SCALE,
   };
 };

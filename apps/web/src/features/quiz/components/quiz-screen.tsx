@@ -88,7 +88,7 @@ export const QuizScreen = ({
         </div>
 
         <div className="px-[26px] pt-[30px] pb-1.5">
-          <p className="max-w-[92ch] text-pretty font-medium text-[17px] leading-[1.9] tracking-[0.01em]">
+          <p className="max-w-[92ch] text-pretty font-medium text-read-xl leading-[1.9] tracking-[0.01em]">
             {question.text}
           </p>
           {question.stem && (
@@ -110,7 +110,7 @@ export const QuizScreen = ({
               <span className={`font-bold text-[16px] ${correct ? "text-ok" : "text-ng"}`}>
                 {correct ? "正解" : "不正解"}
               </span>
-              <span className="text-[13px] text-muted-soft">
+              <span className="text-read-sm text-muted-soft">
                 正解：{choiceKey(positionOf(order, question.answer))}
               </span>
             </div>
@@ -121,7 +121,7 @@ export const QuizScreen = ({
                   ポイント
                 </h3>
                 {question.explain && (
-                  <p className="mb-3.5 max-w-[110ch] text-pretty text-[14px] text-ink-soft leading-[1.95]">
+                  <p className="mb-3.5 max-w-[110ch] text-pretty text-read-md text-ink-soft leading-[1.95]">
                     {question.explain}
                   </p>
                 )}
@@ -145,7 +145,7 @@ export const QuizScreen = ({
                 order={order}
                 variant="inline"
               />
-              <div className="text-[11.5px] text-muted-soft">
+              <div className="text-read-xs text-muted-soft">
                 出典：{formatSource(question.source, shuffled ? SHUFFLED_NOTE : undefined)}
               </div>
             </div>

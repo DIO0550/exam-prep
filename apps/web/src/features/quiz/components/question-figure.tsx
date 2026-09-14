@@ -23,11 +23,11 @@ export const StemBlock = ({ stem }: { stem: Stem }) => {
       {stem.list && (
         <div className="flex flex-col gap-2">
           {stem.list.title && (
-            <div className="font-bold text-[13px] text-ink">{stem.list.title}</div>
+            <div className="font-bold text-read-sm text-ink">{stem.list.title}</div>
           )}
           <ul className="flex list-disc flex-col gap-1.5 pl-5">
             {stem.list.items.map((item) => (
-              <li key={item} className="text-pretty text-[14px] text-ink-soft leading-[1.85]">
+              <li key={item} className="text-pretty text-read-md text-ink-soft leading-[1.85]">
                 {item}
               </li>
             ))}
@@ -38,10 +38,10 @@ export const StemBlock = ({ stem }: { stem: Stem }) => {
       {stem.table && (
         <div className="flex flex-col gap-1.5">
           {stem.table.caption && (
-            <div className="text-right text-[11.5px] text-muted-soft">{stem.table.caption}</div>
+            <div className="text-right text-read-xs text-muted-soft">{stem.table.caption}</div>
           )}
           <div className="overflow-x-auto">
-            <table className="min-w-[320px] border-collapse text-[13px]">
+            <table className="min-w-[320px] border-collapse text-read-sm">
               {stem.table.headers && (
                 <thead>
                   <tr>

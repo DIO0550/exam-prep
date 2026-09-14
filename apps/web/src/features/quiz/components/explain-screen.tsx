@@ -56,7 +56,7 @@ export const ExplainScreen = ({
         >
           {correct ? "正解" : "不正解"}
         </h2>
-        <span className="text-[13.5px] text-ink-soft">
+        <span className="text-read-sm text-ink-soft">
           あなたの解答：{pickedLabel} ／ 正解：{choiceKey(positionOf(order, question.answer))}
         </span>
       </div>
@@ -66,7 +66,7 @@ export const ExplainScreen = ({
           <div className="mb-2.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
             問 {String(index + 1).padStart(2, "0")}　{question.field}
           </div>
-          <p className="max-w-[104ch] text-pretty font-medium text-[15px] leading-[1.9]">
+          <p className="max-w-[104ch] text-pretty font-medium text-read-lg leading-[1.9]">
             {question.text}
           </p>
           {question.stem && (
@@ -82,7 +82,7 @@ export const ExplainScreen = ({
               ポイント
             </h3>
             {question.explain && (
-              <p className="mb-4 max-w-[110ch] text-pretty text-[14.5px] text-ink-soft leading-[1.95]">
+              <p className="mb-4 max-w-[110ch] text-pretty text-read-md text-ink-soft leading-[1.95]">
                 {question.explain}
               </p>
             )}
@@ -101,7 +101,7 @@ export const ExplainScreen = ({
             それぞれの選択肢の意味
           </h3>
           <ChoiceNotes question={question} picked={attempt.picked} order={order} variant="page" />
-          <div className="text-[11.5px] text-muted-soft">
+          <div className="text-read-xs text-muted-soft">
             出典：{formatSource(question.source, shuffled ? SHUFFLED_NOTE : undefined)}
           </div>
         </div>

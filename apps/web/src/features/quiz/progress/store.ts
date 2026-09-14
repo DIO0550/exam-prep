@@ -1,5 +1,6 @@
 import { createLocalStore } from "../local-store";
 import type { Attempt } from "../stats";
+import type { TextScale } from "../text-scale";
 import type { ProgressRecord } from "./record";
 import {
   attemptOf,
@@ -9,6 +10,7 @@ import {
   withRestart,
   withSetId,
   withShuffle,
+  withTextScale,
 } from "./record";
 import { clearRecord, loadRecord, STORAGE_KEY, saveRecord } from "./storage";
 
@@ -51,6 +53,12 @@ export const progressStore = {
   setShuffle: (shuffle: boolean): void => {
     if (snapshot().shuffle === shuffle) return;
     store.set(withShuffle(snapshot(), shuffle));
+  },
+
+  /** 問題文と解説の文字の大きさを覚える。 */
+  setTextScale: (textScale: TextScale): void => {
+    if (snapshot().textScale === textScale) return;
+    store.set(withTextScale(snapshot(), textScale));
   },
 
   /** 解答状況の一部を差し替える（フラグ・苦手登録・選択肢の消し込み）。 */
