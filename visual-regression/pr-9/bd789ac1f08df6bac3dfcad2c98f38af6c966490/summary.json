@@ -1,0 +1,333 @@
+{
+  "reportVersion": "bd789ac1f08df6bac3dfcad2c98f38af6c966490",
+  "pr": "9",
+  "changed": 18,
+  "new": 2,
+  "deleted": 0,
+  "passed": 0,
+  "maxImages": 10,
+  "maxDiffRatio": 0.0001,
+  "tolerance": 8,
+  "results": [
+    {
+      "name": "explain-xlarge__desktop",
+      "label": "解説（別画面・文字サイズ特大）",
+      "viewport": "desktop",
+      "status": "new",
+      "published": true
+    },
+    {
+      "name": "explain-xlarge__mobile",
+      "label": "解説（別画面・文字サイズ特大）",
+      "viewport": "mobile",
+      "status": "new",
+      "published": true
+    },
+    {
+      "name": "explain__desktop",
+      "label": "解説（別画面）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.116408,
+      "changedPixels": 268204,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "explain__mobile",
+      "label": "解説（別画面）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.327215,
+      "changedPixels": 365826,
+      "beforeSize": {
+        "width": 430,
+        "height": 2406
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": true
+    },
+    {
+      "name": "home-empty__desktop",
+      "label": "学習ホーム（記録なし）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.003014,
+      "changedPixels": 6944,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "home-empty__mobile",
+      "label": "学習ホーム（記録なし）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.201232,
+      "changedPixels": 143466,
+      "beforeSize": {
+        "width": 430,
+        "height": 1646
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 1658
+      },
+      "published": true
+    },
+    {
+      "name": "home-progress__desktop",
+      "label": "学習ホーム（記録あり）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.003006,
+      "changedPixels": 6926,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "home-progress__mobile",
+      "label": "学習ホーム（記録あり）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.184873,
+      "changedPixels": 165827,
+      "beforeSize": {
+        "width": 430,
+        "height": 2074
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2086
+      },
+      "published": true
+    },
+    {
+      "name": "quiz-answered__desktop",
+      "label": "演習（解答後・同画面に解説）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.122741,
+      "changedPixels": 282796,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": true
+    },
+    {
+      "name": "quiz-answered__mobile",
+      "label": "演習（解答後・同画面に解説）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.329989,
+      "changedPixels": 368928,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": true
+    },
+    {
+      "name": "quiz-note__desktop",
+      "label": "演習（メモを開く）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.003014,
+      "changedPixels": 6944,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz-note__mobile",
+      "label": "演習（メモを開く）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.182222,
+      "changedPixels": 172774,
+      "beforeSize": {
+        "width": 430,
+        "height": 2192
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2205
+      },
+      "published": true
+    },
+    {
+      "name": "quiz-shuffled__desktop",
+      "label": "演習（選択肢シャッフル）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.121786,
+      "changedPixels": 280596,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz-shuffled__mobile",
+      "label": "演習（選択肢シャッフル）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.289022,
+      "changedPixels": 323127,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": true
+    },
+    {
+      "name": "quiz__desktop",
+      "label": "演習（未解答）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.003014,
+      "changedPixels": 6944,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz__mobile",
+      "label": "演習（未解答）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.234961,
+      "changedPixels": 222778,
+      "beforeSize": {
+        "width": 430,
+        "height": 2192
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2205
+      },
+      "published": true
+    },
+    {
+      "name": "result__desktop",
+      "label": "結果",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.003006,
+      "changedPixels": 6926,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "result__mobile",
+      "label": "結果",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.201522,
+      "changedPixels": 146273,
+      "beforeSize": {
+        "width": 430,
+        "height": 1675
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 1688
+      },
+      "published": true
+    },
+    {
+      "name": "review__desktop",
+      "label": "問題一覧・見直し",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.003006,
+      "changedPixels": 6926,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "review__mobile",
+      "label": "問題一覧・見直し",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.186782,
+      "changedPixels": 208822,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": true
+    }
+  ]
+}
