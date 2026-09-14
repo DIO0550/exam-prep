@@ -43,6 +43,8 @@ pnpm-workspace.yaml workspace とクールタイムの設定
 | `pnpm test` | Vitest（`pnpm --filter @exam-prep/web test:watch` で watch） |
 | `pnpm check` | Biome で lint / format / import 順を検査 |
 | `pnpm fix` | Biome で自動修正 |
+| `pnpm visual:capture` | 主要画面のスクリーンショットを撮る（先に `pnpm build`） |
+| `pnpm visual:compare` | 撮った画像を baseline と比べ、差分の画像を作る |
 
 依存を足すときは `pnpm --filter @exam-prep/web add <pkg>`。`npm` / `npx` / `pnpm dlx` は
 フックで拒否される（後述）。
@@ -59,6 +61,8 @@ workflow は 2 つに分けてある。見たいものが違い（片方は「�
 |---|---|---|---|
 | [`ci.yml`](.github/workflows/ci.yml) | PR / `main` への push / 手動 | `pnpm check` / `typecheck` / `test` / `build` | `contents: read` |
 | [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) | `main` への push / 手動 | static export を作って GitHub Pages へ出す | deploy ジョブにだけ `pages: write` と `id-token: write` |
+| [`visual-regression.yml`](.github/workflows/visual-regression.yml) | PR / 手動 | 主要画面を撮って main と比べ、差分を PR に貼る | `contents: write`（画像置き場のブランチ）と PR コメント |
+| [`visual-baseline.yml`](.github/workflows/visual-baseline.yml) | `main` への push / 手動 | 比べる相手（baseline）を撮り直す | `contents: write` |
 
 公開先は <https://dio0550.github.io/exam-prep/>。パスが `/exam-prep` の分だけ深くなるのは
 プロジェクトページだからで、`basePath` をそれに合わせてある（後述）。
@@ -291,6 +295,44 @@ static export した HTML には誰の記録も入らないので、保存した
 
 localStorage を購読する部分（同期で読む・書いたら保存する・別タブに追従する）は学習記録と
 同じなので、[`local-store.ts`](apps/web/src/features/quiz/local-store.ts) にまとめてある。
+
+## 見た目の差分（PR で確認する）
+
+コードの差分だけでは画面がどう変わったか分からないので、PR に **前 / 後 / 差分** の画像を貼る。
+[`visual-regression.yml`](.github/workflows/visual-regression.yml) が PR のたびに走り、
+static export をビルドして主要画面を撮り、main の画像（baseline）と画素で突き合わせる。
+
+撮る画面は [`visual-scenarios.mjs`](.github/scripts/visual-scenarios.mjs) に並べてある。
+学習ホーム・演習・解説・結果・見直し・メモ・シャッフルを **PC 幅（1440px）とスマホ幅（430px）**の
+2 通りで撮る。画面を足したいときはこのファイルに 1 つ足すだけでよく、workflow は触らない。
+
+手元でも同じものが撮れる。
+
+```
+pnpm build
+pnpm visual:capture -- --out visual-actual
+pnpm visual:compare -- --expected visual-baseline --actual visual-actual --out visual-report
+```
+
+### 差分が出たとき
+
+チェックは**落ちる**。壊したのか意図して変えたのかは絵を見ないと分からないので、既定では
+レビューを止める。PR コメントの画像を見て、意図した変更なら `visual-approved` ラベルを付ける
+（付けるとチェックが通る）。意図しない変更ならコードを直す。
+
+### 作りと、そう作った理由
+
+- **撮影はブラウザを直に動かす**（CDP）。Playwright などを足していないのは、この検査のために
+  依存を増やしたくないため。画素の比較も同じブラウザの canvas でやるので、追加の依存はゼロ
+- **撮るたびに同じ絵になるよう、時刻を固定する**。結果画面の所要時間や連続学習日数が実時刻から
+  作られるので、固定しないと毎回差分として出る。アニメーションも止めて撮る
+- **学習記録は localStorage に直接置く**。80 問解いた状態を画面の操作だけで作ると時間がかかりすぎる
+- **日本語フォントを入れてから撮る**。入っていないと日本語が豆腐（□）になる。豆腐は毎回同じ絵なので
+  差分としては出ず、気づかないまま baseline に焼き付く
+- **画像は `visual-snapshots` ブランチに置く**。GitHub Pages は本番サイトを Actions から出しているので、
+  そこには触らない。コメントからは raw.githubusercontent.com の URL で参照する
+- ブランチは**毎回 1 コミットに作り直す**（force push）。画像を積み上げるとリポジトリが太り続けるため。
+  PR ごとの画像は閉じたときに消す
 
 ## 問題データ
 
