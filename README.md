@@ -125,6 +125,13 @@ Pages のビルドは 1 時間に 10 回までという緩い上限がある。P
 | `trailingSlash: true` | `out/foo/index.html` の形にする。拡張子なし URL の解決はホストによって差があるため |
 | `images.unoptimized: true` | static export には画像最適化サーバが無い |
 
+ファビコンは [`apps/web/src/app/icon.svg`](apps/web/src/app/icon.svg)（本と ✓ のアイコン）。
+SVG なので拡大しても荒れず、1KB 未満で済む。`apple-icon.png`（ホーム画面用・180px・角丸なしで
+全面を塗る。丸めるのは iOS 側）と `favicon.ico`（16/32px。SVG のファビコンに対応していない
+ブラウザ向け）も同じ絵から作って app/ に置き、`layout.tsx` の `metadata.icons` で
+まとめて指している。プロジェクトページは `/exam-prep/` 配下なので、ブラウザ任せの
+「サイト直下の /favicon.ico」には落ちてこない。だから ico も明示的に指す必要がある。
+
 `public/.nojekyll` を置いてある。ブランチから配信すると Jekyll を通るので、これが無いと
 `_next/` のようなアンダースコア始まりが配信されず、JS と CSS が 404 になる
 （workflow 側でもルートに `.nojekyll` を作っている）。
