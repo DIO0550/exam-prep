@@ -2914,7 +2914,8 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：囚人のジレンマで見るナッシュ均衡（数字は利得、大きいほどよい）",
+      caption:
+        "図：囚人のジレンマで見るナッシュ均衡（数字は左が B、右が A の利得。大きいほどよい）",
       headers: ["B＼A", "Aが黙秘", "Aが自白"],
       rows: [
         ["Bが黙秘", "(3, 3) 両者に最善だが不安定", "(0, 5) Bだけが損をする"],
