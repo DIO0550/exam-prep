@@ -5,16 +5,23 @@ import { TimelineFigureBlock } from "./timeline-figure";
 /** inline は問題カードの中、page は解説画面。図の地色だけ変わる（文字は text-read-* で共通）。 */
 type Variant = "inline" | "page";
 
-/** 表の列幅。4 列のときだけ最終列（安定性など短い語）を詰める。 */
-const columns = (count: number) => (count === 4 ? "1.3fr 1fr 1fr 0.8fr" : "0.9fr 1fr 1.4fr");
+/**
+ * 表の列幅。3 列と 4 列はよく使う形なので、中身の長さに合わせた配分を決め打ちにしてある
+ * （3 列は最終列が説明文、4 列は最終列が短い語になりやすい）。それ以外は等分する。
+ */
+const columns = (count: number) => {
+  if (count === 3) return "0.9fr 1fr 1.4fr";
+  if (count === 4) return "1.3fr 1fr 1fr 0.8fr";
+  return `repeat(${count}, minmax(0, 1fr))`;
+};
 
 /**
  * 表の最低幅。これを下回る画面では横スクロールさせる。
  *
  * 幅に合わせて列を詰めると、狭い画面で 1 行が 3〜4 文字になって読めなくなるため
- * （問題文に添える表と同じ扱い）。
+ * （問題文に添える表と同じ扱い）。列が増えるぶんだけ必要な幅も広がる。
  */
-const minWidth = (count: number) => (count === 4 ? "min-w-[560px]" : "min-w-[440px]");
+const minWidth = (count: number) => (count <= 3 ? "min-w-[440px]" : `min-w-[${count * 140}px]`);
 
 type FigureBlockProps = {
   figure: Figure;
