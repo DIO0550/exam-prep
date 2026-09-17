@@ -114,8 +114,56 @@ export type TableFigure = {
   rows: string[][];
 };
 
+/**
+ * 配列や記憶枠の中身が、段階ごとにどう変わるかを見せる図。
+ * 整列アルゴリズムやページ置換えのように、「どの値がどこへ動いたか」が要点のものに使う。
+ */
+export type ArrayFigure = {
+  type: "array";
+  caption: string;
+  /** セルの上に出す見出し（添字や枠の番地）。省略すると見出し行は出ない。 */
+  headers?: string[];
+  rows: {
+    /** 左に出す見出し。「1回目」「参照 4」など、その段が何なのかを書く。 */
+    label: string;
+    cells: string[];
+    /** 塗って強調するセルの添字。確定した値や、入れ替わった枠を指す。 */
+    marked?: number[];
+    /** 比べた（入れ替えた）2 つの位置。セルの上で結んで示す。 */
+    swap?: [number, number];
+    /** 右に出す短い説明。 */
+    note?: string;
+  }[];
+};
+
+/**
+ * 帯の色。意味は持たず、並んだときに隣と見分けるためだけのもの。
+ * 同じものが複数の段に出るときは、同じ番号を振って対応を追えるようにする。
+ */
+export type BarTone = 1 | 2 | 3 | 4 | 5;
+
+/**
+ * 時間の流れに沿って、どの処理がいつ動いているかを見せる図。
+ * 多重度やスケジューリング、パイプラインのように、時刻と重なりが要点のものに使う。
+ */
+export type TimelineFigure = {
+  type: "timeline";
+  caption: string;
+  /** 目盛りの数。0 から span までの区間を span 個に刻む。 */
+  span: number;
+  /** 目盛りの単位（「秒」「サイクル」）。軸の右端に出す。 */
+  unit: string;
+  tracks: {
+    label: string;
+    /** start は開始時刻（0 始まり）、length は占める目盛りの数。 */
+    bars: { start: number; length: number; label: string; tone?: BarTone }[];
+  }[];
+  /** 軸の下に立てる目印。到着時刻など、帯ではない出来事を指す。 */
+  marks?: { at: number; label: string }[];
+};
+
 /** 解説に添える図。こちらは本サイトで組んだもの。 */
-export type Figure = FlowFigure | CalcFigure | TableFigure;
+export type Figure = FlowFigure | CalcFigure | TableFigure | ArrayFigure | TimelineFigure;
 
 export type Question = {
   source: Source;

@@ -646,14 +646,40 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
       "多重度2では、次の処理が始まるのは「空きが出た時刻」と「到着した時刻」の遅いほう。表にして順に埋めると間違えにくい。",
     ],
     figure: {
-      type: "table",
-      caption: "図：処理の開始時刻と終了時刻（秒）",
-      headers: ["処理要求", "多重度1", "多重度2"],
-      rows: [
-        ["1件目（0秒到着）", "0 → 4", "0 → 4"],
-        ["2件目（1秒到着）", "4 → 8", "1 → 5"],
-        ["3件目（2秒到着）", "8 → 12", "4 → 8"],
-        ["4件目（3秒到着）", "12 → 16", "5 → 9"],
+      type: "timeline",
+      caption: "図：多重度1と多重度2の処理の進み方（16秒と9秒の差が7秒）",
+      span: 16,
+      unit: "秒",
+      tracks: [
+        {
+          label: "多重度1",
+          bars: [
+            { start: 0, length: 4, label: "タスク1", tone: 1 },
+            { start: 4, length: 4, label: "タスク2", tone: 2 },
+            { start: 8, length: 4, label: "タスク3", tone: 3 },
+            { start: 12, length: 4, label: "タスク4", tone: 4 },
+          ],
+        },
+        {
+          label: "多重度2 ①",
+          bars: [
+            { start: 0, length: 4, label: "タスク1", tone: 1 },
+            { start: 4, length: 4, label: "タスク3", tone: 3 },
+          ],
+        },
+        {
+          label: "多重度2 ②",
+          bars: [
+            { start: 1, length: 4, label: "タスク2", tone: 2 },
+            { start: 5, length: 4, label: "タスク4", tone: 4 },
+          ],
+        },
+      ],
+      marks: [
+        { at: 0, label: "1件目到着" },
+        { at: 1, label: "2件目到着" },
+        { at: 2, label: "3件目到着" },
+        { at: 3, label: "4件目到着" },
       ],
     },
   },

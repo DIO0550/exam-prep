@@ -52,6 +52,23 @@
   --color-figure-line: #e3e8f1;
   --color-figure-head: #dfe4ec;
 
+  /* タイムチャートの帯。意味は持たず、隣と見分けるための 5 色（塗り・枠・文字）。 */
+  --color-bar-1: #f7dede;
+  --color-bar-1-line: #ddadad;
+  --color-bar-1-ink: #8a3838;
+  --color-bar-2: #fbe7d0;
+  --color-bar-2-line: #e5c194;
+  --color-bar-2-ink: #855313;
+  --color-bar-3: #dcefdd;
+  --color-bar-3-line: #adceb1;
+  --color-bar-3-ink: #2c6639;
+  --color-bar-4: #d9e7f6;
+  --color-bar-4-line: #a6c4e3;
+  --color-bar-4-ink: #295685;
+  --color-bar-5: #e6def2;
+  --color-bar-5-line: #bfaedd;
+  --color-bar-5-ink: #4f3b7a;
+
   --animate-rise-in: rise-in 0.3s ease both;
 }
 

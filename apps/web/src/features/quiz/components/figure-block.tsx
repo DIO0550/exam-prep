@@ -1,4 +1,6 @@
 import type { Figure } from "../types";
+import { ArrayFigureBlock } from "./array-figure";
+import { TimelineFigureBlock } from "./timeline-figure";
 
 /** inline は問題カードの中、page は解説画面。図の地色だけ変わる（文字は text-read-* で共通）。 */
 type Variant = "inline" | "page";
@@ -98,6 +100,10 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
           </div>
         </div>
       )}
+
+      {figure.type === "array" && <ArrayFigureBlock figure={figure} />}
+
+      {figure.type === "timeline" && <TimelineFigureBlock figure={figure} />}
 
       <div className="mt-3.5 text-read-xs text-muted-soft">{figure.caption}</div>
     </div>

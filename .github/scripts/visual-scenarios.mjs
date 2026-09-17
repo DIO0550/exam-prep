@@ -144,6 +144,19 @@ export const SCENARIOS = [
     steps: [{ click: "別画面" }, { click: "特大" }, { click: "演習を開始" }, { choice: 0 }],
   },
   {
+    name: "explain-timeline",
+    label: "解説（タイムチャート）",
+    // 図の種類ごとに見た目が違うので、表以外の図も 1 つずつ撮る。
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r04-haru-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 19 }, { choice: 0 }],
+  },
+  {
+    name: "explain-array",
+    label: "解説（配列図）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r03-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 5 }, { choice: 0 }],
+  },
+  {
     name: "result",
     label: "結果",
     // 79 問まで解いた状態から始め、残り 1 問を解いて結果へ進む。

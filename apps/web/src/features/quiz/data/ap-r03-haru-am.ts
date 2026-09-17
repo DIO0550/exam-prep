@@ -583,13 +583,31 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       "時刻を数直線に書き出すのが確実。到着順（FCFS）なので並べ替えは起きない。",
     ],
     figure: {
-      type: "table",
-      caption: "図：各ジョブの実行区間",
-      headers: ["ジョブ", "到着", "実行区間", "終了"],
-      rows: [
-        ["A", "0", "0 〜 5", "5"],
-        ["B", "2", "5 〜 11", "11"],
-        ["C", "3", "11 〜 14", "14"],
+      type: "timeline",
+      caption: "図：到着順に1つずつ実行する。ジョブCは到着3秒・終了14秒で、ターンアラウンドは11秒",
+      span: 14,
+      unit: "秒",
+      tracks: [
+        {
+          label: "CPU",
+          bars: [
+            { start: 0, length: 5, label: "ジョブA", tone: 1 },
+            { start: 5, length: 6, label: "ジョブB", tone: 2 },
+            { start: 11, length: 3, label: "ジョブC", tone: 3 },
+          ],
+        },
+        {
+          label: "ジョブC",
+          bars: [
+            { start: 3, length: 8, label: "待ち 8秒", tone: 5 },
+            { start: 11, length: 3, label: "実行 3秒", tone: 3 },
+          ],
+        },
+      ],
+      marks: [
+        { at: 0, label: "A到着" },
+        { at: 2, label: "B到着" },
+        { at: 3, label: "C到着" },
       ],
     },
   },

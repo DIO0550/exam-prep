@@ -564,15 +564,35 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "処理時間順は選ぶたびに「そのときまでに到着しているジョブ」を見直す。あとから短いジョブが来れば追い越す。",
     ],
     figure: {
-      type: "table",
-      caption: "図：実行順と時刻",
-      headers: ["順番", "ジョブ", "開始", "終了"],
-      rows: [
-        ["1", "A", "0", "2"],
-        ["2", "C", "2", "5"],
-        ["3", "E", "5", "6"],
-        ["4", "D", "6", "8"],
-        ["5", "B", "8", "12"],
+      type: "timeline",
+      caption: "図：処理時間順の実行。ジョブBは到着1秒・終了12秒で、ターンアラウンドは11秒",
+      span: 12,
+      unit: "秒",
+      tracks: [
+        {
+          label: "CPU",
+          bars: [
+            { start: 0, length: 2, label: "A", tone: 1 },
+            { start: 2, length: 3, label: "C", tone: 3 },
+            { start: 5, length: 1, label: "E", tone: 5 },
+            { start: 6, length: 2, label: "D", tone: 4 },
+            { start: 8, length: 4, label: "B", tone: 2 },
+          ],
+        },
+        {
+          label: "ジョブB",
+          bars: [
+            { start: 1, length: 7, label: "待ち 7秒", tone: 5 },
+            { start: 8, length: 4, label: "実行 4秒", tone: 2 },
+          ],
+        },
+      ],
+      marks: [
+        { at: 0, label: "A到着" },
+        { at: 1, label: "B到着" },
+        { at: 2, label: "C到着" },
+        { at: 3, label: "D到着" },
+        { at: 4, label: "E到着" },
       ],
     },
   },
