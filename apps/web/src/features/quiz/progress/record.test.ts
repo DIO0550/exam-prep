@@ -13,6 +13,7 @@ import {
   withAttempt,
   withRestart,
   withShuffle,
+  withTextScale,
 } from "./record";
 
 const ANSWERED: Attempt = { picked: 1, revealed: true, flagged: true, weak: true, excluded: [0] };
@@ -116,6 +117,15 @@ describe("withShuffle", () => {
   });
 });
 
+describe("withTextScale", () => {
+  it("文字の大きさだけを差し替える", () => {
+    const record = withTextScale({ ...emptyRecord(), shuffle: true }, "large");
+
+    expect(record.textScale).toBe("large");
+    expect(record.shuffle).toBe(true);
+  });
+});
+
 describe("withRestart", () => {
   it("解答は消すが、フラグと苦手登録は残す", () => {
     const record = withRestart(withAttempt(emptyRecord(), "q1", ANSWERED), ["q1"]);
@@ -149,6 +159,7 @@ describe("parseRecord", () => {
     days: ["2026-09-13"],
     shuffle: true,
     shuffleSeed: 2,
+    textScale: "xlarge",
   };
 
   it("保存した形をそのまま戻す", () => {
@@ -160,21 +171,33 @@ describe("parseRecord", () => {
   });
 
   it("選択肢シャッフルが無かったころの記録（版 1）は、既定値を足して読む", () => {
-    const { shuffle, shuffleSeed, ...old } = stored;
+    const { shuffle, shuffleSeed, textScale, ...old } = stored;
 
     expect(parseRecord({ ...old, version: 1 })).toEqual({
       ...stored,
       version: RECORD_VERSION,
       shuffle: false,
       shuffleSeed: 0,
+      textScale: "standard",
     });
   });
 
-  it("シャッフルの設定が壊れていても、そこだけ既定値に落とす", () => {
-    const record = parseRecord({ ...stored, shuffle: "する", shuffleSeed: "2" });
+  it("文字サイズが無かったころの記録（版 2）は、既定値を足して読む", () => {
+    const { textScale, ...old } = stored;
+
+    expect(parseRecord({ ...old, version: 2 })).toEqual({
+      ...stored,
+      version: RECORD_VERSION,
+      textScale: "standard",
+    });
+  });
+
+  it("シャッフルや文字サイズの設定が壊れていても、そこだけ既定値に落とす", () => {
+    const record = parseRecord({ ...stored, shuffle: "する", shuffleSeed: "2", textScale: "巨大" });
 
     expect(record.shuffle).toBe(false);
     expect(record.shuffleSeed).toBe(0);
+    expect(record.textScale).toBe("standard");
     expect(record.attempts.q1).toEqual(ANSWERED);
   });
 

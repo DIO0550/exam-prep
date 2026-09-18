@@ -66,6 +66,12 @@ describe("progressStore", () => {
     expect(loadRecord().shuffle).toBe(true);
   });
 
+  it("文字サイズを覚える", () => {
+    progressStore.setTextScale("large");
+
+    expect(loadRecord().textScale).toBe("large");
+  });
+
   it("解き直すと並びの種が進む", () => {
     progressStore.answer(QUESTION, 2, true);
 

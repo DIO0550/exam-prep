@@ -28,7 +28,7 @@ export const FROZEN_TIME = Date.UTC(2026, 0, 1, 12, 0, 0);
  * 合わせてある。形を変えたらここも直す（ズレると記録が読み捨てられ、記録なしの画面が撮れる）。
  */
 const RECORD_KEY = "exam-prep:progress:v1";
-const RECORD_VERSION = 2;
+const RECORD_VERSION = 3;
 const SET_ID = "ap-r07-aki-am";
 
 const questionId = (no) => `${SET_ID}-${String(no).padStart(2, "0")}`;
@@ -57,6 +57,7 @@ const answeredRecord = (answered) => ({
   days: ["2025-12-31", "2026-01-01"],
   shuffle: false,
   shuffleSeed: 0,
+  textScale: "standard",
 });
 
 /** メモの保存先と形。apps/web/src/features/quiz/notes/ に合わせてある。 */
@@ -136,6 +137,24 @@ export const SCENARIOS = [
     name: "explain",
     label: "解説（別画面）",
     steps: [{ click: "別画面" }, { click: "演習を開始" }, { choice: 0 }],
+  },
+  {
+    name: "explain-xlarge",
+    label: "解説（別画面・文字サイズ特大）",
+    steps: [{ click: "別画面" }, { click: "特大" }, { click: "演習を開始" }, { choice: 0 }],
+  },
+  {
+    name: "explain-timeline",
+    label: "解説（タイムチャート）",
+    // 図の種類ごとに見た目が違うので、表以外の図も 1 つずつ撮る。
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r04-haru-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 19 }, { choice: 0 }],
+  },
+  {
+    name: "explain-array",
+    label: "解説（配列図）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r03-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 5 }, { choice: 0 }],
   },
   {
     name: "result",

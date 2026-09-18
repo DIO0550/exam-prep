@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useMemo, useRef } from "react";
 
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
@@ -11,6 +12,7 @@ import { isEmptyNote } from "../notes/note";
 import { noteStore } from "../notes/store";
 import { progressStore } from "../progress/store";
 import { streakLabel, summarizeProgress } from "../progress/summary";
+import { TEXT_SCALE_RATIO } from "../text-scale";
 import { ExamSidebar } from "./exam-sidebar";
 import { ExplainScreen } from "./explain-screen";
 import { HomeScreen } from "./home-screen";
@@ -50,15 +52,23 @@ export const QuizApp = () => {
   return (
     // 幅があるときは画面の高さに収め、サイドバーと右側をそれぞれスクロールさせる。
     // 縦に積まれる狭い幅では、これまでどおりページごとスクロールする。
-    <div className="flex min-h-dvh flex-col text-ink md:h-dvh md:min-h-0 md:overflow-hidden">
+    //
+    // 文字サイズの倍率はここで配る。globals.css の text-read-* が var(--text-scale) を
+    // 掛けて出すので、この 1 か所を差し替えれば読む文字だけがまとめて変わる。
+    <div
+      style={{ "--text-scale": TEXT_SCALE_RATIO[session.textScale] } as CSSProperties}
+      className="flex min-h-dvh flex-col text-ink md:h-dvh md:min-h-0 md:overflow-hidden"
+    >
       <SiteHeader
         screen={session.screen}
         feedback={session.feedback}
         shuffle={session.shuffle}
+        textScale={session.textScale}
         streakLabel={streakLabel(progress.streak)}
         onNavigate={session.setScreen}
         onFeedbackChange={session.setFeedback}
         onShuffleChange={session.setShuffle}
+        onTextScaleChange={session.setTextScale}
       />
 
       <div className="flex flex-1 flex-col md:min-h-0 md:flex-row">

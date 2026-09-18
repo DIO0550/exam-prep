@@ -6,6 +6,7 @@ import { QUESTION_SETS } from "../data/questions";
 import { NOTES_KEY } from "../notes/storage";
 import { dayKey, RECORD_VERSION } from "../progress/record";
 import { STORAGE_KEY } from "../progress/storage";
+import { TEXT_SCALE_RATIO } from "../text-scale";
 import { choiceKey, formatSource, sourceId } from "../types";
 import { QuizApp } from "./quiz-app";
 
@@ -261,6 +262,24 @@ describe("QuizApp", () => {
       "aria-pressed",
       "true",
     );
+  });
+
+  it("文字サイズを変えると読む文字の倍率が変わり、開き直しても残る", async () => {
+    const user = userEvent.setup();
+    // 倍率は画面全体を包む枠の CSS 変数として配り、text-read-* がそれを掛けて出す。
+    const frameOf = (view: ReturnType<typeof render>) => view.container.firstElementChild;
+
+    const view = render(<QuizApp />);
+    expect(frameOf(view)).toHaveStyle({ "--text-scale": String(TEXT_SCALE_RATIO.standard) });
+
+    await user.click(screen.getByRole("button", { name: "特大" }));
+    expect(frameOf(view)).toHaveStyle({ "--text-scale": String(TEXT_SCALE_RATIO.xlarge) });
+
+    view.unmount();
+    const reopened = render(<QuizApp />);
+
+    expect(screen.getByRole("button", { name: "特大" })).toHaveAttribute("aria-pressed", "true");
+    expect(frameOf(reopened)).toHaveStyle({ "--text-scale": String(TEXT_SCALE_RATIO.xlarge) });
   });
 
   it("メモを開くと、自由入力と手書きの枠が出る", async () => {

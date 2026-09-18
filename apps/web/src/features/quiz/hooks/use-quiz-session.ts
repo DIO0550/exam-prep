@@ -215,6 +215,8 @@ export const useQuizSession = (questions: Question[]) => {
     setFeedback,
     shuffle: record.shuffle,
     setShuffle: progressStore.setShuffle,
+    textScale: record.textScale,
+    setTextScale: progressStore.setTextScale,
     order,
     note,
     hasNotes,
