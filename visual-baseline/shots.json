@@ -1,0 +1,170 @@
+[
+  {
+    "name": "home-empty__desktop",
+    "label": "学習ホーム（記録なし）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "home-progress__desktop",
+    "label": "学習ホーム（記録あり）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "quiz__desktop",
+    "label": "演習（未解答）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "quiz-answered__desktop",
+    "label": "演習（解答後・同画面に解説）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "quiz-shuffled__desktop",
+    "label": "演習（選択肢シャッフル）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "quiz-note__desktop",
+    "label": "演習（メモを開く）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain__desktop",
+    "label": "解説（別画面）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-xlarge__desktop",
+    "label": "解説（別画面・文字サイズ特大）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-timeline__desktop",
+    "label": "解説（タイムチャート）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-array__desktop",
+    "label": "解説（配列図）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "result__desktop",
+    "label": "結果",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "review__desktop",
+    "label": "問題一覧・見直し",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "home-empty__mobile",
+    "label": "学習ホーム（記録なし）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 1658
+  },
+  {
+    "name": "home-progress__mobile",
+    "label": "学習ホーム（記録あり）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2086
+  },
+  {
+    "name": "quiz__mobile",
+    "label": "演習（未解答）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2205
+  },
+  {
+    "name": "quiz-answered__mobile",
+    "label": "演習（解答後・同画面に解説）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3601
+  },
+  {
+    "name": "quiz-shuffled__mobile",
+    "label": "演習（選択肢シャッフル）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3593
+  },
+  {
+    "name": "quiz-note__mobile",
+    "label": "演習（メモを開く）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2205
+  },
+  {
+    "name": "explain__mobile",
+    "label": "解説（別画面）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2843
+  },
+  {
+    "name": "explain-xlarge__mobile",
+    "label": "解説（別画面・文字サイズ特大）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3421
+  },
+  {
+    "name": "explain-timeline__mobile",
+    "label": "解説（タイムチャート）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2457
+  },
+  {
+    "name": "explain-array__mobile",
+    "label": "解説（配列図）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2755
+  },
+  {
+    "name": "result__mobile",
+    "label": "結果",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 1688
+  },
+  {
+    "name": "review__mobile",
+    "label": "問題一覧・見直し",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 12713
+  }
+]
