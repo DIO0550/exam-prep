@@ -1,6 +1,10 @@
 import type { Figure } from "../types";
 import { ArrayFigureBlock } from "./array-figure";
+import { LayersFigureBlock } from "./layers-figure";
+import { QuadrantFigureBlock } from "./quadrant-figure";
+import { SequenceFigureBlock } from "./sequence-figure";
 import { TimelineFigureBlock } from "./timeline-figure";
+import { TreeFigureBlock } from "./tree-figure";
 
 /** inline は問題カードの中、page は解説画面。図の地色だけ変わる（文字は text-read-* で共通）。 */
 type Variant = "inline" | "page";
@@ -111,6 +115,14 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
       {figure.type === "array" && <ArrayFigureBlock figure={figure} />}
 
       {figure.type === "timeline" && <TimelineFigureBlock figure={figure} />}
+
+      {figure.type === "sequence" && <SequenceFigureBlock figure={figure} />}
+
+      {figure.type === "quadrant" && <QuadrantFigureBlock figure={figure} />}
+
+      {figure.type === "layers" && <LayersFigureBlock figure={figure} />}
+
+      {figure.type === "tree" && <TreeFigureBlock figure={figure} />}
 
       <div className="mt-3.5 text-read-xs text-muted-soft">{figure.caption}</div>
     </div>

@@ -1674,18 +1674,22 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
       "IPsec には認証だけのAHと、認証＋暗号化のESPがある。暗号化を行うのはESP。",
     ],
     figure: {
-      type: "table",
+      type: "layers",
       caption: "図：暗号化する層で選ぶ",
-      headers: ["層", "プロトコル", "特徴"],
-      rows: [
-        [
-          "ネットワーク層",
-          "IPsec",
-          "IP パケットごと保護する。アプリの変更が要らない。IPv6 では標準機能",
-        ],
-        ["トランスポート層より上", "TLS、SSH", "アプリケーションごとに適用する"],
-        ["データリンク層", "PPP など", "区間ごとに保護する"],
+      layers: [
+        {
+          name: "トランスポート層より上",
+          note: "TLS、SSH。アプリケーションごとに適用する",
+          tone: 5,
+        },
+        {
+          name: "ネットワーク層",
+          note: "IPsec。IP パケットごと保護する。IPv6 では標準機能",
+          tone: 3,
+        },
+        { name: "データリンク層", note: "PPP など。区間ごとに保護する", tone: 2 },
       ],
+      footnote: "IPsec なら上位のアプリケーションを変えずに通信を保護できる。",
     },
   },
   {
@@ -1718,19 +1722,19 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
       "メールの転送では経路上のサーバのIPアドレスに変わるため、SPFの判定が失敗しやすいという弱点がある。",
     ],
     figure: {
-      type: "flow",
+      type: "sequence",
       caption: "図：SPF による送信元ドメインの確認",
+      actors: ["DNS", "送信側", "受信側"],
       steps: [
+        { from: 1, to: 2, label: "そのドメインの差出人を名乗って接続し、メールを送る" },
+        { from: 2, to: 0, label: "差出人のドメインの SPF レコードを引く" },
         {
-          actor: "ドメイン管理者",
-          text: "送信を許可するサーバの IP アドレスを DNS の TXT レコードに公開する",
+          from: 0,
+          to: 2,
+          label: "ドメイン管理者が公開した、許可サーバの IP 一覧を返す",
+          reply: true,
         },
-        { actor: "送信側", text: "そのドメインの差出人を名乗って受信側サーバへ接続する" },
-        { actor: "受信側", text: "差出人のドメインの SPF レコードを DNS へ問い合わせる" },
-        {
-          actor: "受信側",
-          text: "接続元の IP アドレスが公開された一覧にあるかを照合し、詐称を判定する",
-        },
+        { from: 2, to: 2, label: "接続元の IP アドレスが一覧にあるかを照合し、詐称を判定する" },
       ],
     },
   },
@@ -1925,6 +1929,32 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
       "着目するのは処理時間そのものより、工程間の待ち時間（停滞）。ここがボトルネックになりやすい。",
       "バーンダウンチャートは「残作業量と時間」、バリューストリームマップは「工程と所要時間」で軸が違う。",
     ],
+    figure: {
+      type: "timeline",
+      caption:
+        "図：バリューストリームマップの見方。リードタイム20日のうち、付加価値を生んでいるのは8日だけ",
+      span: 20,
+      unit: "日",
+      tracks: [
+        {
+          label: "工程（付加価値）",
+          bars: [
+            { start: 0, length: 2, label: "受注", tone: 4 },
+            { start: 5, length: 3, label: "設計", tone: 4 },
+            { start: 13, length: 2, label: "製造", tone: 4 },
+            { start: 19, length: 1, label: "出荷", tone: 4 },
+          ],
+        },
+        {
+          label: "待ち（ムダ）",
+          bars: [
+            { start: 2, length: 3, label: "3日", tone: 1 },
+            { start: 8, length: 5, label: "5日", tone: 1 },
+            { start: 15, length: 4, label: "4日", tone: 1 },
+          ],
+        },
+      ],
+    },
   },
   {
     source: at(49),
@@ -2481,14 +2511,13 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
       "EA の4体系（ビジネス、データ、アプリケーション、テクノロジ）と同じ並びになっている。",
     ],
     figure: {
-      type: "table",
+      type: "layers",
       caption: "図：参照モデルは EA の4体系に対応する",
-      headers: ["参照モデル", "対応する層", "提供するもの"],
-      rows: [
-        ["BRM", "業務（ビジネス）", "業務分類に沿った体系と業務モデル"],
-        ["DRM", "データ", "データの分類と体系"],
-        ["SRM", "アプリケーション", "再利用できるサービス部品の分類"],
-        ["TRM", "テクノロジ", "技術基盤の標準と分類"],
+      layers: [
+        { name: "BRM", note: "業務。業務分類に沿った体系と業務モデル", tone: 5 },
+        { name: "DRM", note: "データ。データの分類と体系", tone: 4 },
+        { name: "SRM", note: "サービスコンポーネント。再利用できる部品の分類", tone: 3 },
+        { name: "TRM", note: "技術。技術基盤の標準と分類", tone: 2 },
       ],
     },
   },
@@ -2695,14 +2724,20 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
       "縦軸（市場成長率）が資金の必要量、横軸（相対的市場占有率）が資金の創出量に対応する。",
     ],
     figure: {
-      type: "table",
+      type: "quadrant",
       caption: "図：縦軸が資金の必要量、横軸が資金の創出量",
-      headers: ["象限", "成長率 × 占有率", "資金", "位置づけ"],
-      rows: [
-        ["金のなる木", "低 × 高", "生み出す", "投資用の資金源"],
-        ["花形", "高 × 高", "稼ぐが同じくらい使う", "占有率を保つ"],
-        ["問題児", "高 × 低", "使う", "資金を投じて花形へ育てる"],
-        ["負け犬", "低 × 低", "どちらも小さい", "撤退を検討"],
+      axisX: { label: "相対的市場占有率", low: "低い", high: "高い" },
+      axisY: { label: "市場成長率", low: "低い", high: "高い" },
+      cells: [
+        {
+          x: "low",
+          y: "high",
+          title: "問題児",
+          note: "資金を使う。金のなる木の資金を投じて育てる",
+        },
+        { x: "high", y: "high", title: "花形", note: "稼ぐが同じくらい使う。収支は拮抗する" },
+        { x: "low", y: "low", title: "負け犬", note: "どちらも小さい" },
+        { x: "high", y: "low", title: "金のなる木", note: "投資用の資金源。ここが問われる" },
       ],
     },
   },

@@ -279,15 +279,20 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "崩れた節から見て「左の左」ならLL型で1回の右回転。回転するのは崩れた最も下の節。",
     ],
     figure: {
-      type: "flow",
-      caption: "図：AVL 木への追加と回転",
-      steps: [
-        { actor: "1 を追加", text: "2 の左の子になる。どの節も平衡度は ±1 以内なので回転は不要" },
-        { actor: "0 を追加", text: "1 の左の子になり、節 2 の左右の高さの差が 2 になって崩れる" },
-        { actor: "型の判定", text: "崩れた節 2 から見て「左の左」に偏っているので LL 型" },
-        { actor: "右回転", text: "節 2 で 1 回右回転する。1 が親、0 と 2 がその子になる" },
-        { actor: "結果", text: "根は 5、3 の子が 1 と 4、1 の子が 0 と 2、7 の左の子が 6" },
+      type: "tree",
+      caption: "図：0 を追加して崩れた節 2 で右回転した後の木",
+      nodes: [
+        { id: "n5", label: "5" },
+        { id: "n3", label: "3", parent: "n5", side: "left" },
+        { id: "n7", label: "7", parent: "n5", side: "right" },
+        { id: "n1", label: "1", parent: "n3", side: "left", marked: true },
+        { id: "n4", label: "4", parent: "n3", side: "right" },
+        { id: "n6", label: "6", parent: "n7", side: "left" },
+        { id: "n0", label: "0", parent: "n1", side: "left" },
+        { id: "n2", label: "2", parent: "n1", side: "right" },
       ],
+      footnote:
+        "1 を追加した時点では平衡度は ±1 以内。0 を追加すると節 2 で左の左（LL 型）に偏るので、1 回の右回転で 1 を親にする。",
     },
   },
   {
@@ -392,16 +397,14 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "MMU（メモリ管理）、DSP（信号処理）、タイマ（計時）との役割の違いで見分ける。",
     ],
     figure: {
-      type: "flow",
+      type: "sequence",
       caption: "図：DMA 転送。CPU は指示だけして別の処理へ戻る",
+      actors: ["CPU", "DMA コントローラー", "メモリ／入出力装置"],
       steps: [
-        {
-          actor: "CPU",
-          text: "転送元・転送先・転送量を DMA コントローラーに設定し、開始を指示する",
-        },
-        { actor: "DMA コントローラー", text: "バスを使って、メモリと入出力装置の間を直接転送する" },
-        { actor: "CPU", text: "その間、別の処理を進められる" },
-        { actor: "DMA コントローラー", text: "完了したら割込みで CPU に知らせる" },
+        { from: 0, to: 1, label: "転送元・転送先・転送量を設定し、開始を指示する" },
+        { from: 1, to: 2, label: "バスを使って直接データを転送する" },
+        { from: 0, to: 0, label: "その間、CPU は別の処理を進められる" },
+        { from: 1, to: 0, label: "完了したら割込みで知らせる", reply: true },
       ],
     },
   },
@@ -1611,14 +1614,14 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "IPsecはIPパケットを保護するので第3層、TLSはTCPの上に乗るのでそれより上位。",
     ],
     figure: {
-      type: "table",
+      type: "layers",
       caption: "図：VPN のプロトコルは動く層で並ぶ",
-      headers: ["プロトコル", "層", "名前の手掛かり"],
-      rows: [
-        ["TLS", "トランスポート層より上（第4〜5層付近）", "TCP の上に乗る"],
-        ["IPsec", "ネットワーク層（第3層）", "IP パケットを保護する"],
-        ["L2TP", "データリンク層（第2層）", "Layer 2 Tunneling Protocol"],
+      layers: [
+        { name: "TLS", note: "トランスポート層より上（第4〜5層付近）。TCP の上に乗る", tone: 5 },
+        { name: "IPsec", note: "ネットワーク層（第3層）。IP パケットを保護する", tone: 3 },
+        { name: "L2TP", note: "データリンク層（第2層）。Layer 2 Tunneling Protocol", tone: 2 },
       ],
+      footnote: "名前が手掛かりになる。L2TP の「L2」がそのまま第2層を指す。",
     },
   },
   {
@@ -2543,14 +2546,15 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "「金のなる木」は成長率が低くシェアが高い。安定した資金源になる。",
     ],
     figure: {
-      type: "table",
-      caption: "図：PPM の4象限（縦＝市場成長率、横＝相対的市場シェア）",
-      headers: ["象限", "成長率 × シェア", "資金", "方針"],
-      rows: [
-        ["花形", "高 × 高", "稼ぐが投資も要る", "シェアを維持する"],
-        ["金のなる木", "低 × 高", "安定した資金源", "得た資金を他へ回す"],
-        ["問題児", "高 × 低", "資金を使う", "投資して花形へ育てる"],
-        ["負け犬", "低 × 低", "どちらも小さい", "撤退を検討"],
+      type: "quadrant",
+      caption: "図：PPM は2軸で事業を4つに分け、資源配分の方針を決める",
+      axisX: { label: "相対的市場シェア", low: "低い", high: "高い" },
+      axisY: { label: "市場成長率", low: "低い", high: "高い" },
+      cells: [
+        { x: "low", y: "high", title: "問題児", note: "投資して花形へ育てる" },
+        { x: "high", y: "high", title: "花形", note: "シェアを維持する" },
+        { x: "low", y: "low", title: "負け犬", note: "撤退を検討" },
+        { x: "high", y: "low", title: "金のなる木", note: "安定した資金源。得た資金を他へ回す" },
       ],
     },
   },

@@ -162,8 +162,85 @@ export type TimelineFigure = {
   marks?: { at: number; label: string }[];
 };
 
+/**
+ * 登場人物の間のやり取りを、上から順に矢印で描く図（シーケンス図）。
+ * 認証やプロトコルのように、「誰が誰に何を送るか」と「その順番」が要点のものに使う。
+ */
+export type SequenceFigure = {
+  type: "sequence";
+  caption: string;
+  /** 横に並べる登場人物。左から順に置く。 */
+  actors: string[];
+  steps: {
+    /** actors の添字。from と to が同じなら、その場での処理として描く。 */
+    from: number;
+    to: number;
+    label: string;
+    /** 応答や戻りを破線にする。 */
+    reply?: boolean;
+  }[];
+};
+
+/**
+ * 2 本の軸で 4 つに分けて見せる図。
+ * PPM やアンゾフの成長マトリクスのように、「2 つの軸のどこに位置するか」が要点のものに使う。
+ */
+export type QuadrantFigure = {
+  type: "quadrant";
+  caption: string;
+  /** 軸の名前と、両端に出す言葉。 */
+  axisX: { label: string; low: string; high: string };
+  axisY: { label: string; low: string; high: string };
+  /** 4 つの枠。位置は 2 軸の high / low で指定する。 */
+  cells: { x: "low" | "high"; y: "low" | "high"; title: string; note?: string }[];
+};
+
+/**
+ * 積み重なった層を描く図。
+ * OSI 基本参照モデルや 3 層スキーマのように、「上下の関係」が要点のものに使う。
+ */
+export type LayersFigure = {
+  type: "layers";
+  caption: string;
+  /** 上から順に並べる。 */
+  layers: { name: string; note?: string; tone?: BarTone }[];
+  /** 図の下に添える一言（「下ほど物理に近い」など）。 */
+  footnote?: string;
+};
+
+/**
+ * 節と枝で描く木構造の図。
+ * 2 分探索木や式木のように、「どの節がどこにぶら下がっているか」が要点のものに使う。
+ * 節のラベルは箱に収まる短いものにする（折り返さない）。
+ */
+export type TreeFigure = {
+  type: "tree";
+  caption: string;
+  nodes: {
+    id: string;
+    label: string;
+    /** 親の id。根だけ省略する。 */
+    parent?: string;
+    /** 2 分木で左右を固定したいときに指定する。 */
+    side?: "left" | "right";
+    /** 塗って強調する。 */
+    marked?: boolean;
+  }[];
+  /** 図の下に添える一言。 */
+  footnote?: string;
+};
+
 /** 解説に添える図。こちらは本サイトで組んだもの。 */
-export type Figure = FlowFigure | CalcFigure | TableFigure | ArrayFigure | TimelineFigure;
+export type Figure =
+  | FlowFigure
+  | CalcFigure
+  | TableFigure
+  | ArrayFigure
+  | TimelineFigure
+  | SequenceFigure
+  | QuadrantFigure
+  | LayersFigure
+  | TreeFigure;
 
 export type Question = {
   source: Source;

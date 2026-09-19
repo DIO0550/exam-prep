@@ -1,4 +1,5 @@
-import type { BarTone, TimelineFigure } from "../types";
+import type { TimelineFigure } from "../types";
+import { BAR_TONE, toneOf } from "./bar-tone";
 
 /**
  * 時間の流れに沿って、どの処理がいつ動いているかを見せる図（タイムチャート）。
@@ -6,19 +7,6 @@ import type { BarTone, TimelineFigure } from "../types";
  * 1 列が 1 目盛りで、帯は「開始時刻」と「長さ」で置く。数字を読んで頭の中で並べ直さなくても、
  * 重なりと空きがそのまま見えるようにするための図なので、列幅は固定にして時間軸をそろえる。
  */
-
-/** 帯の色。意味は持たず、隣と見分けるためのもの。 */
-const BAR_TONE: Record<BarTone, string> = {
-  1: "border-bar-1-line bg-bar-1 text-bar-1-ink",
-  2: "border-bar-2-line bg-bar-2 text-bar-2-ink",
-  3: "border-bar-3-line bg-bar-3 text-bar-3-ink",
-  4: "border-bar-4-line bg-bar-4 text-bar-4-ink",
-  5: "border-bar-5-line bg-bar-5 text-bar-5-ink",
-};
-
-/** 色を指定しなかった帯に順番に振る色。 */
-const toneOf = (tone: BarTone | undefined, index: number): BarTone =>
-  tone ?? (((index % 5) + 1) as BarTone);
 
 /** 1 目盛りの幅と、左の見出し列の幅。 */
 const TICK = "2.2em";

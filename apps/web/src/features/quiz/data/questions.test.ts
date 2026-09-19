@@ -80,6 +80,43 @@ describe("問題データ", () => {
     }
   });
 
+  it("シーケンス図の矢印は、並べた登場人物の中で完結している", () => {
+    for (const question of ALL) {
+      if (question.figure?.type !== "sequence") continue;
+      const { actors, steps } = question.figure;
+      for (const step of steps) {
+        expect(step.from, `${nameOf(question)} の「${step.label}」`).toBeLessThan(actors.length);
+        expect(step.to, `${nameOf(question)} の「${step.label}」`).toBeLessThan(actors.length);
+        expect(step.from, `${nameOf(question)} の「${step.label}」`).toBeGreaterThanOrEqual(0);
+        expect(step.to, `${nameOf(question)} の「${step.label}」`).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it("4象限図は、4つの位置がひととおりそろっている", () => {
+    for (const question of ALL) {
+      if (question.figure?.type !== "quadrant") continue;
+      const places = question.figure.cells.map((cell) => `${cell.y}-${cell.x}`);
+      expect(new Set(places).size, `${nameOf(question)} の4象限`).toBe(4);
+    }
+  });
+
+  it("木構造図は、根が1つで、親がすべて実在する", () => {
+    for (const question of ALL) {
+      if (question.figure?.type !== "tree") continue;
+      const { nodes } = question.figure;
+      const ids = new Set(nodes.map((node) => node.id));
+      const roots = nodes.filter((node) => node.parent === undefined);
+
+      expect(roots, `${nameOf(question)} の根`).toHaveLength(1);
+      expect(ids.size, `${nameOf(question)} の節の id`).toBe(nodes.length);
+      for (const node of nodes) {
+        if (node.parent === undefined) continue;
+        expect(ids.has(node.parent), `${nameOf(question)} の「${node.label}」の親`).toBe(true);
+      }
+    }
+  });
+
   it("解説に、日本語でも英数字でもない文字が紛れていない", () => {
     for (const question of ALL) {
       const text = [

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import type { ArrayFigure, TimelineFigure } from "../types";
+import type { ArrayFigure, QuadrantFigure, SequenceFigure, TimelineFigure } from "../types";
 import { FigureBlock } from "./figure-block";
 
 /**
@@ -87,5 +87,84 @@ describe("FigureBlock（タイムチャート）", () => {
 
     expect(screen.getByText("（秒）")).toBeInTheDocument();
     expect(screen.getByText("8")).toBeInTheDocument();
+  });
+});
+
+describe("FigureBlock（シーケンス図）", () => {
+  const figure: SequenceFigure = {
+    type: "sequence",
+    caption: "図：やり取りの順序",
+    actors: ["クライアント", "サーバ", "DNS"],
+    steps: [
+      { from: 0, to: 1, label: "接続を要求する" },
+      { from: 1, to: 2, label: "公開鍵を引く" },
+      { from: 1, to: 0, label: "証明書を返す", reply: true },
+      { from: 1, to: 1, label: "署名を検証する" },
+    ],
+  };
+
+  it("矢印を、送り手と受け手の列にまたがらせる", () => {
+    render(<FigureBlock figure={figure} variant="page" />);
+
+    // 0 → 1 は 1 列目から 3 列目の手前まで。
+    expect(columnOf(screen.getByText(/接続を要求する/).parentElement as HTMLElement)).toBe("1 / 3");
+    // 1 → 2 は 2 列目から。
+    expect(columnOf(screen.getByText(/公開鍵を引く/).parentElement as HTMLElement)).toBe("2 / 4");
+  });
+
+  it("戻りの矢印も、同じ範囲にまたがらせて向きだけ変える", () => {
+    const { container } = render(<FigureBlock figure={figure} variant="page" />);
+    const reply = screen.getByText(/証明書を返す/).parentElement as HTMLElement;
+
+    expect(columnOf(reply)).toBe("1 / 3");
+    // 向きは矢印の記号で表す。戻りは左向き。
+    expect(reply.textContent).toContain("◀");
+    expect(container.textContent).toContain("▶");
+  });
+
+  it("相手のいないやり取りは、その列だけに置く", () => {
+    render(<FigureBlock figure={figure} variant="page" />);
+    const self = screen.getByText(/署名を検証する/).parentElement as HTMLElement;
+
+    expect(columnOf(self)).toBe("2");
+  });
+
+  it("順番が分かるよう番号を振る", () => {
+    render(<FigureBlock figure={figure} variant="page" />);
+
+    expect(screen.getByText(/^1\. 接続を要求する$/)).toBeInTheDocument();
+    expect(screen.getByText(/^4\. 署名を検証する$/)).toBeInTheDocument();
+  });
+});
+
+describe("FigureBlock（4象限図）", () => {
+  const figure: QuadrantFigure = {
+    type: "quadrant",
+    caption: "図：4つの象限",
+    axisX: { label: "占有率", low: "低", high: "高" },
+    axisY: { label: "成長率", low: "低", high: "高" },
+    cells: [
+      { x: "high", y: "high", title: "花形" },
+      { x: "low", y: "high", title: "問題児" },
+      { x: "high", y: "low", title: "金のなる木" },
+      { x: "low", y: "low", title: "負け犬" },
+    ],
+  };
+
+  it("上段を縦軸の高い側、左列を横軸の低い側にして並べる", () => {
+    const { container } = render(<FigureBlock figure={figure} variant="page" />);
+    const titles = [...container.querySelectorAll(".font-bold.text-read-sm")].map(
+      (cell) => cell.textContent,
+    );
+
+    // 左上・右上・左下・右下の順に並ぶ。
+    expect(titles.slice(0, 4)).toEqual(["問題児", "花形", "負け犬", "金のなる木"]);
+  });
+
+  it("軸の名前と両端の言葉を出す", () => {
+    render(<FigureBlock figure={figure} variant="page" />);
+
+    expect(screen.getByText("成長率")).toBeInTheDocument();
+    expect(screen.getByText("占有率")).toBeInTheDocument();
   });
 });
