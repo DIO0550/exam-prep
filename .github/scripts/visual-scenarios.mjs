@@ -169,4 +169,9 @@ export const SCENARIOS = [
     storage: { [RECORD_KEY]: answeredRecord(37) },
     steps: [{ click: "問題一覧・見直し" }],
   },
+  {
+    name: "vocab",
+    label: "略語単語帳",
+    steps: [{ click: "略語単語帳" }],
+  },
 ];

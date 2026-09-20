@@ -15,7 +15,7 @@ import { sourceId } from "../types";
 import { useNotes } from "./use-notes";
 import { useProgress } from "./use-progress";
 
-export type Screen = "home" | "quiz" | "explain" | "result" | "review";
+export type Screen = "home" | "quiz" | "explain" | "result" | "review" | "vocab";
 
 /** 解説を問題と同じ画面に出すか、解答後に解説画面へ移るか。 */
 export type FeedbackMode = "inline" | "page";

@@ -3,6 +3,8 @@
 import type { CSSProperties } from "react";
 import { useMemo, useRef } from "react";
 
+import { VocabScreen } from "@/features/vocab/components/vocab-screen";
+
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
 import { QUESTION_BY_ID, QUESTION_SETS } from "../data/questions";
 import { useProgress } from "../hooks/use-progress";
@@ -43,7 +45,9 @@ export const QuizApp = () => {
   const exam = EXAMS[session.examIndex] ?? EXAMS[0];
   // メモの枠は、問題が出ている画面でだけ開く（学習ホームや結果には書く相手がいない）。
   const notesVisible =
-    session.notesOpen && session.current !== undefined && session.screen !== "review";
+    session.notesOpen &&
+    session.current !== undefined &&
+    (session.screen === "quiz" || session.screen === "explain");
 
   // 問題や画面が替わったら、右側を上まで戻してから見せる。
   const contentRef = useRef<HTMLDivElement>(null);
@@ -72,14 +76,16 @@ export const QuizApp = () => {
       />
 
       <div className="flex flex-1 flex-col md:min-h-0 md:flex-row">
-        <ExamSidebar
-          exams={EXAMS}
-          groups={EXAM_GROUPS}
-          examIndex={session.examIndex}
-          closedGroups={session.closedGroups}
-          onSelectExam={session.setExamIndex}
-          onToggleGroup={session.toggleGroup}
-        />
+        {session.screen !== "vocab" && (
+          <ExamSidebar
+            exams={EXAMS}
+            groups={EXAM_GROUPS}
+            examIndex={session.examIndex}
+            closedGroups={session.closedGroups}
+            onSelectExam={session.setExamIndex}
+            onToggleGroup={session.toggleGroup}
+          />
+        )}
 
         <div
           ref={contentRef}
@@ -87,26 +93,28 @@ export const QuizApp = () => {
         >
           <main className="flex flex-1 justify-center px-7 pb-16">
             <div className="flex w-full max-w-[1180px] flex-col gap-6">
-              <header className="flex flex-wrap items-baseline gap-3 border-line border-b pt-6 pb-3.5">
-                <span className="font-bold text-[10.5px] text-muted tracking-[0.14em]">
-                  {exam.code}
-                </span>
-                <h1 className="font-bold text-[17px] leading-[1.4] tracking-[0.01em]">
-                  {exam.name}
-                </h1>
-                <span className="text-[11.5px] text-muted">{exam.sub}</span>
-                <div className="ml-auto self-center">
-                  <SelectMenu
-                    label="出題する回"
-                    value={questionSet.id}
-                    options={QUESTION_SETS.map((option) => ({
-                      value: option.id,
-                      label: option.label,
-                    }))}
-                    onChange={progressStore.selectSet}
-                  />
-                </div>
-              </header>
+              {session.screen !== "vocab" && (
+                <header className="flex flex-wrap items-baseline gap-3 border-line border-b pt-6 pb-3.5">
+                  <span className="font-bold text-[10.5px] text-muted tracking-[0.14em]">
+                    {exam.code}
+                  </span>
+                  <h1 className="font-bold text-[17px] leading-[1.4] tracking-[0.01em]">
+                    {exam.name}
+                  </h1>
+                  <span className="text-[11.5px] text-muted">{exam.sub}</span>
+                  <div className="ml-auto self-center">
+                    <SelectMenu
+                      label="出題する回"
+                      value={questionSet.id}
+                      options={QUESTION_SETS.map((option) => ({
+                        value: option.id,
+                        label: option.label,
+                      }))}
+                      onChange={progressStore.selectSet}
+                    />
+                  </div>
+                </header>
+              )}
 
               {(session.screen === "quiz" || session.screen === "explain") && (
                 <ProgressBar
@@ -175,6 +183,8 @@ export const QuizApp = () => {
                   onGoReview={() => session.setScreen("review")}
                 />
               )}
+
+              {session.screen === "vocab" && <VocabScreen />}
 
               {session.screen === "review" && (
                 <ReviewScreen

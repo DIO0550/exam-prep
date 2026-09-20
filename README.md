@@ -26,6 +26,9 @@ apps/web/          Next.js 16（App Router / TypeScript / Tailwind v4）
       data/        問題データ。出典は types.ts の formatSource が組み立てる
       choice-order.ts 選択肢の表示順（原本順 / シャッフル）
       local-store.ts  localStorage の値を React の外から購読する土台（progress と notes が使う）
+    vocab/         略語単語帳（略語 360 語の一覧と検索）
+      data/        略語データ。technical_memo の「略語単語帳」から移してきた
+      search.ts    検索の絞り込み（略語・正式名称だけ / 説明も含む）
   public/questions/ 問題の図（公開 PDF から切り出し）と、そのライセンス表記
   vitest.config.ts テスト設定（jsdom + Testing Library）
 biome.json         lint / format（リポジトリ全体を 1 つの設定で見る）
