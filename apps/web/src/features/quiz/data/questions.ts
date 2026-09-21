@@ -10,8 +10,8 @@ import { AP_R06_AKI_AM } from "./ap-r06-aki-am";
 import { AP_R06_HARU_AM } from "./ap-r06-haru-am";
 import { AP_R07_AKI_AM } from "./ap-r07-aki-am";
 import { AP_R07_HARU_AM } from "./ap-r07-haru-am";
-import { GCP_CDL_SCENARIO } from "./gcp-cdl-scenario";
-import { GCP_CDL_SERVICE } from "./gcp-cdl-service";
+import { GCP_CDL_SCENARIO_1 } from "./gcp-cdl-scenario-1";
+import { GCP_CDL_SERVICE_1 } from "./gcp-cdl-service-1";
 
 /**
  * 収録している問題集。
@@ -43,8 +43,8 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "ap-r04-haru-am", exam: "AP", label: "令和4年 春期", questions: AP_R04_HARU_AM },
   { id: "ap-r03-aki-am", exam: "AP", label: "令和3年 秋期", questions: AP_R03_AKI_AM },
   { id: "ap-r03-haru-am", exam: "AP", label: "令和3年 春期", questions: AP_R03_HARU_AM },
-  { id: "gcp-cdl-scenario", exam: "CDL", label: "シナリオ問題", questions: GCP_CDL_SCENARIO },
-  { id: "gcp-cdl-service", exam: "CDL", label: "サービス確認問題", questions: GCP_CDL_SERVICE },
+  { id: "gcp-cdl-scenario-1", exam: "CDL", label: "シナリオ問題1", questions: GCP_CDL_SCENARIO_1 },
+  { id: "gcp-cdl-service-1", exam: "CDL", label: "サービス確認問題1", questions: GCP_CDL_SERVICE_1 },
 ];
 
 /** ある試験に属する問題集だけを取り出す。左の一覧と「出題する回」を連動させるのに使う。 */

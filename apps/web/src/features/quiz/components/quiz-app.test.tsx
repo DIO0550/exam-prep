@@ -571,12 +571,12 @@ describe("QuizApp", () => {
     // 見出しと出題する回が、選び直した試験のものになる
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Cloud Digital Leader");
     expect(screen.getByRole("button", { name: /^出題する回/ })).toHaveAccessibleName(
-      "出題する回 シナリオ問題",
+      "出題する回 シナリオ問題1",
     );
 
     // 「出題する回」には、選んでいる試験の問題集だけが並ぶ
     await user.click(screen.getByRole("button", { name: /^出題する回/ }));
-    expect(screen.getByRole("option", { name: "サービス確認問題" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "サービス確認問題1" })).toBeInTheDocument();
     expect(screen.queryByRole("option", { name: FIRST_SET.label })).not.toBeInTheDocument();
   });
 });
