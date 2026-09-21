@@ -164,6 +164,12 @@ export const SCENARIOS = [
     steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 17 }, { choice: 0 }],
   },
   {
+    name: "explain-starve",
+    label: "解説（方式を並べたタイムチャート）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r06-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 16 }, { choice: 0 }],
+  },
+  {
     name: "explain-sketch",
     label: "解説（図の見本）",
     // 「どの図か」を問う設問。各図の形を並べた見本を撮る。

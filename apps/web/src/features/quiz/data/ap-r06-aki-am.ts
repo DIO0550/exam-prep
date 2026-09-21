@@ -615,17 +615,69 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
       "飢餓が起きるのは「選ばれる条件が待ち時間と無関係」な方式。処理時間順や固定優先度がこれに当たる。",
       "エージングは待ち時間に応じて優先度を上げる補正で、優先度方式の飢餓対策として出題される。",
     ],
-    figure: {
-      type: "table",
-      caption: "選ばれる条件が待ち時間と無関係だと、飢餓が起きる",
-      headers: ["方式", "選び方", "飢餓（スタベーション）"],
-      rows: [
-        ["処理時間順", "処理予定時間の短いものから", "起きる（長いタスクが後回しになり続ける）"],
-        ["到着順（FCFS）", "到着した順", "起きない"],
-        ["ラウンドロビン", "一定時間ずつ順番に", "起きない"],
-        ["エージング", "待ち時間に応じて優先度を上げる", "飢餓を防ぐための仕組み"],
-      ],
-    },
+    figure: [
+      {
+        type: "timeline",
+        caption: "短いタスクが次々に来たとき、長いタスク L に番が回るか",
+        span: 12,
+        unit: "ms",
+        groups: [
+          {
+            label: "処理時間順",
+            note: "短いものから選ぶので、L はいつまでも選ばれない（飢餓）",
+            verdict: "ng",
+            tracks: [
+              {
+                label: "短いタスク",
+                bars: [
+                  { start: 0, length: 2, label: "S1", tone: 3 },
+                  { start: 2, length: 2, label: "S2", tone: 3 },
+                  { start: 4, length: 2, label: "S3", tone: 3 },
+                  { start: 6, length: 2, label: "S4", tone: 3 },
+                  { start: 8, length: 2, label: "S5", tone: 3 },
+                  { start: 10, length: 2, label: "S6", tone: 3 },
+                ],
+              },
+              { label: "長いタスク L", bars: [] },
+            ],
+          },
+          {
+            label: "ラウンドロビン",
+            note: "一定時間ずつ順番に回すので、L にも必ず番が来る",
+            verdict: "ok",
+            tracks: [
+              {
+                label: "短いタスク",
+                bars: [
+                  { start: 0, length: 2, label: "S1", tone: 3 },
+                  { start: 4, length: 2, label: "S2", tone: 3 },
+                  { start: 8, length: 2, label: "S3", tone: 3 },
+                ],
+              },
+              {
+                label: "長いタスク L",
+                bars: [
+                  { start: 2, length: 2, label: "L", tone: 5 },
+                  { start: 6, length: 2, label: "L", tone: 5 },
+                  { start: 10, length: 2, label: "L", tone: 5 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "選ばれる条件が待ち時間と無関係だと、飢餓が起きる",
+        headers: ["方式", "選び方", "飢餓（スタベーション）"],
+        rows: [
+          ["処理時間順", "処理予定時間の短いものから", "起きる（長いタスクが後回しになり続ける）"],
+          ["到着順（FCFS）", "到着した順", "起きない"],
+          ["ラウンドロビン", "一定時間ずつ順番に", "起きない"],
+          ["エージング", "待ち時間に応じて優先度を上げる", "飢餓を防ぐための仕組み"],
+        ],
+      },
+    ],
   },
   {
     source: at(17),

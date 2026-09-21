@@ -123,7 +123,17 @@ export const TimelineFigureBlock = ({ figure }: { figure: TimelineFigure }) => {
   };
   const groups = timelineGroups(figure);
   const hasDeadline = groups.some((group) => group.deadline !== undefined);
-  const legendTracks = withTone(groups[0]?.tracks ?? []);
+  // 凡例の色は、その段の帯が実際に使っている色に合わせる。帯が 1 本も無い段（ずっと待っている
+  // タスクなど）は、ほかのまとまりの同じ段から色を拾う。
+  const legendTracks = withTone(groups[0]?.tracks ?? []).map((track) => {
+    if (track.bars.length > 0) return track;
+    for (const group of groups) {
+      const same = group.tracks.find((candidate) => candidate.label === track.label);
+      const tone = same?.bars[0]?.tone;
+      if (tone) return { ...track, tone };
+    }
+    return track;
+  });
   // 見出しのあるまとまりが 1 つでもあれば、凡例を出す（帯の色が何を指すか言葉で残す）。
   const labelled = groups.some((group) => group.label !== "");
 
