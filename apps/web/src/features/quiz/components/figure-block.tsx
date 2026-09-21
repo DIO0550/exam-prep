@@ -2,6 +2,7 @@ import type { Figure } from "../types";
 import { ArrayFigureBlock } from "./array-figure";
 import { SketchFigureBlock } from "./sketch-figure";
 import { TimelineFigureBlock } from "./timeline-figure";
+import { TreeFigureBlock } from "./tree-figure";
 
 /** inline は問題カードの中、page は解説画面。図の地色だけ変わる（文字は text-read-* で共通）。 */
 type Variant = "inline" | "page";
@@ -126,6 +127,8 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
       {figure.type === "timeline" && <TimelineFigureBlock figure={figure} />}
 
       {figure.type === "sketch" && <SketchFigureBlock figure={figure} />}
+
+      {figure.type === "tree" && <TreeFigureBlock figure={figure} />}
     </figure>
   );
 };

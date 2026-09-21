@@ -222,6 +222,8 @@ export const SKETCH_NAMES = [
   "CRUD マトリクス",
   "バーンダウンチャート",
   "信頼度成長曲線",
+  "B⁺木インデックス",
+  "ハッシュインデックス",
 ] as const;
 
 export type SketchName = (typeof SKETCH_NAMES)[number];
@@ -233,6 +235,28 @@ export type SketchFigure = {
   items: { name: SketchName; note: string }[];
 };
 
+/**
+ * 2 分木。節点は配列表現（1 始まりの添字。左の子が 2i、右の子が 2i+1）で持つ。
+ *
+ * 親子の線をデータに書かせると、書き間違いがそのまま木の形になってしまう。添字で持てば
+ * 位置が一意に決まり、応用情報でよく出る「配列で 2 分木を表す」話ともそのまま噛み合う。
+ */
+export type TreeNode = {
+  /** 配列表現での添字（根が 1）。 */
+  at: number;
+  label: string;
+  /** 節点の色。注目させたいものに付ける。 */
+  tone?: "accent" | "ok" | "ng";
+  /** 節点に添える短い説明。 */
+  note?: string;
+};
+
+export type TreeFigure = {
+  type: "tree";
+  caption: string;
+  nodes: TreeNode[];
+};
+
 /** 解説に添える図。こちらは本サイトで組んだもの。 */
 export type Figure =
   | FlowFigure
@@ -240,7 +264,8 @@ export type Figure =
   | TableFigure
   | ArrayFigure
   | TimelineFigure
-  | SketchFigure;
+  | SketchFigure
+  | TreeFigure;
 
 export type Question = {
   source: Source;

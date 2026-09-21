@@ -177,6 +177,12 @@ export const SCENARIOS = [
     steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 47 }, { choice: 0 }],
   },
   {
+    name: "explain-tree",
+    label: "解説（2 分木）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r06-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 5 }, { choice: 0 }],
+  },
+  {
     name: "result",
     label: "結果",
     // 79 問まで解いた状態から始め、残り 1 問を解いて結果へ進む。

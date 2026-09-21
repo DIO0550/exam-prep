@@ -414,6 +414,61 @@ const SKETCHES: Record<SketchName, ReactNode> = {
     </Frame>
   ),
 
+  "B⁺木インデックス": (
+    <Frame>
+      <title>B⁺木インデックス</title>
+      <rect x="66" y="8" width="68" height="20" rx="3" className={FILL} />
+      {[6, 76, 146].map((x) => (
+        <rect key={x} x={x} y="46" width="48" height="18" rx="3" className={BOX} />
+      ))}
+      {[4, 52, 100, 148].map((x) => (
+        <rect key={x} x={x} y="86" width="46" height="18" rx="3" className={BOX} />
+      ))}
+      <path
+        d="M90 28 L30 46 M100 28 L100 46 M110 28 L170 46"
+        className="stroke-current"
+        fill="none"
+      />
+      <path
+        d="M22 64 L27 86 M100 64 L75 86 M170 64 L171 86"
+        className="stroke-current"
+        fill="none"
+      />
+      {/* 葉どうしが順につながっているのが B⁺木の要点（範囲検索がたどれる）。 */}
+      <path d="M50 95 H52 M98 95 H100 M146 95 H148" className="stroke-current" fill="none" />
+      <path
+        d="M50 95 H52 M98 95 H100 M146 95 H148"
+        className="stroke-current"
+        strokeWidth={2}
+        fill="none"
+      />
+      <text x="100" y="118" textAnchor="middle" className={INK} stroke="none" fontSize="9">
+        葉は値の順に並び、横につながる
+      </text>
+    </Frame>
+  ),
+
+  ハッシュインデックス: (
+    <Frame>
+      <title>ハッシュインデックス</title>
+      <rect x="6" y="46" width="44" height="22" rx="3" className={BOX} />
+      <path d="M50 57 H70" className="stroke-current" fill="none" />
+      <Arrow x={72} y={57} angle={0} />
+      <rect x="72" y="40" width="46" height="34" rx="4" className={FILL} />
+      <text x="95" y="61" textAnchor="middle" className={INK} stroke="none" fontSize="11">
+        h( )
+      </text>
+      <path d="M118 57 H140" className="stroke-current" fill="none" />
+      <Arrow x={142} y={57} angle={0} />
+      {[14, 34, 54, 74, 94].map((y, index) => (
+        <rect key={y} x="144" y={y} width="50" height="16" className={index === 2 ? FILL : BOX} />
+      ))}
+      <text x="100" y="118" textAnchor="middle" className={INK} stroke="none" fontSize="9">
+        計算した位置へ直接。順序は持たない
+      </text>
+    </Frame>
+  ),
+
   信頼度成長曲線: (
     <Frame>
       <title>信頼度成長曲線</title>
