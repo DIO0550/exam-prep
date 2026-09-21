@@ -695,17 +695,114 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "CPU 使用率の合計（A＋B）が1を超える組合せは、その時点で完了できないと判断できる。",
       "回数は切上げで数えるのが安全。周期の境目でAが起動する分を落とすと判定を誤る。",
     ],
-    figure: {
-      type: "table",
-      caption: "タスクBの周期内に必要な時間",
-      headers: ["選択肢", "Bの周期", "Aが使う時間", "Bが必要な時間", "合計"],
-      rows: [
-        ["ア", "8", "2 × 2 ＝ 4", "3", "7 ≦ 8"],
-        ["イ", "9", "3 × 2 ＝ 6", "4", "10 ＞ 9"],
-        ["ウ", "13", "3 × 3 ＝ 9", "5", "14 ＞ 13"],
-        ["エ", "15", "4 × 3 ＝ 12", "5", "17 ＞ 15"],
-      ],
-    },
+    figure: [
+      {
+        type: "timeline",
+        caption: "優先度の高いAを先に置き、空いたところでBを動かしたときの進み方",
+        span: 17,
+        unit: "ms",
+        groups: [
+          {
+            label: "ア",
+            note: "A（2, 周期4）・B（3, 周期8）→ 7ms で完了",
+            verdict: "ok",
+            deadline: { at: 8 },
+            tracks: [
+              {
+                label: "タスクA",
+                bars: [
+                  { start: 0, length: 2, label: "A", tone: 5 },
+                  { start: 4, length: 2, label: "A", tone: 5 },
+                ],
+              },
+              {
+                label: "タスクB",
+                bars: [
+                  { start: 2, length: 2, label: "B", tone: 3 },
+                  { start: 6, length: 1, label: "B", tone: 3 },
+                ],
+              },
+            ],
+          },
+          {
+            label: "イ",
+            note: "A（3, 周期6）・B（4, 周期9）→ 1ms 足りない",
+            verdict: "ng",
+            deadline: { at: 9 },
+            missed: { track: "タスクB", start: 9, length: 1 },
+            tracks: [
+              {
+                label: "タスクA",
+                bars: [
+                  { start: 0, length: 3, label: "A", tone: 5 },
+                  { start: 6, length: 3, label: "A", tone: 5 },
+                ],
+              },
+              { label: "タスクB", bars: [{ start: 3, length: 3, label: "B", tone: 3 }] },
+            ],
+          },
+          {
+            label: "ウ",
+            note: "A（3, 周期5）・B（5, 周期13）→ 1ms 足りない",
+            verdict: "ng",
+            deadline: { at: 13 },
+            missed: { track: "タスクB", start: 13, length: 1 },
+            tracks: [
+              {
+                label: "タスクA",
+                bars: [
+                  { start: 0, length: 3, label: "A", tone: 5 },
+                  { start: 5, length: 3, label: "A", tone: 5 },
+                  { start: 10, length: 3, label: "A", tone: 5 },
+                ],
+              },
+              {
+                label: "タスクB",
+                bars: [
+                  { start: 3, length: 2, label: "B", tone: 3 },
+                  { start: 8, length: 2, label: "B", tone: 3 },
+                ],
+              },
+            ],
+          },
+          {
+            label: "エ",
+            note: "A（4, 周期6）・B（5, 周期15）→ 1ms 足りない",
+            verdict: "ng",
+            deadline: { at: 15 },
+            missed: { track: "タスクB", start: 16, length: 1 },
+            tracks: [
+              {
+                label: "タスクA",
+                bars: [
+                  { start: 0, length: 4, label: "A", tone: 5 },
+                  { start: 6, length: 4, label: "A", tone: 5 },
+                  { start: 12, length: 4, label: "A", tone: 5 },
+                ],
+              },
+              {
+                label: "タスクB",
+                bars: [
+                  { start: 4, length: 2, label: "B", tone: 3 },
+                  { start: 10, length: 2, label: "B", tone: 3 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "同じことを数で確かめる（Aの回数は Bの周期 ÷ Aの周期 の切上げ）",
+        headers: ["選択肢", "Bの周期", "Aが使う時間", "Bが必要な時間", "合計"],
+        rows: [
+          ["ア", "8", "2 × 2 ＝ 4", "3", "7 ≦ 8"],
+          ["イ", "9", "3 × 2 ＝ 6", "4", "10 ＞ 9"],
+          ["ウ", "13", "3 × 3 ＝ 9", "5", "14 ＞ 13"],
+          ["エ", "15", "4 × 3 ＝ 12", "5", "17 ＞ 15"],
+        ],
+      },
+    ],
   },
   {
     source: at(18),

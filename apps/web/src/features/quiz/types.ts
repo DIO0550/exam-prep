@@ -150,6 +150,34 @@ export type BarTone = 1 | 2 | 3 | 4 | 5;
  * 時間の流れに沿って、どの処理がいつ動いているかを見せる図。
  * 多重度やスケジューリング、パイプラインのように、時刻と重なりが要点のものに使う。
  */
+export type TimelineBar = { start: number; length: number; label: string; tone?: BarTone };
+
+export type TimelineTrack = {
+  label: string;
+  /** start は開始時刻（0 始まり）、length は占める目盛りの数。 */
+  bars: TimelineBar[];
+};
+
+/**
+ * 選択肢ごとに並べて見比べる段。
+ *
+ * 「どの組合せなら間に合うか」を問う設問は、数字の表より、同じ時間軸に並べて
+ * 締切をまたぐかどうかを見るほうが早い。
+ */
+export type TimelineGroup = {
+  /** 見出し。選択肢の記号（ア〜エ）など。 */
+  label: string;
+  /** 見出しに添える一言。条件と結論を書く。 */
+  note?: string;
+  /** 結論の色。○ なら ok、× なら ng。 */
+  verdict?: "ok" | "ng";
+  tracks: TimelineTrack[];
+  /** 締切の縦線。この時刻を過ぎたら間に合わない。 */
+  deadline?: { at: number; label?: string };
+  /** 締切までに終わらなかった分。track はどの段に置くか（label で指す）。 */
+  missed?: { track: string; start: number; length: number };
+};
+
 export type TimelineFigure = {
   type: "timeline";
   caption: string;
@@ -157,14 +185,17 @@ export type TimelineFigure = {
   span: number;
   /** 目盛りの単位（「秒」「サイクル」）。軸の右端に出す。 */
   unit: string;
-  tracks: {
-    label: string;
-    /** start は開始時刻（0 始まり）、length は占める目盛りの数。 */
-    bars: { start: number; length: number; label: string; tone?: BarTone }[];
-  }[];
+  /** 1 本だけ出すとき。 */
+  tracks?: TimelineTrack[];
+  /** 選択肢ごとに並べるとき。 */
+  groups?: TimelineGroup[];
   /** 軸の下に立てる目印。到着時刻など、帯ではない出来事を指す。 */
   marks?: { at: number; label: string }[];
 };
+
+/** 段のまとまり。1 本だけの図も、見出しの無い 1 まとまりとして扱う。 */
+export const timelineGroups = (figure: TimelineFigure): TimelineGroup[] =>
+  figure.groups ?? [{ label: "", tracks: figure.tracks ?? [] }];
 
 /**
  * 「どの図か」を問う設問で、図そのものの形を見せるための見本。

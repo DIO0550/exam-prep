@@ -158,6 +158,12 @@ export const SCENARIOS = [
     steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 5 }, { choice: 0 }],
   },
   {
+    name: "explain-compare",
+    label: "解説（選択肢を並べたタイムチャート）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r05-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 17 }, { choice: 0 }],
+  },
+  {
     name: "explain-sketch",
     label: "解説（図の見本）",
     // 「どの図か」を問う設問。各図の形を並べた見本を撮る。

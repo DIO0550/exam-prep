@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Question } from "../types";
-import { figuresOf, SKETCH_NAMES, shortSource } from "../types";
+import { figuresOf, SKETCH_NAMES, shortSource, timelineGroups } from "../types";
 import { QUESTION_SETS } from "./questions";
 
 /**
@@ -71,13 +71,33 @@ describe("問題データ", () => {
     for (const question of ALL) {
       const timeline = figuresOf(question).find((figure) => figure.type === "timeline");
       if (!timeline) continue;
-      const { span, tracks, marks } = timeline;
-      for (const track of tracks) {
-        for (const bar of track.bars) {
-          expect(bar.start, `${nameOf(question)} の「${bar.label}」`).toBeGreaterThanOrEqual(0);
+      const { span, marks } = timeline;
+      for (const group of timelineGroups(timeline)) {
+        for (const track of group.tracks) {
+          for (const bar of track.bars) {
+            expect(bar.start, `${nameOf(question)} の「${bar.label}」`).toBeGreaterThanOrEqual(0);
+            expect(
+              bar.start + bar.length,
+              `${nameOf(question)} の「${bar.label}」`,
+            ).toBeLessThanOrEqual(span);
+          }
+        }
+
+        // 締切と「終わらなかった分」も目盛りの中に収める
+        if (group.deadline) {
+          expect(group.deadline.at, `${nameOf(question)} の ${group.label} の締切`).toBeLessThan(
+            span,
+          );
+        }
+        if (group.missed) {
+          const { track, start, length } = group.missed;
           expect(
-            bar.start + bar.length,
-            `${nameOf(question)} の「${bar.label}」`,
+            group.tracks.map((candidate) => candidate.label),
+            `${nameOf(question)} の ${group.label} の未完の段`,
+          ).toContain(track);
+          expect(
+            start + length,
+            `${nameOf(question)} の ${group.label} の未完`,
           ).toBeLessThanOrEqual(span);
         }
       }
