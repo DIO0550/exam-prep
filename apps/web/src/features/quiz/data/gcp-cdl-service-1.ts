@@ -1,7 +1,7 @@
 import type { Question, Source } from "../types";
 
 /**
- * Google Cloud Digital Leader 対策 サービス確認問題（問1〜問30）。
+ * Google Cloud Digital Leader 対策 サービス確認問題 1（問1〜問30）。
  *
  * シナリオ問題集と同じく、**問題文・選択肢・正解・解説のすべてを本サイトで書き下ろしている**。
  * どこかの認定試験の実際の設問ではなく、公式の模擬試験でもない。
@@ -19,13 +19,13 @@ import type { Question, Source } from "../types";
 
 const at = (no: number): Source => ({
   kind: "original",
-  deck: "gcp-cdl-service",
-  label: "GCP サービス",
+  deck: "gcp-cdl-service-1",
+  label: "GCP サービス1",
   no,
   reference: "Google Cloud「Cloud Digital Leader 学習ガイド v2.0」",
 });
 
-export const GCP_CDL_SERVICE: [Question, ...Question[]] = [
+export const GCP_CDL_SERVICE_1: [Question, ...Question[]] = [
   {
     source: at(1),
     field: "コンピューティング",

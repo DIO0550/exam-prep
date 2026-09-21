@@ -16,7 +16,7 @@ export const EXAMS: [Exam, ...Exam[]] = [
   {
     code: "CDL",
     name: "Cloud Digital Leader",
-    sub: "シナリオ ・ サービス確認",
+    sub: "シナリオ ・ サービス確認 ・ 各30問",
     group: "Google Cloud 認定資格",
   },
 ];
