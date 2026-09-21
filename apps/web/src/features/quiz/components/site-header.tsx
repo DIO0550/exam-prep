@@ -14,6 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "学習ホーム", target: "home", actives: ["home"] },
   { label: "演習", target: "quiz", actives: ["quiz", "explain", "result"] },
   { label: "問題一覧・見直し", target: "review", actives: ["review"] },
+  { label: "略語単語帳", target: "vocab", actives: ["vocab"] },
 ];
 
 type ToggleOption<T> = { label: string; value: T };
@@ -131,18 +132,23 @@ export const SiteHeader = ({
       </div>
 
       <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 py-2.5">
-        <Toggle
-          label="選択肢"
-          options={SHUFFLE_OPTIONS}
-          value={shuffle}
-          onChange={onShuffleChange}
-        />
-        <Toggle
-          label="解説表示"
-          options={FEEDBACK_OPTIONS}
-          value={feedback}
-          onChange={onFeedbackChange}
-        />
+        {/* 選択肢と解説の出し方は問題を解くときだけのもの。単語帳では出さない。 */}
+        {screen !== "vocab" && (
+          <>
+            <Toggle
+              label="選択肢"
+              options={SHUFFLE_OPTIONS}
+              value={shuffle}
+              onChange={onShuffleChange}
+            />
+            <Toggle
+              label="解説表示"
+              options={FEEDBACK_OPTIONS}
+              value={feedback}
+              onChange={onFeedbackChange}
+            />
+          </>
+        )}
         <Toggle
           label="文字サイズ"
           options={TEXT_SCALE_OPTIONS}
