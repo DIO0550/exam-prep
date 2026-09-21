@@ -43,11 +43,13 @@ describe("単語帳（フラッシュカード）", () => {
     const actor = user();
     await startDrill(actor);
 
-    expect(screen.getByText("1 / 21")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "札 01" })).toBeInTheDocument();
+    expect(screen.getByText("1 / 21枚")).toBeInTheDocument();
     await actor.click(screen.getByRole("button", { name: "問い（押すと答えを見る）" }));
     await actor.click(screen.getByRole("button", { name: /覚えた/ }));
 
-    expect(screen.getByText("2 / 21")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "札 02" })).toBeInTheDocument();
+    expect(screen.getByText("2 / 21枚")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^答えを見る/ })).toBeInTheDocument();
   });
 
@@ -85,7 +87,7 @@ describe("単語帳（フラッシュカード）", () => {
     expect(screen.getByRole("heading", { name: "あやふやだった語" })).toBeInTheDocument();
 
     await actor.click(screen.getByRole("button", { name: "あやふやだけもう一周" }));
-    expect(screen.getByText("1 / 1")).toBeInTheDocument();
+    expect(screen.getByText("1 / 1枚")).toBeInTheDocument();
   });
 
   it("キーでもめくれる（Space でめくり、2 であやふや）", async () => {
@@ -96,7 +98,35 @@ describe("単語帳（フラッシュカード）", () => {
     expect(screen.getByRole("button", { name: /^覚えた/ })).toBeInTheDocument();
 
     await actor.keyboard("2");
-    expect(screen.getByText("2 / 21")).toBeInTheDocument();
+    expect(screen.getByText("2 / 21枚")).toBeInTheDocument();
+  });
+
+  it("めくっている途中でも、設定画面に戻れる", async () => {
+    const actor = user();
+    await startDrill(actor);
+
+    // キー（Esc）しか無いと、触って使う端末で戻れなくなる
+    await actor.click(screen.getByRole("button", { name: /^設定に戻る/ }));
+
+    expect(screen.getByRole("heading", { name: "出題形式" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "開始する" })).toBeEnabled();
+  });
+
+  it("札番号のボタンで、その札へ直接移れる", async () => {
+    const actor = user();
+    await startDrill(actor);
+
+    // 1 枚目を「あやふや」にしてから、番号を押して戻る
+    await actor.click(screen.getByRole("button", { name: "問い（押すと答えを見る）" }));
+    await actor.click(screen.getByRole("button", { name: /^あやふや/ }));
+    expect(screen.getByRole("heading", { name: "札 02" })).toBeInTheDocument();
+
+    await actor.click(screen.getByRole("button", { name: /^1枚目/ }));
+    expect(screen.getByRole("heading", { name: "札 01" })).toBeInTheDocument();
+    // 戻った札は裏返っていない（答えを伏せた状態から見直せる）
+    expect(screen.getByRole("button", { name: /^答えを見る/ })).toBeInTheDocument();
+    // 手ごたえは番号のボタンに残る
+    expect(screen.getByText("あやふや 1枚")).toBeInTheDocument();
   });
 
   it("出題形式を変えると、表に出るものが変わる", async () => {

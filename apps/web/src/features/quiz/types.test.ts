@@ -57,18 +57,18 @@ describe("書き下ろした問題の出典", () => {
     deck: "gcp-cdl-scenario",
     label: "GCP シナリオ",
     no: 7,
-    reference: "Cloud Digital Leader 学習ガイド v2.0（Google Cloud）",
+    reference: "Google Cloud「Cloud Digital Leader 学習ガイド v2.0」",
   };
 
   it("本サイト作成であることと、典拠を併記する", () => {
     expect(formatSource(original)).toBe(
-      "GCP シナリオ 問7・本サイト作成（典拠 Cloud Digital Leader 学習ガイド v2.0（Google Cloud））",
+      "GCP シナリオ 問7・本サイト作成（典拠 Google Cloud「Cloud Digital Leader 学習ガイド v2.0」）",
     );
   });
 
   it("表示のしかたによる差分も、典拠と同じ括弧に並べる", () => {
     expect(formatSource(original, "選択肢の順序を入れ替えて表示")).toBe(
-      "GCP シナリオ 問7・本サイト作成（典拠 Cloud Digital Leader 学習ガイド v2.0（Google Cloud）、選択肢の順序を入れ替えて表示）",
+      "GCP シナリオ 問7・本サイト作成（典拠 Google Cloud「Cloud Digital Leader 学習ガイド v2.0」、選択肢の順序を入れ替えて表示）",
     );
   });
 

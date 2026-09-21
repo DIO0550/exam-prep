@@ -17,8 +17,8 @@ import type { Question, Source } from "../types";
  * - なぜその選択肢が違うのかは choice.note に 1 つずつ書く
  */
 
-const STUDY_GUIDE = "Cloud Digital Leader 学習ガイド v2.0（Google Cloud）";
-const ADOPTION_FRAMEWORK = "Google Cloud Adoption Framework ホワイトペーパー（Google）";
+const STUDY_GUIDE = "Google Cloud「Cloud Digital Leader 学習ガイド v2.0」";
+const ADOPTION_FRAMEWORK = "Google「Google Cloud Adoption Framework」ホワイトペーパー";
 
 const at = (no: number, reference: string = STUDY_GUIDE): Source => ({
   kind: "original",

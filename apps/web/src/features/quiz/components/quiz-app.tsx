@@ -128,11 +128,23 @@ export const QuizApp = () => {
 
                   {(session.screen === "quiz" || session.screen === "explain") && (
                     <ProgressBar
-                      answered={session.summary.answered}
-                      correct={session.summary.correct}
-                      percent={session.summary.percent}
+                      done={session.summary.answered}
                       total={questionSet.questions.length}
                       index={session.index}
+                      unit="問"
+                      stat={
+                        session.summary.answered === 0 ? (
+                          "正答率 —"
+                        ) : (
+                          <>
+                            正答率{" "}
+                            <span className="font-bold text-ink">{session.summary.percent}%</span>
+                            <span className="pl-1.5 text-muted-soft">
+                              （{session.summary.correct}/{session.summary.answered}問）
+                            </span>
+                          </>
+                        )
+                      }
                     />
                   )}
 

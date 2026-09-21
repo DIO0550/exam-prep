@@ -22,7 +22,7 @@ const at = (no: number): Source => ({
   deck: "gcp-cdl-service",
   label: "GCP サービス",
   no,
-  reference: "Cloud Digital Leader 学習ガイド v2.0（Google Cloud）",
+  reference: "Google Cloud「Cloud Digital Leader 学習ガイド v2.0」",
 });
 
 export const GCP_CDL_SERVICE: [Question, ...Question[]] = [

@@ -13,7 +13,8 @@ export const SiteFooter = () => {
           。過去問題を網羅したものではありません。
         </p>
         <p>
-          問題文・選択肢・図・正解（解答例）は
+          <span className="font-bold text-muted">過去問題</span>
+          　問題文・選択肢・図・正解（解答例）は
           <a
             href="https://www.ipa.go.jp/shiken/mondai-kaiotu/index.html"
             target="_blank"
@@ -35,7 +36,15 @@ export const SiteFooter = () => {
           </a>
           を確認してください。
         </p>
-        <p className="font-bold text-muted">本サイトは IPA とは無関係の個人制作です。</p>
+        <p>
+          <span className="font-bold text-muted">Google Cloud 対策の問題</span>
+          　問題文・選択肢・正解・解説のいずれも本サイトで書き下ろしたもので、公開資料を典拠に
+          してはいますが、そこからの転載ではありません。認定試験の実際の設問でも、公式の模擬試験
+          でもありません。典拠は問題ごとの出典表記に出しています。
+        </p>
+        <p className="font-bold text-muted">
+          本サイトは IPA とも Google とも無関係の個人制作です。
+        </p>
       </div>
     </footer>
   );

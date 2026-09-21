@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import type { FlashcardSession } from "../hooks/use-flashcards";
+import { CardDots } from "./card-dots";
 import { FlashcardCard } from "./flashcard-card";
 
 type FlashcardDrillProps = {
@@ -19,7 +20,7 @@ const Key = ({ children }: { children: string }) => (
 );
 
 export const FlashcardDrill = ({ session }: FlashcardDrillProps) => {
-  const { current, drawn, index, flipped, okCount, answered } = session;
+  const { current, drawn, index, flipped, verdicts } = session;
 
   // キーで操作する。Space と Enter はボタンに当たっているときブラウザが押してくれるので、
   // ここでは拾わない（二重にめくれるのを避ける）。
@@ -54,22 +55,21 @@ export const FlashcardDrill = ({ session }: FlashcardDrillProps) => {
 
   return (
     <div className="flex animate-rise-in flex-col gap-3.5">
+      {/* 演習の問題カードの見出しと同じ並び。何枚目かと、そこから抜ける口。
+          分野は札そのものが表にも裏にも出しているので、ここでは重ねない。 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="font-bold text-[13px] text-muted tabular-nums">
-          {index + 1} / {drawn.length}
-        </span>
-        <span className="text-[12px] text-muted">
-          覚えた <span className="font-bold text-ok tabular-nums">{okCount}</span>
-          <span className="px-2">・</span>
-          あやふや <span className="font-bold text-ng tabular-nums">{answered - okCount}</span>
-        </span>
-      </div>
-
-      <div className="h-1.5 overflow-hidden rounded-full bg-track">
-        <div
-          className="h-full rounded-full bg-accent transition-[width] duration-300 motion-reduce:transition-none"
-          style={{ width: `${drawn.length === 0 ? 0 : (index / drawn.length) * 100}%` }}
-        />
+        <h2 className="whitespace-nowrap font-bold text-[12px] text-accent tracking-[0.06em]">
+          札 {String(index + 1).padStart(2, "0")}
+        </h2>
+        {/* めくっている最中に設定へ戻る口。キー（Esc）しか無いと、触って使う端末で戻れない。 */}
+        <button
+          type="button"
+          onClick={session.toSetup}
+          className="cursor-pointer rounded-[9px] border border-edge-strong bg-surface px-3.5 py-[7px] font-medium text-[12px] text-muted-soft hover:bg-canvas"
+        >
+          設定に戻る
+          <Key>Esc</Key>
+        </button>
       </div>
 
       <FlashcardCard
@@ -132,6 +132,8 @@ export const FlashcardDrill = ({ session }: FlashcardDrillProps) => {
       <p className="text-[11px] text-muted-soft leading-[1.8]">
         Space めくる／覚えた・1 覚えた・2 あやふや・← → 移動・Esc 設定に戻る
       </p>
+
+      <CardDots drawn={drawn} verdicts={verdicts} index={index} onGoTo={session.goTo} />
     </div>
   );
 };
