@@ -44,7 +44,12 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "ap-r03-aki-am", exam: "AP", label: "令和3年 秋期", questions: AP_R03_AKI_AM },
   { id: "ap-r03-haru-am", exam: "AP", label: "令和3年 春期", questions: AP_R03_HARU_AM },
   { id: "gcp-cdl-scenario-1", exam: "CDL", label: "シナリオ問題1", questions: GCP_CDL_SCENARIO_1 },
-  { id: "gcp-cdl-service-1", exam: "CDL", label: "サービス確認問題1", questions: GCP_CDL_SERVICE_1 },
+  {
+    id: "gcp-cdl-service-1",
+    exam: "CDL",
+    label: "サービス確認問題1",
+    questions: GCP_CDL_SERVICE_1,
+  },
 ];
 
 /** ある試験に属する問題集だけを取り出す。左の一覧と「出題する回」を連動させるのに使う。 */
