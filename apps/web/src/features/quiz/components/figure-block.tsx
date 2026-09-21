@@ -1,5 +1,6 @@
 import type { Figure } from "../types";
 import { ArrayFigureBlock } from "./array-figure";
+import { SketchFigureBlock } from "./sketch-figure";
 import { TimelineFigureBlock } from "./timeline-figure";
 
 /** inline は問題カードの中、page は解説画面。図の地色だけ変わる（文字は text-read-* で共通）。 */
@@ -123,6 +124,8 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
       {figure.type === "array" && <ArrayFigureBlock figure={figure} />}
 
       {figure.type === "timeline" && <TimelineFigureBlock figure={figure} />}
+
+      {figure.type === "sketch" && <SketchFigureBlock figure={figure} />}
     </figure>
   );
 };

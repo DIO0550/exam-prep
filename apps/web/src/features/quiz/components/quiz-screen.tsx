@@ -1,7 +1,7 @@
 import { isShuffled, positionOf, SHUFFLED_NOTE } from "../choice-order";
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
-import { choiceKey, formatSource, shortSource } from "../types";
+import { choiceKey, figuresOf, formatSource, shortSource } from "../types";
 import { ChoiceList } from "./choice-list";
 import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
@@ -56,6 +56,7 @@ export const QuizScreen = ({
 }: QuizScreenProps) => {
   const { question, attempt } = item;
   const correct = isCorrect(item);
+  const figures = figuresOf(question);
   const tone = correct ? "ok" : "ng";
   // 並べ替えたときは、出典にもその旨を併記する（改変は理由を問わず明記する。docs 2.3）。
   const shuffled = isShuffled(order);
@@ -129,11 +130,14 @@ export const QuizScreen = ({
               </div>
             )}
 
-            {question.figure && (
-              <div className="mb-[22px] max-w-[1000px] rounded-xl border border-line bg-surface px-5 pt-5 pb-[18px]">
-                <FigureBlock figure={question.figure} variant="inline" />
+            {figures.map((figure) => (
+              <div
+                key={figure.caption}
+                className="mb-[22px] max-w-[1000px] rounded-xl border border-line bg-surface px-5 pt-5 pb-[18px]"
+              >
+                <FigureBlock figure={figure} variant="inline" />
               </div>
-            )}
+            ))}
 
             <div className={`border-t pt-[18px] ${correct ? "border-ok-line" : "border-ng-line"}`}>
               <h3 className="mb-3.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Question } from "../types";
-import { shortSource } from "../types";
+import { figuresOf, SKETCH_NAMES, shortSource } from "../types";
 import { QUESTION_SETS } from "./questions";
 
 /**
@@ -32,18 +32,31 @@ describe("問題データ", () => {
 
   it("図の見出しは呼び名を持たない（図・表は描画側が中身に合わせて付ける）", () => {
     for (const question of ALL) {
-      if (!question.figure) continue;
-      expect(question.figure.caption, `${nameOf(question)} の図の見出し`).not.toMatch(
-        /^(図|表)\s*[：:]/,
-      );
-      expect(question.figure.caption, `${nameOf(question)} の図の見出し`).not.toBe("");
+      for (const figure of figuresOf(question)) {
+        expect(figure.caption, `${nameOf(question)} の図の見出し`).not.toMatch(/^(図|表)\s*[：:]/);
+        expect(figure.caption, `${nameOf(question)} の図の見出し`).not.toBe("");
+      }
+    }
+  });
+
+  it("図の見本は、名前から引ける形だけを使う", () => {
+    for (const question of ALL) {
+      for (const figure of figuresOf(question)) {
+        if (figure.type !== "sketch") continue;
+        expect(figure.items.length, `${nameOf(question)} の図の見本`).toBeGreaterThanOrEqual(2);
+        for (const item of figure.items) {
+          expect(SKETCH_NAMES, `${nameOf(question)} の「${item.name}」`).toContain(item.name);
+          expect(item.note, `${nameOf(question)} の「${item.name}」の説明`).not.toBe("");
+        }
+      }
     }
   });
 
   it("表の図は、見出しと各行の列数がそろっている", () => {
     for (const question of ALL) {
-      if (question.figure?.type !== "table") continue;
-      const { headers, rows } = question.figure;
+      const table = figuresOf(question).find((figure) => figure.type === "table");
+      if (!table) continue;
+      const { headers, rows } = table;
       expect(headers.length, `${nameOf(question)} の表の列数`).toBeGreaterThanOrEqual(2);
       expect(headers.length, `${nameOf(question)} の表の列数`).toBeLessThanOrEqual(
         TABLE_COLUMN_LIMIT,
@@ -56,8 +69,9 @@ describe("問題データ", () => {
 
   it("タイムチャートの帯は、目盛りの中に収まっている", () => {
     for (const question of ALL) {
-      if (question.figure?.type !== "timeline") continue;
-      const { span, tracks, marks } = question.figure;
+      const timeline = figuresOf(question).find((figure) => figure.type === "timeline");
+      if (!timeline) continue;
+      const { span, tracks, marks } = timeline;
       for (const track of tracks) {
         for (const bar of track.bars) {
           expect(bar.start, `${nameOf(question)} の「${bar.label}」`).toBeGreaterThanOrEqual(0);
@@ -75,8 +89,9 @@ describe("問題データ", () => {
 
   it("配列図のセル数は、見出しと段でそろっている", () => {
     for (const question of ALL) {
-      if (question.figure?.type !== "array") continue;
-      const { headers, rows } = question.figure;
+      const array = figuresOf(question).find((figure) => figure.type === "array");
+      if (!array) continue;
+      const { headers, rows } = array;
       const width = headers?.length ?? rows[0]?.cells.length;
       for (const row of rows) {
         expect(row.cells.length, `${nameOf(question)} の段「${row.label}」`).toBe(width);

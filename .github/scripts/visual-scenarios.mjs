@@ -157,6 +157,13 @@ export const SCENARIOS = [
     steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 5 }, { choice: 0 }],
   },
   {
+    name: "explain-sketch",
+    label: "解説（図の見本）",
+    // 「どの図か」を問う設問。各図の形を並べた見本を撮る。
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r03-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 47 }, { choice: 0 }],
+  },
+  {
     name: "result",
     label: "結果",
     // 79 問まで解いた状態から始め、残り 1 問を解いて結果へ進む。

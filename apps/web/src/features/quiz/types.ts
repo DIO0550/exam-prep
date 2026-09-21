@@ -166,8 +166,50 @@ export type TimelineFigure = {
   marks?: { at: number; label: string }[];
 };
 
+/**
+ * 「どの図か」を問う設問で、図そのものの形を見せるための見本。
+ *
+ * 連関図・パレート図・クラス図のように、選択肢が図の名前や言葉の説明だけで並ぶ設問は、
+ * 形を知らないと選べない。名前から見本の絵を引けるようにして、並べて見比べられるようにする。
+ */
+export const SKETCH_NAMES = [
+  "連関図",
+  "親和図",
+  "系統図",
+  "特性要因図",
+  "パレート図",
+  "マトリックス図",
+  "アローダイアグラム",
+  "クラス図",
+  "オブジェクト図",
+  "アクティビティ図",
+  "状態マシン図",
+  "シーケンス図",
+  "ユースケース図",
+  "DFD",
+  "E-R図",
+  "CRUD マトリクス",
+  "バーンダウンチャート",
+  "信頼度成長曲線",
+] as const;
+
+export type SketchName = (typeof SKETCH_NAMES)[number];
+
+/** 図の見本を並べる図。1 つずつ「どんな形か」と「何を表すか」を添える。 */
+export type SketchFigure = {
+  type: "sketch";
+  caption: string;
+  items: { name: SketchName; note: string }[];
+};
+
 /** 解説に添える図。こちらは本サイトで組んだもの。 */
-export type Figure = FlowFigure | CalcFigure | TableFigure | ArrayFigure | TimelineFigure;
+export type Figure =
+  | FlowFigure
+  | CalcFigure
+  | TableFigure
+  | ArrayFigure
+  | TimelineFigure
+  | SketchFigure;
 
 export type Question = {
   source: Source;
@@ -186,7 +228,14 @@ export type Question = {
   /** 以下は本サイトで書いた解説。IPA の解答例ではない（docs 3.4）。 */
   explain?: string;
   points?: string[];
-  figure?: Figure;
+  /** 解説に添える図。2 つ以上あるときは配列で書いた順に出す。 */
+  figure?: Figure | Figure[];
+};
+
+/** 解説に出す図を、1 つでも複数でも同じ形で受け取る。 */
+export const figuresOf = (question: Question): Figure[] => {
+  if (!question.figure) return [];
+  return Array.isArray(question.figure) ? question.figure : [question.figure];
 };
 
 export type Exam = {
