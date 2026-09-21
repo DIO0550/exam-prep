@@ -15,6 +15,7 @@ import { GCP_CDL_SCENARIO_2 } from "./gcp-cdl-scenario-2";
 import { GCP_CDL_SCENARIO_3 } from "./gcp-cdl-scenario-3";
 import { GCP_CDL_SERVICE_1 } from "./gcp-cdl-service-1";
 import { GCP_CDL_SERVICE_2 } from "./gcp-cdl-service-2";
+import { GCP_CDL_SERVICE_3 } from "./gcp-cdl-service-3";
 
 /**
  * 収録している問題集。
@@ -65,6 +66,12 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
     exam: "CDL",
     label: "サービス確認問題2",
     questions: GCP_CDL_SERVICE_2,
+  },
+  {
+    id: "gcp-cdl-service-3",
+    exam: "CDL",
+    label: "サービス確認問題3",
+    questions: GCP_CDL_SERVICE_3,
   },
 ];
 
