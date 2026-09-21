@@ -170,8 +170,21 @@ export const SCENARIOS = [
     steps: [{ click: "問題一覧・見直し" }],
   },
   {
-    name: "vocab",
-    label: "略語単語帳",
-    steps: [{ click: "略語単語帳" }],
+    name: "vocab-setup",
+    label: "単語帳（設定）",
+    steps: [{ click: "単語帳" }],
+  },
+  {
+    name: "vocab-card",
+    label: "単語帳（めくる）",
+    // 分野を 1 つに絞ってから始め、1 枚目の答えを出したところを撮る。
+    steps: [
+      { click: "単語帳" },
+      { click: "すべて解除" },
+      { click: "🗄️ データベース21" },
+      { click: "収録順" },
+      { click: "開始する" },
+      { click: "答えを見るSpace" },
+    ],
   },
 ];

@@ -26,9 +26,13 @@ apps/web/          Next.js 16（App Router / TypeScript / Tailwind v4）
       data/        問題データ。出典は types.ts の formatSource が組み立てる
       choice-order.ts 選択肢の表示順（原本順 / シャッフル）
       local-store.ts  localStorage の値を React の外から購読する土台（progress と notes が使う）
-    vocab/         略語単語帳（略語 360 語の一覧と検索）
+    vocab/         単語帳（略語 360 語のフラッシュカード）
+      components/  左の単語帳一覧と、設定 → めくる → 結果の 3 画面
+      hooks/       めくっている状態（useFlashcards）と「あやふや」の購読（useWeak）
+      weak/        「あやふや」を付けた語。localStorage への保存（学習記録とは別のキー）
       data/        略語データ。technical_memo の「略語単語帳」から移してきた
-      search.ts    検索の絞り込み（略語・正式名称だけ / 説明も含む）
+      deck.ts      出題形式・分野・順番・枚数から札を配る
+      decks.ts     左のパネルに並べる単語帳の一覧
   public/questions/ 問題の図（公開 PDF から切り出し）と、そのライセンス表記
   vitest.config.ts テスト設定（jsdom + Testing Library）
 biome.json         lint / format（リポジトリ全体を 1 つの設定で見る）

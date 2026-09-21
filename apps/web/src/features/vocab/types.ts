@@ -27,10 +27,19 @@ export type AbbrGroup = {
   entries: AbbrEntry[];
 };
 
-/** 同じ略語で意味が分かれるもの。 */
-export type AmbiguousAbbr = {
-  abbr: string;
-  meanings: { en: string; ja: string; desc: string }[];
-  /** 文脈での見分け方。 */
-  hint: string;
+/** 1 枚の札。どの分類の語かを持ったまま配るので、札から分類の名前を出せる。 */
+export type Card = {
+  /** 札を見分ける ID。分類の中で略語は重複しないので、この 2 つで足りる。 */
+  id: string;
+  entry: AbbrEntry;
+  group: AbbrGroup;
+};
+
+/** 左のパネルに並べる単語帳。 */
+export type VocabDeck = {
+  id: string;
+  name: string;
+  /** 一覧に添える短い説明。 */
+  sub: string;
+  groups: AbbrGroup[];
 };
