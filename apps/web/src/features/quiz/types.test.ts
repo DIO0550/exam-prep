@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Source } from "./types";
-import { formatSource, sourceId } from "./types";
+import { formatSource, shortSource, sourceId } from "./types";
 
 const base: Source = { exam: "AP", era: "令和", year: 3, term: "haru", section: "am", no: 1 };
 
@@ -48,5 +48,36 @@ describe("sourceId", () => {
 
   it("改変の有無で ID は変わらない", () => {
     expect(sourceId({ ...base, modified: "図を差し替え" })).toBe(sourceId(base));
+  });
+});
+
+describe("書き下ろした問題の出典", () => {
+  const original: Source = {
+    kind: "original",
+    deck: "gcp-cdl-scenario",
+    label: "GCP シナリオ",
+    no: 7,
+    reference: "Cloud Digital Leader 学習ガイド v2.0（Google Cloud）",
+  };
+
+  it("本サイト作成であることと、典拠を併記する", () => {
+    expect(formatSource(original)).toBe(
+      "GCP シナリオ 問7・本サイト作成（典拠 Cloud Digital Leader 学習ガイド v2.0（Google Cloud））",
+    );
+  });
+
+  it("表示のしかたによる差分も、典拠と同じ括弧に並べる", () => {
+    expect(formatSource(original, "選択肢の順序を入れ替えて表示")).toBe(
+      "GCP シナリオ 問7・本サイト作成（典拠 Cloud Digital Leader 学習ガイド v2.0（Google Cloud）、選択肢の順序を入れ替えて表示）",
+    );
+  });
+
+  it("一覧には問題集の名前と番号を出す", () => {
+    expect(shortSource(original)).toBe("GCP シナリオ 問7");
+  });
+
+  it("問題 ID は問題集の ID と番号で作る", () => {
+    expect(sourceId(original)).toBe("gcp-cdl-scenario-07");
+    expect(sourceId({ ...original, no: 30 })).toBe("gcp-cdl-scenario-30");
   });
 });

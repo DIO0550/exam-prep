@@ -37,7 +37,6 @@ export const useQuizSession = (questions: Question[]) => {
   const [notesOpen, setNotesOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [filter, setFilter] = useState<ReviewFilter>("すべて");
-  const [examIndex, setExamIndex] = useState(0);
   const [closedGroups, setClosedGroups] = useState<string[]>([]);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState("—");
@@ -233,8 +232,6 @@ export const useQuizSession = (questions: Question[]) => {
     elapsed,
     filter,
     setFilter,
-    examIndex,
-    setExamIndex,
     closedGroups,
     toggleGroup,
     isLast: index + 1 >= items.length,

@@ -13,7 +13,13 @@ export const EXAMS: [Exam, ...Exam[]] = [
     sub: "午前 ・ 全80問形式",
     group: "IPA 情報処理技術者試験",
   },
+  {
+    code: "CDL",
+    name: "Cloud Digital Leader",
+    sub: "シナリオ ・ サービス確認",
+    group: "Google Cloud 認定資格",
+  },
 ];
 
 /** 見出しの並び順。EXAMS の group と対応する。 */
-export const EXAM_GROUPS = ["IPA 情報処理技術者試験"];
+export const EXAM_GROUPS = ["IPA 情報処理技術者試験", "Google Cloud 認定資格"];
