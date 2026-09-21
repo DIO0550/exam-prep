@@ -6,7 +6,7 @@ import { useMemo, useRef } from "react";
 import { VocabApp } from "@/features/vocab/components/vocab-app";
 
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
-import { QUESTION_BY_ID, QUESTION_SETS } from "../data/questions";
+import { QUESTION_SETS } from "../data/questions";
 import { useProgress } from "../hooks/use-progress";
 import { useQuizSession } from "../hooks/use-quiz-session";
 import { useScrollReset } from "../hooks/use-scroll-reset";
@@ -38,10 +38,7 @@ export const QuizApp = () => {
   const record = useProgress();
   const questionSet = QUESTION_SETS.find((set) => set.id === record.setId) ?? QUESTION_SETS[0];
   const session = useQuizSession(questionSet.questions);
-  const progress = useMemo(
-    () => summarizeProgress(record, (id) => QUESTION_BY_ID.get(id)),
-    [record],
-  );
+  const progress = useMemo(() => summarizeProgress(record), [record]);
   const exam = EXAMS[session.examIndex] ?? EXAMS[0];
   // メモの枠は、問題が出ている画面でだけ開く（学習ホームや結果には書く相手がいない）。
   const notesVisible =
@@ -118,6 +115,8 @@ export const QuizApp = () => {
                   {(session.screen === "quiz" || session.screen === "explain") && (
                     <ProgressBar
                       answered={session.summary.answered}
+                      correct={session.summary.correct}
+                      percent={session.summary.percent}
                       total={questionSet.questions.length}
                       index={session.index}
                     />
@@ -129,6 +128,7 @@ export const QuizApp = () => {
                       questionCount={questionSet.questions.length}
                       answered={session.summary.answered}
                       summary={progress}
+                      setSummary={session.summary}
                       hasNotes={session.hasNotes}
                       onStart={session.start}
                       onRestart={session.restart}
@@ -200,6 +200,8 @@ export const QuizApp = () => {
             {notesVisible && session.current && (
               <NotePanel
                 index={session.index}
+                width={record.noteWidth}
+                onResize={progressStore.setNoteWidth}
                 note={session.note}
                 onChangeText={session.setNoteText}
                 onAddStroke={session.addStroke}
