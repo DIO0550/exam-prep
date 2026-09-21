@@ -13,6 +13,7 @@ import { AP_R07_HARU_AM } from "./ap-r07-haru-am";
 import { GCP_CDL_SCENARIO_1 } from "./gcp-cdl-scenario-1";
 import { GCP_CDL_SCENARIO_2 } from "./gcp-cdl-scenario-2";
 import { GCP_CDL_SERVICE_1 } from "./gcp-cdl-service-1";
+import { GCP_CDL_SERVICE_2 } from "./gcp-cdl-service-2";
 
 /**
  * 収録している問題集。
@@ -51,6 +52,12 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
     exam: "CDL",
     label: "サービス確認問題1",
     questions: GCP_CDL_SERVICE_1,
+  },
+  {
+    id: "gcp-cdl-service-2",
+    exam: "CDL",
+    label: "サービス確認問題2",
+    questions: GCP_CDL_SERVICE_2,
   },
 ];
 
