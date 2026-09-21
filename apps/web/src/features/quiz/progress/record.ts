@@ -10,13 +10,23 @@ import { DEFAULT_TEXT_SCALE, isTextScale } from "../text-scale";
  */
 
 /** 保存形式の版。形を変えたら上げる。読めない版は捨てて作り直す。 */
-export const RECORD_VERSION = 3;
+export const RECORD_VERSION = 4;
 
 /**
- * 読める版。版 1 は選択肢シャッフル、版 2 は文字サイズの設定を持たないだけなので、
- * 既定値を足して読む。ここで捨てると、設定が 1 つ増えただけで学習記録が消えてしまうため。
+ * 読める版。版 1 は選択肢シャッフル、版 2 は文字サイズ、版 3 はメモの幅を
+ * 持たないだけなので、既定値を足して読む。ここで捨てると、設定が 1 つ増えただけで
+ * 学習記録が消えてしまうため。
  */
-const READABLE_VERSIONS: readonly number[] = [1, 2, RECORD_VERSION];
+const READABLE_VERSIONS: readonly number[] = [1, 2, 3, RECORD_VERSION];
+
+/** メモの枠の幅（px）。狭すぎると書けず、広すぎると問題文が読めなくなるので両端を決めておく。 */
+export const NOTE_WIDTH_MIN = 300;
+export const NOTE_WIDTH_MAX = 760;
+export const DEFAULT_NOTE_WIDTH = 380;
+
+/** 保存された幅を、端に収める。 */
+export const clampNoteWidth = (width: number): number =>
+  Math.min(NOTE_WIDTH_MAX, Math.max(NOTE_WIDTH_MIN, Math.round(width)));
 
 /** 累計正答率の母数。直近この件数までを見る。 */
 export const RECENT_LIMIT = 200;
@@ -43,6 +53,8 @@ export type ProgressRecord = {
   shuffleSeed: number;
   /** 問題文と解説を出す文字の大きさ。 */
   textScale: TextScale;
+  /** メモの枠の幅（px）。ドラッグで変えた幅を次に開いたときも使う。 */
+  noteWidth: number;
 };
 
 /** まだ触れていない問題の解答状況。共有するので、更新は必ず新しい値を作る。 */
@@ -63,6 +75,7 @@ export const emptyRecord = (): ProgressRecord => ({
   shuffle: false,
   shuffleSeed: 0,
   textScale: DEFAULT_TEXT_SCALE,
+  noteWidth: DEFAULT_NOTE_WIDTH,
 });
 
 /** 記録が空のときに返す値。参照を固定する（useSyncExternalStore が同一性で見るため）。 */
@@ -129,6 +142,12 @@ export const withTextScale = (record: ProgressRecord, textScale: TextScale): Pro
   textScale,
 });
 
+/** メモの枠の幅を覚える。端は clampNoteWidth で押さえる。 */
+export const withNoteWidth = (record: ProgressRecord, noteWidth: number): ProgressRecord => ({
+  ...record,
+  noteWidth: clampNoteWidth(noteWidth),
+});
+
 export const withAttempt = (
   record: ProgressRecord,
   questionId: string,
@@ -193,7 +212,7 @@ export const parseRecord = (raw: unknown): ProgressRecord => {
     return emptyRecord();
   }
 
-  const { setId, attempts, recent, days, shuffle, shuffleSeed, textScale } = value;
+  const { setId, attempts, recent, days, shuffle, shuffleSeed, textScale, noteWidth } = value;
   if (typeof attempts !== "object" || attempts === null) return emptyRecord();
   if (!Array.isArray(recent) || !recent.every((item) => typeof item === "boolean")) {
     return emptyRecord();
@@ -217,5 +236,9 @@ export const parseRecord = (raw: unknown): ProgressRecord => {
     shuffle: shuffle === true,
     shuffleSeed: typeof shuffleSeed === "number" && Number.isFinite(shuffleSeed) ? shuffleSeed : 0,
     textScale: isTextScale(textScale) ? textScale : DEFAULT_TEXT_SCALE,
+    noteWidth:
+      typeof noteWidth === "number" && Number.isFinite(noteWidth)
+        ? clampNoteWidth(noteWidth)
+        : DEFAULT_NOTE_WIDTH,
   };
 };

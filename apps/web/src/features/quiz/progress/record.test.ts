@@ -3,8 +3,11 @@ import { describe, expect, it } from "vitest";
 import type { Attempt } from "../stats";
 import {
   DAY_LIMIT,
+  DEFAULT_NOTE_WIDTH,
   dayKey,
   emptyRecord,
+  NOTE_WIDTH_MAX,
+  NOTE_WIDTH_MIN,
   parseRecord,
   RECENT_LIMIT,
   RECORD_VERSION,
@@ -160,6 +163,7 @@ describe("parseRecord", () => {
     shuffle: true,
     shuffleSeed: 2,
     textScale: "xlarge",
+    noteWidth: 460,
   };
 
   it("保存した形をそのまま戻す", () => {
@@ -171,7 +175,7 @@ describe("parseRecord", () => {
   });
 
   it("選択肢シャッフルが無かったころの記録（版 1）は、既定値を足して読む", () => {
-    const { shuffle, shuffleSeed, textScale, ...old } = stored;
+    const { shuffle, shuffleSeed, textScale, noteWidth, ...old } = stored;
 
     expect(parseRecord({ ...old, version: 1 })).toEqual({
       ...stored,
@@ -179,17 +183,35 @@ describe("parseRecord", () => {
       shuffle: false,
       shuffleSeed: 0,
       textScale: "standard",
+      noteWidth: DEFAULT_NOTE_WIDTH,
     });
   });
 
   it("文字サイズが無かったころの記録（版 2）は、既定値を足して読む", () => {
-    const { textScale, ...old } = stored;
+    const { textScale, noteWidth, ...old } = stored;
 
     expect(parseRecord({ ...old, version: 2 })).toEqual({
       ...stored,
       version: RECORD_VERSION,
       textScale: "standard",
+      noteWidth: DEFAULT_NOTE_WIDTH,
     });
+  });
+
+  it("メモの幅が無かったころの記録（版 3）は、既定値を足して読む", () => {
+    const { noteWidth, ...old } = stored;
+
+    expect(parseRecord({ ...old, version: 3 })).toEqual({
+      ...stored,
+      version: RECORD_VERSION,
+      noteWidth: DEFAULT_NOTE_WIDTH,
+    });
+  });
+
+  it("メモの幅は、壊れていれば既定値に、外れていれば端に寄せて読む", () => {
+    expect(parseRecord({ ...stored, noteWidth: "広い" }).noteWidth).toBe(DEFAULT_NOTE_WIDTH);
+    expect(parseRecord({ ...stored, noteWidth: 10 }).noteWidth).toBe(NOTE_WIDTH_MIN);
+    expect(parseRecord({ ...stored, noteWidth: 9999 }).noteWidth).toBe(NOTE_WIDTH_MAX);
   });
 
   it("シャッフルや文字サイズの設定が壊れていても、そこだけ既定値に落とす", () => {

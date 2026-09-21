@@ -1,5 +1,6 @@
 import type { ProgressSummary } from "../progress/summary";
 import { statCards } from "../progress/summary";
+import type { Summary } from "../stats";
 import { masteryTone } from "../tone";
 import { ClearRecordButton } from "./clear-record-button";
 import { MeterRow } from "./meter-row";
@@ -18,6 +19,8 @@ type HomeScreenProps = {
   /** この回の解答済み数。0 なら「開始」、途中なら「再開」を出す。 */
   answered: number;
   summary: ProgressSummary;
+  /** 選んでいる回の解答から出した正答率と分野別。 */
+  setSummary: Summary;
   /** メモが 1 つでもあるか。解答が無くてもメモだけは消せるようにする。 */
   hasNotes: boolean;
   onStart: () => void;
@@ -31,6 +34,7 @@ export const HomeScreen = ({
   questionCount,
   answered,
   summary,
+  setSummary,
   hasNotes,
   onStart,
   onRestart,
@@ -60,7 +64,7 @@ export const HomeScreen = ({
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3.5">
-          {statCards(summary).map((stat) => (
+          {statCards(summary, setSummary).map((stat) => (
             <div
               key={stat.label}
               className="flex flex-col gap-[5px] rounded-xl border border-line p-[18px]"
@@ -100,21 +104,21 @@ export const HomeScreen = ({
 
       <section className="overflow-hidden rounded-2xl border border-line bg-surface">
         <h3 className="border-line-soft border-b px-6 py-[18px] font-bold text-[12.5px] tracking-[0.04em]">
-          分野別の到達度
+          分野別の到達度（{setLabel}）
         </h3>
-        {summary.fields.length === 0 ? (
+        {setSummary.fieldStats.length === 0 ? (
           <p className="px-6 py-5 text-[12.5px] text-muted-soft leading-[1.9]">
-            解答すると、分野ごとの到達度がここに出ます。集計は回をまたいで、
+            解答すると、分野ごとの到達度がここに出ます。集計は選んでいる回だけで、
             このブラウザに保存した解答から作ります。
           </p>
         ) : (
           <div className="flex flex-col gap-4 px-6 py-5">
-            {summary.fields.map((field) => (
+            {setSummary.fieldStats.map((field) => (
               <MeterRow
                 key={field.name}
                 name={field.name}
                 percent={field.percent}
-                value={`${field.correct}/${field.answered}`}
+                value={field.label}
                 tone={masteryTone(field.percent)}
               />
             ))}

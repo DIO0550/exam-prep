@@ -7,6 +7,7 @@ import {
   EMPTY_RECORD,
   withAnswer,
   withAttempt,
+  withNoteWidth,
   withRestart,
   withSetId,
   withShuffle,
@@ -59,6 +60,14 @@ export const progressStore = {
   setTextScale: (textScale: TextScale): void => {
     if (snapshot().textScale === textScale) return;
     store.set(withTextScale(snapshot(), textScale));
+  },
+
+  /** メモの枠の幅を覚える。ドラッグの途中ではなく、手を離したときに呼ぶ。 */
+  setNoteWidth: (width: number): void => {
+    const record = snapshot();
+    const next = withNoteWidth(record, width);
+    if (next.noteWidth === record.noteWidth) return;
+    store.set(next);
   },
 
   /** 解答状況の一部を差し替える（フラグ・苦手登録・選択肢の消し込み）。 */

@@ -95,6 +95,10 @@ export type Stem = {
 /** 登場人物と動きを順に並べる図。攻撃の成立手順や検証手順に使う。 */
 export type FlowFigure = {
   type: "flow";
+  /**
+   * 図の見出し。「図：」「表：」は書かない（中身に合わせて FigureBlock が付ける）。
+   * 表の図に「図：」と書くと、絵を探して見つからない読み方になるため。
+   */
   caption: string;
   steps: { actor: string; text: string }[];
 };
@@ -146,6 +150,34 @@ export type BarTone = 1 | 2 | 3 | 4 | 5;
  * 時間の流れに沿って、どの処理がいつ動いているかを見せる図。
  * 多重度やスケジューリング、パイプラインのように、時刻と重なりが要点のものに使う。
  */
+export type TimelineBar = { start: number; length: number; label: string; tone?: BarTone };
+
+export type TimelineTrack = {
+  label: string;
+  /** start は開始時刻（0 始まり）、length は占める目盛りの数。 */
+  bars: TimelineBar[];
+};
+
+/**
+ * 選択肢ごとに並べて見比べる段。
+ *
+ * 「どの組合せなら間に合うか」を問う設問は、数字の表より、同じ時間軸に並べて
+ * 締切をまたぐかどうかを見るほうが早い。
+ */
+export type TimelineGroup = {
+  /** 見出し。選択肢の記号（ア〜エ）など。 */
+  label: string;
+  /** 見出しに添える一言。条件と結論を書く。 */
+  note?: string;
+  /** 結論の色。○ なら ok、× なら ng。 */
+  verdict?: "ok" | "ng";
+  tracks: TimelineTrack[];
+  /** 締切の縦線。この時刻を過ぎたら間に合わない。 */
+  deadline?: { at: number; label?: string };
+  /** 締切までに終わらなかった分。track はどの段に置くか（label で指す）。 */
+  missed?: { track: string; start: number; length: number };
+};
+
 export type TimelineFigure = {
   type: "timeline";
   caption: string;
@@ -153,17 +185,87 @@ export type TimelineFigure = {
   span: number;
   /** 目盛りの単位（「秒」「サイクル」）。軸の右端に出す。 */
   unit: string;
-  tracks: {
-    label: string;
-    /** start は開始時刻（0 始まり）、length は占める目盛りの数。 */
-    bars: { start: number; length: number; label: string; tone?: BarTone }[];
-  }[];
+  /** 1 本だけ出すとき。 */
+  tracks?: TimelineTrack[];
+  /** 選択肢ごとに並べるとき。 */
+  groups?: TimelineGroup[];
   /** 軸の下に立てる目印。到着時刻など、帯ではない出来事を指す。 */
   marks?: { at: number; label: string }[];
 };
 
+/** 段のまとまり。1 本だけの図も、見出しの無い 1 まとまりとして扱う。 */
+export const timelineGroups = (figure: TimelineFigure): TimelineGroup[] =>
+  figure.groups ?? [{ label: "", tracks: figure.tracks ?? [] }];
+
+/**
+ * 「どの図か」を問う設問で、図そのものの形を見せるための見本。
+ *
+ * 連関図・パレート図・クラス図のように、選択肢が図の名前や言葉の説明だけで並ぶ設問は、
+ * 形を知らないと選べない。名前から見本の絵を引けるようにして、並べて見比べられるようにする。
+ */
+export const SKETCH_NAMES = [
+  "連関図",
+  "親和図",
+  "系統図",
+  "特性要因図",
+  "パレート図",
+  "マトリックス図",
+  "アローダイアグラム",
+  "クラス図",
+  "オブジェクト図",
+  "アクティビティ図",
+  "状態マシン図",
+  "シーケンス図",
+  "ユースケース図",
+  "DFD",
+  "E-R図",
+  "CRUD マトリクス",
+  "バーンダウンチャート",
+  "信頼度成長曲線",
+  "B⁺木インデックス",
+  "ハッシュインデックス",
+] as const;
+
+export type SketchName = (typeof SKETCH_NAMES)[number];
+
+/** 図の見本を並べる図。1 つずつ「どんな形か」と「何を表すか」を添える。 */
+export type SketchFigure = {
+  type: "sketch";
+  caption: string;
+  items: { name: SketchName; note: string }[];
+};
+
+/**
+ * 2 分木。節点は配列表現（1 始まりの添字。左の子が 2i、右の子が 2i+1）で持つ。
+ *
+ * 親子の線をデータに書かせると、書き間違いがそのまま木の形になってしまう。添字で持てば
+ * 位置が一意に決まり、応用情報でよく出る「配列で 2 分木を表す」話ともそのまま噛み合う。
+ */
+export type TreeNode = {
+  /** 配列表現での添字（根が 1）。 */
+  at: number;
+  label: string;
+  /** 節点の色。注目させたいものに付ける。 */
+  tone?: "accent" | "ok" | "ng";
+  /** 節点に添える短い説明。 */
+  note?: string;
+};
+
+export type TreeFigure = {
+  type: "tree";
+  caption: string;
+  nodes: TreeNode[];
+};
+
 /** 解説に添える図。こちらは本サイトで組んだもの。 */
-export type Figure = FlowFigure | CalcFigure | TableFigure | ArrayFigure | TimelineFigure;
+export type Figure =
+  | FlowFigure
+  | CalcFigure
+  | TableFigure
+  | ArrayFigure
+  | TimelineFigure
+  | SketchFigure
+  | TreeFigure;
 
 export type Question = {
   source: Source;
@@ -182,7 +284,14 @@ export type Question = {
   /** 以下は本サイトで書いた解説。IPA の解答例ではない（docs 3.4）。 */
   explain?: string;
   points?: string[];
-  figure?: Figure;
+  /** 解説に添える図。2 つ以上あるときは配列で書いた順に出す。 */
+  figure?: Figure | Figure[];
+};
+
+/** 解説に出す図を、1 つでも複数でも同じ形で受け取る。 */
+export const figuresOf = (question: Question): Figure[] => {
+  if (!question.figure) return [];
+  return Array.isArray(question.figure) ? question.figure : [question.figure];
 };
 
 export type Exam = {

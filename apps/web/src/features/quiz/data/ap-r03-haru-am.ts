@@ -72,7 +72,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：排他的論理和と等価演算は、全4行で結果が反転する（相補演算）",
+      caption: "排他的論理和と等価演算は、全4行で結果が反転する（相補演算）",
       headers: ["A", "B", "A ⊕ B（排他的論理和）", "等価（XNOR）"],
       rows: [
         ["0", "0", "0", "1"],
@@ -134,7 +134,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：データ量の求め方",
+      caption: "データ量の求め方",
       lines: [
         { expr: "40 kHz ＝ 1秒あたり 40,000 標本", note: "サンプリング周波数" },
         { expr: "16 ビット ÷ 8 ＝ 2 バイト／標本", note: "量子化ビット数をバイトへ" },
@@ -167,7 +167,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：センサは「何を何に変えるか」で覚える",
+      caption: "センサは「何を何に変えるか」で覚える",
       headers: ["センサ", "測る物理量", "取り出し方"],
       rows: [
         ["サーミスタ", "温度", "温度で抵抗値が大きく変わる"],
@@ -198,7 +198,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：作れる出力順序",
+      caption: "作れる出力順序",
       headers: ["出力順序", "可否", "理由"],
       rows: [
         ["A B C", "可", "入れるたびに取り出す"],
@@ -233,17 +233,50 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       "深さ d のノードは添字 2^d 〜 2^(d+1)−1 に入る。ここが添字順＝幅優先になる理由。",
       "この配列表現はヒープで使われる。親が A[i] なら子は A[2i]、A[2i+1]、子が A[i] なら親は A[i÷2]。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：同じ深さのノードが、添字の連続した範囲に左から並ぶ",
-      headers: ["深さ", "添字の範囲", "入るノード"],
-      rows: [
-        ["0", "1", "A[1]（根）"],
-        ["1", "2 〜 3", "A[2]、A[3]"],
-        ["2", "4 〜 7", "A[4] 〜 A[7]"],
-        ["d", "2ᵈ 〜 2ᵈ⁺¹−1", "この範囲を左から順に埋める"],
-      ],
-    },
+    figure: [
+      {
+        type: "tree",
+        caption: "添字は上の段から順に、同じ深さなら左から右へ付く（＝幅優先でたどる順）",
+        nodes: [
+          { at: 1, label: "A[1]", tone: "accent" },
+          { at: 2, label: "A[2]" },
+          { at: 3, label: "A[3]" },
+          { at: 4, label: "A[4]" },
+          { at: 5, label: "A[5]" },
+          { at: 6, label: "A[6]" },
+          { at: 7, label: "A[7]" },
+        ],
+      },
+      {
+        type: "array",
+        caption: "配列を先頭から見ていくと、木の段を上から・左から順になぞることになる",
+        headers: ["1", "2", "3", "4", "5", "6", "7"],
+        rows: [
+          {
+            label: "配列の並び",
+            cells: ["A[1]", "A[2]", "A[3]", "A[4]", "A[5]", "A[6]", "A[7]"],
+            note: "添字順にたどる",
+          },
+          {
+            label: "深さ",
+            cells: ["0", "1", "1", "2", "2", "2", "2"],
+            marked: [0],
+            note: "深さ d は 2ᵈ 〜 2ᵈ⁺¹−1 に入る",
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "同じ深さのノードが、添字の連続した範囲に左から並ぶ",
+        headers: ["深さ", "添字の範囲", "入るノード"],
+        rows: [
+          ["0", "1", "A[1]（根）"],
+          ["1", "2 〜 3", "A[2]、A[3]"],
+          ["2", "4 〜 7", "A[4] 〜 A[7]"],
+          ["d", "2ᵈ 〜 2ᵈ⁺¹−1", "この範囲を左から順に埋める"],
+        ],
+      },
+    ],
   },
   {
     source: at(7),
@@ -276,7 +309,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：分割統治法の3段構え",
+      caption: "分割統治法の3段構え",
       steps: [
         { actor: "① 分割", text: "問題を、同じ形の小さな部分問題に分ける" },
         { actor: "② 統治", text: "部分問題をそれぞれ独立に解く（多くは再帰で）" },
@@ -354,7 +387,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：MIPS の求め方",
+      caption: "MIPS の求め方",
       lines: [
         {
           expr: "10 × 0.5 ＋ 40 × 0.3 ＋ 40 × 0.2 ＝ 25 ナノ秒",
@@ -456,7 +489,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：2つの書込み方式の比較",
+      caption: "2つの書込み方式の比較",
       headers: ["方式", "書込み先", "主記憶の内容", "書込み速度"],
       rows: [
         ["ライトスルー", "キャッシュと主記憶の両方", "常に最新", "遅い"],
@@ -495,7 +528,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：信頼性設計の用語",
+      caption: "信頼性設計の用語",
       headers: ["用語", "考え方", "例"],
       rows: [
         [
@@ -550,7 +583,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：稼働率の式と値",
+      caption: "稼働率の式と値",
       lines: [
         { expr: "直列2台 ＝ x × x ＝ x²", note: "両方が動いているときだけ動く" },
         { expr: "並列2組 ＝ 1 −(1 − x²)² ＝ 2x² − x⁴", note: "両方の組が落ちる場合を除く" },
@@ -587,7 +620,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：主記憶の持ち方が性能の頭打ちを決める",
+      caption: "主記憶の持ち方が性能の頭打ちを決める",
       headers: ["構成", "主記憶", "増やしたときの限界"],
       rows: [
         ["密結合", "全プロセッサで共有する", "アクセスが競合し、台数に比例しなくなる"],
@@ -628,7 +661,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "timeline",
-      caption: "図：到着順に1つずつ実行する。ジョブCは到着3秒・終了14秒で、ターンアラウンドは11秒",
+      caption: "到着順に1つずつ実行する。ジョブCは到着3秒・終了14秒で、ターンアラウンドは11秒",
       span: 14,
       unit: "秒",
       tracks: [
@@ -680,7 +713,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：タスクの状態遷移。プリエンプションは実行可能状態へ戻す",
+      caption: "タスクの状態遷移。プリエンプションは実行可能状態へ戻す",
       headers: ["きっかけ", "どこから", "どこへ"],
       rows: [
         ["ディスパッチ（CPU の割当て）", "実行可能", "実行"],
@@ -721,7 +754,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：取り違えやすい主記憶管理の用語",
+      caption: "取り違えやすい主記憶管理の用語",
       headers: ["用語", "していること", "いつ効くか"],
       rows: [
         ["動的再配置", "実行中にプログラムの格納位置を移す", "断片化した領域をまとめたいとき"],
@@ -757,7 +790,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：ページアクセス時の流れ",
+      caption: "ページアクセス時の流れ",
       steps: [
         { actor: "① アクセス", text: "必要なページが主記憶にあればそのまま読む。何も起きない" },
         { actor: "② 不在", text: "主記憶に無ければページフォールトが発生する" },
@@ -874,7 +907,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：H ブリッジは対角の2つを導通させる",
+      caption: "H ブリッジは対角の2つを導通させる",
       headers: ["導通させるスイッチ", "モータに流れる向き", "結果"],
       rows: [
         ["対角の組（S1 と S4）", "＋ → −", "正転"],
@@ -905,7 +938,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：コンデンサとコイルは電流の通し方が逆",
+      caption: "コンデンサとコイルは電流の通し方が逆",
       headers: ["素子", "直流", "交流", "使いどころ"],
       rows: [
         [
@@ -954,7 +987,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：S を戻しても直前の状態が残る（R は 1 のまま）",
+      caption: "S を戻しても直前の状態が残る（R は 1 のまま）",
       headers: ["操作", "S", "X", "Y"],
       rows: [
         ["はじめ", "1", "0", "1"],
@@ -988,7 +1021,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: ["利用者が現在位置を把握でき、上位階層へ戻りやすくなる。"],
     figure: {
       type: "table",
-      caption: "図：現在位置を示すものと、全体を示すもの",
+      caption: "現在位置を示すものと、全体を示すもの",
       headers: ["部品", "示すもの", "利用者にできること"],
       rows: [
         [
@@ -1017,7 +1050,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: ["ベクタ（SVG）とラスタ（PNG・JPEG・TIFF・GIF）の区別で切り分けられる。"],
     figure: {
       type: "table",
-      caption: "図：ベクタ形式とラスタ形式",
+      caption: "ベクタ形式とラスタ形式",
       headers: ["形式", "持ち方", "代表", "拡大したとき"],
       rows: [
         ["ベクタ", "図形を座標と属性で記述する", "SVG", "劣化しない"],
@@ -1055,7 +1088,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：NoSQL の4種類",
+      caption: "NoSQL の4種類",
       headers: ["種類", "データの持ち方", "得意なこと"],
       rows: [
         ["キーバリュー型", "キーと値の対", "キーを指定した高速な読み書き"],
@@ -1108,7 +1141,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：条件を多重度に直すと並びが決まる",
+      caption: "条件を多重度に直すと並びが決まる",
       headers: ["関係", "多重度", "入るクラス"],
       rows: [
         ["顧客 — 注文", "1 — 多", "a＝顧客、b＝注文"],
@@ -1192,7 +1225,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：届く距離で分ける無線ネットワーク",
+      caption: "届く距離で分ける無線ネットワーク",
       headers: ["呼び方", "距離の目安", "代表的な技術"],
       rows: [
         ["PAN", "数 m", "Bluetooth、BLE、ZigBee"],
@@ -1229,7 +1262,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：無線LAN の規格と周波数帯",
+      caption: "無線LAN の規格と周波数帯",
       headers: ["規格", "周波数帯", "特徴"],
       rows: [
         ["IEEE 802.11b/g", "2.4GHz", "障害物に強いが、電子レンジなどと干渉する"],
@@ -1266,7 +1299,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：アドレス a とマスク m から取り出す3つ",
+      caption: "アドレス a とマスク m から取り出す3つ",
       lines: [
         { expr: "ネットワークアドレス ＝ a ＆ m", note: "マスクが1の側（ネットワーク部）だけ残す" },
         { expr: "ホストアドレス ＝ a ＆ 〜m", note: "反転してホスト部だけ残す" },
@@ -1304,7 +1337,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：SDN は制御を 1 か所に集める",
+      caption: "SDN は制御を 1 か所に集める",
       headers: ["観点", "従来のネットワーク", "SDN（OpenFlow）"],
       rows: [
         [
@@ -1407,7 +1440,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：攻撃の流れ。フットプリンティングは最初の下調べ",
+      caption: "攻撃の流れ。フットプリンティングは最初の下調べ",
       steps: [
         {
           actor: "① 事前調査",
@@ -1617,7 +1650,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: ["サーバ認証は必須、クライアント認証は任意。どちらの場合もサーバ証明書の送付が先。"],
     figure: {
       type: "flow",
-      caption: "図：クライアント認証を行うときのハンドシェイクの順序",
+      caption: "クライアント認証を行うときのハンドシェイクの順序",
       steps: [
         { actor: "サーバ", text: "サーバ証明書を送る（サーバ認証はここで必ず行う）" },
         { actor: "クライアント", text: "証明書を検証し、通信相手が本物かを確かめる" },
@@ -1695,7 +1728,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：イベントごとの状態の移り変わり",
+      caption: "イベントごとの状態の移り変わり",
       headers: ["イベント", "遷移前", "遷移後"],
       rows: [
         ["① メッセージ1", "レディ", "高速運転"],
@@ -1737,7 +1770,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：網羅基準は下へ行くほど厳しく、ケース数も増える",
+      caption: "網羅基準は下へ行くほど厳しく、ケース数も増える",
       headers: ["網羅基準", "満たすこと", "この問題では"],
       rows: [
         ["命令網羅", "すべての命令を1回以上実行する", "3ケース（最も分岐の多い判定に合わせる）"],
@@ -1775,7 +1808,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: ["「何を」＝プロダクトオーナ、「どう」＝開発チーム、「円滑に」＝スクラムマスタ。"],
     figure: {
       type: "table",
-      caption: "図：スクラムチームの3つの役割",
+      caption: "スクラムチームの3つの役割",
       headers: ["役割", "責任を持つこと", "決めること"],
       rows: [
         ["プロダクトオーナ", "プロダクトの価値の最大化", "何を作るか、どの順で作るか"],
@@ -1872,7 +1905,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：RACI の4つの役割と、満たすべき条件",
+      caption: "RACI の4つの役割と、満たすべき条件",
       headers: ["記号", "意味", "1つの作業に何人まで"],
       rows: [
         ["R（実行責任者）", "実際に作業を行う", "1人以上（複数可）"],
@@ -1909,7 +1942,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：主な経路の所要日数",
+      caption: "主な経路の所要日数",
       lines: [
         { expr: "当初 A5 ＋ B8 ＋ E9 ＋ H4 ＋ I2 ＝ 28 日", note: "当初のクリティカルパス" },
         { expr: "当初 A5 ＋ B8 ＋ D7 ＋ G7 ＝ 27 日", note: "2番目に長い経路" },
@@ -1966,7 +1999,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：延べ時間の求め方",
+      caption: "延べ時間の求め方",
       lines: [
         { expr: "16 × 15 ÷ 2 ＝ 120 通り", note: "1対1の組合せ数" },
         { expr: "120 × 0.5 時間 ＝ 60 時間", note: "選択肢 エ" },
@@ -2001,7 +2034,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: ["ポートフォリオ＝全部、カタログ＝稼働中だけ。この包含関係が要点。"],
     figure: {
       type: "table",
-      caption: "図：サービス・ポートフォリオの中身",
+      caption: "サービス・ポートフォリオの中身",
       headers: ["区分", "含まれるサービス", "顧客に見せるか"],
       rows: [
         ["サービス・パイプライン", "検討中・開発中のもの", "見せない"],
@@ -2041,7 +2074,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：バックアップ方式の比較",
+      caption: "バックアップ方式の比較",
       headers: ["方式", "対象", "取得時間", "復旧の手順"],
       rows: [
         ["フル", "全データ", "長い", "フルを復元するだけ"],
@@ -2107,7 +2140,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: ["CIA で仕分ける。機密性＝見せない、完全性＝正しさを保つ、可用性＝使える状態を保つ。"],
     figure: {
       type: "table",
-      caption: "図：CIA で監査項目を仕分ける",
+      caption: "CIA で監査項目を仕分ける",
       headers: ["特性", "守ること", "マスタファイル管理での例"],
       rows: [
         ["機密性", "認められた人以外に見せない", "アクセス権を必要な担当者に限る"],
@@ -2146,7 +2179,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：フォローアップで監査人ができること・できないこと",
+      caption: "フォローアップで監査人ができること・できないこと",
       headers: ["行為", "担うのは", "理由"],
       rows: [
         ["改善状況のモニタリング", "監査人", "評価する立場のまま確認できる"],
@@ -2174,7 +2207,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：BDAT。上から下へ「業務 → データ → アプリ → 基盤」と並ぶ",
+      caption: "BDAT。上から下へ「業務 → データ → アプリ → 基盤」と並ぶ",
       headers: ["層", "分類体系", "決めること"],
       rows: [
         ["B", "ビジネスアーキテクチャ", "業務のあるべき姿と手順"],
@@ -2268,7 +2301,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: ["I＝Information（情報提供）、P＝Proposal（提案）。どちらを先に出すかで見分ける。"],
     figure: {
       type: "flow",
-      caption: "図：調達の順序。RFI は RFP の前",
+      caption: "調達の順序。RFI は RFP の前",
       steps: [
         { actor: "RFI（情報提供依頼）", text: "市場にどんな技術・製品・実績があるかを集める" },
         { actor: "RFP（提案依頼）", text: "要件を示し、実現策と見積りの提案を求める" },
@@ -2362,7 +2395,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：4象限の位置づけ",
+      caption: "4象限の位置づけ",
       headers: ["区分", "市場成長率", "市場占有率", "資金の性格"],
       rows: [
         ["花形", "高", "高", "稼ぐが投資も要る"],
@@ -2437,7 +2470,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：4つの視点は下から積み上がって財務成果につながる",
+      caption: "4つの視点は下から積み上がって財務成果につながる",
       headers: ["視点", "見るもの", "指標の例"],
       rows: [
         ["財務", "株主・経営から見た成果", "売上高、利益率"],
@@ -2477,7 +2510,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：紛らわしい4つの曲線",
+      caption: "紛らわしい4つの曲線",
       headers: ["曲線", "縦軸", "形の意味"],
       rows: [
         ["技術のSカーブ", "技術の進歩", "初期は伸びず、軌道に乗ると急伸し、限界で頭打ち"],
@@ -2506,7 +2539,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: ["番号は社会の発展段階。5番目＝超スマート社会と結び付けて覚える。"],
     figure: {
       type: "table",
-      caption: "図：Society の番号は社会の発展段階",
+      caption: "Society の番号は社会の発展段階",
       headers: ["番号", "社会", "特徴"],
       rows: [
         ["1.0", "狩猟社会", "自然の中で採集・狩猟する"],
@@ -2572,7 +2605,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: ["集約＝アグリゲーション、仲介＝エスクロー、統合的な顧客接点＝オムニチャネル。"],
     figure: {
       type: "table",
-      caption: "図：似たサービスの区別",
+      caption: "似たサービスの区別",
       headers: ["サービス", "していること", "例"],
       rows: [
         [
@@ -2644,16 +2677,31 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: [
       "新QC七つ道具の設問。系統図＝目的と手段の樹形、連関図＝因果の絡み、親和図＝グループ化。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：新 QC 七つ道具のうち、混同しやすい3つ",
-      headers: ["手法", "表すもの", "形"],
-      rows: [
-        ["系統図法", "目的と手段の関係", "目的から手段へ枝分かれする樹形"],
-        ["連関図法", "原因と結果の絡み合い", "矢印が入り組んだ網の形"],
-        ["親和図法", "言語データのまとまり", "似たものを集めてグループにする"],
-      ],
-    },
+    figure: [
+      {
+        type: "table",
+        caption: "新 QC 七つ道具のうち、混同しやすい3つ",
+        headers: ["手法", "表すもの", "形"],
+        rows: [
+          ["系統図法", "目的と手段の関係", "目的から手段へ枝分かれする樹形"],
+          ["連関図法", "原因と結果の絡み合い", "矢印が入り組んだ網の形"],
+          ["親和図法", "言語データのまとまり", "似たものを集めてグループにする"],
+        ],
+      },
+      {
+        type: "sketch",
+        caption: "新 QC 七つ道具は形が違う",
+        items: [
+          { name: "系統図", note: "目的から手段へ、右へ枝分かれさせて細かくしていく樹形。" },
+          {
+            name: "連関図",
+            note: "問題を中心か端に置き、要因どうしを矢印で結んで絡んだ因果をほどく。",
+          },
+          { name: "親和図", note: "カードに書き出し、似たものを寄せてグループにまとめる。" },
+          { name: "特性要因図", note: "結果（魚の頭）へ向かって、要因を骨のように並べる。" },
+        ],
+      },
+    ],
   },
   {
     source: at(77),
@@ -2671,7 +2719,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: ["資産の売買＝投資、資金の調達・返済＝財務、それ以外の本業＝営業、と切り分ける。"],
     figure: {
       type: "table",
-      caption: "図：キャッシュフロー計算書の3区分",
+      caption: "キャッシュフロー計算書の3区分",
       headers: ["区分", "何の出入りか", "例"],
       rows: [
         ["営業活動", "本業の商売に伴うもの", "商品の仕入れ、売上の回収、給与の支払"],
@@ -2740,7 +2788,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：規制の対象かどうかは「営利目的の広告・宣伝か」で決まる",
+      caption: "規制の対象かどうかは「営利目的の広告・宣伝か」で決まる",
       headers: ["送るもの", "対象", "理由"],
       rows: [
         ["営利目的の広告・宣伝メール", "対象", "特定電子メールにあたる。同意が要る（オプトイン）"],

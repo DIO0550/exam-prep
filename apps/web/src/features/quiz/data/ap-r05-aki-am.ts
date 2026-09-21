@@ -59,7 +59,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：式の組立て",
+      caption: "式の組立て",
       lines: [
         { expr: "x ＝ 2x₁ ＋ x₂", note: "2進数 x₁x₂ の値" },
         { expr: "int(x/2) ＝ x₁", note: "1桁右シフト＝上位ビット" },
@@ -99,7 +99,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：多変量データの主な分析手法",
+      caption: "多変量データの主な分析手法",
       headers: ["手法", "目的", "向き"],
       rows: [
         ["主成分分析", "多数の変数を少数の合成変数へまとめる", "変数を減らす（次元削減）"],
@@ -128,7 +128,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：後置記法の評価",
+      caption: "後置記法の評価",
       lines: [
         { expr: "C － D ＝ 4 － 2 ＝ 2", note: "最初に現れる演算子 －" },
         { expr: "B × 2 ＝ 8 × 2 ＝ 16", note: "次の演算子 ×" },
@@ -164,7 +164,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "array",
-      caption: "図：合わない行と列の交点が誤ったビット（偶数パリティの例）",
+      caption: "合わない行と列の交点が誤ったビット（偶数パリティの例）",
       headers: ["列1", "列2", "列3", "列4", "行パリティ"],
       rows: [
         { label: "1行目", cells: ["1", "0", "1", "0", "0"] },
@@ -216,18 +216,45 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "挿入位置の前後の要素番号をそのまま写すだけ。新要素の next＝後ろの番号、prev＝前の番号。",
       "この問題は next[6]、prev[6]だけを問うているが、実際には next[3]＝6、prev[5]＝6の更新も必要。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：リストをたどった順序",
-      headers: ["順番", "要素番号", "elem", "next", "prev"],
-      rows: [
-        ["1", "1", "A", "4", "0"],
-        ["2", "4", "B", "3", "1"],
-        ["3", "3", "D", "5", "4"],
-        ["4", "5", "E", "2", "3"],
-        ["5", "2", "F", "0", "5"],
-      ],
-    },
+    figure: [
+      {
+        type: "array",
+        caption: "C を要素番号 6 に足したあとの 3 つの配列（塗ったマスが書き換わるところ）",
+        headers: ["1", "2", "3", "4", "5", "6"],
+        rows: [
+          {
+            label: "elem",
+            cells: ["A", "F", "D", "B", "E", "C"],
+            marked: [5],
+            note: "追加は配列の末尾（6）へ",
+          },
+          {
+            label: "next",
+            cells: ["4", "0", "6", "3", "2", "5"],
+            marked: [2, 5],
+            note: "next[3]：5 → 6、next[6]＝5",
+          },
+          {
+            label: "prev",
+            cells: ["0", "5", "4", "1", "6", "3"],
+            marked: [4, 5],
+            note: "prev[5]：3 → 6、prev[6]＝3",
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "入れる前に Head からたどった順序",
+        headers: ["順番", "要素番号", "elem", "next", "prev"],
+        rows: [
+          ["1", "1", "A", "4", "0"],
+          ["2", "4", "B", "3", "1"],
+          ["3", "3", "D", "5", "4"],
+          ["4", "5", "E", "2", "3"],
+          ["5", "2", "F", "0", "5"],
+        ],
+      },
+    ],
   },
   {
     source: at(6),
@@ -271,7 +298,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "array",
-      caption: "図：状態の推移。後ろから1つずつ確定していく",
+      caption: "状態の推移。後ろから1つずつ確定していく",
       rows: [
         { label: "状態0", cells: ["3", "5", "9", "6", "1", "2"] },
         {
@@ -324,7 +351,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：JSON が持つ二つの構造",
+      caption: "JSON が持つ二つの構造",
       headers: ["構造", "表記", "対応する言い回し"],
       rows: [
         ["オブジェクト", '{ "name": "値", … }', "名前と値との組みの集まり"],
@@ -364,7 +391,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：語源で覚える（hetero＝異種、homo＝同種）",
+      caption: "語源で覚える（hetero＝異種、homo＝同種）",
       headers: ["構成", "載せるコア", "ねらい"],
       rows: [
         [
@@ -407,7 +434,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：分岐でパイプラインが乱れるのを防ぐ3つの技法",
+      caption: "分岐でパイプラインが乱れるのを防ぐ3つの技法",
       headers: ["技法", "していること", "外れたとき"],
       rows: [
         [
@@ -511,7 +538,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：SAN と NAS の違い",
+      caption: "SAN と NAS の違い",
       headers: ["観点", "SAN", "NAS"],
       rows: [
         ["つなぐネットワーク", "ストレージ専用（FC、iSCSI）", "既存の LAN"],
@@ -552,7 +579,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：分担できるかどうかで向き・不向きが決まる",
+      caption: "分担できるかどうかで向き・不向きが決まる",
       headers: ["処理の性質", "スケールアウト", "理由"],
       rows: [
         ["参照が中心", "向く", "各サーバが同じデータを読むだけで済む"],
@@ -616,7 +643,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：稼働率の求め方",
+      caption: "稼働率の求め方",
       lines: [
         { expr: "動作している時間 ＝ MTBF ＝ 99 時間", note: "故障までの平均時間" },
         {
@@ -658,7 +685,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：平均処理時間から割合を出す",
+      caption: "平均処理時間から割合を出す",
       lines: [
         { expr: "20x ＋ 60(1 － x) ＝ 30", note: "x はページインだけの割合" },
         { expr: "60 － 40x ＝ 30", note: "式を整理" },
@@ -695,17 +722,114 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "CPU 使用率の合計（A＋B）が1を超える組合せは、その時点で完了できないと判断できる。",
       "回数は切上げで数えるのが安全。周期の境目でAが起動する分を落とすと判定を誤る。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：タスクBの周期内に必要な時間",
-      headers: ["選択肢", "Bの周期", "Aが使う時間", "Bが必要な時間", "合計"],
-      rows: [
-        ["ア", "8", "2 × 2 ＝ 4", "3", "7 ≦ 8"],
-        ["イ", "9", "3 × 2 ＝ 6", "4", "10 ＞ 9"],
-        ["ウ", "13", "3 × 3 ＝ 9", "5", "14 ＞ 13"],
-        ["エ", "15", "4 × 3 ＝ 12", "5", "17 ＞ 15"],
-      ],
-    },
+    figure: [
+      {
+        type: "timeline",
+        caption: "優先度の高いAを先に置き、空いたところでBを動かしたときの進み方",
+        span: 17,
+        unit: "ms",
+        groups: [
+          {
+            label: "ア",
+            note: "A（2, 周期4）・B（3, 周期8）→ 7ms で完了",
+            verdict: "ok",
+            deadline: { at: 8 },
+            tracks: [
+              {
+                label: "タスクA",
+                bars: [
+                  { start: 0, length: 2, label: "A", tone: 5 },
+                  { start: 4, length: 2, label: "A", tone: 5 },
+                ],
+              },
+              {
+                label: "タスクB",
+                bars: [
+                  { start: 2, length: 2, label: "B", tone: 3 },
+                  { start: 6, length: 1, label: "B", tone: 3 },
+                ],
+              },
+            ],
+          },
+          {
+            label: "イ",
+            note: "A（3, 周期6）・B（4, 周期9）→ 1ms 足りない",
+            verdict: "ng",
+            deadline: { at: 9 },
+            missed: { track: "タスクB", start: 9, length: 1 },
+            tracks: [
+              {
+                label: "タスクA",
+                bars: [
+                  { start: 0, length: 3, label: "A", tone: 5 },
+                  { start: 6, length: 3, label: "A", tone: 5 },
+                ],
+              },
+              { label: "タスクB", bars: [{ start: 3, length: 3, label: "B", tone: 3 }] },
+            ],
+          },
+          {
+            label: "ウ",
+            note: "A（3, 周期5）・B（5, 周期13）→ 1ms 足りない",
+            verdict: "ng",
+            deadline: { at: 13 },
+            missed: { track: "タスクB", start: 13, length: 1 },
+            tracks: [
+              {
+                label: "タスクA",
+                bars: [
+                  { start: 0, length: 3, label: "A", tone: 5 },
+                  { start: 5, length: 3, label: "A", tone: 5 },
+                  { start: 10, length: 3, label: "A", tone: 5 },
+                ],
+              },
+              {
+                label: "タスクB",
+                bars: [
+                  { start: 3, length: 2, label: "B", tone: 3 },
+                  { start: 8, length: 2, label: "B", tone: 3 },
+                ],
+              },
+            ],
+          },
+          {
+            label: "エ",
+            note: "A（4, 周期6）・B（5, 周期15）→ 1ms 足りない",
+            verdict: "ng",
+            deadline: { at: 15 },
+            missed: { track: "タスクB", start: 16, length: 1 },
+            tracks: [
+              {
+                label: "タスクA",
+                bars: [
+                  { start: 0, length: 4, label: "A", tone: 5 },
+                  { start: 6, length: 4, label: "A", tone: 5 },
+                  { start: 12, length: 4, label: "A", tone: 5 },
+                ],
+              },
+              {
+                label: "タスクB",
+                bars: [
+                  { start: 4, length: 2, label: "B", tone: 3 },
+                  { start: 10, length: 2, label: "B", tone: 3 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "同じことを数で確かめる（Aの回数は Bの周期 ÷ Aの周期 の切上げ）",
+        headers: ["選択肢", "Bの周期", "Aが使う時間", "Bが必要な時間", "合計"],
+        rows: [
+          ["ア", "8", "2 × 2 ＝ 4", "3", "7 ≦ 8"],
+          ["イ", "9", "3 × 2 ＝ 6", "4", "10 ＞ 9"],
+          ["ウ", "13", "3 × 3 ＝ 9", "5", "14 ＞ 13"],
+          ["エ", "15", "4 × 3 ＝ 12", "5", "17 ＞ 15"],
+        ],
+      },
+    ],
   },
   {
     source: at(18),
@@ -854,7 +978,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：入力を変えたときの出力",
+      caption: "入力を変えたときの出力",
       headers: ["操作", "S", "R", "X", "Y"],
       rows: [
         ["初期状態", "1", "1", "0", "1"],
@@ -921,7 +1045,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：3入力多数決回路の真理値表（1 が2つ以上のときだけ 1）",
+      caption: "3入力多数決回路の真理値表（1 が2つ以上のときだけ 1）",
       headers: ["A", "B", "C", "Y"],
       rows: [
         ["0", "0", "0", "0"],
@@ -966,7 +1090,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：アイコンの評価軸は「いつの話か」で切り分ける",
+      caption: "アイコンの評価軸は「いつの話か」で切り分ける",
       headers: ["観点", "問うこと", "目印になる言い回し"],
       rows: [
         ["習得性", "一度理解した意味を、次に見たとき思い出せるか", "理解された後に"],
@@ -1006,7 +1130,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：バーチャルリアリティの処理の流れ",
+      caption: "バーチャルリアリティの処理の流れ",
       steps: [
         { actor: "① センシング", text: "頭や手の位置・向きなど、利用者の動きを測る" },
         { actor: "② シミュレーション", text: "測った動きに合わせて仮想世界の状態を計算する" },
@@ -1046,15 +1170,31 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "ハッシュ＝等価検索のみ、B⁺木＝等価検索＋範囲検索。範囲が絡めば B⁺木と判断できる。",
       "前方一致は「‘DB’以上‘DC’未満」という範囲に置き換えられる。だから B⁺木の側。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：ハッシュインデックスと B⁺木インデックス",
-      headers: ["インデックス", "等価検索（＝）", "範囲・前方一致", "仕組み"],
-      rows: [
-        ["ハッシュ", "速い", "使えない", "値をハッシュ関数で格納位置に変える"],
-        ["B⁺木", "速い", "使える", "葉をキー順に並べてたどる"],
-      ],
-    },
+    figure: [
+      {
+        type: "sketch",
+        caption: "値の順に並ぶか、計算した位置に直接置くか",
+        items: [
+          {
+            name: "B⁺木インデックス",
+            note: "キーを順に並べて持ち、葉どうしが横につながる。等価検索も、範囲・前方一致・ORDER BY もたどれる。",
+          },
+          {
+            name: "ハッシュインデックス",
+            note: "キーをハッシュ関数で位置に変換する。等価検索は 1 回の計算で済むが、順序を持たないので範囲は追えない。",
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "ハッシュインデックスと B⁺木インデックス",
+        headers: ["インデックス", "等価検索（＝）", "範囲・前方一致", "仕組み"],
+        rows: [
+          ["ハッシュ", "速い", "使えない", "値をハッシュ関数で格納位置に変える"],
+          ["B⁺木", "速い", "使える", "葉をキー順に並べてたどる"],
+        ],
+      },
+    ],
   },
   {
     source: at(27),
@@ -1149,7 +1289,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：製品ごとの在庫数",
+      caption: "製品ごとの在庫数",
       headers: ["製品番号", "在庫数", "30 を超える行", "結果に残るか"],
       rows: [
         ["AB1805", "20, 150", "あり", "残らない"],
@@ -1207,7 +1347,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：トランザクションごとの扱い",
+      caption: "トランザクションごとの扱い",
       headers: ["トランザクション", "更新", "コミット", "復旧時の処理"],
       rows: [
         ["T1", "あり", "チェックポイント前", "なし（反映済み）"],
@@ -1241,7 +1381,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：伝送時間の求め方",
+      caption: "伝送時間の求め方",
       lines: [
         { expr: "1,000 × 1,000 ＝ 1,000,000 バイト", note: "伝送するデータ量" },
         { expr: "× 8 ＝ 8,000,000 ビット", note: "ビットに換算" },
@@ -1278,7 +1418,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：NAPT が書き換える場所（往路と復路で逆）",
+      caption: "NAPT が書き換える場所（往路と復路で逆）",
       steps: [
         { actor: "PC", text: "送信元＝自分のプライベート IP とポートで Web サーバへ送る" },
         {
@@ -1316,7 +1456,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：ping が確かめていること",
+      caption: "ping が確かめていること",
       steps: [
         { actor: "ping", text: "ICMP のエコー要求（Echo Request）を相手のホストへ送る" },
         { actor: "相手のホスト", text: "受け取るとエコー応答（Echo Reply）を返す" },
@@ -1377,7 +1517,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：宛先の範囲で分ける",
+      caption: "宛先の範囲で分ける",
       headers: ["種類", "届く範囲", "例"],
       rows: [
         ["ユニキャスト", "指定した1台", "通常の通信"],
@@ -1447,7 +1587,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：公開鍵暗号は「根拠にする問題」で整理する",
+      caption: "公開鍵暗号は「根拠にする問題」で整理する",
       headers: ["方式", "安全性の根拠", "同等の強度に必要な鍵長"],
       rows: [
         ["RSA", "素因数分解の難しさ", "2,048 ビット程度"],
@@ -1487,7 +1627,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：ログの組合せと中継してよいかの判断",
+      caption: "ログの組合せと中継してよいかの判断",
       headers: ["接続元", "送信者", "受信者", "判断"],
       rows: [
         ["社内", "自社", "他社", "自社からの送信。中継してよい"],
@@ -1665,7 +1805,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：DKIM の署名と検証",
+      caption: "DKIM の署名と検証",
       steps: [
         { actor: "ドメイン所有者", text: "検証用の公開鍵を DNS の TXT レコードに公開しておく" },
         { actor: "送信側サーバ", text: "本文とヘッダーから作ったハッシュ値に秘密鍵で署名する" },
@@ -1709,7 +1849,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：DNSSEC は署名で「正当な応答か」を確かめる",
+      caption: "DNSSEC は署名で「正当な応答か」を確かめる",
       steps: [
         { actor: "権威サーバ", text: "レコードに秘密鍵でデジタル署名を付けて返す" },
         { actor: "上位ゾーン", text: "下位ゾーンの鍵を署名し、信頼の連鎖をつくる" },
@@ -1743,7 +1883,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：入力の選び方が対照的な2つ",
+      caption: "入力の選び方が対照的な2つ",
       headers: ["手法", "入力の選び方", "見るもの"],
       rows: [
         [
@@ -1810,7 +1950,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：ソフトウェア保守の分類",
+      caption: "ソフトウェア保守の分類",
       headers: ["分類", "きっかけ", "目的"],
       rows: [
         ["是正保守", "発見された障害", "問題を取り除く"],
@@ -1926,7 +2066,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：EVM の主な指標",
+      caption: "EVM の主な指標",
       headers: ["指標", "計算式", "負のときの意味"],
       rows: [
         ["スケジュール差異 SV", "EV － PV", "進捗が計画より遅れている"],
@@ -1961,7 +2101,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：主な経路の所要日数",
+      caption: "主な経路の所要日数",
       headers: ["経路", "図1", "図2"],
       rows: [
         ["A→B→D→G", "27", "27"],
@@ -1993,7 +2133,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：コンティンジェンシー計画は「リスクへの対応」で作る",
+      caption: "コンティンジェンシー計画は「リスクへの対応」で作る",
       steps: [
         { actor: "リスクの特定", text: "起こりうる事象を洗い出す" },
         { actor: "リスクの評価", text: "発生確率と影響から優先順位を付ける" },
@@ -2036,7 +2176,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：時間軸で区別する",
+      caption: "時間軸で区別する",
       headers: ["処置", "対象", "目的"],
       rows: [
         ["是正処置", "すでに起きた不適合", "原因を取り除き、再発を防ぐ"],
@@ -2077,7 +2217,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：許容停止時間の求め方",
+      caption: "許容停止時間の求め方",
       lines: [
         { expr: "30 × 24 ＝ 720 時間", note: "その月の総時間" },
         { expr: "6 × 4 ＝ 24 時間", note: "計画停止（毎週月曜 0〜6 時）" },
@@ -2117,7 +2257,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：取得が速いほど、復旧に手間が掛かる",
+      caption: "取得が速いほど、復旧に手間が掛かる",
       headers: ["方式", "取得するもの", "復旧の手順"],
       rows: [
         ["フルバックアップ", "全データ", "そのまま復元するだけ"],
@@ -2191,7 +2331,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：何を確かめたいかで、見るコントロールが変わる",
+      caption: "何を確かめたいかで、見るコントロールが変わる",
       headers: ["確かめたいこと", "有効なコントロール", "監査人が見る証跡"],
       rows: [
         ["漏れなく・重複なく入力されたか", "入力結果の一覧と元の伝票の突合せ", "照合印、照合記録"],
@@ -2261,7 +2401,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：考える向きが逆",
+      caption: "考える向きが逆",
       headers: ["思考法", "出発点", "向く課題"],
       rows: [
         [
@@ -2385,7 +2525,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：動かすかどうかで二分できる",
+      caption: "動かすかどうかで二分できる",
       headers: ["検証手法", "やること", "動作する成果物"],
       rows: [
         ["インスペクション", "文書やソースコードを目視で精査する", "不要（静的）"],
@@ -2456,7 +2596,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：アンゾフの成長マトリクス（製品 × 市場）",
+      caption: "アンゾフの成長マトリクス（製品 × 市場）",
       headers: ["製品＼市場", "既存市場", "新市場"],
       rows: [
         ["既存製品", "市場浸透（販売量を増やす）", "新市場開拓（別の地域・客層へ）"],
@@ -2495,7 +2635,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：顧客への近づき方の違い",
+      caption: "顧客への近づき方の違い",
       headers: ["手法", "進め方", "語源・目印"],
       rows: [
         [
@@ -2723,17 +2863,39 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "「上位を占める主な要因」という表現が出たらパレート図。重点指向の分析に使う。",
       "特性要因図は要因の洗い出し、パレート図は洗い出した要因の絞込み。役割が続いている。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：QC 七つ道具は役割が続いている",
-      headers: ["図法", "形", "使う場面"],
-      rows: [
-        ["特性要因図", "魚の骨のように要因を枝分かれさせる", "要因を洗い出す"],
-        ["パレート図", "件数の多い順の棒グラフ＋累積比率の折れ線", "洗い出した要因から重点を絞る"],
-        ["管理図", "時系列の折れ線＋管理限界線", "工程が安定しているかを見る"],
-        ["散布図", "2つの値の点の散らばり", "2項目の相関を見る"],
-      ],
-    },
+    figure: [
+      {
+        type: "table",
+        caption: "QC 七つ道具は役割が続いている",
+        headers: ["図法", "形", "使う場面"],
+        rows: [
+          ["特性要因図", "魚の骨のように要因を枝分かれさせる", "要因を洗い出す"],
+          [
+            "パレート図",
+            "件数の多い順の棒グラフ＋累積比率の折れ線",
+            "洗い出した要因から重点を絞る",
+          ],
+          ["管理図", "時系列の折れ線＋管理限界線", "工程が安定しているかを見る"],
+          ["散布図", "2つの値の点の散らばり", "2項目の相関を見る"],
+        ],
+      },
+      {
+        type: "sketch",
+        caption: "件数の多い順に並ぶのはパレート図だけ",
+        items: [
+          {
+            name: "パレート図",
+            note: "件数の多い順に棒を並べ、累積比率の折れ線を重ねる。上位要因が一目で分かる。",
+          },
+          { name: "特性要因図", note: "要因を骨のように並べる。件数は表さない。" },
+          { name: "連関図", note: "要因どうしの因果を矢印で結ぶ。件数は表さない。" },
+          {
+            name: "マトリックス図",
+            note: "行と列の交点に印を付けて対応関係を見る。件数は表さない。",
+          },
+        ],
+      },
+    ],
   },
   {
     source: at(77),
@@ -2757,7 +2919,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：除却損の求め方",
+      caption: "除却損の求め方",
       lines: [
         { expr: "30 × 0.250 ＝ 7.5 万円／年", note: "定額法の減価償却費" },
         { expr: "7.5 × 2 ＝ 15 万円", note: "2 年間の償却累計額" },
@@ -2865,7 +3027,7 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：契約形態ごとの企業Bと労働者Cの関係",
+      caption: "契約形態ごとの企業Bと労働者Cの関係",
       headers: ["契約形態", "雇用関係", "指揮命令関係"],
       rows: [
         ["請負", "なし", "なし（企業Aが指揮命令する）"],

@@ -1,7 +1,7 @@
 import { isShuffled, positionOf, SHUFFLED_NOTE } from "../choice-order";
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
-import { choiceKey, formatSource } from "../types";
+import { choiceKey, figuresOf, formatSource } from "../types";
 import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
 import { KeyPointList } from "./key-point-list";
@@ -40,6 +40,7 @@ export const ExplainScreen = ({
 }: ExplainScreenProps) => {
   const { question, attempt } = item;
   const correct = isCorrect(item);
+  const figures = figuresOf(question);
   const shuffled = isShuffled(order);
   const pickedLabel =
     attempt.picked === null ? "未解答" : choiceKey(positionOf(order, attempt.picked));
@@ -90,9 +91,18 @@ export const ExplainScreen = ({
           </div>
         )}
 
-        {question.figure && (
-          <div className="border-line-soft border-b bg-panel px-[26px] py-6">
-            <FigureBlock figure={question.figure} variant="page" />
+        {figures.length > 0 && (
+          <div className="flex flex-col gap-3.5 border-line-soft border-b bg-panel px-[26px] py-6">
+            {/* 演習画面と同じく枠で囲う。囲わないと、下の選択肢の説明と地続きに見えて
+                見出し（図・表）が何に付いているのか分からなくなる。 */}
+            {figures.map((figure) => (
+              <div
+                key={figure.caption}
+                className="max-w-[1000px] rounded-xl border border-line bg-surface px-5 pt-[18px] pb-5"
+              >
+                <FigureBlock figure={figure} variant="page" />
+              </div>
+            ))}
           </div>
         )}
 

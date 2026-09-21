@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { QUESTION_SETS } from "../data/questions";
 import { NOTES_KEY } from "../notes/storage";
-import { dayKey, RECORD_VERSION } from "../progress/record";
+import { DEFAULT_NOTE_WIDTH, dayKey, NOTE_WIDTH_MAX, RECORD_VERSION } from "../progress/record";
 import { STORAGE_KEY } from "../progress/storage";
 import { TEXT_SCALE_RATIO } from "../text-scale";
 import { choiceKey, formatSource, sourceId } from "../types";
@@ -70,7 +70,10 @@ const sketchPad = () => {
   return pad;
 };
 
-/** 学習ホームの記録カード（累計正答率・連続学習・苦手登録）。値と単位は別の要素で出る。 */
+/** 保存してある学習記録を読む。 */
+const readRecord = () => JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "{}");
+
+/** 学習ホームの記録カード（この回の正答率・連続学習・苦手登録）。値と単位は別の要素で出る。 */
 const statCard = (label: string) => {
   const card = screen.getByText(label).parentElement;
   if (!card) throw new Error(`${label} のカードが無い`);
@@ -78,6 +81,60 @@ const statCard = (label: string) => {
 };
 
 describe("QuizApp", () => {
+  it("演習中でも、解くたびにこの回の正答率が出る", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    // 1 問目を解く前は母数が無いので、数字は出さない
+    expect(screen.getByText("正答率 —")).toBeInTheDocument();
+
+    await user.click(choiceButton(FIRST.answer));
+    expect(screen.getByText("100%")).toBeInTheDocument();
+    expect(screen.getByText("（1/1問）")).toBeInTheDocument();
+
+    // 2 問目を間違えると、その場で半分に落ちる
+    await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+    const second = QUESTIONS[1];
+    if (!second) throw new Error("2 問目が無い");
+    await user.click(choiceButton((second.answer + 1) % second.choices.length));
+    expect(screen.getByText("50%")).toBeInTheDocument();
+    expect(screen.getByText("（1/2問）")).toBeInTheDocument();
+  });
+
+  it("メモの幅はドラッグで変えられ、記録に残る", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await toggleNotes(user);
+
+    const handle = screen.getByRole("button", { name: /メモの幅を変える/ });
+
+    // つまんで左へ引くと広がる（幅は画面の右端からポインタまで）
+    fireEvent.pointerDown(handle);
+    fireEvent.pointerMove(window, { clientX: window.innerWidth - 520 });
+    fireEvent.pointerUp(window);
+
+    expect(readRecord().noteWidth).toBe(520);
+
+    // 端より外へは行かない
+    fireEvent.pointerDown(handle);
+    fireEvent.pointerMove(window, { clientX: window.innerWidth - 9999 });
+    fireEvent.pointerUp(window);
+
+    expect(readRecord().noteWidth).toBe(NOTE_WIDTH_MAX);
+  });
+
+  it("メモの幅はキーでも変えられる", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await toggleNotes(user);
+
+    const handle = screen.getByRole("button", { name: /メモの幅を変える/ });
+    handle.focus();
+    await user.keyboard("{ArrowLeft}");
+
+    expect(readRecord().noteWidth).toBeGreaterThan(DEFAULT_NOTE_WIDTH);
+  });
+
   it("学習ホームから演習を開始すると 1 問目が出る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
@@ -299,6 +356,22 @@ describe("QuizApp", () => {
     expect(screen.queryByLabelText("メモ（文章）")).not.toBeInTheDocument();
   });
 
+  it("メモの書き出しに改行だけを打っても消えない", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await toggleNotes(user);
+
+    const text = screen.getByLabelText("メモ（文章）");
+    await user.type(text, "{Enter}{Enter}");
+    expect(text).toHaveValue("\n\n");
+
+    // 改行だけのうちは「メモあり」の印は出さない（読めるものが無いため）
+    expect(screen.getByRole("button", { name: "メモ" })).toBeInTheDocument();
+
+    await user.type(text, "あとで書く");
+    expect(text).toHaveValue("\n\nあとで書く");
+  });
+
   it("書いたメモは問題ごとに保存され、開き直しても残る", async () => {
     const user = userEvent.setup();
     const view = await startQuiz(user);
@@ -445,11 +518,11 @@ describe("QuizApp", () => {
 
     render(<QuizApp />);
 
-    // 前に選んでいた回・累計正答率・連続学習日数が、サンプル値ではなく記録から出る
+    // 前に選んでいた回・その回の正答率・連続学習日数が、サンプル値ではなく記録から出る
     expect(screen.getByRole("button", { name: /^出題する回/ })).toHaveAccessibleName(
       `出題する回 ${other.label}`,
     );
-    expect(statCard("累計正答率").getByText("100")).toBeInTheDocument();
+    expect(statCard("この回の正答率").getByText("100")).toBeInTheDocument();
     expect(statCard("連続学習").getByText("1")).toBeInTheDocument();
     expect(screen.getByText("学習 1日連続")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "演習を再開" })).toBeInTheDocument();

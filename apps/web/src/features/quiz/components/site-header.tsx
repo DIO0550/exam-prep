@@ -14,7 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "学習ホーム", target: "home", actives: ["home"] },
   { label: "演習", target: "quiz", actives: ["quiz", "explain", "result"] },
   { label: "問題一覧・見直し", target: "review", actives: ["review"] },
-  { label: "略語単語帳", target: "vocab", actives: ["vocab"] },
+  { label: "単語帳", target: "vocab", actives: ["vocab"] },
 ];
 
 type ToggleOption<T> = { label: string; value: T };

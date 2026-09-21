@@ -1,6 +1,8 @@
 import type { Figure } from "../types";
 import { ArrayFigureBlock } from "./array-figure";
+import { SketchFigureBlock } from "./sketch-figure";
 import { TimelineFigureBlock } from "./timeline-figure";
+import { TreeFigureBlock } from "./tree-figure";
 
 /** inline は問題カードの中、page は解説画面。図の地色だけ変わる（文字は text-read-* で共通）。 */
 type Variant = "inline" | "page";
@@ -28,11 +30,23 @@ type FigureBlockProps = {
   variant: Variant;
 };
 
+/**
+ * 見出しの呼び名。中身が表のものを「図」と呼ぶと、絵を探して見つからない読み方になるので、
+ * 表は「表」と呼ぶ。データ側のキャプションは呼び名を持たない。
+ */
+const labelOf = (figure: Figure): string => (figure.type === "table" ? "表" : "図");
+
 export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
   const stepBg = variant === "inline" ? "bg-figure" : "bg-surface";
 
   return (
-    <div>
+    <figure>
+      <figcaption className="mb-3 flex flex-wrap items-baseline gap-2">
+        <span className="rounded bg-chip px-1.5 py-0.5 font-bold text-[10px] text-muted tracking-[0.1em]">
+          {labelOf(figure)}
+        </span>
+        <span className="text-pretty text-read-xs text-muted-soft">{figure.caption}</span>
+      </figcaption>
       {figure.type === "flow" && (
         <div className="flex flex-col gap-2">
           {figure.steps.map((step, stepIndex) => (
@@ -112,7 +126,9 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
 
       {figure.type === "timeline" && <TimelineFigureBlock figure={figure} />}
 
-      <div className="mt-3.5 text-read-xs text-muted-soft">{figure.caption}</div>
-    </div>
+      {figure.type === "sketch" && <SketchFigureBlock figure={figure} />}
+
+      {figure.type === "tree" && <TreeFigureBlock figure={figure} />}
+    </figure>
   );
 };

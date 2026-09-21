@@ -62,7 +62,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：平均待ち時間の比",
+      caption: "平均待ち時間の比",
       lines: [
         { expr: "ρ＝0.25 のとき 0.25 ÷ (1 − 0.25) ＝ 1/3", note: "Ts の 1/3 倍" },
         { expr: "ρ＝0.40 のとき 0.40 ÷ (1 − 0.40) ＝ 2/3", note: "Ts の 2/3 倍" },
@@ -101,7 +101,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：k 分割交差検証の手順",
+      caption: "k 分割交差検証の手順",
       steps: [
         { actor: "① 分割", text: "データを k 個のグループに分ける" },
         { actor: "② 学習", text: "1 グループを評価用に取り置き、残りで学習する" },
@@ -130,7 +130,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：式木をどの順でたどるかで、表記法が決まる",
+      caption: "式木をどの順でたどるかで、表記法が決まる",
       headers: ["表記法", "たどる順", "A＋B×C は"],
       rows: [
         ["前置（ポーランド）", "根 → 左 → 右", "＋A×BC"],
@@ -170,7 +170,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：先進運転支援システムで使うセンサー",
+      caption: "先進運転支援システムで使うセンサー",
       headers: ["センサー", "得意なこと", "弱いところ"],
       rows: [
         [
@@ -220,16 +220,48 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
       "2分探索木の削除では、後継（右部分木の最小値）か先行（左部分木の最大値）を持ってくる。これ以外の値では順序が壊れる。",
       "右部分木の最小値は「右に1つ進んでから左へたどり切った節点」。必ず左の子を持たないので、葉なら移すだけで済む。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：削除した位置に入れてよいのは、直前か直後の値だけ",
-      headers: ["候補", "どこの値か", "この木では"],
-      rows: [
-        ["先行（直前の値）", "左部分木の最大値", "11"],
-        ["後継（直後の値）", "右部分木の最小値", "13（葉なので動かすだけで済む）"],
-        ["それ以外", "—", "探索木の順序が壊れる"],
-      ],
-    },
+    figure: [
+      {
+        type: "tree",
+        caption:
+          "12 を消した位置に入れられるのは、直前（11）か直後（13）だけ。13 は葉なので移すだけで済む",
+        nodes: [
+          { at: 1, label: "6" },
+          { at: 3, label: "8" },
+          { at: 7, label: "12", tone: "ng", note: "削除する" },
+          { at: 14, label: "10" },
+          { at: 15, label: "14" },
+          { at: 28, label: "9" },
+          { at: 29, label: "11", tone: "accent", note: "直前" },
+          { at: 30, label: "13", tone: "ok", note: "直後・葉" },
+          { at: 31, label: "15" },
+        ],
+      },
+      {
+        type: "tree",
+        caption: "13 を 12 の位置へ移したあと（10 以下 ＜ 13 ＜ 14 以上 が保たれる）",
+        nodes: [
+          { at: 1, label: "6" },
+          { at: 3, label: "8" },
+          { at: 7, label: "13", tone: "ok", note: "移した" },
+          { at: 14, label: "10" },
+          { at: 15, label: "14" },
+          { at: 28, label: "9" },
+          { at: 29, label: "11" },
+          { at: 31, label: "15" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "削除した位置に入れてよいのは、直前か直後の値だけ",
+        headers: ["候補", "どこの値か", "この木では"],
+        rows: [
+          ["先行（直前の値）", "左部分木の最大値", "11"],
+          ["後継（直後の値）", "右部分木の最小値", "13（葉なので動かすだけで済む）"],
+          ["それ以外", "—", "探索木の順序が壊れる"],
+        ],
+      },
+    ],
   },
   {
     source: at(6),
@@ -256,7 +288,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：衝突の条件は「差が n の倍数」",
+      caption: "衝突の条件は「差が n の倍数」",
       lines: [
         { expr: "衝突 ⇔ a mod n ＝ b mod n", note: "同じ位置に入る" },
         { expr: "⇔ a − b が n で割り切れる", note: "合同式 a ≡ b (mod n)" },
@@ -331,7 +363,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：古典的な5段パイプラインの並び",
+      caption: "古典的な5段パイプラインの並び",
       steps: [
         { actor: "IF", text: "命令フェッチ。主記憶から命令を取り出す" },
         { actor: "ID", text: "命令デコード。意味を解き、レジスタを読み出す" },
@@ -393,7 +425,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：実効メモリアクセス時間",
+      caption: "実効メモリアクセス時間",
       lines: [
         { expr: "主記憶のアクセス時間を 1 とする", note: "キャッシュは 1/30" },
         { expr: "0.95 × (1 ÷ 30) ＝ 0.0317", note: "ヒットしたときの寄与" },
@@ -493,7 +525,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：3つのストレージ方式",
+      caption: "3つのストレージ方式",
       headers: ["方式", "扱う単位", "たどり方", "向いているもの"],
       rows: [
         [
@@ -542,7 +574,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：x＝0.5 を代入した稼働率",
+      caption: "x＝0.5 を代入した稼働率",
       lines: [
         { expr: "A ＝ 1 −(1 − 0.5)² ＝ 0.75", note: "2台並列" },
         { expr: "B ＝ 0.5 × 0.75 ＝ 0.375", note: "1台と並列部の直列" },
@@ -576,7 +608,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：サーバとネットワークの処理能力",
+      caption: "サーバとネットワークの処理能力",
       lines: [
         { expr: "100 MIPS ＝ 1 × 10⁸ 命令／秒", note: "サーバの能力" },
         { expr: "1 × 10⁸ ÷ 1 × 10⁶ ＝ 100 件／秒", note: "サーバ側の上限" },
@@ -615,17 +647,69 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
       "飢餓が起きるのは「選ばれる条件が待ち時間と無関係」な方式。処理時間順や固定優先度がこれに当たる。",
       "エージングは待ち時間に応じて優先度を上げる補正で、優先度方式の飢餓対策として出題される。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：選ばれる条件が待ち時間と無関係だと、飢餓が起きる",
-      headers: ["方式", "選び方", "飢餓（スタベーション）"],
-      rows: [
-        ["処理時間順", "処理予定時間の短いものから", "起きる（長いタスクが後回しになり続ける）"],
-        ["到着順（FCFS）", "到着した順", "起きない"],
-        ["ラウンドロビン", "一定時間ずつ順番に", "起きない"],
-        ["エージング", "待ち時間に応じて優先度を上げる", "飢餓を防ぐための仕組み"],
-      ],
-    },
+    figure: [
+      {
+        type: "timeline",
+        caption: "短いタスクが次々に来たとき、長いタスク L に番が回るか",
+        span: 12,
+        unit: "ms",
+        groups: [
+          {
+            label: "処理時間順",
+            note: "短いものから選ぶので、L はいつまでも選ばれない（飢餓）",
+            verdict: "ng",
+            tracks: [
+              {
+                label: "短いタスク",
+                bars: [
+                  { start: 0, length: 2, label: "S1", tone: 3 },
+                  { start: 2, length: 2, label: "S2", tone: 3 },
+                  { start: 4, length: 2, label: "S3", tone: 3 },
+                  { start: 6, length: 2, label: "S4", tone: 3 },
+                  { start: 8, length: 2, label: "S5", tone: 3 },
+                  { start: 10, length: 2, label: "S6", tone: 3 },
+                ],
+              },
+              { label: "長いタスク L", bars: [] },
+            ],
+          },
+          {
+            label: "ラウンドロビン",
+            note: "一定時間ずつ順番に回すので、L にも必ず番が来る",
+            verdict: "ok",
+            tracks: [
+              {
+                label: "短いタスク",
+                bars: [
+                  { start: 0, length: 2, label: "S1", tone: 3 },
+                  { start: 4, length: 2, label: "S2", tone: 3 },
+                  { start: 8, length: 2, label: "S3", tone: 3 },
+                ],
+              },
+              {
+                label: "長いタスク L",
+                bars: [
+                  { start: 2, length: 2, label: "L", tone: 5 },
+                  { start: 6, length: 2, label: "L", tone: 5 },
+                  { start: 10, length: 2, label: "L", tone: 5 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "選ばれる条件が待ち時間と無関係だと、飢餓が起きる",
+        headers: ["方式", "選び方", "飢餓（スタベーション）"],
+        rows: [
+          ["処理時間順", "処理予定時間の短いものから", "起きる（長いタスクが後回しになり続ける）"],
+          ["到着順（FCFS）", "到着した順", "起きない"],
+          ["ラウンドロビン", "一定時間ずつ順番に", "起きない"],
+          ["エージング", "待ち時間に応じて優先度を上げる", "飢餓を防ぐための仕組み"],
+        ],
+      },
+    ],
   },
   {
     source: at(17),
@@ -655,7 +739,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：スラッシングが起きるまでと、その戻し方",
+      caption: "スラッシングが起きるまでと、その戻し方",
       steps: [
         { actor: "多重度を上げる", text: "1プロセスあたりに割り当てられる実記憶が減る" },
         { actor: "ページフォールト", text: "必要なページが無い状態が頻発する" },
@@ -775,7 +859,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：回路のつなぎ方から真理値表が決まる（直列＝AND）",
+      caption: "回路のつなぎ方から真理値表が決まる（直列＝AND）",
       headers: ["A", "B", "回路", "Y（LED）"],
       rows: [
         ["0", "0", "開いている", "0"],
@@ -911,7 +995,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：似た UI 部品の見分け方",
+      caption: "似た UI 部品の見分け方",
       headers: ["部品", "動き", "使いどころ"],
       rows: [
         [
@@ -947,7 +1031,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：必要な帯域幅",
+      caption: "必要な帯域幅",
       lines: [
         { expr: "800 × 600 ＝ 480,000 画素", note: "1フレームの画素数" },
         { expr: "480,000 × 24 ＝ 11,520,000 ビット", note: "1フレームのデータ量" },
@@ -987,7 +1071,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：2相コミットの流れと危険な瞬間",
+      caption: "2相コミットの流れと危険な瞬間",
       steps: [
         { actor: "調停者", text: "第1相：全参加者にコミット可否を問い合わせる" },
         { actor: "参加者", text: "更新を準備し、可否（準備完了）を返す" },
@@ -1098,7 +1182,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：オブジェクト図から読み取れる多重度",
+      caption: "オブジェクト図から読み取れる多重度",
       headers: ["関連", "根拠となるインスタンス", "多重度"],
       rows: [
         ["地域 — 仕入先", "大阪に仕入先25と37が結び付く", "1 対 ＊"],
@@ -1214,7 +1298,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：必要な回線速度",
+      caption: "必要な回線速度",
       lines: [
         { expr: "1 M バイト × 8 ＝ 8 M ビット", note: "送るデータ量" },
         { expr: "8 ÷ 5 ＝ 1.6 M ビット／秒", note: "必要な実効速度" },
@@ -1284,7 +1368,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：IP のまわりで働く紛らわしいプロトコル",
+      caption: "IP のまわりで働く紛らわしいプロトコル",
       headers: ["プロトコル", "すること", "使う場面"],
       rows: [
         ["ICMP", "IP 通信の状態を知らせる", "ping、traceroute、到達不能や時間超過の通知"],
@@ -1326,7 +1410,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：IPv4 のクラスと先頭オクテットの範囲",
+      caption: "IPv4 のクラスと先頭オクテットの範囲",
       headers: ["クラス", "先頭オクテット", "用途"],
       rows: [
         ["A", "1 〜 126", "大規模ネットワークのホストアドレス"],
@@ -1392,7 +1476,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：SAML 認証の流れ",
+      caption: "SAML 認証の流れ",
       steps: [
         { actor: "クライアント", text: "クラウドサービス（SP）にアクセスする" },
         { actor: "SP", text: "認証されていないので IdP へリダイレクトさせる" },
@@ -1494,7 +1578,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：“リスト”の中身が何かで攻撃名が決まる",
+      caption: "“リスト”の中身が何かで攻撃名が決まる",
       headers: ["攻撃", "試すもの", "効く対策"],
       rows: [
         [
@@ -1539,7 +1623,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：脆弱性まわりの識別子は役割が違う",
+      caption: "脆弱性まわりの識別子は役割が違う",
       headers: ["略語", "指すもの", "例・形式"],
       rows: [
         ["CVE", "個々の脆弱性の識別番号", "CVE-2024-12345"],
@@ -1580,7 +1664,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：キャッシュポイズニングの成立と、対策が効くところ",
+      caption: "キャッシュポイズニングの成立と、対策が効くところ",
       steps: [
         { actor: "攻撃者", text: "キャッシュに無い名前を、キャッシュサーバに問い合わせさせる" },
         {
@@ -1660,7 +1744,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：似た名前の「署名して検証する」仕組み",
+      caption: "似た名前の「署名して検証する」仕組み",
       headers: ["仕組み", "署名・照合の対象", "防げること"],
       rows: [
         ["DNSSEC", "DNS のリソースレコード", "レコードの改ざん、偽の応答"],
@@ -1700,7 +1784,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：VLAN の効果は、ブロードキャストドメインの分割から来る",
+      caption: "VLAN の効果は、ブロードキャストドメインの分割から来る",
       headers: ["観点", "VLAN で分ける前", "分けた後"],
       rows: [
         ["ブロードキャストの届く範囲", "40台すべて", "同じ VLAN の中だけ"],
@@ -1804,7 +1888,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：同じ「1時間以内」でも、測る対象で品質特性が変わる",
+      caption: "同じ「1時間以内」でも、測る対象で品質特性が変わる",
       headers: ["目標の例", "品質特性", "理由"],
       rows: [
         ["操作方法を短時間で習得できる", "使用性（習得性）", "使う人の分かりやすさを測っている"],
@@ -1845,7 +1929,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：いつ使う道具かで見分ける",
+      caption: "いつ使う道具かで見分ける",
       headers: ["手法", "使う時期", "目的"],
       rows: [
         [
@@ -1995,7 +2079,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：スケジュール短縮の2技法",
+      caption: "スケジュール短縮の2技法",
       headers: ["技法", "やり方", "代償"],
       rows: [
         [
@@ -2038,7 +2122,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：復旧目標の3指標",
+      caption: "復旧目標の3指標",
       headers: ["指標", "定めるもの", "例"],
       rows: [
         ["RTO（目標復旧時間）", "復旧までに許される時間", "中断から1日以内に復旧する"],
@@ -2078,7 +2162,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：継続的改善で規格が求めること",
+      caption: "継続的改善で規格が求めること",
       headers: ["求めること", "内容", "落とし穴"],
       rows: [
         [
@@ -2126,7 +2210,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：入出力データは「誰が決めるか」と「証跡が残るか」で見る",
+      caption: "入出力データは「誰が決めるか」と「証跡が残るか」で見る",
       headers: ["対象", "管理のしかた", "決める・行うのは"],
       rows: [
         [
@@ -2165,7 +2249,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：監査技法は一語で特徴をつかむ",
+      caption: "監査技法は一語で特徴をつかむ",
       headers: ["技法", "特徴", "目印になる言葉"],
       rows: [
         ["ウォークスルー法", "生成から活用までの流れを順にたどる", "追跡する、一連の流れ"],
@@ -2206,7 +2290,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：予備調査と本調査の役割分担",
+      caption: "予備調査と本調査の役割分担",
       headers: ["段階", "すること", "得られるもの"],
       rows: [
         ["予備調査", "業務内容・体制・規程を把握する", "監査手続を具体化した監査計画"],
@@ -2335,7 +2419,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：ECRS はこの順に検討する",
+      caption: "ECRS はこの順に検討する",
       headers: ["原則", "着眼点", "例"],
       rows: [
         ["Eliminate（なくす）", "その作業をやめられないか", "不要な帳票や確認工程を廃止する"],
@@ -2392,7 +2476,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：シナリオごとの金額面の効果（万円）",
+      caption: "シナリオごとの金額面の効果（万円）",
       headers: ["シナリオ", "人件費削減", "空き時間の利益", "外部委託費", "効果"],
       rows: [
         ["a（4人・委託する）", "600", "440（2,200時間）", "−700", "340"],
@@ -2458,17 +2542,35 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
       "UML の図は静的（クラス図、オブジェクト図）と動的（アクティビティ図、状態マシン図、シーケンス図）に分けて覚える。",
       "「分岐」「並行」「同期」が揃って出てきたらアクティビティ図。フォーク・ジョインは他の図にはない記法。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：分岐・並行・同期が揃って書けるのはアクティビティ図",
-      headers: ["図", "分類", "表せるもの"],
-      rows: [
-        ["アクティビティ図", "動的", "処理の流れ、分岐、並行処理と同期（フォーク・ジョイン）"],
-        ["状態マシン図", "動的", "1つのオブジェクトの状態と遷移"],
-        ["シーケンス図", "動的", "オブジェクト間のやり取りの時系列"],
-        ["クラス図", "静的", "クラスとその関係"],
-      ],
-    },
+    figure: [
+      {
+        type: "table",
+        caption: "分岐・並行・同期が揃って書けるのはアクティビティ図",
+        headers: ["図", "分類", "表せるもの"],
+        rows: [
+          ["アクティビティ図", "動的", "処理の流れ、分岐、並行処理と同期（フォーク・ジョイン）"],
+          ["状態マシン図", "動的", "1つのオブジェクトの状態と遷移"],
+          ["シーケンス図", "動的", "オブジェクト間のやり取りの時系列"],
+          ["クラス図", "静的", "クラスとその関係"],
+        ],
+      },
+      {
+        type: "sketch",
+        caption: "UML の図は形で覚える",
+        items: [
+          {
+            name: "アクティビティ図",
+            note: "分岐（ひし形）・並行と同期（太い横棒）が揃って書けるのはこれ。",
+          },
+          {
+            name: "クラス図",
+            note: "クラスの箱を、属性・操作の段に区切って並べ、関連を線で結ぶ。",
+          },
+          { name: "状態マシン図", note: "丸みのある箱が状態、矢印が遷移。扱うのは 1 つのモノ。" },
+          { name: "ユースケース図", note: "棒人間とシステムの枠。中の楕円が提供する機能。" },
+        ],
+      },
+    ],
   },
   {
     source: at(67),
@@ -2501,7 +2603,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：対象の範囲で見分ける",
+      caption: "対象の範囲で見分ける",
       headers: ["略語", "対象の範囲", "ねらい"],
       rows: [
         ["SCM", "企業をまたぐ供給の連鎖（調達〜販売）", "在庫の圧縮、コスト低減、納期短縮"],
@@ -2542,7 +2644,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：アンゾフの成長マトリクス",
+      caption: "アンゾフの成長マトリクス",
       headers: ["", "既存市場", "新規市場"],
       rows: [
         ["既存製品", "市場浸透", "市場拡大（市場開拓）"],
@@ -2605,7 +2707,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：3つの障壁",
+      caption: "3つの障壁",
       headers: ["障壁", "移行するステージ", "内容"],
       rows: [
         ["魔の川", "研究 → 開発", "研究成果が製品開発につながらない"],
@@ -2674,7 +2776,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：段取り時間が最小になる順序",
+      caption: "段取り時間が最小になる順序",
       headers: ["順序", "段取り", "時間"],
       rows: [
         ["1回目", "仕事b → 仕事a", "1"],
@@ -2714,7 +2816,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：部品bの正味所要量",
+      caption: "部品bの正味所要量",
       lines: [
         { expr: "製品A 300 − 在庫 100 ＝ 200 個を製造", note: "Aの製造量" },
         { expr: "部品a 3 × 200 ＝ 600、在庫 100 なので 500 個を製造", note: "aの製造量" },
@@ -2755,7 +2857,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：上位ほど抽象的・長期的",
+      caption: "上位ほど抽象的・長期的",
       headers: ["階層", "何を示すか", "時間軸と抽象度"],
       rows: [
         ["経営理念", "企業の存在意義・価値観", "最も長期・最も抽象的"],
@@ -2804,7 +2906,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：相手の戦略ごとの最適な選択",
+      caption: "相手の戦略ごとの最適な選択",
       headers: ["相手の戦略", "自社の選択肢と利得", "最適"],
       rows: [
         ["B社がb1", "A社 a1＝40、a2＝30", "a1"],
@@ -2884,7 +2986,7 @@ export const AP_R06_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：2社の限界利益率と損益分岐点",
+      caption: "2社の限界利益率と損益分岐点",
       lines: [
         { expr: "A社 限界利益率 ＝ (1,000 − 500) ÷ 1,000 ＝ 50％", note: "変動費率50％" },
         { expr: "A社 損益分岐点 ＝ 400 ÷ 0.5 ＝ 800 億円", note: "固定費400億円" },

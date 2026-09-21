@@ -28,7 +28,7 @@ export const FROZEN_TIME = Date.UTC(2026, 0, 1, 12, 0, 0);
  * 合わせてある。形を変えたらここも直す（ズレると記録が読み捨てられ、記録なしの画面が撮れる）。
  */
 const RECORD_KEY = "exam-prep:progress:v1";
-const RECORD_VERSION = 3;
+const RECORD_VERSION = 4;
 const SET_ID = "ap-r07-aki-am";
 
 const questionId = (no) => `${SET_ID}-${String(no).padStart(2, "0")}`;
@@ -58,6 +58,7 @@ const answeredRecord = (answered) => ({
   shuffle: false,
   shuffleSeed: 0,
   textScale: "standard",
+  noteWidth: 380,
 });
 
 /** メモの保存先と形。apps/web/src/features/quiz/notes/ に合わせてある。 */
@@ -157,6 +158,31 @@ export const SCENARIOS = [
     steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 5 }, { choice: 0 }],
   },
   {
+    name: "explain-compare",
+    label: "解説（選択肢を並べたタイムチャート）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r05-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 17 }, { choice: 0 }],
+  },
+  {
+    name: "explain-starve",
+    label: "解説（方式を並べたタイムチャート）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r06-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 16 }, { choice: 0 }],
+  },
+  {
+    name: "explain-sketch",
+    label: "解説（図の見本）",
+    // 「どの図か」を問う設問。各図の形を並べた見本を撮る。
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r03-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 47 }, { choice: 0 }],
+  },
+  {
+    name: "explain-tree",
+    label: "解説（2 分木）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r06-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 5 }, { choice: 0 }],
+  },
+  {
     name: "result",
     label: "結果",
     // 79 問まで解いた状態から始め、残り 1 問を解いて結果へ進む。
@@ -170,8 +196,21 @@ export const SCENARIOS = [
     steps: [{ click: "問題一覧・見直し" }],
   },
   {
-    name: "vocab",
-    label: "略語単語帳",
-    steps: [{ click: "略語単語帳" }],
+    name: "vocab-setup",
+    label: "単語帳（設定）",
+    steps: [{ click: "単語帳" }],
+  },
+  {
+    name: "vocab-card",
+    label: "単語帳（めくる）",
+    // 分野を 1 つに絞ってから始め、1 枚目の答えを出したところを撮る。
+    steps: [
+      { click: "単語帳" },
+      { click: "すべて解除" },
+      { click: "🗄️ データベース21" },
+      { click: "収録順" },
+      { click: "開始する" },
+      { click: "答えを見るSpace" },
+    ],
   },
 ];

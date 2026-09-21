@@ -59,7 +59,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：ビット数の上限",
+      caption: "ビット数の上限",
       lines: [
         { expr: "nビットの最大値 ＝ 2ⁿ − 1", note: "a の上限" },
         { expr: "b ＝ (2ⁿ − 1)² ＝ 2²ⁿ − 2ⁿ⁺¹ ＋ 1", note: "2乗した値" },
@@ -106,7 +106,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：1 のまとまりと、そこから作る項",
+      caption: "1 のまとまりと、そこから作る項",
       headers: ["まとまり", "占めるマス", "消える変数", "項"],
       rows: [
         ["2マス", "AB＝00 で CD＝00・10", "C が消える", "A̅・B̅・D̅"],
@@ -143,7 +143,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：3個とも良品になる確率",
+      caption: "3個とも良品になる確率",
       lines: [
         { expr: "1個目 ＝ 90 ÷ 100", note: "良品90個／全100個" },
         { expr: "2個目 ＝ 89 ÷ 99", note: "良品も全体も1個減る" },
@@ -204,7 +204,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：衝突するのは「差が n の倍数」のとき",
+      caption: "衝突するのは「差が n の倍数」のとき",
       lines: [
         { expr: "衝突 ⇔ h(a) ＝ h(b)", note: "同じ位置に入る" },
         { expr: "⇔ a mod n ＝ b mod n", note: "余りが等しい" },
@@ -253,7 +253,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "array",
-      caption: "図：i＝1 の1周（j を n から減らしながら隣どうしを比べる）",
+      caption: "i＝1 の1周（j を n から減らしながら隣どうしを比べる）",
       rows: [
         { label: "はじめ", cells: ["5", "3", "2", "4", "1"], note: "A[1]〜A[5]" },
         {
@@ -296,7 +296,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：符号化宣言を省略できるのは2つだけ",
+      caption: "符号化宣言を省略できるのは2つだけ",
       headers: ["文字コード", "encoding の省略", "判別のしかた"],
       rows: [
         ["UTF-8", "省略できる", "省略時の既定として扱う"],
@@ -366,7 +366,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：キャッシュへの書込み方式",
+      caption: "キャッシュへの書込み方式",
       headers: ["方式", "主記憶へ書くタイミング", "長所", "短所"],
       rows: [
         [
@@ -406,7 +406,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：2段キャッシュのヒット率",
+      caption: "2段キャッシュのヒット率",
       lines: [
         { expr: "L1ヒット ＝ 0.95", note: "L1で片付くぶん" },
         { expr: "L1ミス ＝ 1 − 0.95 ＝ 0.05", note: "L2へ問い合わせるぶん" },
@@ -446,7 +446,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：表示装置は「光をどう作るか」で分かれる",
+      caption: "表示装置は「光をどう作るか」で分かれる",
       headers: ["方式", "表示のしくみ", "消費電力と見え方"],
       rows: [
         ["液晶", "バックライトの光を透過制御する", "常時点灯。暗所に強く、直射日光に弱い"],
@@ -490,7 +490,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：ゲストOS を持つかどうかが違いを生む",
+      caption: "ゲストOS を持つかどうかが違いを生む",
       headers: ["方式", "構成", "起動と負荷"],
       rows: [
         ["ホストOS型", "ホストOS上の仮想化ソフト＋ゲストOS", "最も重い。手軽に試せる"],
@@ -534,7 +534,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：信頼性設計の考え方の違い",
+      caption: "信頼性設計の考え方の違い",
       headers: ["考え方", "ねらい", "例"],
       rows: [
         ["フォールトアボイダンス", "そもそも故障させない", "高品質な部品、十分なテスト"],
@@ -573,7 +573,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：稼働率の式",
+      caption: "稼働率の式",
       lines: [
         { expr: "稼働率 ＝ MTBF ÷ (MTBF ＋ MTTR)", note: "元の稼働率" },
         { expr: "＝ 1.5MTBF ÷ (1.5MTBF ＋ 1.5MTTR)", note: "ともに1.5倍にする" },
@@ -606,7 +606,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：サーバとネットワークの処理能力",
+      caption: "サーバとネットワークの処理能力",
       lines: [
         { expr: "サーバ ＝ 1×10⁸ ÷ 1×10⁶ ＝ 100 件／秒", note: "100MIPS ÷ 100万命令" },
         { expr: "1件のデータ量 ＝ 2×10⁵ × 8 ＝ 1.6×10⁶ ビット", note: "バイトをビットに換算" },
@@ -671,20 +671,40 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
       "ページサイズを小さくする効果は、内部断片化の減少と、ページテーブルの肥大・ページフォールト増加のトレードオフ。",
       "この設問は「プログラムがページサイズの半分以下」という前提が効いていて、断片化の減少だけが効いてくる。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：ページサイズを小さくすると何が起きるか",
-      headers: ["起きること", "理由", "この設問では"],
-      rows: [
-        [
-          "内部断片化が減る",
-          "1ページ内の使われない空きが小さくなる",
-          "プログラムは半分以下なので、この効果だけが効く",
+    figure: [
+      {
+        type: "array",
+        caption: "同じ広さの主記憶。ページを半分にすると、無駄な空きが減って入る本数が増える",
+        headers: ["", "", "", "", "", "", "", ""],
+        rows: [
+          {
+            label: "ページ 8",
+            cells: ["P", "P", "P", "P", "空", "空", "空", "空"],
+            marked: [4, 5, 6, 7],
+            note: "プログラムは半分以下。残りは使われない（内部断片化）",
+          },
+          {
+            label: "ページ 4",
+            cells: ["P", "P", "P", "P", "Q", "Q", "Q", "Q"],
+            note: "同じ広さに 2 本入る。P は 1 ページに収まったまま",
+          },
         ],
-        ["ページテーブルが大きくなる", "ページ数が増え、管理する項目が増える", "—"],
-        ["ページフォールトが増えやすい", "1回に読み込む量が減る", "—"],
-      ],
-    },
+      },
+      {
+        type: "table",
+        caption: "ページサイズを小さくすると何が起きるか",
+        headers: ["起きること", "理由", "この設問では"],
+        rows: [
+          [
+            "内部断片化が減る",
+            "1ページ内の使われない空きが小さくなる",
+            "プログラムは半分以下なので、この効果だけが効く",
+          ],
+          ["ページテーブルが大きくなる", "ページ数が増え、管理する項目が増える", "—"],
+          ["ページフォールトが増えやすい", "1回に読み込む量が減る", "—"],
+        ],
+      },
+    ],
   },
   {
     source: at(18),
@@ -715,20 +735,46 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
       "優先順位は「割込み処理ルーチン ＞ どのタスク」。タスク優先度の比較に割込みは含まれない。",
       "リアルタイム性を保つため、割込み処理は最小限にして残りをタスクへ委ねる（遅延処理）設計が使われる。",
     ],
-    figure: {
-      type: "table",
-      caption: "図：割込み処理ルーチンは、どのタスクよりも先に動く",
-      headers: ["実行されるもの", "優先順位", "設計の要点"],
-      rows: [
-        [
-          "割込み処理ルーチン",
-          "最も高い（スケジューリングの外側）",
-          "短く書く。長引くとすべてのタスクが待たされる",
+    figure: [
+      {
+        type: "timeline",
+        caption: "割込みが入ると、実行中のタスクを止めて割込み処理ルーチンが先に動く",
+        span: 12,
+        unit: "ms",
+        marks: [{ at: 4, label: "割込み発生" }],
+        tracks: [
+          {
+            label: "割込み処理ルーチン",
+            bars: [{ start: 4, length: 2, label: "ISR", tone: 1 }],
+          },
+          {
+            label: "優先度の高いタスク",
+            bars: [
+              { start: 0, length: 4, label: "H", tone: 5 },
+              { start: 6, length: 3, label: "H", tone: 5 },
+            ],
+          },
+          {
+            label: "優先度の低いタスク",
+            bars: [{ start: 9, length: 3, label: "L", tone: 3 }],
+          },
         ],
-        ["優先度の高いタスク", "次", "重い処理はこちらへ回す（遅延処理）"],
-        ["優先度の低いタスク", "最後", "上位に割り込まれる（プリエンプション）"],
-      ],
-    },
+      },
+      {
+        type: "table",
+        caption: "割込み処理ルーチンは、どのタスクよりも先に動く",
+        headers: ["実行されるもの", "優先順位", "設計の要点"],
+        rows: [
+          [
+            "割込み処理ルーチン",
+            "最も高い（スケジューリングの外側）",
+            "短く書く。長引くとすべてのタスクが待たされる",
+          ],
+          ["優先度の高いタスク", "次", "重い処理はこちらへ回す（遅延処理）"],
+          ["優先度の低いタスク", "最後", "上位に割り込まれる（プリエンプション）"],
+        ],
+      },
+    ],
   },
   {
     source: at(19),
@@ -752,7 +798,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：印刷データの割当て",
+      caption: "印刷データの割当て",
       headers: ["開始時刻（分）", "プリンター", "印刷時間（分）", "終了時刻（分）"],
       rows: [
         ["0", "A", "4", "4"],
@@ -795,7 +841,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：組込みシステムの入出力。センサーとアクチュエーターは向きが逆",
+      caption: "組込みシステムの入出力。センサーとアクチュエーターは向きが逆",
       steps: [
         { actor: "センサー", text: "温度・光・圧力などの物理量を電気信号へ変換する（入力）" },
         { actor: "コンピュータ", text: "信号を読み取り、どう動かすかを判断する" },
@@ -829,7 +875,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：主な電子部品の役割",
+      caption: "主な電子部品の役割",
       headers: ["部品", "はたらき", "使いどころ"],
       rows: [
         ["ダイオード", "順方向だけ電流を流す（整流作用）", "交流を直流に変える整流回路"],
@@ -945,7 +991,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：必要な桁数",
+      caption: "必要な桁数",
       lines: [
         { expr: "3年後 ＝ 8,000 × 1.2³ ＝ 13,824 人", note: "毎年1.2倍を3回" },
         { expr: "26² ＝ 676", note: "2桁では足りない" },
@@ -984,7 +1030,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：主な動画の符号化方式",
+      caption: "主な動画の符号化方式",
       headers: ["方式", "特徴", "主な用途"],
       rows: [
         ["MPEG-1", "CD 程度のビットレート向け", "ビデオCD"],
@@ -1123,7 +1169,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：平均360を超える行",
+      caption: "平均360を超える行",
       headers: ["商品コード", "販売単価−仕入単価", "仕入先コード"],
       rows: [
         ["D004", "900", "S1"],
@@ -1169,7 +1215,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：トランザクションごとの回復処理",
+      caption: "トランザクションごとの回復処理",
       headers: ["トランザクション", "状態", "回復処理"],
       rows: [
         ["T1", "チェックポイント前にコミット", "処置不要"],
@@ -1232,7 +1278,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：DHCP の4段階。最初はブロードキャストで探す",
+      caption: "DHCP の4段階。最初はブロードキャストで探す",
       steps: [
         {
           actor: "① DISCOVER",
@@ -1273,7 +1319,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：主なウェルノウンポート番号",
+      caption: "主なウェルノウンポート番号",
       headers: ["プロトコル", "ポート番号", "用途"],
       rows: [
         ["FTP", "20（データ）／21（制御）", "ファイル転送。制御とデータでコネクションを分ける"],
@@ -1317,7 +1363,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：/29 のアドレス構成",
+      caption: "/29 のアドレス構成",
       lines: [
         { expr: "ホスト部 ＝ 32 − 29 ＝ 3 ビット", note: "アドレスは8個" },
         { expr: "サブネットマスク ＝ 255.255.255.248", note: "下位3ビットが0" },
@@ -1354,7 +1400,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：TCP と UDP の違い",
+      caption: "TCP と UDP の違い",
       headers: ["観点", "TCP", "UDP"],
       rows: [
         ["コネクション", "3ウェイハンドシェイクで確立する", "確立しない（データグラム）"],
@@ -1425,7 +1471,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：DNSリフレクション攻撃の流れ",
+      caption: "DNSリフレクション攻撃の流れ",
       steps: [
         { actor: "攻撃者", text: "送信元IPアドレスを標的のものに偽装したDNS問合せを作る" },
         { actor: "攻撃者", text: "多数のオープンリゾルバへ、その問合せを大量に送る" },
@@ -1468,7 +1514,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：サイドチャネル攻撃は装置が漏らす副次情報を使う",
+      caption: "サイドチャネル攻撃は装置が漏らす副次情報を使う",
       headers: ["攻撃", "手掛かりにするもの", "対策"],
       rows: [
         ["タイミング攻撃", "処理にかかる時間の差", "鍵の値によらず処理時間を一定にする"],
@@ -1500,7 +1546,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：証明書の失効確認の2方式",
+      caption: "証明書の失効確認の2方式",
       headers: ["方式", "確認のしかた", "長所", "短所"],
       rows: [
         [
@@ -1543,7 +1589,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：CSIRT マテリアルが扱う3つのフェーズ",
+      caption: "CSIRT マテリアルが扱う3つのフェーズ",
       steps: [
         { actor: "構想", text: "なぜ CSIRT が必要かを整理し、経営の理解と体制の方針を得る" },
         { actor: "構築", text: "役割・業務範囲・連絡体制を決め、必要な技術と人を用意する" },
@@ -1582,7 +1628,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：脆弱性まわりの共通基盤",
+      caption: "脆弱性まわりの共通基盤",
       headers: ["名前", "役割", "運営"],
       rows: [
         ["JVN", "日本で使われる製品の脆弱性と対策を公表する", "JPCERT/CC と IPA"],
@@ -1653,7 +1699,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：守る層で使い分ける",
+      caption: "守る層で使い分ける",
       headers: ["仕組み", "見るところ", "防げる攻撃"],
       rows: [
         ["パケットフィルタリング", "IP アドレスとポート番号", "許可していない通信の遮断"],
@@ -1727,7 +1773,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：SPF による送信元ドメインの確認",
+      caption: "SPF による送信元ドメインの確認",
       steps: [
         {
           actor: "ドメイン所有者",
@@ -1807,7 +1853,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：机上で行うレビューの形態",
+      caption: "机上で行うレビューの形態",
       headers: ["形態", "進行役", "特徴"],
       rows: [
         ["ウォークスルー", "作成者", "作成者が説明しながら参加者と流れを追う。非公式で短時間"],
@@ -1851,7 +1897,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：FTA と FMEA は分析の向きが逆",
+      caption: "FTA と FMEA は分析の向きが逆",
       headers: ["手法", "たどる向き", "出発点", "形"],
       rows: [
         [
@@ -1908,7 +1954,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：テストケースごとに通る命令",
+      caption: "テストケースごとに通る命令",
       headers: ["判定", "テストケース1（全て0）", "テストケース2（全て1）"],
       rows: [
         ["V＝0", "Yes → 命令1", "No"],
@@ -1950,7 +1996,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：テスト駆動開発の 1 サイクル",
+      caption: "テスト駆動開発の 1 サイクル",
       steps: [
         { actor: "① テストを書く", text: "これから作る振る舞いを、先にテストコードで表す" },
         { actor: "② Red", text: "実行して失敗することを確認する（テスト自体の誤りに気付ける）" },
@@ -2000,7 +2046,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：KPT は「事実2つ」と「これからの行動1つ」",
+      caption: "KPT は「事実2つ」と「これからの行動1つ」",
       headers: ["記号", "意味", "書く内容"],
       rows: [
         ["Keep", "続けること", "うまくいったので次も続けたいこと（過去の事実）"],
@@ -2069,7 +2115,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：各アクティビティの開始日と終了日",
+      caption: "各アクティビティの開始日と終了日",
       lines: [
         { expr: "A：0日目 〜 6日目", note: "作業日数6日" },
         { expr: "B：6 − 2 ＝ 4日目 〜 11日目", note: "終了−開始関係、リード2日" },
@@ -2108,7 +2154,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：工程ごとの所要期間",
+      caption: "工程ごとの所要期間",
       headers: ["開発工程", "見積工数", "現状の期間", "上級1人追加後の期間"],
       rows: [
         ["設計", "6人月", "6÷2＝3か月", "6÷3＝2か月"],
@@ -2148,7 +2194,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：加重総和法による総合評価",
+      caption: "加重総和法による総合評価",
       headers: ["製品", "機能要件×5", "非機能要件×1", "導入費用×4", "総合評価"],
       rows: [
         ["製品A", "35", "9", "32", "76"],
@@ -2189,7 +2235,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：インシデント管理と問題管理は目的が違う",
+      caption: "インシデント管理と問題管理は目的が違う",
       headers: ["プロセス", "目的", "やること"],
       rows: [
         [
@@ -2247,7 +2293,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：必要な要員数",
+      caption: "必要な要員数",
       lines: [
         { expr: "1日 ＝ 2 ＋ 4 ＋ 2 ＝ 8 シフト", note: "早番・日中・遅番の合計" },
         { expr: "1週間 ＝ 8 × 7 ＝ 56 シフト", note: "年中無休" },
@@ -2317,7 +2363,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：基準を決めてからアセスメントする。順序が逆だと指摘事項になる",
+      caption: "基準を決めてからアセスメントする。順序が逆だと指摘事項になる",
       steps: [
         { actor: "① 基準の確立", text: "リスク受容基準と、アセスメントの実施基準を先に決める" },
         { actor: "② リスク特定", text: "資産・脅威・脆弱性を洗い出す" },
@@ -2361,7 +2407,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：システム監査の流れと、監査手続の位置",
+      caption: "システム監査の流れと、監査手続の位置",
       steps: [
         { actor: "① 監査計画", text: "目的・対象・体制・日程を決める" },
         { actor: "② 予備調査", text: "業務内容や規程を把握し、監査手続を具体化する" },
@@ -2406,7 +2452,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：監査基準と管理基準は向いている相手が違う",
+      caption: "監査基準と管理基準は向いている相手が違う",
       headers: ["基準", "誰に向けたものか", "何を示すか"],
       rows: [
         ["システム監査基準", "システム監査人", "監査を行ううえで守るべき行為規範"],
@@ -2445,7 +2491,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：紛らわしい B から始まる略語",
+      caption: "紛らわしい B から始まる略語",
       headers: ["略語", "正式名", "中身"],
       rows: [
         ["BCP", "Business Continuity Plan", "中断した重要業務を目標時間内に復旧する計画"],
@@ -2517,7 +2563,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：EA は現状と理想を比べて移行計画を作る",
+      caption: "EA は現状と理想を比べて移行計画を作る",
       steps: [
         {
           actor: "4体系で整理",
@@ -2563,7 +2609,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：シナリオごとの正味現在価値",
+      caption: "シナリオごとの正味現在価値",
       lines: [
         { expr: "A ＝ 38.1 ＋ 72.6 ＋ 103.7 − 220 ≒ −5.7", note: "回収が後ろ倒し" },
         { expr: "B ＝ 114.3 ＋ 72.6 ＋ 34.6 − 220 ≒ ＋1.4", note: "回収が前倒し。唯一の正" },
@@ -2603,7 +2649,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：リスク対策は「起きる前」と「起きた後」で分かれる",
+      caption: "リスク対策は「起きる前」と「起きた後」で分かれる",
       headers: ["対策", "時間軸", "委託先の例"],
       rows: [
         ["予防策", "起きないようにする", "委託先の品質監査、二重の検査体制"],
@@ -2677,7 +2723,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：M&A まわりの用語",
+      caption: "M&A まわりの用語",
       headers: ["用語", "意味", "いつの話か"],
       rows: [
         [
@@ -2752,7 +2798,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：紛らわしい分析手法",
+      caption: "紛らわしい分析手法",
       headers: ["手法", "尋ね方・見方", "分かること"],
       rows: [
         [
@@ -2855,7 +2901,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：部品bの正味所要量",
+      caption: "部品bの正味所要量",
       lines: [
         { expr: "製品A ＝ 300 − 100 ＝ 200 個", note: "在庫を引いた製造数" },
         { expr: "部品a ＝ 200 × 3 − 100 ＝ 500 個", note: "総所要量600個から在庫100個を引く" },
@@ -2958,7 +3004,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：デルファイ法は匿名の回答を繰り返して収束させる",
+      caption: "デルファイ法は匿名の回答を繰り返して収束させる",
       steps: [
         { actor: "① 匿名で回答", text: "複数の専門家にアンケートを配り、匿名で答えてもらう" },
         { actor: "② 集計", text: "回答を統計的にまとめる" },
@@ -3029,7 +3075,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：機械1時間当たりの限界利益",
+      caption: "機械1時間当たりの限界利益",
       lines: [
         { expr: "甲 ＝ (30 − 18) ÷ 10 ＝ 1.2 千円／時間", note: "1個当たり12千円、10時間" },
         { expr: "乙 ＝ (25 − 14) ÷ 8 ＝ 1.375 千円／時間", note: "1個当たり11千円、8時間" },
@@ -3093,7 +3139,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：契約形態は「誰が指揮命令するか」で決まる（作業場所では決まらない）",
+      caption: "契約形態は「誰が指揮命令するか」で決まる（作業場所では決まらない）",
       headers: ["契約形態", "指揮命令するのは", "責任を負うこと"],
       rows: [
         ["請負", "受注者", "仕事の完成"],
