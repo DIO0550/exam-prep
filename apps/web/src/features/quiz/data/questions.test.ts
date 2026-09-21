@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Question } from "../types";
-import { figuresOf, SKETCH_NAMES, shortSource, timelineGroups } from "../types";
+import { figuresOf, SKETCH_NAMES, shortSource, sourceId, timelineGroups } from "../types";
 import { QUESTION_SETS } from "./questions";
 
 /**
@@ -24,10 +24,55 @@ const TABLE_COLUMN_LIMIT = 6;
 const FOREIGN_SCRIPT = /[ᄀ-ᇿ가-힯Ѐ-ӿ]/;
 
 describe("問題データ", () => {
-  it("1 回 80 問で、問題 ID が重複しない", () => {
-    const ids = ALL.map((question) => `${question.source.year}-${question.source.term}`);
-    expect(new Set(ids).size).toBe(QUESTION_SETS.length);
-    for (const set of QUESTION_SETS) expect(set.questions).toHaveLength(80);
+  it("問題 ID が、問題集をまたいで重複しない", () => {
+    // 解答状況は問題 ID をキーに 1 つの表へ入れている。重複すると別の問題の記録が混ざる。
+    const ids = ALL.map((question) => sourceId(question.source));
+    expect(new Set(ids).size).toBe(ALL.length);
+  });
+
+  it("IPA の回は 1 回 80 問ある", () => {
+    // 書き下ろしの問題集は問題数が回ごとに違うので、原本のある回だけを見る。
+    for (const set of QUESTION_SETS.filter((candidate) => candidate.exam === "AP")) {
+      expect(set.questions, set.id).toHaveLength(80);
+    }
+  });
+
+  it("書き下ろした問題は、典拠を持つ", () => {
+    // 出どころの分からない問題を混ぜないための検査。出典表記にもこの値が出る。
+    for (const question of ALL) {
+      if (question.source.kind !== "original") continue;
+      expect(question.source.reference, `${nameOf(question)} の典拠`).not.toBe("");
+    }
+  });
+
+  it("書き下ろした問題は、正解の選択肢にだけ「これが正解」と書いてある", () => {
+    // 選択肢ごとの補足は手で書くので、選択肢を並べ替えた拍子に answer とずれる。
+    // 「これが正解」と書いた選択肢が answer と一致することを、機械で押さえておく。
+    for (const question of ALL) {
+      if (question.source.kind !== "original") continue;
+      const marked = question.choices
+        .map((choice, index) => (choice.note?.includes("これが正解") ? index : -1))
+        .filter((index) => index >= 0);
+      expect(marked, `${nameOf(question)} の「これが正解」`).toEqual([question.answer]);
+    }
+  });
+
+  it("書き下ろした問題は、すべての選択肢に補足と解説が付いている", () => {
+    // 間違えた理由が解説本文まで読まないと分からない状態にしない。
+    for (const question of ALL) {
+      if (question.source.kind !== "original") continue;
+      for (const choice of question.choices) {
+        expect(choice.note, `${nameOf(question)} の「${choice.text}」`).toBeTruthy();
+      }
+      expect(question.explain, `${nameOf(question)} の解説`).toBeTruthy();
+    }
+  });
+
+  it("正解の添字が、選択肢の範囲に収まっている", () => {
+    for (const question of ALL) {
+      expect(question.answer, `${nameOf(question)} の正解`).toBeGreaterThanOrEqual(0);
+      expect(question.answer, `${nameOf(question)} の正解`).toBeLessThan(question.choices.length);
+    }
   });
 
   it("図の見出しは呼び名を持たない（図・表は描画側が中身に合わせて付ける）", () => {

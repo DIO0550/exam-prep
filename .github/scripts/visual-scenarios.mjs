@@ -190,6 +190,13 @@ export const SCENARIOS = [
     steps: [{ click: "演習を再開" }, { choice: 0 }, { click: "結果を見る" }],
   },
   {
+    name: "quiz-gcp",
+    label: "演習（GCP シナリオ・別画面の解説）",
+    // 書き下ろしの問題集。出典表記と、試験の切り替わり（左の一覧と見出し）も一緒に写る。
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "gcp-cdl-scenario" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { choice: 0 }],
+  },
+  {
     name: "review",
     label: "問題一覧・見直し",
     storage: { [RECORD_KEY]: answeredRecord(37) },

@@ -13,7 +13,9 @@ export type Section = "am" | "pm";
  * 出典。問題 ID と出典表記の両方をここから機械的に作る。
  * 手で出典文字列を書くと必ず抜けるので、構造化して持つ（docs 2.3）。
  */
-export type Source = {
+export type IpaSource = {
+  /** 出典の種類。IPA の過去問題は既定なので書かない。 */
+  kind?: undefined;
   exam: ExamCode;
   era: Era;
   /** 元号での年。令和3年度なら 3。 */
@@ -28,6 +30,28 @@ export type Source = {
    */
   modified?: string;
 };
+
+/**
+ * 本サイトで書き下ろした問題の出典。
+ *
+ * 過去問題と違って原本になる設問が無いので、年度や問番号では指せない。
+ * 代わりに「どの問題集の何問目か」と「何を典拠に書いたか」を持つ。
+ * 典拠を必須にしてあるのは、出どころの分からない問題を混ぜないため。
+ */
+export type OriginalSource = {
+  kind: "original";
+  /** 問題集の ID。問題 ID の前半になる。 */
+  deck: string;
+  /** 一覧やカードに出す短い名前。例: "GCP シナリオ"。 */
+  label: string;
+  /** 問題集の中での通し番号。 */
+  no: number;
+  /** 書くときに参照した公開資料。出典表記に出す。 */
+  reference: string;
+};
+
+/** 問題の出典。過去問題（IPA）と、本サイトで書き下ろしたものの 2 種類がある。 */
+export type Source = IpaSource | OriginalSource;
 
 const EXAM_NAMES: Record<ExamCode, string> = {
   AP: "応用情報技術者試験",
@@ -45,6 +69,15 @@ const SECTION_NAMES: Record<Section, string> = { am: "午前", pm: "午後" };
  * 改変は理由を問わず併記する決まりなので、modified と同じ括弧に並べる（docs 2.3）。
  */
 export const formatSource = (source: Source, extra?: string): string => {
+  // 書き下ろしは「原本」が無いので、改変の有無ではなく典拠を併記する。
+  // 出どころを過去問題と同じ強さで示さないと、公式の問題と読まれかねないため。
+  if (source.kind === "original") {
+    const notes = [`典拠 ${source.reference}`, extra].filter((note): note is string =>
+      Boolean(note),
+    );
+    return `${source.label} 問${source.no}・本サイト作成（${notes.join("、")}）`;
+  }
+
   const base = `${source.era}${source.year}年度 ${TERM_NAMES[source.term]} ${EXAM_NAMES[source.exam]} ${SECTION_NAMES[source.section]} 問${source.no}`;
   const notes = [source.modified, extra].filter((note): note is string => Boolean(note));
   return notes.length > 0 ? `${base}（${notes.join("、")}）` : base;
@@ -54,10 +87,15 @@ const ERA_SHORT: Record<Era, string> = { 令和: "R", 平成: "H" };
 
 /** 一覧やカードに出す短い表記。例: "R3春 問1"。 */
 export const shortSource = (source: Source): string =>
-  `${ERA_SHORT[source.era]}${source.year}${TERM_NAMES[source.term].charAt(0)} 問${source.no}`;
+  source.kind === "original"
+    ? `${source.label} 問${source.no}`
+    : `${ERA_SHORT[source.era]}${source.year}${TERM_NAMES[source.term].charAt(0)} 問${source.no}`;
 
 /** 問題 ID。URL・ファイルパス・React のキーを兼ねる。 */
 export const sourceId = (source: Source): string => {
+  if (source.kind === "original") {
+    return `${source.deck}-${String(source.no).padStart(2, "0")}`;
+  }
   const era = source.era === "令和" ? "r" : "h";
   const year = String(source.year).padStart(2, "0");
   const no = String(source.no).padStart(2, "0");

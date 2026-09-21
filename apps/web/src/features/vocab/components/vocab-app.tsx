@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 
+import { ProgressBar } from "@/features/quiz/components/progress-bar";
 import { SiteFooter } from "@/features/quiz/components/site-footer";
 import { useScrollReset } from "@/features/quiz/hooks/use-scroll-reset";
 
@@ -47,6 +48,24 @@ export const VocabApp = () => {
               <h1 className="font-bold text-[17px] leading-[1.4] tracking-[0.01em]">{deck.name}</h1>
               <span className="text-[11.5px] text-muted">{deck.sub}</span>
             </header>
+
+            {/* 進み具合は演習と同じ帯で出す。置き場所と形が同じなら、画面をまたいでも探さずに済む。 */}
+            {session.phase === "drill" && (
+              <ProgressBar
+                done={session.answered}
+                total={session.drawn.length}
+                index={session.index}
+                unit="枚"
+                stat={
+                  <>
+                    覚えた <span className="font-bold text-ok">{session.okCount}</span>
+                    <span className="px-1.5 text-muted-soft">・</span>
+                    あやふや{" "}
+                    <span className="font-bold text-ng">{session.answered - session.okCount}</span>
+                  </>
+                }
+              />
+            )}
 
             {session.phase === "setup" && <FlashcardSetup deck={deck} session={session} />}
             {session.phase === "drill" && <FlashcardDrill session={session} />}

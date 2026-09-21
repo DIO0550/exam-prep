@@ -110,6 +110,15 @@ export const useFlashcards = (deck: VocabDeck) => {
     setIndex((current) => Math.max(0, current - 1));
   }, []);
 
+  /** 番号を押して、その札へ直接移る。演習の問番号ボタンと同じ動き。 */
+  const goTo = useCallback(
+    (next: number) => {
+      setFlipped(false);
+      setIndex(Math.min(Math.max(0, next), Math.max(0, drawn.length - 1)));
+    },
+    [drawn.length],
+  );
+
   /** 手ごたえを付けて次へ。「あやふや」はこの端末に残り、「覚えた」で外れる。 */
   const answer = useCallback(
     (verdict: Verdict) => {
@@ -182,6 +191,7 @@ export const useFlashcards = (deck: VocabDeck) => {
     answer,
     next,
     prev,
+    goTo,
   };
 };
 

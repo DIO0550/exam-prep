@@ -6,7 +6,7 @@ import { useMemo, useRef } from "react";
 import { VocabApp } from "@/features/vocab/components/vocab-app";
 
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
-import { QUESTION_SETS } from "../data/questions";
+import { QUESTION_SETS, questionSetsOf } from "../data/questions";
 import { useProgress } from "../hooks/use-progress";
 import { useQuizSession } from "../hooks/use-quiz-session";
 import { useScrollReset } from "../hooks/use-scroll-reset";
@@ -39,7 +39,21 @@ export const QuizApp = () => {
   const questionSet = QUESTION_SETS.find((set) => set.id === record.setId) ?? QUESTION_SETS[0];
   const session = useQuizSession(questionSet.questions);
   const progress = useMemo(() => summarizeProgress(record), [record]);
-  const exam = EXAMS[session.examIndex] ?? EXAMS[0];
+
+  // 左で選んでいる試験は、出題中の問題集から引く。別の state にすると、記録から読み直した
+  // ときや「出題する回」を切り替えたときに、左の選択とずれた表示になってしまう。
+  const examIndex = Math.max(
+    0,
+    EXAMS.findIndex((candidate) => candidate.code === questionSet.exam),
+  );
+  const exam = EXAMS[examIndex] ?? EXAMS[0];
+  // 「出題する回」には、選んでいる試験の問題集だけを並べる。
+  const setOptions = questionSetsOf(exam.code);
+  /** 試験を選び直したら、その試験の先頭の問題集に移る。 */
+  const selectExam = (index: number): void => {
+    const first = questionSetsOf(EXAMS[index]?.code ?? "")[0];
+    if (first) progressStore.selectSet(first.id);
+  };
   // メモの枠は、問題が出ている画面でだけ開く（学習ホームや結果には書く相手がいない）。
   const notesVisible =
     session.notesOpen && session.current !== undefined && session.screen !== "review";
@@ -79,9 +93,9 @@ export const QuizApp = () => {
             <ExamSidebar
               exams={EXAMS}
               groups={EXAM_GROUPS}
-              examIndex={session.examIndex}
+              examIndex={examIndex}
               closedGroups={session.closedGroups}
-              onSelectExam={session.setExamIndex}
+              onSelectExam={selectExam}
               onToggleGroup={session.toggleGroup}
             />
 
@@ -103,7 +117,7 @@ export const QuizApp = () => {
                       <SelectMenu
                         label="出題する回"
                         value={questionSet.id}
-                        options={QUESTION_SETS.map((option) => ({
+                        options={setOptions.map((option) => ({
                           value: option.id,
                           label: option.label,
                         }))}
@@ -114,11 +128,23 @@ export const QuizApp = () => {
 
                   {(session.screen === "quiz" || session.screen === "explain") && (
                     <ProgressBar
-                      answered={session.summary.answered}
-                      correct={session.summary.correct}
-                      percent={session.summary.percent}
+                      done={session.summary.answered}
                       total={questionSet.questions.length}
                       index={session.index}
+                      unit="問"
+                      stat={
+                        session.summary.answered === 0 ? (
+                          "正答率 —"
+                        ) : (
+                          <>
+                            正答率{" "}
+                            <span className="font-bold text-ink">{session.summary.percent}%</span>
+                            <span className="pl-1.5 text-muted-soft">
+                              （{session.summary.correct}/{session.summary.answered}問）
+                            </span>
+                          </>
+                        )
+                      }
                     />
                   )}
 
