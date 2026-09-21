@@ -52,14 +52,28 @@ export const EMPTY_NOTES: NoteRecord = Object.freeze(emptyNotes());
 export const noteOf = (record: NoteRecord, questionId: string): Note =>
   record.notes[questionId] ?? EMPTY_NOTE;
 
-/** 文章も手書きも無いか。空になったメモは保存先から落とす。 */
+/**
+ * 読めるものが何も無いか。「メモあり」の印を出すかの判断に使う。
+ *
+ * 空白や改行だけのメモは、見た目には何も書いていないのと同じなので、印は出さない。
+ * ただし保存先から落とすかどうかは isBlankNote で見る（下の但し書きを参照）。
+ */
 export const isEmptyNote = (note: Note): boolean =>
   note.text.trim() === "" && note.strokes.length === 0;
 
-/** メモを差し替える。空になったら、その問題の項目ごと消す。 */
+/**
+ * 保存先から落としてよいか。1 文字も無いときだけ true。
+ *
+ * ここで「空白だけ」も落とすと、改行を打った時点でメモごと消えてしまい、
+ * 入力欄に打った改行が戻ってこない（書き始めに行を空けられない）。
+ * 文字が入っているうちは、それが空白でもそのまま持つ。
+ */
+export const isBlankNote = (note: Note): boolean => note.text === "" && note.strokes.length === 0;
+
+/** メモを差し替える。何も無くなったら、その問題の項目ごと消す。 */
 export const withNote = (record: NoteRecord, questionId: string, note: Note): NoteRecord => {
   const notes = { ...record.notes };
-  if (isEmptyNote(note)) {
+  if (isBlankNote(note)) {
     delete notes[questionId];
   } else {
     notes[questionId] = note;
@@ -106,7 +120,7 @@ const parseNote = (value: unknown): Note | null => {
     text: note.text.slice(0, TEXT_LIMIT),
     strokes: note.strokes.slice(0, STROKE_LIMIT),
   };
-  return isEmptyNote(parsed) ? null : parsed;
+  return isBlankNote(parsed) ? null : parsed;
 };
 
 /**

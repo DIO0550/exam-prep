@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   emptyNotes,
+  isBlankNote,
   isEmptyNote,
   NOTE_VERSION,
   noteOf,
@@ -33,10 +34,16 @@ describe("withText", () => {
     expect(noteOf(record, "q1")).toEqual({ text: "書き直し", strokes: [[0, 0, 10, 10]] });
   });
 
-  it("空にすると、その問題の項目ごと消える（保存先を無駄に太らせない）", () => {
-    const record = withText(withText(emptyNotes(), "q1", "メモ"), "q1", "  ");
+  it("1 文字も無くなると、その問題の項目ごと消える（保存先を無駄に太らせない）", () => {
+    const record = withText(withText(emptyNotes(), "q1", "メモ"), "q1", "");
 
     expect(record.notes.q1).toBeUndefined();
+  });
+
+  it("改行や空白だけでも消さずに持つ（書き始めに行を空けられるように）", () => {
+    const record = withText(emptyNotes(), "q1", "\n\n");
+
+    expect(noteOf(record, "q1").text).toBe("\n\n");
   });
 
   it(`${TEXT_LIMIT} 文字を超えるぶんは切る`, () => {
@@ -97,10 +104,18 @@ describe("withoutStrokes", () => {
 });
 
 describe("isEmptyNote", () => {
-  it("文章も手書きも無いときだけ空", () => {
-    expect(isEmptyNote({ text: " ", strokes: [] })).toBe(true);
+  it("読めるものが無ければ空（「メモあり」の印を出さない）", () => {
+    expect(isEmptyNote({ text: " \n", strokes: [] })).toBe(true);
     expect(isEmptyNote({ text: "", strokes: [[0, 0]] })).toBe(false);
     expect(isEmptyNote({ text: "メモ", strokes: [] })).toBe(false);
+  });
+});
+
+describe("isBlankNote", () => {
+  it("1 文字も無いときだけ true。空白や改行は「ある」と見る", () => {
+    expect(isBlankNote({ text: "", strokes: [] })).toBe(true);
+    expect(isBlankNote({ text: "\n", strokes: [] })).toBe(false);
+    expect(isBlankNote({ text: "", strokes: [[0, 0]] })).toBe(false);
   });
 });
 

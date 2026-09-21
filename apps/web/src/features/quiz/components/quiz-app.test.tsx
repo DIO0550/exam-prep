@@ -356,6 +356,22 @@ describe("QuizApp", () => {
     expect(screen.queryByLabelText("メモ（文章）")).not.toBeInTheDocument();
   });
 
+  it("メモの書き出しに改行だけを打っても消えない", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await toggleNotes(user);
+
+    const text = screen.getByLabelText("メモ（文章）");
+    await user.type(text, "{Enter}{Enter}");
+    expect(text).toHaveValue("\n\n");
+
+    // 改行だけのうちは「メモあり」の印は出さない（読めるものが無いため）
+    expect(screen.getByRole("button", { name: "メモ" })).toBeInTheDocument();
+
+    await user.type(text, "あとで書く");
+    expect(text).toHaveValue("\n\nあとで書く");
+  });
+
   it("書いたメモは問題ごとに保存され、開き直しても残る", async () => {
     const user = userEvent.setup();
     const view = await startQuiz(user);
