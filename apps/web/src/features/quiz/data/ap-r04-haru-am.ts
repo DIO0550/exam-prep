@@ -71,7 +71,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：選択肢アで情報落ちが起きない理由",
+      caption: "選択肢アで情報落ちが起きない理由",
       lines: [
         { expr: "(1.1)₂×2⁻³ ＋ (1.0)₂×2⁻⁴ ＝ (1.0)₂×2⁻²", note: "｛ ｝内を先に計算" },
         { expr: "2⁵ と 2⁻² の指数差 ＝ 7", note: "仮数部7ビットにちょうど収まる" },
@@ -125,7 +125,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：平均待ち時間の比",
+      caption: "平均待ち時間の比",
       lines: [
         { expr: "ρ＝0.25 のとき 0.25 ÷ (1－0.25) ＝ 1/3", note: "利用率25%" },
         { expr: "ρ＝0.40 のとき 0.40 ÷ (1－0.40) ＝ 2/3", note: "利用率40%" },
@@ -160,7 +160,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：1110011 の検査",
+      caption: "1110011 の検査",
       lines: [
         { expr: "X₁⊕X₃⊕X₄⊕P₁ ＝ 1⊕1⊕0⊕1 ＝ 1", note: "成立しない" },
         { expr: "X₁⊕X₂⊕X₄⊕P₂ ＝ 1⊕1⊕0⊕1 ＝ 1", note: "成立しない" },
@@ -200,7 +200,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：リストの実現方法で、速いところと遅いところが入れ替わる",
+      caption: "リストの実現方法で、速いところと遅いところが入れ替わる",
       headers: ["観点", "配列で実現", "ポインタで実現"],
       rows: [
         ["n 番目の参照", "添字で直接引ける（速い）", "先頭からたどる（遅い）"],
@@ -244,7 +244,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：プログラムの4つの性質",
+      caption: "プログラムの4つの性質",
       headers: ["性質", "できること", "成り立つ条件"],
       rows: [
         [
@@ -311,7 +311,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：並列に動かす判断を、いつ誰がするか",
+      caption: "並列に動かす判断を、いつ誰がするか",
       headers: ["方式", "並列化を決めるのは", "特徴"],
       rows: [
         ["VLIW", "コンパイラ（コンパイル時）", "同時実行できる処理を1つの長い命令語にまとめる"],
@@ -346,7 +346,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：実効メモリアクセス時間",
+      caption: "実効メモリアクセス時間",
       lines: [
         { expr: "主記憶 ＝ 1、キャッシュ ＝ 1/30", note: "主記憶を1とした相対値" },
         { expr: "0.95 × (1/30) ＝ 0.0317", note: "ヒットしたときの寄与" },
@@ -386,7 +386,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：キャッシュの写像方式",
+      caption: "キャッシュの写像方式",
       headers: ["方式", "主記憶のブロックを置ける場所", "ヒット率と回路"],
       rows: [
         ["ダイレクトマップ", "1 か所に固定", "回路は簡単で安いが、同じ場所を奪い合う"],
@@ -414,7 +414,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：実効データ容量の求め方",
+      caption: "実効データ容量の求め方",
       lines: [
         { expr: "6台 － ホットスペア1台 ＝ 5台", note: "RAID5を構成する台数" },
         { expr: "5台 － パリティ1台ぶん ＝ 4台", note: "データに使える台数" },
@@ -453,7 +453,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：アムダールの法則（p＝並列化できる割合、n＝プロセッサ数）",
+      caption: "アムダールの法則（p＝並列化できる割合、n＝プロセッサ数）",
       lines: [
         { expr: "速度向上比 ＝ 1 ／ ｛(1−p) ＋ p／n｝", note: "逐次部分と並列部分の和で割る" },
         { expr: "n を大きくすると p／n → 0", note: "並列部分の時間だけが減る" },
@@ -517,7 +517,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：MTBF と MTTR（稼働率 ＝ MTBF ÷ (MTBF ＋ MTTR)）",
+      caption: "MTBF と MTTR（稼働率 ＝ MTBF ÷ (MTBF ＋ MTTR)）",
       headers: ["指標", "表すもの", "効く対策"],
       rows: [
         ["MTBF（平均故障間隔）", "壊れにくさ", "高信頼な部品、予防保守、冗長化"],
@@ -547,7 +547,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：一方だけが稼働する確率",
+      caption: "一方だけが稼働する確率",
       lines: [
         { expr: "0.7 × (1－0.6) ＝ 0.28", note: "1台目が稼働、2台目が故障" },
         { expr: "(1－0.7) × 0.6 ＝ 0.18", note: "1台目が故障、2台目が稼働" },
@@ -598,7 +598,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：時点ごとに残っている一時ファイル",
+      caption: "時点ごとに残っている一時ファイル",
       headers: ["実行中のジョブ", "残っている一時ファイル", "合計（Mバイト）"],
       rows: [
         ["A", "A", "50"],
@@ -627,7 +627,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：リアルタイム OS の機能は用途で選ぶ",
+      caption: "リアルタイム OS の機能は用途で選ぶ",
       headers: ["機能", "用途", "この設問では"],
       rows: [
         ["セマフォ", "共有資源を同時に使えるタスク数を管理する", "I2C バスの排他制御に使う"],
@@ -668,7 +668,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：断片化の起きやすさは方式で決まる",
+      caption: "断片化の起きやすさは方式で決まる",
       headers: ["方式", "区画の取り方", "断片化と管理"],
       rows: [
         [
@@ -704,7 +704,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "timeline",
-      caption: "図：多重度1と多重度2の処理の進み方（16秒と9秒の差が7秒）",
+      caption: "多重度1と多重度2の処理の進み方（16秒と9秒の差が7秒）",
       span: 16,
       unit: "秒",
       tracks: [
@@ -807,7 +807,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：アドレスの求め方",
+      caption: "アドレスの求め方",
       lines: [
         { expr: "始点（5、4）→終点（9、8）は x と y が同じだけ増える", note: "x＝7 のとき y＝6" },
         { expr: "1画素 ＝ 16ビット ＝ 2バイト", note: "〔方式〕より" },
@@ -846,7 +846,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：制御の流れ。センサとアクチュエータは向きが逆",
+      caption: "制御の流れ。センサとアクチュエータは向きが逆",
       steps: [
         { actor: "センサ", text: "温度や位置などの物理量を電気信号へ変える（入力）" },
         { actor: "コントローラ", text: "信号を読み、どう動かすかを決める" },
@@ -919,7 +919,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：ユーザビリティ評価の手法と、誰が関わるか",
+      caption: "ユーザビリティ評価の手法と、誰が関わるか",
       headers: ["手法", "実施者", "やり方"],
       rows: [
         ["思考発話法", "利用者が参加", "操作しながら考えていることを声に出してもらう"],
@@ -962,7 +962,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：3次元画像を作るときの主な手法",
+      caption: "3次元画像を作るときの主な手法",
       headers: ["手法", "何をするか", "扱える表現"],
       rows: [
         ["レイトレーシング法", "視点から画素ごとに光線を追跡する", "反射・屈折・透過・影"],
@@ -1003,7 +1003,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：CAP定理。3つのうち同時に満たせるのは2つ",
+      caption: "CAP定理。3つのうち同時に満たせるのは2つ",
       headers: ["選ぶ組合せ", "守るもの", "諦めるもの", "ふるまい"],
       rows: [
         ["AP型", "可用性・分断耐性", "整合性", "分断中も応答するが、古い値を返しうる"],
@@ -1043,7 +1043,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：ANSI/SPARC 3層スキーマ",
+      caption: "ANSI/SPARC 3層スキーマ",
       headers: ["スキーマ", "決めること", "含まれる設計"],
       rows: [
         ["外部スキーマ", "利用者ごとの見え方", "ビューの定義、利用者向けの部分集合"],
@@ -1123,7 +1123,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：undo と redo で必要なログ",
+      caption: "undo と redo で必要なログ",
       headers: ["処理", "必要なログ", "すること", "使う場面"],
       rows: [
         ["undo（ロールバック）", "更新前情報", "更新前の値に書き戻す", "トランザクション障害"],
@@ -1167,7 +1167,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：ためる・切り出す・掘り出す",
+      caption: "ためる・切り出す・掘り出す",
       headers: ["用語", "していること", "目的"],
       rows: [
         [
@@ -1206,7 +1206,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：IPv6 の表記の決まり",
+      caption: "IPv6 の表記の決まり",
       headers: ["決まり", "内容", "例"],
       rows: [
         [
@@ -1239,7 +1239,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：PPP と、その運び方の違い",
+      caption: "PPP と、その運び方の違い",
       headers: ["プロトコル", "どこで PPP を運ぶか", "用途"],
       rows: [
         ["PPP", "シリアル回線そのもの", "電話回線などでの1対1接続"],
@@ -1291,7 +1291,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：/28 に置けるホスト数",
+      caption: "/28 に置けるホスト数",
       lines: [
         { expr: "ホスト部 ＝ 32 − 28 ＝ 4 ビット", note: "プレフィックス長を引く" },
         { expr: "アドレス数 ＝ 2⁴ ＝ 16 個", note: "192.168.30.32 〜 47" },
@@ -1330,7 +1330,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：SDN の考え方と、それを実現する手段",
+      caption: "SDN の考え方と、それを実現する手段",
       headers: ["言葉", "指すもの", "関係"],
       rows: [
         [
@@ -1405,7 +1405,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：サイバーキルチェーン。偵察は第1段階",
+      caption: "サイバーキルチェーン。偵察は第1段階",
       steps: [
         {
           actor: "① 偵察",
@@ -1451,7 +1451,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：チャレンジレスポンス認証。パスワードそのものは流れない",
+      caption: "チャレンジレスポンス認証。パスワードそのものは流れない",
       steps: [
         { actor: "クライアント", text: "利用者 ID を送って認証を要求する" },
         { actor: "サーバ", text: "毎回異なるランダムな値（チャレンジ）を返す" },
@@ -1492,7 +1492,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：鍵の役割。署名と暗号化は目的が別",
+      caption: "鍵の役割。署名と暗号化は目的が別",
       headers: ["用途", "使う鍵", "得られること"],
       rows: [
         ["署名を作る", "送信者の秘密鍵（署名鍵）", "本人が署名したことの証明"],
@@ -1532,7 +1532,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：cookie は発行元で分かれる",
+      caption: "cookie は発行元で分かれる",
       headers: ["種類", "発行するのは", "使われ方"],
       rows: [
         ["ファーストパーティ cookie", "いま見ているサイト自身", "ログイン状態やカートの保持"],
@@ -1572,7 +1572,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：リバースプロキシ方式のシングルサインオン",
+      caption: "リバースプロキシ方式のシングルサインオン",
       steps: [
         { actor: "利用者", text: "あらかじめ PC に入れたクライアント証明書を持ってアクセスする" },
         {
@@ -1645,7 +1645,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：リスクまわりの用語の対応",
+      caption: "リスクまわりの用語の対応",
       headers: ["用語", "定義", "使いどころ"],
       rows: [
         ["リスクレベル", "結果（影響の大きさ）× 起こりやすさ", "リスク分析の結果として求める値"],
@@ -1685,7 +1685,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "flow",
-      caption: "図：VDI によるインターネット分離。PC に届くのは画面だけ",
+      caption: "VDI によるインターネット分離。PC に届くのは画面だけ",
       steps: [
         { actor: "PC", text: "DMZ の VDI サーバへ操作（キーボード・マウス）を送る" },
         { actor: "VDI サーバ", text: "ブラウザを動かし、Web サイトを取得して描画する" },
@@ -1749,7 +1749,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：モジュール結合度。下へ行くほど結合が弱く、独立性が高い",
+      caption: "モジュール結合度。下へ行くほど結合が弱く、独立性が高い",
       headers: ["結合", "受け渡すもの", "独立性"],
       rows: [
         ["内容結合", "相手の内部を直接参照・書換え", "最も低い"],
@@ -1800,7 +1800,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：テストケースごとの判定結果",
+      caption: "テストケースごとの判定結果",
       headers: ["テストケース", "A＞0かつB＝0", "Cの値", "A＞0かつC＝1"],
       rows: [
         ["A＝1、B＝0", "Yes", "1×1＝1", "Yes"],
@@ -1833,7 +1833,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：保守は「何のために行うか」で分かれる",
+      caption: "保守は「何のために行うか」で分かれる",
       headers: ["種類", "きっかけ", "例"],
       rows: [
         ["是正保守", "障害が起きた", "不具合の修正"],
@@ -1862,7 +1862,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：スクラムの言葉の役割",
+      caption: "スクラムの言葉の役割",
       headers: ["用語", "指すもの", "使い方"],
       rows: [
         [
@@ -1933,7 +1933,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：EAC の求め方",
+      caption: "EAC の求め方",
       lines: [
         { expr: "CPI ＝ EV ÷ AC ＝ 40 ÷ 60 ＝ 2/3", note: "この時点のコスト効率" },
         { expr: "EAC ＝ BAC ÷ CPI ＝ 100 ÷ (2/3)", note: "効率がこのまま続くと仮定" },
@@ -2006,7 +2006,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：経路ごとの完了日",
+      caption: "経路ごとの完了日",
       lines: [
         { expr: "要件定義30 ＋ 設計20 ＝ 50日", note: "ここまでは一本道" },
         { expr: "50 ＋ 製造25 ＋ テスト15 ＝ 90日", note: "テストが終わる日" },
@@ -2043,7 +2043,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：コンティンジェンシ計画で決めること",
+      caption: "コンティンジェンシ計画で決めること",
       headers: ["決めること", "内容", "予備との関係"],
       rows: [
         ["発動条件", "どの状況になったら実行するか（トリガ）", "条件を満たさなければ実行しない"],
@@ -2131,7 +2131,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：DA は論理、DBA は物理",
+      caption: "DA は論理、DBA は物理",
       headers: ["担当", "見る範囲", "主な仕事"],
       rows: [
         [
@@ -2178,7 +2178,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：BCP の監査で見るところ",
+      caption: "BCP の監査で見るところ",
       headers: ["観点", "適切な状態", "よくある不備"],
       rows: [
         ["対象業務", "重要業務を絞り、優先順位を付けている", "すべてを同水準で守ろうとしている"],
@@ -2390,7 +2390,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：似た形の要件でも、測る対象で分類が変わる",
+      caption: "似た形の要件でも、測る対象で分類が変わる",
       headers: ["要件の例", "分類", "理由"],
       rows: [
         ["短いトレーニングで操作できる", "使用性", "習得のしやすさを問うている"],
@@ -2419,7 +2419,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：UML の図は目的で選ぶ",
+      caption: "UML の図は目的で選ぶ",
       headers: ["図", "表すもの", "分岐・並行処理"],
       rows: [
         ["アクティビティ図", "処理の流れ（業務フロー）", "分岐も並行処理と同期も表せる"],
@@ -2460,7 +2460,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：PPM の4象限（縦＝市場成長率、横＝相対的市場占有率）",
+      caption: "PPM の4象限（縦＝市場成長率、横＝相対的市場占有率）",
       headers: ["象限", "成長率 × 占有率", "資金の出入り", "打ち手"],
       rows: [
         ["花形", "高 × 高", "稼ぐが投資も要る", "占有率を保つ"],
@@ -2561,7 +2561,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：半導体業界の3つの立ち位置",
+      caption: "半導体業界の3つの立ち位置",
       headers: ["形態", "設計", "製造", "稼ぎ方"],
       rows: [
         ["ファブレス", "する", "しない", "設計に専念し、製造は外部に委ねる"],
@@ -2645,7 +2645,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：最小になる並び",
+      caption: "最小になる並び",
       lines: [
         { expr: "b → a ＝ 1 時間", note: "表の最小値の一つ" },
         { expr: "a → c ＝ 1 時間", note: "もう一つの最小値" },
@@ -2745,7 +2745,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "calc",
-      caption: "図：設定価格ごとの限界利益",
+      caption: "設定価格ごとの限界利益",
       lines: [
         { expr: "(1,000－600) × 80,000 ＝ 32,000,000 円", note: "設定価格1,000円" },
         { expr: "(1,200－600) × 70,000 ＝ 42,000,000 円", note: "設定価格1,200円" },
@@ -2779,7 +2779,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：取決めが無い場合、著作権は作った側に生じる",
+      caption: "取決めが無い場合、著作権は作った側に生じる",
       headers: ["立場", "したこと", "著作権"],
       rows: [
         ["A社（委託側）", "要求仕様を示した", "発生しない（仕様を示しただけでは著作者にならない）"],
@@ -2819,7 +2819,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：不正アクセス禁止法の主な禁止規定",
+      caption: "不正アクセス禁止法の主な禁止規定",
       headers: ["規定", "禁止される行為", "この設問では"],
       rows: [
         ["不正アクセス行為", "他人の ID・パスワードで無断でログインする", "—"],
@@ -2890,7 +2890,7 @@ export const AP_R04_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "table",
-      caption: "図：RoHS と WEEE は対になる",
+      caption: "RoHS と WEEE は対になる",
       headers: ["指令", "対象", "目的"],
       rows: [
         [

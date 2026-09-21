@@ -30,6 +30,16 @@ describe("問題データ", () => {
     for (const set of QUESTION_SETS) expect(set.questions).toHaveLength(80);
   });
 
+  it("図の見出しは呼び名を持たない（図・表は描画側が中身に合わせて付ける）", () => {
+    for (const question of ALL) {
+      if (!question.figure) continue;
+      expect(question.figure.caption, `${nameOf(question)} の図の見出し`).not.toMatch(
+        /^(図|表)\s*[：:]/,
+      );
+      expect(question.figure.caption, `${nameOf(question)} の図の見出し`).not.toBe("");
+    }
+  });
+
   it("表の図は、見出しと各行の列数がそろっている", () => {
     for (const question of ALL) {
       if (question.figure?.type !== "table") continue;

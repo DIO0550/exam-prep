@@ -92,7 +92,11 @@ export const ExplainScreen = ({
 
         {question.figure && (
           <div className="border-line-soft border-b bg-panel px-[26px] py-6">
-            <FigureBlock figure={question.figure} variant="page" />
+            {/* 演習画面と同じく枠で囲う。囲わないと、下の選択肢の説明と地続きに見えて
+                見出し（図・表）が何に付いているのか分からなくなる。 */}
+            <div className="max-w-[1000px] rounded-xl border border-line bg-surface px-5 pt-[18px] pb-5">
+              <FigureBlock figure={question.figure} variant="page" />
+            </div>
           </div>
         )}
 

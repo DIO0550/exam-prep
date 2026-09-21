@@ -95,6 +95,10 @@ export type Stem = {
 /** 登場人物と動きを順に並べる図。攻撃の成立手順や検証手順に使う。 */
 export type FlowFigure = {
   type: "flow";
+  /**
+   * 図の見出し。「図：」「表：」は書かない（中身に合わせて FigureBlock が付ける）。
+   * 表の図に「図：」と書くと、絵を探して見つからない読み方になるため。
+   */
   caption: string;
   steps: { actor: string; text: string }[];
 };
