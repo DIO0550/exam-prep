@@ -1,5 +1,7 @@
 import type { Question } from "../types";
 import { sourceId } from "../types";
+import { AP_R01_AKI_AM } from "./ap-r01-aki-am";
+import { AP_R02_OCT_AM } from "./ap-r02-oct-am";
 import { AP_R03_AKI_AM } from "./ap-r03-aki-am";
 import { AP_R03_HARU_AM } from "./ap-r03-haru-am";
 import { AP_R04_AKI_AM } from "./ap-r04-aki-am";
@@ -60,6 +62,8 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "ap-r04-haru-am", exam: "AP", label: "令和4年 春期", questions: AP_R04_HARU_AM },
   { id: "ap-r03-aki-am", exam: "AP", label: "令和3年 秋期", questions: AP_R03_AKI_AM },
   { id: "ap-r03-haru-am", exam: "AP", label: "令和3年 春期", questions: AP_R03_HARU_AM },
+  { id: "ap-r02-oct-am", exam: "AP", label: "令和2年 10月", questions: AP_R02_OCT_AM },
+  { id: "ap-r01-aki-am", exam: "AP", label: "令和元年 秋期", questions: AP_R01_AKI_AM },
   { id: "gcp-cdl-scenario-1", exam: "CDL", label: "シナリオ問題1", questions: GCP_CDL_SCENARIO_1 },
   { id: "gcp-cdl-scenario-2", exam: "CDL", label: "シナリオ問題2", questions: GCP_CDL_SCENARIO_2 },
   {
@@ -132,7 +136,7 @@ const countOf = (examCode: string) =>
   questionSetsOf(examCode).reduce((sum, set) => sum + set.questions.length, 0);
 
 export const COVERAGE = [
-  `応用情報技術者試験 午前 ${questionSetsOf("AP").length}回分（令和3年度春期〜令和7年度秋期、各80問）`,
+  `応用情報技術者試験 午前 ${questionSetsOf("AP").length}回分（令和元年度秋期〜令和7年度秋期、各80問）`,
   `Google Cloud Digital Leader 対策 ${countOf("CDL")}問（本サイト作成。公式の問題ではありません）`,
   `生成AIパスポート 対策 ${countOf("GAIP")}問（本サイト作成。公式の問題ではありません）`,
 ].join(" ／ ");

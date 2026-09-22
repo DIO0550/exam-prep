@@ -34,6 +34,18 @@ describe("formatSource", () => {
       "令和3年度 秋期 基本情報技術者試験 午後 問12",
     );
   });
+
+  it("元年は「1年度」ではなく「元年度」と書く", () => {
+    expect(formatSource({ ...base, year: 1, term: "aki" })).toBe(
+      "令和元年度 秋期 応用情報技術者試験 午前 問1",
+    );
+  });
+
+  it("令和2年度の秋の回は、IPA の呼び方に合わせて「10月」と書く", () => {
+    expect(formatSource({ ...base, year: 2, term: "oct" })).toBe(
+      "令和2年度 10月 応用情報技術者試験 午前 問1",
+    );
+  });
 });
 
 describe("sourceId", () => {
@@ -46,8 +58,24 @@ describe("sourceId", () => {
     expect(sourceId({ ...base, era: "平成", year: 31 })).toBe("ap-h31-haru-am-01");
   });
 
+  it("元年と 10 月の回も、他の回と同じ形の ID になる", () => {
+    expect(sourceId({ ...base, year: 1, term: "aki" })).toBe("ap-r01-aki-am-01");
+    expect(sourceId({ ...base, year: 2, term: "oct" })).toBe("ap-r02-oct-am-01");
+  });
+
   it("改変の有無で ID は変わらない", () => {
     expect(sourceId({ ...base, modified: "図を差し替え" })).toBe(sourceId(base));
+  });
+});
+
+describe("shortSource", () => {
+  it("年と期を詰めて出す", () => {
+    expect(shortSource(base)).toBe("R3春 問1");
+    expect(shortSource({ ...base, term: "aki" })).toBe("R3秋 問1");
+  });
+
+  it("10 月の回は、年と紛れないように「10月」のまま出す", () => {
+    expect(shortSource({ ...base, year: 2, term: "oct", no: 40 })).toBe("R2 10月 問40");
   });
 });
 
