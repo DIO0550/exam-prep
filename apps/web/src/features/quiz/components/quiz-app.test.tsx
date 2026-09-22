@@ -209,6 +209,23 @@ describe("QuizApp", () => {
     expect(screen.getByAltText(image.alt)).toHaveAttribute("src", `/exam-prep${image.src}`);
   });
 
+  it("条件を並べた問題では、箇条書きが点の付く一覧として出る", async () => {
+    // 問題文は 1 つの段落なので、条件を text に書くと 1 行に溶ける。
+    // stem.list に入れたものが <li> として出ることを見ておく。
+    const target = QUESTIONS.findIndex((q) => q.stem?.list);
+    expect(target).toBeGreaterThanOrEqual(0);
+    const items = QUESTIONS[target]?.stem?.list?.items;
+    if (!items) throw new Error("箇条書きのある問題が無い");
+
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await user.click(screen.getByRole("button", { name: new RegExp(`^${target + 1}$`) }));
+
+    for (const item of items) {
+      expect(screen.getByText(item).tagName).toBe("LI");
+    }
+  });
+
   it("間違えた問題は苦手登録に入る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);

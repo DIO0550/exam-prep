@@ -332,6 +332,10 @@ export type Question = {
   field: string;
   /** 正解の選択肢の添字。IPA の解答例から取る。 */
   answer: number;
+  /**
+   * 問題文。1 つの段落としてそのまま出すので、途中の改行は表示に出ない。
+   * 条件を並べて示すものは、文中に「・」で書かずに stem の箇条書きへ持たせる（docs 3.5）。
+   */
   text: string;
   stem?: Stem;
   choices: Choice[];

@@ -75,6 +75,33 @@ describe("問題データ", () => {
     }
   });
 
+  it("問題文や解説に改行が入っていない（並べて示すものは stem や figure へ）", () => {
+    // 文字列は段落や項目にそのまま流しているので、改行は表示に出ない。
+    // 「・」で並べたつもりのものが 1 行に溶けるため、並べるなら stem.list か figure を使う。
+    for (const question of ALL) {
+      const texts = [
+        question.text,
+        question.explain ?? "",
+        ...(question.points ?? []),
+        ...(question.stem?.list?.items ?? []),
+        ...question.choices.flatMap((choice) => [choice.text, choice.note ?? ""]),
+      ];
+      for (const text of texts) {
+        expect(text, `${nameOf(question)} の「${text.slice(0, 20)}」`).not.toContain("\n");
+      }
+    }
+  });
+
+  it("箇条書きの項目は行頭の点を持たない（点は描画側が付ける）", () => {
+    // 原本の「・」をそのまま写すと、描画側の点と二重に出る。
+    // 「・・・」は点ではなく中身（途中を省いた段）なので、そのまま通す。
+    for (const question of ALL) {
+      for (const item of question.stem?.list?.items ?? []) {
+        expect(item, `${nameOf(question)} の箇条書き`).not.toMatch(/^・[^・]/);
+      }
+    }
+  });
+
   it("図の見出しは呼び名を持たない（図・表は描画側が中身に合わせて付ける）", () => {
     for (const question of ALL) {
       for (const figure of figuresOf(question)) {
