@@ -123,6 +123,12 @@ Pages のビルドは 1 時間に 10 回までという緩い上限がある。P
 - セットアップ（checkout / Node / corepack / キャッシュ / install）は各 workflow に
   同じ内容が並ぶ。まとめるにはローカルの composite action を挟むことになるので、
   1 ファイルを読めば何が動くか分かる状態を優先した。**1 つを直したら他も直す**
+- **ビルドだけは 3 回まで試す**（`ci.yml` / `deploy-pages.yml`）。`layout.tsx` の
+  `next/font/google` が Google Fonts からフォントを取り込むのはビルド時で、ここが
+  一過性で落ちると `@font-face` 372 件がまとめて
+  `Module not found: @vercel/turbopack-next/internal/font/google/font` になる。
+  コードやデータの問題と見分けが付かないまま公開が止まるので、Next のキャッシュを
+  捨てて取り直す。3 回とも駄目なら本当に壊れているとみなして落とす
 
 ### static export の設定
 
