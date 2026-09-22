@@ -82,7 +82,8 @@ jobs:
       # ビルドの中で Google Fonts からフォントを取り込む（layout.tsx の next/font/google）。
       # ここは一過性で落ちることがあり、落ちると @font-face 372 件がまとめて
       # 「Module not found: @vercel/turbopack-next/internal/font/google/font」になる。
-      # コードやデータの問題ではないので、Next のキャッシュを捨てて取り直す。
+      # コードやデータの問題ではないので、前の試行の残り（.next と out）を捨てて取り直す。
+      # out を消すのは、deploy がここを cp でマージして公開するため。
       # 3 回とも駄目なら本当に壊れているとみなして落とす。
       - name: Build
         run: |
@@ -91,7 +92,7 @@ jobs:
               exit 0
             fi
             echo "::warning::ビルドに失敗した（${attempt} 回目）。取り直して再試行する"
-            rm -rf apps/web/.next
+            rm -rf apps/web/.next apps/web/out
             sleep $((attempt * 10))
           done
           echo "::error::3 回試してビルドが通らなかった"
