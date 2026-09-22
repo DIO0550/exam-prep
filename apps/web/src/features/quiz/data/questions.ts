@@ -10,6 +10,8 @@ import { AP_R06_AKI_AM } from "./ap-r06-aki-am";
 import { AP_R06_HARU_AM } from "./ap-r06-haru-am";
 import { AP_R07_AKI_AM } from "./ap-r07-aki-am";
 import { AP_R07_HARU_AM } from "./ap-r07-haru-am";
+import { GAIP_CH1 } from "./gaip-ch1";
+import { GAIP_CH2 } from "./gaip-ch2";
 import { GCP_CDL_SCENARIO_1 } from "./gcp-cdl-scenario-1";
 import { GCP_CDL_SCENARIO_2 } from "./gcp-cdl-scenario-2";
 import { GCP_CDL_SCENARIO_3 } from "./gcp-cdl-scenario-3";
@@ -87,6 +89,8 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
     label: "サービス確認問題4",
     questions: GCP_CDL_SERVICE_4,
   },
+  { id: "gaip-ch1", exam: "GAIP", label: "第1章 AI（人工知能）", questions: GAIP_CH1 },
+  { id: "gaip-ch2", exam: "GAIP", label: "第2章 生成AI", questions: GAIP_CH2 },
 ];
 
 /** ある試験に属する問題集だけを取り出す。左の一覧と「出題する回」を連動させるのに使う。 */

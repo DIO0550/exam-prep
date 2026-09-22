@@ -19,7 +19,17 @@ export const EXAMS: [Exam, ...Exam[]] = [
     sub: "シナリオ ・ サービス確認 ・ 各30問",
     group: "Google Cloud 認定資格",
   },
+  {
+    code: "GAIP",
+    name: "生成AIパスポート",
+    sub: "用語 ・ 模擬 ・ 章別 ・ 計260問",
+    group: "生成AI活用普及協会（GUGA）",
+  },
 ];
 
 /** 見出しの並び順。EXAMS の group と対応する。 */
-export const EXAM_GROUPS = ["IPA 情報処理技術者試験", "Google Cloud 認定資格"];
+export const EXAM_GROUPS = [
+  "IPA 情報処理技術者試験",
+  "Google Cloud 認定資格",
+  "生成AI活用普及協会（GUGA）",
+];
