@@ -6,7 +6,13 @@ export const choiceKey = (index: number): string => CHOICE_KEYS[index] ?? String
 
 export type ExamCode = "AP" | "FE" | "SG";
 export type Era = "令和" | "平成";
-export type Term = "haru" | "aki";
+/**
+ * 実施時期。春期・秋期のほかに「10月」がある。
+ *
+ * 令和2年度は春期の実施が取りやめになり、秋の回を IPA が「令和2年度10月試験」と
+ * 呼んでいる。出典表記は原本に合わせる決まりなので、秋期に寄せずに別の値で持つ。
+ */
+export type Term = "haru" | "aki" | "oct";
 export type Section = "am" | "pm";
 
 /**
@@ -18,7 +24,7 @@ export type IpaSource = {
   kind?: undefined;
   exam: ExamCode;
   era: Era;
-  /** 元号での年。令和3年度なら 3。 */
+  /** 元号での年。令和3年度なら 3。元年は 1 で持ち、表示のときだけ「元」にする。 */
   year: number;
   term: Term;
   section: Section;
@@ -59,8 +65,14 @@ const EXAM_NAMES: Record<ExamCode, string> = {
   SG: "情報セキュリティマネジメント試験",
 };
 
-const TERM_NAMES: Record<Term, string> = { haru: "春期", aki: "秋期" };
+const TERM_NAMES: Record<Term, string> = { haru: "春期", aki: "秋期", oct: "10月" };
 const SECTION_NAMES: Record<Section, string> = { am: "午前", pm: "午後" };
+
+/**
+ * 出典表記に出す年。元年は「1年度」ではなく「元年度」と書く。
+ * IPA の問題冊子・解答例もこの書き方なので、そちらに合わせる（docs 2.3）。
+ */
+const eraYear = (year: number): string => (year === 1 ? "元" : String(year));
 
 /**
  * 出典表記。IPA が FAQ で示している形式に合わせる。
@@ -78,18 +90,27 @@ export const formatSource = (source: Source, extra?: string): string => {
     return `${source.label} 問${source.no}・本サイト作成（${notes.join("、")}）`;
   }
 
-  const base = `${source.era}${source.year}年度 ${TERM_NAMES[source.term]} ${EXAM_NAMES[source.exam]} ${SECTION_NAMES[source.section]} 問${source.no}`;
+  const base = `${source.era}${eraYear(source.year)}年度 ${TERM_NAMES[source.term]} ${EXAM_NAMES[source.exam]} ${SECTION_NAMES[source.section]} 問${source.no}`;
   const notes = [source.modified, extra].filter((note): note is string => Boolean(note));
   return notes.length > 0 ? `${base}（${notes.join("、")}）` : base;
 };
 
 const ERA_SHORT: Record<Era, string> = { 令和: "R", 平成: "H" };
 
+/**
+ * 一覧やカードに出す、実施時期の短い表記。
+ * 「10月」は 1 文字に詰めると「1」になって年と紛らわしいので、そのまま出す。
+ */
+const TERM_SHORT: Record<Term, string> = { haru: "春", aki: "秋", oct: "10月" };
+
 /** 一覧やカードに出す短い表記。例: "R3春 問1"。 */
-export const shortSource = (source: Source): string =>
-  source.kind === "original"
-    ? `${source.label} 問${source.no}`
-    : `${ERA_SHORT[source.era]}${source.year}${TERM_NAMES[source.term].charAt(0)} 問${source.no}`;
+export const shortSource = (source: Source): string => {
+  if (source.kind === "original") return `${source.label} 問${source.no}`;
+  const term = TERM_SHORT[source.term];
+  // 1 文字なら年に続けて詰める（R3春）。「10月」を詰めると R210月 と読めなくなるので、空白で切る。
+  const when = term.length === 1 ? term : ` ${term}`;
+  return `${ERA_SHORT[source.era]}${source.year}${when} 問${source.no}`;
+};
 
 /** 問題 ID。URL・ファイルパス・React のキーを兼ねる。 */
 export const sourceId = (source: Source): string => {
