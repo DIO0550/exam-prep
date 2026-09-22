@@ -18,6 +18,9 @@ apps/web/          Next.js 16（App Router / TypeScript / Tailwind v4）
   src/app/         ルーティングとページ。色トークンは globals.css の @theme
   src/base-path.ts basePath の唯一の定義（next.config.ts と public/ 参照の両方が使う）
   src/features/    画面のまとまり
+    backup/        学習記録の書き出しと読み込み（全体 / 選んでいる回だけ。JSON 1 ファイル）
+      backup.ts    ファイルの形・検証・取り込み方（全体は置き換え、個別は重ね合わせ）
+      transfer.ts  ファイルの保存と読み出し。restore.ts が localStorage へ反映する
     quiz/          演習画面（学習ホーム / 演習 / 解説 / 結果 / 見直し）
       components/  画面と部品
       hooks/       画面の状態（useQuizSession）と学習記録の購読（useProgress）

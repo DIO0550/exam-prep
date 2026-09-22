@@ -94,6 +94,11 @@ export const progressStore = {
     store.set(withRestart(snapshot(), questionIds));
   },
 
+  /** 記録をまるごと差し替える（書き出したファイルの取り込み）。 */
+  replace: (record: ProgressRecord): void => {
+    store.set(record);
+  },
+
   /** 学習記録をすべて捨てる。 */
   clear: store.reset,
 };

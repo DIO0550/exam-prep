@@ -45,6 +45,11 @@ export const noteStore = {
     store.set(withoutStrokes(store.snapshot(), questionId));
   },
 
+  /** メモをまるごと差し替える（書き出したファイルの取り込み）。 */
+  replace: (record: NoteRecord): void => {
+    store.set(record);
+  },
+
   /** メモをすべて捨てる。 */
   clear: store.reset,
 };

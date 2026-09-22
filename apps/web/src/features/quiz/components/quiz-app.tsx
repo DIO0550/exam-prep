@@ -3,6 +3,9 @@
 import type { CSSProperties } from "react";
 import { useMemo, useRef } from "react";
 
+import { BackupPanel } from "@/features/backup/components/backup-panel";
+import { exportAll, exportSet, importBackup } from "@/features/backup/restore";
+import { downloadBackup, readBackupFile } from "@/features/backup/transfer";
 import { VocabApp } from "@/features/vocab/components/vocab-app";
 
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
@@ -15,6 +18,7 @@ import { noteStore } from "../notes/store";
 import { progressStore } from "../progress/store";
 import { streakLabel, summarizeProgress } from "../progress/summary";
 import { TEXT_SCALE_RATIO } from "../text-scale";
+import { sourceId } from "../types";
 import { ExamSidebar } from "./exam-sidebar";
 import { ExplainScreen } from "./explain-screen";
 import { HomeScreen } from "./home-screen";
@@ -156,6 +160,25 @@ export const QuizApp = () => {
                       summary={progress}
                       setSummary={session.summary}
                       hasNotes={session.hasNotes}
+                      backup={
+                        <BackupPanel
+                          setLabel={questionSet.label}
+                          onExportAll={() => downloadBackup(exportAll())}
+                          onExportSet={() =>
+                            downloadBackup(
+                              exportSet({
+                                id: questionSet.id,
+                                label: questionSet.label,
+                                questionIds: questionSet.questions.map((question) =>
+                                  sourceId(question.source),
+                                ),
+                              }),
+                            )
+                          }
+                          onRead={readBackupFile}
+                          onImport={importBackup}
+                        />
+                      }
                       onStart={session.start}
                       onRestart={session.restart}
                       onGoReview={() => session.setScreen("review")}

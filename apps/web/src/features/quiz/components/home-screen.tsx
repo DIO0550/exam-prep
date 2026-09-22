@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import type { ProgressSummary } from "../progress/summary";
 import { statCards } from "../progress/summary";
 import type { Summary } from "../stats";
@@ -23,6 +25,8 @@ type HomeScreenProps = {
   setSummary: Summary;
   /** メモが 1 つでもあるか。解答が無くてもメモだけは消せるようにする。 */
   hasNotes: boolean;
+  /** 記録の書き出し・読み込みの枠。保存先に触るので、組み立ては呼ぶ側に置く。 */
+  backup: ReactNode;
   onStart: () => void;
   onRestart: () => void;
   onGoReview: () => void;
@@ -36,6 +40,7 @@ export const HomeScreen = ({
   summary,
   setSummary,
   hasNotes,
+  backup,
   onStart,
   onRestart,
   onGoReview,
@@ -125,6 +130,8 @@ export const HomeScreen = ({
           </div>
         )}
       </section>
+
+      {backup}
 
       {(summary.hasRecord || hasNotes) && (
         <div className="flex justify-end">
