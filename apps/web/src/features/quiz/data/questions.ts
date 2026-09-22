@@ -16,6 +16,7 @@ import { GAIP_CH3 } from "./gaip-ch3";
 import { GAIP_CH4 } from "./gaip-ch4";
 import { GAIP_CH5 } from "./gaip-ch5";
 import { GAIP_CH6 } from "./gaip-ch6";
+import { GAIP_TERM_1 } from "./gaip-term-1";
 import { GCP_CDL_SCENARIO_1 } from "./gcp-cdl-scenario-1";
 import { GCP_CDL_SCENARIO_2 } from "./gcp-cdl-scenario-2";
 import { GCP_CDL_SCENARIO_3 } from "./gcp-cdl-scenario-3";
@@ -98,6 +99,7 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "gaip-ch3", exam: "GAIP", label: "第3章 生成AIの動向", questions: GAIP_CH3 },
   { id: "gaip-ch4", exam: "GAIP", label: "第4章 リテラシーと権利", questions: GAIP_CH4 },
   { id: "gaip-ch5", exam: "GAIP", label: "第5章 理念・指針・法律", questions: GAIP_CH5 },
+  { id: "gaip-term-1", exam: "GAIP", label: "用語問題1（80問）", questions: GAIP_TERM_1 },
   { id: "gaip-ch6", exam: "GAIP", label: "第6章 プロンプト制作", questions: GAIP_CH6 },
 ];
 
