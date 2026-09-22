@@ -14,6 +14,8 @@ import { GAIP_CH1 } from "./gaip-ch1";
 import { GAIP_CH2 } from "./gaip-ch2";
 import { GAIP_CH3 } from "./gaip-ch3";
 import { GAIP_CH4 } from "./gaip-ch4";
+import { GAIP_CH5 } from "./gaip-ch5";
+import { GAIP_CH6 } from "./gaip-ch6";
 import { GCP_CDL_SCENARIO_1 } from "./gcp-cdl-scenario-1";
 import { GCP_CDL_SCENARIO_2 } from "./gcp-cdl-scenario-2";
 import { GCP_CDL_SCENARIO_3 } from "./gcp-cdl-scenario-3";
@@ -95,6 +97,8 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "gaip-ch2", exam: "GAIP", label: "第2章 生成AI", questions: GAIP_CH2 },
   { id: "gaip-ch3", exam: "GAIP", label: "第3章 生成AIの動向", questions: GAIP_CH3 },
   { id: "gaip-ch4", exam: "GAIP", label: "第4章 リテラシーと権利", questions: GAIP_CH4 },
+  { id: "gaip-ch5", exam: "GAIP", label: "第5章 理念・指針・法律", questions: GAIP_CH5 },
+  { id: "gaip-ch6", exam: "GAIP", label: "第6章 プロンプト制作", questions: GAIP_CH6 },
 ];
 
 /** ある試験に属する問題集だけを取り出す。左の一覧と「出題する回」を連動させるのに使う。 */
