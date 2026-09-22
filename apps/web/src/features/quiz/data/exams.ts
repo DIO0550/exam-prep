@@ -22,7 +22,7 @@ export const EXAMS: [Exam, ...Exam[]] = [
   {
     code: "GAIP",
     name: "生成AIパスポート",
-    sub: "用語 ・ 模擬 ・ 章別 ・ 計260問",
+    sub: "用語 ・ 模擬4回 ・ 章別 ・ 計440問",
     group: "生成AI活用普及協会（GUGA）",
   },
 ];
