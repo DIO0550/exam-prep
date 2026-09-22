@@ -56,7 +56,12 @@ describe("restore", () => {
   it("今の記録をそのまま書き出せる", () => {
     progressStore.answer(QUESTION, 2, true);
 
-    expect(exportAll()).toEqual(buildAllBackup(currentRecords(), new Date(exportAll().exportedAt)));
+    // exportAll() は呼ぶたびに exportedAt を今の時刻で作る。2 回呼んで突き合わせると、
+    // その間にミリ秒が進んだときだけ落ちる（実際に CI で落ちた）。1 回だけ呼び、
+    // その exportedAt を渡して比べる。
+    const exported = exportAll();
+
+    expect(exported).toEqual(buildAllBackup(currentRecords(), new Date(exported.exportedAt)));
     expect(
       exportSet({ id: "ap-r07-aki-am", label: "令和7年 秋期", questionIds: [QUESTION] }).attempts,
     ).toEqual(
