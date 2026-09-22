@@ -186,7 +186,8 @@ export const withRestart = (record: ProgressRecord, questionIds: string[]): Prog
 const isNumberArray = (value: unknown): value is number[] =>
   Array.isArray(value) && value.every((item) => typeof item === "number");
 
-const isAttempt = (value: unknown): value is Attempt => {
+/** 1 件の解答状況として読めるか。読み込み（parseRecord）と取り込み（backup/）が使う。 */
+export const isAttempt = (value: unknown): value is Attempt => {
   if (typeof value !== "object" || value === null) return false;
   const attempt = value as Record<string, unknown>;
   return (

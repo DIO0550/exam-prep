@@ -27,5 +27,10 @@ export const weakStore = {
     store.set(withWeak(store.snapshot(), id, weak));
   },
 
+  /** まるごと差し替える（書き出したファイルの取り込み）。 */
+  replace: (record: WeakRecord): void => {
+    store.set(record);
+  },
+
   clear: store.reset,
 };

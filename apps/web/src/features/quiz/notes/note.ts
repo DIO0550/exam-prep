@@ -111,7 +111,8 @@ const isStroke = (value: unknown): value is Stroke =>
   value.length >= 2 &&
   value.every((point) => typeof point === "number" && Number.isFinite(point));
 
-const parseNote = (value: unknown): Note | null => {
+/** 1 問ぶんのメモとして読めるか。読めなければ null。取り込み（backup/）も使う。 */
+export const parseNote = (value: unknown): Note | null => {
   if (typeof value !== "object" || value === null) return null;
   const note = value as Record<string, unknown>;
   if (typeof note.text !== "string") return null;
