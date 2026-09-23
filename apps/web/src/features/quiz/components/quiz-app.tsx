@@ -229,6 +229,7 @@ export const QuizApp = () => {
                       summary={session.summary}
                       total={questionSet.questions.length}
                       elapsed={session.elapsed}
+                      passLine={exam.passLine}
                       onRestart={session.restart}
                       onGoReview={() => session.setScreen("review")}
                     />
