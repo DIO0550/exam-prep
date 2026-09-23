@@ -14,6 +14,7 @@ import { AP_R07_AKI_AM } from "./ap-r07-aki-am";
 import { AP_R07_HARU_AM } from "./ap-r07-haru-am";
 import { GAIP_CH1 } from "./gaip-ch1";
 import { GAIP_CH2 } from "./gaip-ch2";
+import { GAIP_CH2_GPT } from "./gaip-ch2-gpt";
 import { GAIP_CH3 } from "./gaip-ch3";
 import { GAIP_CH4 } from "./gaip-ch4";
 import { GAIP_CH5 } from "./gaip-ch5";
@@ -109,6 +110,7 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "gaip-mock-4", exam: "GAIP", label: "模擬試験4", questions: GAIP_MOCK_4 },
   { id: "gaip-ch1", exam: "GAIP", label: "第1章 AI（人工知能）", questions: GAIP_CH1 },
   { id: "gaip-ch2", exam: "GAIP", label: "第2章 生成AI", questions: GAIP_CH2 },
+  { id: "gaip-ch2-gpt", exam: "GAIP", label: "第2章 GPT特化", questions: GAIP_CH2_GPT },
   { id: "gaip-ch3", exam: "GAIP", label: "第3章 生成AIの動向", questions: GAIP_CH3 },
   { id: "gaip-ch4", exam: "GAIP", label: "第4章 リテラシーと権利", questions: GAIP_CH4 },
   { id: "gaip-ch5", exam: "GAIP", label: "第5章 理念・指針・法律", questions: GAIP_CH5 },
