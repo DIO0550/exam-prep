@@ -6,6 +6,7 @@ import { choiceOrder } from "../choice-order";
 import type { Stroke } from "../notes/note";
 import { EMPTY_NOTE, noteOf } from "../notes/note";
 import { noteStore } from "../notes/store";
+import type { AnswerUndo } from "../progress/record";
 import { attemptOf } from "../progress/record";
 import { progressStore } from "../progress/store";
 import type { Attempt, QuizItem } from "../stats";
@@ -40,6 +41,8 @@ export const useQuizSession = (questions: Question[]) => {
   const [closedGroups, setClosedGroups] = useState<string[]>([]);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState("—");
+  // 最後にした解答を取り消すための値。取り消せるのはこの 1 件だけ。
+  const [lastAnswer, setLastAnswer] = useState<AnswerUndo | null>(null);
 
   const items = useMemo<QuizItem[]>(
     () =>
@@ -60,6 +63,7 @@ export const useQuizSession = (questions: Question[]) => {
     setScreen("home");
     setStartedAt(null);
     setElapsed("—");
+    setLastAnswer(null);
   }
 
   const current = items[index];
@@ -130,24 +134,44 @@ export const useQuizSession = (questions: Question[]) => {
   /** 解答をすべて捨てて 1 問目から始める。フラグと苦手登録は学習記録なので残す。 */
   const restart = useCallback(() => {
     progressStore.restart(questions.map((question) => sourceId(question.source)));
+    setLastAnswer(null);
     setIndex(0);
     setScreen("quiz");
     setStartedAt(Date.now());
   }, [questions]);
 
-  /** 選択肢を選ぶ。選んだ時点で正誤が確定し、間違えた問題は苦手登録に入る。 */
+  /**
+   * 選択肢を選ぶ。選んだ時点で正誤が確定し、間違えた問題は苦手登録に入る。
+   * 押し間違えたときは undoPick で取り消せる。
+   */
   const pick = useCallback(
     (choice: number) => {
       if (!current || current.attempt.revealed) return;
-      progressStore.answer(
-        sourceId(current.question.source),
-        choice,
-        choice === current.question.answer,
+      setLastAnswer(
+        progressStore.answer(
+          sourceId(current.question.source),
+          choice,
+          choice === current.question.answer,
+        ),
       );
       if (feedback === "page") setScreen("explain");
     },
     [current, feedback],
   );
+
+  /** 今の問題が、最後に解答した問題で、まだ取り消せるか。 */
+  const canUndoPick =
+    lastAnswer !== null &&
+    questionId === lastAnswer.questionId &&
+    current?.attempt.revealed === true;
+
+  /** 押し間違えた解答を取り消して、選び直せる状態に戻す。 */
+  const undoPick = useCallback(() => {
+    if (!canUndoPick || !lastAnswer) return;
+    progressStore.undoAnswer(lastAnswer);
+    setLastAnswer(null);
+    setScreen("quiz");
+  }, [canUndoPick, lastAnswer]);
 
   /** 明らかに違う選択肢を消し込む。 */
   const toggleExclude = useCallback(
@@ -238,6 +262,8 @@ export const useQuizSession = (questions: Question[]) => {
     start,
     restart,
     pick,
+    canUndoPick,
+    undoPick,
     toggleExclude,
     toggleFlag,
     toggleWeak,
