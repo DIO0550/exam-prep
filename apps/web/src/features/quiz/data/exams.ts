@@ -12,18 +12,22 @@ export const EXAMS: [Exam, ...Exam[]] = [
     name: "応用情報技術者試験",
     sub: "午前 ・ 全80問形式",
     group: "IPA 情報処理技術者試験",
+    // IPA の午前は 60% で揃っている。
+    passLine: 60,
   },
   {
     code: "CDL",
     name: "Cloud Digital Leader",
     sub: "シナリオ ・ サービス確認 ・ 各30問",
     group: "Google Cloud 認定資格",
+    // 合格ラインは非公開なので持たない。
   },
   {
     code: "GAIP",
     name: "生成AIパスポート",
     sub: "用語 ・ 模擬4回 ・ 章別 ・ 計440問",
     group: "生成AI活用普及協会（GUGA）",
+    // 合格ラインは非公開なので持たない。
   },
 ];
 

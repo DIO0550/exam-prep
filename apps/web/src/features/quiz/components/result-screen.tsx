@@ -1,5 +1,5 @@
 import type { Summary } from "../stats";
-import { scoreTone } from "../tone";
+import { scoreTone, TONE_TEXT } from "../tone";
 import { MeterRow } from "./meter-row";
 
 type ResultScreenProps = {
@@ -7,35 +7,42 @@ type ResultScreenProps = {
   total: number;
   /** 「3分05秒」の形。未計測なら "—"。 */
   elapsed: string;
+  /** 合格ライン（%）。非公開の試験は undefined で、合否は出さない。 */
+  passLine?: number;
   onRestart: () => void;
   onGoReview: () => void;
 };
-
-/** 合格ライン。IPA の午前は 60% で揃っている。 */
-const PASS_LINE = 60;
 
 export const ResultScreen = ({
   summary,
   total,
   elapsed,
+  passLine,
   onRestart,
   onGoReview,
 }: ResultScreenProps) => {
-  const passed = summary.percent >= PASS_LINE;
+  // 合格ラインがある試験は合否で、無い試験は分野別バーと同じ基準で色を付ける。
+  const scoreColor =
+    passLine === undefined
+      ? TONE_TEXT[scoreTone(summary.percent)]
+      : summary.percent >= passLine
+        ? "text-ok"
+        : "text-ng";
 
   return (
     <div className="flex animate-rise-in flex-col gap-[18px]">
       <div className="flex flex-wrap items-center gap-[34px] rounded-2xl border border-line bg-surface px-[30px] py-[34px]">
         <div className="flex flex-col gap-[3px]">
           <span className="font-bold text-[10.5px] text-muted-soft tracking-[0.16em]">SCORE</span>
-          <div className={`flex items-baseline gap-[3px] ${passed ? "text-ok" : "text-ng"}`}>
+          <div className={`flex items-baseline gap-[3px] ${scoreColor}`}>
             <span className="font-bold text-[54px] leading-none tracking-[-0.02em] tabular-nums">
               {summary.percent}
             </span>
             <span className="font-bold text-[20px]">%</span>
           </div>
           <span className="text-[13px] text-muted-soft">
-            {total}問中 {summary.correct}問正解（合格ラインは{PASS_LINE}%）
+            {total}問中 {summary.correct}問正解
+            {passLine !== undefined && `（合格ラインは${passLine}%）`}
           </span>
           <span className="text-[12px] text-muted-soft">所要時間 {elapsed}</span>
         </div>

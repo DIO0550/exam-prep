@@ -362,4 +362,9 @@ export type Exam = {
   name: string;
   sub: string;
   group: string;
+  /**
+   * 合格ライン（%）。主催者が公表している試験だけ持つ。
+   * 公表されていない試験は undefined にして、結果画面に合否を出さない。
+   */
+  passLine?: number;
 };
