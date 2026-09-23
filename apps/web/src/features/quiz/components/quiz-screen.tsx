@@ -10,6 +10,7 @@ import { MarkButtons } from "./mark-buttons";
 import { NoteButton } from "./note-button";
 import { QuestionDots } from "./question-dots";
 import { StemBlock } from "./question-figure";
+import { UndoPickButton } from "./undo-pick-button";
 
 type QuizScreenProps = {
   /** 演習全体。下部の問番号ボタンに使う。 */
@@ -23,6 +24,8 @@ type QuizScreenProps = {
   /** 解説を同じ画面に出すか。別画面のときはここには出さない。 */
   showFeedback: boolean;
   onPick: (index: number) => void;
+  /** 解答の取り消し。解答した直後の問題でだけ渡す。 */
+  onUndoPick?: () => void;
   onToggleExclude: (index: number) => void;
   onToggleFlag: () => void;
   onToggleWeak: () => void;
@@ -44,6 +47,7 @@ export const QuizScreen = ({
   isLast,
   showFeedback,
   onPick,
+  onUndoPick,
   onToggleExclude,
   onToggleFlag,
   onToggleWeak,
@@ -114,6 +118,7 @@ export const QuizScreen = ({
               <span className="text-read-sm text-muted-soft">
                 正解：{choiceKey(positionOf(order, question.answer))}
               </span>
+              {onUndoPick && <UndoPickButton onUndo={onUndoPick} />}
             </div>
 
             {(question.explain || question.points) && (

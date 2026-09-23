@@ -41,6 +41,41 @@ describe("progressStore", () => {
     expect(progressStore.snapshot().attempts[QUESTION]?.weak).toBe(true);
   });
 
+  it("解答を取り消すと、未解答に戻り、直近の正誤・学習日・自動の苦手登録も戻る", () => {
+    progressStore.patchAttempt(QUESTION, { flagged: true });
+    const undo = progressStore.answer(QUESTION, 1, false);
+
+    progressStore.undoAnswer(undo);
+
+    expect(loadRecord().attempts[QUESTION]).toMatchObject({
+      picked: null,
+      revealed: false,
+      flagged: true,
+      weak: false,
+    });
+    expect(loadRecord().recent).toEqual([]);
+    expect(loadRecord().days).toEqual([]);
+  });
+
+  it("もともと苦手登録していた問題は、取り消しても登録が残る", () => {
+    progressStore.patchAttempt(QUESTION, { weak: true });
+    const undo = progressStore.answer(QUESTION, 1, false);
+
+    progressStore.undoAnswer(undo);
+
+    expect(progressStore.snapshot().attempts[QUESTION]?.weak).toBe(true);
+  });
+
+  it("解き直しで未解答に戻ったあとの取り消しは、直近の正誤を抜かない", () => {
+    progressStore.answer(QUESTION, 2, true);
+    const undo = progressStore.answer("ap-r07-aki-am-02", 1, false);
+    progressStore.restart(["ap-r07-aki-am-02"]);
+
+    progressStore.undoAnswer(undo);
+
+    expect(loadRecord().recent).toEqual([true, false]);
+  });
+
   it("解答を消してもフラグは残る", () => {
     progressStore.patchAttempt(QUESTION, { flagged: true });
     progressStore.answer(QUESTION, 2, true);

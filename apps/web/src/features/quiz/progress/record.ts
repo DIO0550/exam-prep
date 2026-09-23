@@ -170,6 +170,30 @@ export const withAnswer = (
   days: withDay(record.days, dayKey(now)),
 });
 
+/** 解答を取り消すのに要る、解答する前の値。取り消せるのは最後に記録した 1 件だけ。 */
+export type AnswerUndo = {
+  questionId: string;
+  /** 解答する前の苦手登録。間違えて自動で付いた登録を外すのに使う。 */
+  weak: boolean;
+  /** 解答する前の学習日。その日の 1 問目だったなら、取り消すと日も消える。 */
+  days: DayKey[];
+};
+
+/**
+ * 押し間違えた解答を取り消す。解答状況を未解答に戻し、直近の正誤からも 1 件抜く。
+ * フラグと消し込みは解答とは別に付けたものなので残す。
+ */
+export const withUndoAnswer = (record: ProgressRecord, undo: AnswerUndo): ProgressRecord => ({
+  ...withAttempt(record, undo.questionId, {
+    ...attemptOf(record, undo.questionId),
+    picked: null,
+    revealed: false,
+    weak: undo.weak,
+  }),
+  recent: record.recent.slice(0, -1),
+  days: undo.days,
+});
+
 /** 指定した問題の解答だけを消す。フラグと苦手登録は学習記録なので残す。 */
 export const withRestart = (record: ProgressRecord, questionIds: string[]): ProgressRecord => {
   const attempts = { ...record.attempts };

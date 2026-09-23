@@ -237,6 +237,57 @@ describe("QuizApp", () => {
     expect(screen.getByRole("button", { name: "苦手登録済" })).toBeInTheDocument();
   });
 
+  it("押し間違えた解答は取り消して選び直せる", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    await user.click(choiceButton(FIRST.answer === 0 ? 1 : 0));
+    expect(screen.getByText("不正解")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "解答を取り消す" }));
+
+    expect(screen.queryByText("不正解")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "次の問題へ" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "苦手に登録" })).toBeInTheDocument();
+    expect(readRecord().recent).toEqual([]);
+
+    await user.click(choiceButton(FIRST.answer));
+    expect(screen.getByText(/^正解：/)).toBeInTheDocument();
+    expect(screen.queryByText("不正解")).not.toBeInTheDocument();
+    expect(readRecord().recent).toEqual([true]);
+  });
+
+  it("取り消せるのは解答した直後の問題だけ", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    await user.click(choiceButton(FIRST.answer));
+    await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+    await user.click(screen.getByRole("button", { name: "前の問題" }));
+
+    expect(screen.getByRole("button", { name: "解答を取り消す" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+    const second = QUESTIONS[1];
+    if (!second) throw new Error("2 問目が無い");
+    await user.click(choiceButton(second.answer));
+    await user.click(screen.getByRole("button", { name: "前の問題" }));
+
+    expect(screen.queryByRole("button", { name: "解答を取り消す" })).not.toBeInTheDocument();
+  });
+
+  it("解説を別画面にしていても、取り消すと問題に戻って選び直せる", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await user.click(screen.getByRole("button", { name: "別画面" }));
+
+    await user.click(choiceButton(FIRST.answer === 0 ? 1 : 0));
+    await user.click(screen.getByRole("button", { name: "解答を取り消す" }));
+
+    expect(screen.getByRole("heading", { name: "問 01" })).toBeInTheDocument();
+    expect(choiceButton(FIRST.answer)).toBeEnabled();
+  });
+
   it("解説表示を「別画面」にすると解答後に解説画面へ移る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);

@@ -8,6 +8,7 @@ import { KeyPointList } from "./key-point-list";
 import { MarkButtons } from "./mark-buttons";
 import { NoteButton } from "./note-button";
 import { StemBlock } from "./question-figure";
+import { UndoPickButton } from "./undo-pick-button";
 
 type ExplainScreenProps = {
   item: QuizItem;
@@ -15,6 +16,8 @@ type ExplainScreenProps = {
   order: number[];
   index: number;
   isLast: boolean;
+  /** 解答の取り消し。解答した直後の問題でだけ渡す。 */
+  onUndoPick?: () => void;
   onToggleFlag: () => void;
   onToggleWeak: () => void;
   /** メモの枠が開いているか。 */
@@ -31,6 +34,7 @@ export const ExplainScreen = ({
   order,
   index,
   isLast,
+  onUndoPick,
   onToggleFlag,
   onToggleWeak,
   notesOpen,
@@ -52,11 +56,14 @@ export const ExplainScreen = ({
           correct ? "border-ok bg-ok-bg" : "border-ng bg-ng-bg"
         }`}
       >
-        <h2
-          className={`font-bold text-[22px] tracking-[0.02em] ${correct ? "text-ok" : "text-ng"}`}
-        >
-          {correct ? "正解" : "不正解"}
-        </h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <h2
+            className={`font-bold text-[22px] tracking-[0.02em] ${correct ? "text-ok" : "text-ng"}`}
+          >
+            {correct ? "正解" : "不正解"}
+          </h2>
+          {onUndoPick && <UndoPickButton onUndo={onUndoPick} />}
+        </div>
         <span className="text-read-sm text-ink-soft">
           あなたの解答：{pickedLabel} ／ 正解：{choiceKey(positionOf(order, question.answer))}
         </span>

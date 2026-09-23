@@ -195,6 +195,7 @@ export const QuizApp = () => {
                       isLast={session.isLast}
                       showFeedback={session.feedback === "inline"}
                       onPick={session.pick}
+                      onUndoPick={session.canUndoPick ? session.undoPick : undefined}
                       onToggleExclude={session.toggleExclude}
                       onToggleFlag={session.toggleFlag}
                       onToggleWeak={session.toggleWeak}
@@ -213,6 +214,7 @@ export const QuizApp = () => {
                       order={session.order}
                       index={session.index}
                       isLast={session.isLast}
+                      onUndoPick={session.canUndoPick ? session.undoPick : undefined}
                       onToggleFlag={session.toggleFlag}
                       onToggleWeak={session.toggleWeak}
                       notesOpen={notesVisible}

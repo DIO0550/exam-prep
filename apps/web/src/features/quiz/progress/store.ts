@@ -1,7 +1,7 @@
 import { createLocalStore } from "../local-store";
 import type { Attempt } from "../stats";
 import type { TextScale } from "../text-scale";
-import type { ProgressRecord } from "./record";
+import type { AnswerUndo, ProgressRecord } from "./record";
 import {
   attemptOf,
   EMPTY_RECORD,
@@ -12,6 +12,7 @@ import {
   withSetId,
   withShuffle,
   withTextScale,
+  withUndoAnswer,
 } from "./record";
 import { clearRecord, loadRecord, STORAGE_KEY, saveRecord } from "./storage";
 
@@ -76,8 +77,11 @@ export const progressStore = {
     store.set(withAttempt(record, questionId, { ...attemptOf(record, questionId), ...patch }));
   },
 
-  /** 解答を記録する。累計正答率と連続学習日数もここで伸びる。 */
-  answer: (questionId: string, choice: number, correct: boolean, now = new Date()): void => {
+  /**
+   * 解答を記録する。累計正答率と連続学習日数もここで伸びる。
+   * 返す値を undoAnswer に渡すと、この解答を取り消せる。
+   */
+  answer: (questionId: string, choice: number, correct: boolean, now = new Date()): AnswerUndo => {
     const record = snapshot();
     const attempt: Attempt = {
       ...attemptOf(record, questionId),
@@ -87,6 +91,17 @@ export const progressStore = {
       weak: attemptOf(record, questionId).weak || !correct,
     };
     store.set(withAnswer(record, questionId, attempt, correct, now));
+    return { questionId, weak: attemptOf(record, questionId).weak, days: record.days };
+  },
+
+  /**
+   * 押し間違えた解答を取り消す。answer が返した値を渡す。
+   * その後に解き直しや記録の消去で未解答に戻っていれば、何もしない（直近の正誤を余分に抜かないため）。
+   */
+  undoAnswer: (undo: AnswerUndo): void => {
+    const record = snapshot();
+    if (!attemptOf(record, undo.questionId).revealed) return;
+    store.set(withUndoAnswer(record, undo));
   },
 
   /** 指定した回の解答を消す。フラグ・苦手登録・累計の記録は残す。 */
