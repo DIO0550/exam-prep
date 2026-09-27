@@ -1,8 +1,14 @@
 import type { Figure } from "../types";
 import { ArrayFigureBlock } from "./array-figure";
+import { ChartFigureBlock } from "./chart-figure";
+import { DiagramFigureBlock } from "./diagram-figure";
+import { KarnaughFigureBlock } from "./karnaugh-figure";
+import { QuadrantFigureBlock } from "./quadrant-figure";
+import { SequenceFigureBlock } from "./sequence-figure";
 import { SketchFigureBlock } from "./sketch-figure";
 import { TimelineFigureBlock } from "./timeline-figure";
 import { TreeFigureBlock } from "./tree-figure";
+import { VennFigureBlock } from "./venn-figure";
 
 /** inline は問題カードの中、page は解説画面。図の地色だけ変わる（文字は text-read-* で共通）。 */
 type Variant = "inline" | "page";
@@ -48,22 +54,39 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
         <span className="text-pretty text-read-xs text-muted-soft">{figure.caption}</span>
       </figcaption>
       {figure.type === "flow" && (
-        <div className="flex flex-col gap-2">
+        // 段を矢印でつないで、上から順に進む流れとして見せる。番号は解説の本文から指すためのもの。
+        <ol className="flex flex-col">
           {figure.steps.map((step, stepIndex) => (
-            <div
+            <li
               // biome-ignore lint/suspicious/noArrayIndexKey: 同じ登場人物が何度も出るので actor はキーにできない
               key={stepIndex}
-              className={`flex items-start gap-3.5 rounded-[9px] border border-figure-line px-3.5 py-3 ${stepBg}`}
+              className="flex flex-col items-start"
             >
-              <span className="flex-[0_0_8.5em] font-bold text-read-sm text-accent leading-[1.6]">
-                {step.actor}
-              </span>
-              <span className="flex-1 text-pretty text-read-sm text-ink-soft leading-[1.8]">
-                {step.text}
-              </span>
-            </div>
+              {stepIndex > 0 && (
+                <span aria-hidden="true" className="flex h-[18px] w-[50px] justify-center">
+                  <span className="relative block h-full w-0 border-diagram-line border-l-[1.5px]">
+                    <span className="-translate-x-1/2 absolute bottom-[-2px] left-[-0.75px] text-[9px] text-diagram-line leading-none">
+                      ▼
+                    </span>
+                  </span>
+                </span>
+              )}
+              <div
+                className={`flex w-full items-start gap-3.5 rounded-[9px] border border-figure-line px-3.5 py-3 ${stepBg}`}
+              >
+                <span className="mt-px flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full bg-accent font-bold text-[11px] text-surface tabular-nums">
+                  {stepIndex + 1}
+                </span>
+                <span className="flex-[0_0_8em] font-bold text-read-sm text-accent leading-[1.6]">
+                  {step.actor}
+                </span>
+                <span className="flex-1 text-pretty text-read-sm text-ink-soft leading-[1.8]">
+                  {step.text}
+                </span>
+              </div>
+            </li>
           ))}
-        </div>
+        </ol>
       )}
 
       {figure.type === "calc" && (
@@ -129,6 +152,18 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
       {figure.type === "sketch" && <SketchFigureBlock figure={figure} />}
 
       {figure.type === "tree" && <TreeFigureBlock figure={figure} />}
+
+      {figure.type === "diagram" && <DiagramFigureBlock figure={figure} />}
+
+      {figure.type === "sequence" && <SequenceFigureBlock figure={figure} />}
+
+      {figure.type === "chart" && <ChartFigureBlock figure={figure} />}
+
+      {figure.type === "venn" && <VennFigureBlock figure={figure} />}
+
+      {figure.type === "quadrant" && <QuadrantFigureBlock figure={figure} />}
+
+      {figure.type === "karnaugh" && <KarnaughFigureBlock figure={figure} />}
     </figure>
   );
 };

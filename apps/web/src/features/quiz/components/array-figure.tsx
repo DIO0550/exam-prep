@@ -12,8 +12,8 @@ import type { ArrayFigure } from "../types";
 const CELL = "2.6em";
 const GAP = "0.3em";
 
-const gridStyle = (count: number) => ({
-  gridTemplateColumns: `repeat(${count}, ${CELL})`,
+const gridStyle = (count: number, cell = CELL) => ({
+  gridTemplateColumns: `repeat(${count}, ${cell})`,
   gap: GAP,
 });
 
@@ -42,6 +42,7 @@ const SwapBracket = ({ from, to }: { from: number; to: number }) => {
 
 export const ArrayFigureBlock = ({ figure }: { figure: ArrayFigure }) => {
   const count = Math.max(...figure.rows.map((row) => row.cells.length));
+  const cell = figure.cellWidth ? `${figure.cellWidth}em` : CELL;
 
   return (
     // 狭い画面では箱を潰さず横へ流す（潰すと段の対応が取れなくなる）。
@@ -50,7 +51,7 @@ export const ArrayFigureBlock = ({ figure }: { figure: ArrayFigure }) => {
         {figure.headers && (
           <div className="flex items-end gap-3">
             <span className="w-[7em] flex-none" />
-            <div className="grid" style={gridStyle(count)}>
+            <div className="grid" style={gridStyle(count, cell)}>
               {figure.headers.map((header) => (
                 <span key={header} className="text-center text-read-xs text-muted-soft">
                   {header}
@@ -72,11 +73,11 @@ export const ArrayFigureBlock = ({ figure }: { figure: ArrayFigure }) => {
 
             <div className="flex flex-col">
               {/* 比べた位置の印。無い段でも高さを空けておき、段の間隔をそろえる。 */}
-              <div className="grid h-[1.1em] items-end" style={gridStyle(count)}>
+              <div className="grid h-[1.1em] items-end" style={gridStyle(count, cell)}>
                 {row.swap && <SwapBracket from={row.swap[0]} to={row.swap[1]} />}
               </div>
 
-              <div className="grid" style={gridStyle(count)}>
+              <div className="grid" style={gridStyle(count, cell)}>
                 {row.cells.map((cell, index) => {
                   const marked = row.marked?.includes(index);
                   return (

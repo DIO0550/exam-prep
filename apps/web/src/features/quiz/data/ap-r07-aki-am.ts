@@ -74,16 +74,27 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "カルノー図は1が隣り合う長方形をできるだけ大きくまとめる。4マスまとめれば変数が2個消える。",
       "AB＝10 の行が全て0である点が決め手。B̅ を含む項は A の条件を付けないと この行まで1にしてしまう。",
     ],
-    figure: {
-      type: "table",
-      caption: "1 のまとまりと、そこから作る項",
-      headers: ["まとまり", "占めるマス", "消える変数", "項"],
-      rows: [
-        ["2マス", "AB＝00 で CD＝00・10", "C が消える", "A̅・B̅・D̅"],
-        ["4マス", "AB＝01・11 × CD＝01・11", "A と C が消える", "B・D"],
-        ["論理和", "上の2つを足す", "—", "A̅・B̅・D̅＋B・D"],
-      ],
-    },
+    figure: [
+      {
+        type: "karnaugh",
+        caption:
+          "両端の列（CD＝00 と 10）は隣どうし。AB＝00 の 2 マスと、真ん中の 4 マスでまとめる（AB＝10 の段はすべて 0）",
+        rows: ["A", "B"],
+        cols: ["C", "D"],
+        values: ["1001", "0110", "0110", "0000"],
+        groups: ["00-0", "-1-1"],
+      },
+      {
+        type: "table",
+        caption: "1 のまとまりと、そこから作る項",
+        headers: ["まとまり", "占めるマス", "消える変数", "項"],
+        rows: [
+          ["2マス", "AB＝00 で CD＝00・10", "C が消える", "A̅・B̅・D̅"],
+          ["4マス", "AB＝01・11 × CD＝01・11", "A と C が消える", "B・D"],
+          ["論理和", "上の2つを足す", "—", "A̅・B̅・D̅＋B・D"],
+        ],
+      },
+    ],
   },
   {
     source: at(2),
@@ -114,15 +125,54 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "M/M/1 では 利用率が0.5 を超えると、待ち時間が処理時間そのものより長くなる。",
       "ρ／(1−ρ) は ρ＝0.5 で1、0.8 で4、0.9 で9 と急に伸びる。利用率を上げすぎない目安になる。",
     ],
-    figure: {
-      type: "calc",
-      caption: "待ち時間が T 以上になる利用率",
-      lines: [
-        { expr: "Wq ＝ ρ ／ (1 − ρ) × T", note: "M/M/1 の平均待ち時間" },
-        { expr: "ρ ／ (1 − ρ) × T ≧ T", note: "待ち時間が T 秒以上" },
-        { expr: "ρ ≧ 1 − ρ ⇒ ρ ≧ 0.5", note: "選択肢 イ（50％）" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption: "平均待ち時間 ρ／(1−ρ)×T は、利用率 0.5 でちょうど T になり、そこから急に伸びる",
+        x: { label: "利用率 ρ", min: 0, max: 1, ticks: [0, 0.2, 0.4, 0.6, 0.8, 1] },
+        y: {
+          label: "平均待ち時間（T の何倍か）",
+          min: 0,
+          max: 5,
+          ticks: [0, 1, 2, 3, 4, 5],
+        },
+        series: [
+          {
+            label: "ρ／(1−ρ)",
+            kind: "curve",
+            points: [
+              [0, 0],
+              [0.1, 0.111],
+              [0.2, 0.25],
+              [0.3, 0.429],
+              [0.4, 0.667],
+              [0.5, 1],
+              [0.6, 1.5],
+              [0.7, 2.333],
+              [0.75, 3],
+              [0.8, 4],
+              [0.8333, 5],
+            ],
+          },
+        ],
+        guides: [{ y: 1, label: "待ち時間＝T" }],
+        marks: [
+          { x: 0.33, y: 0.493, label: "ア 33％：約 0.5T", place: "left" },
+          { x: 0.5, y: 1, label: "イ 50％：ちょうど T", place: "left" },
+          { x: 0.67, y: 2.03, label: "ウ 67％：約 2T", place: "left" },
+          { x: 0.8, y: 4, label: "エ 80％：4T", place: "left" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "待ち時間が T 以上になる利用率",
+        lines: [
+          { expr: "Wq ＝ ρ ／ (1 − ρ) × T", note: "M/M/1 の平均待ち時間" },
+          { expr: "ρ ／ (1 − ρ) × T ≧ T", note: "待ち時間が T 秒以上" },
+          { expr: "ρ ≧ 1 − ρ ⇒ ρ ≧ 0.5", note: "選択肢 イ（50％）" },
+        ],
+      },
+    ],
   },
   {
     source: at(3),
@@ -152,6 +202,54 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
     points: [
       "ROC曲線は横軸が偽陽性率、縦軸が真陽性率（再現率）。どちらも「実際の値」を分母に取る。",
       "分母が「実際の値」か「予測した値」かで指標が変わる。予測を分母にすると適合率の系統になる。",
+    ],
+    figure: [
+      {
+        type: "quadrant",
+        caption: "偽陽性率は、実際に“間違い”であるデータ（下の段）のうち、“正しい”と予測した割合",
+        x: { label: "予測", low: "“間違い”と予測", high: "“正しい”と予測" },
+        y: { label: "実際の値", low: "“間違い”", high: "“正しい”" },
+        cells: [
+          { title: "偽陰性（FN）", note: "“正しい”のに“間違い”と予測した" },
+          { title: "真陽性（TP）", note: "正しく“正しい”と予測した。真陽性率＝TP÷(TP＋FN)" },
+          { title: "真陰性（TN）", note: "正しく“間違い”と予測した。ウの真陰性率＝TN÷(FP＋TN)" },
+          {
+            title: "偽陽性（FP）",
+            note: "“間違い”を誤って“正しい”と予測した。偽陽性率＝FP÷(FP＋TN)",
+            tone: "accent",
+          },
+        ],
+      },
+      {
+        type: "chart",
+        caption: "ROC 曲線は横軸に偽陽性率、縦軸に真陽性率を取り、左上に寄るほどよいモデル",
+        x: { label: "偽陽性率", min: 0, max: 1, ticks: [0, 0.5, 1] },
+        y: { label: "真陽性率", min: 0, max: 1, ticks: [0, 0.5, 1] },
+        series: [
+          {
+            label: "よいモデル",
+            kind: "curve",
+            labelAt: 3,
+            points: [
+              [0, 0],
+              [0.05, 0.45],
+              [0.1, 0.62],
+              [0.2, 0.78],
+              [0.4, 0.9],
+              [0.7, 0.97],
+              [1, 1],
+            ],
+          },
+          {
+            label: "でたらめに予測",
+            dashed: true,
+            points: [
+              [0, 0],
+              [1, 1],
+            ],
+          },
+        ],
+      },
     ],
   },
   {
@@ -184,13 +282,15 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "パリティは1ビット、CRCは生成多項式の次数ぶんのビット列。検出できる誤りの範囲が違う。",
     ],
     figure: {
-      type: "flow",
-      caption: "CRC は「同じ生成多項式で割る」ことで誤りを見つける",
+      type: "sequence",
+      caption: "CRC は送信側と受信側が「同じ生成多項式で割る」ことで誤りを見つける",
+      actors: ["送信側", "受信側"],
       steps: [
-        { actor: "送信側", text: "検査対象のビット列を生成多項式で割り、余り（FCS）を求める" },
-        { actor: "送信側", text: "FCS をデータの後ろに付けて送る" },
-        { actor: "受信側", text: "受け取ったビット列全体を、同じ生成多項式で割る" },
-        { actor: "受信側", text: "余りが 0 なら誤りなし。0 でなければ誤りありと判断する" },
+        { over: ["送信側", "受信側"], note: "同じ生成多項式を取り決めておく" },
+        { over: ["送信側"], note: "データを生成多項式で割り\n余り（FCS）を求める" },
+        { from: "送信側", to: "受信側", label: "データの後ろに FCS を付けて送る" },
+        { over: ["受信側"], note: "受け取った全体を\n同じ生成多項式で割る" },
+        { over: ["受信側"], note: "余りが 0 → 誤りなし\n0 以外 → 誤りあり", tone: "ok" },
       ],
     },
   },
@@ -223,28 +323,70 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "ファーストフィット＝先頭から最初に見つかったもの、ベストフィット＝最小、ワーストフィット＝最大。",
       "ベストフィットは全ての空きブロックを調べる必要があるので、探索の手間も大きい。",
     ],
-    figure: {
-      type: "table",
-      caption: "空き領域の割当て方式",
-      headers: ["方式", "選ぶ空きブロック", "特徴"],
-      rows: [
-        [
-          "ファーストフィット",
-          "先頭から探して最初に見つかったもの",
-          "探索が速い。前方に細かい空きが溜まる",
+    figure: [
+      {
+        type: "diagram",
+        caption: "大きさ 10 の要求に、どの空きブロックを使うか（アドレス順に並べた例）",
+        cell: { w: 84, h: 84 },
+        nodes: [
+          { id: "m0", label: "空き 30", col: 0, row: 0 },
+          { id: "m1", label: "使用中", col: 1, row: 0, tone: "muted" },
+          { id: "m2", label: "空き 12", col: 2, row: 0 },
+          { id: "m3", label: "使用中", col: 3, row: 0, tone: "muted" },
+          { id: "m4", label: "空き 50", col: 4, row: 0 },
+          {
+            id: "ff",
+            label: "ファーストフィット",
+            col: 0,
+            row: 1.3,
+            note: "先頭から最初に入る 30\n→ 残り 20",
+          },
+          {
+            id: "bf",
+            label: "ベストフィット",
+            col: 2,
+            row: 2.3,
+            tone: "ok",
+            note: "入るうち最小の 12\n→ 残り 2（小さすぎて使いにくい）",
+          },
+          {
+            id: "wf",
+            label: "ワーストフィット",
+            col: 4,
+            row: 1.3,
+            note: "最大の 50\n→ 残り 40",
+          },
         ],
-        [
-          "ベストフィット",
-          "要求を満たすうち最も小さいもの",
-          "端数が小さすぎて再利用しにくい空きが増える",
+        groups: [{ label: "記憶領域（左が下位アドレス）", col: -0.1, row: -0.05, w: 5.2, h: 1.1 }],
+        edges: [
+          { from: "m0", to: "ff", arrow: "none", dashed: true },
+          { from: "m2", to: "bf", arrow: "none", tone: "ok" },
+          { from: "m4", to: "wf", arrow: "none", dashed: true },
         ],
-        [
-          "ワーストフィット",
-          "空きのうち最も大きいもの",
-          "残りが大きく再利用しやすいが、大きな空きを潰す",
+      },
+      {
+        type: "table",
+        caption: "空き領域の割当て方式",
+        headers: ["方式", "選ぶ空きブロック", "特徴"],
+        rows: [
+          [
+            "ファーストフィット",
+            "先頭から探して最初に見つかったもの",
+            "探索が速い。前方に細かい空きが溜まる",
+          ],
+          [
+            "ベストフィット",
+            "要求を満たすうち最も小さいもの",
+            "端数が小さすぎて再利用しにくい空きが増える",
+          ],
+          [
+            "ワーストフィット",
+            "空きのうち最も大きいもの",
+            "残りが大きく再利用しやすいが、大きな空きを潰す",
+          ],
         ],
-      ],
-    },
+      },
+    ],
   },
   {
     source: at(6),
@@ -272,16 +414,37 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "線形探索の平均比較回数は、要素数の半分と考えてよい（厳密には (要素数＋1)／2）。",
       "二段階の探索は、それぞれの平均を求めて足す。片方だけで終わらせないこと。",
     ],
-    figure: {
-      type: "calc",
-      caption: "二段階の探索は、それぞれの平均を足す",
-      lines: [
-        { expr: "ブロックの個数 ＝ n ／ m", note: "m 個ずつに分ける" },
-        { expr: "ブロックを選ぶ平均 ＝ n ／ (2m)", note: "最後尾だけを線形探索" },
-        { expr: "ブロック内の平均 ＝ m ／ 2", note: "m 個を線形探索" },
-        { expr: "合計 ＝ m ／ 2 ＋ n ／ (2m)", note: "両方を足す" },
-      ],
-    },
+    figure: [
+      {
+        type: "array",
+        caption: "例：n＝12 の表を m＝4 個ずつ 3 ブロックに分け、20 を探す（塗ったのが比べる値）",
+        headers: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+        rows: [
+          {
+            label: "① 最後尾",
+            cells: ["3", "5", "8", "10", "13", "17", "20", "24", "27", "31", "35", "40"],
+            marked: [3, 7],
+            note: "各ブロックの最後尾だけを比べ、20 以上の 24 で止まる。平均 n／(2m) 回",
+          },
+          {
+            label: "② ブロック内",
+            cells: ["3", "5", "8", "10", "13", "17", "20", "24", "27", "31", "35", "40"],
+            marked: [4, 5, 6],
+            note: "見つけたブロックを先頭から探す。平均 m／2 回",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "二段階の探索は、それぞれの平均を足す",
+        lines: [
+          { expr: "ブロックの個数 ＝ n ／ m", note: "m 個ずつに分ける" },
+          { expr: "ブロックを選ぶ平均 ＝ n ／ (2m)", note: "最後尾だけを線形探索" },
+          { expr: "ブロック内の平均 ＝ m ／ 2", note: "m 個を線形探索" },
+          { expr: "合計 ＝ m ／ 2 ＋ n ／ (2m)", note: "両方を足す" },
+        ],
+      },
+    ],
   },
   {
     source: at(7),
@@ -312,6 +475,63 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "「Scalable Language」が名前の由来。JavaのクラスやライブラリとScalaのコードを混在させられる。",
       "多重継承の代わりにトレイト、動的型付けの代わりに型推論、と代替の仕組みを押さえておく。",
     ],
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "Scala は実行前のコンパイルで型が決まる静的型付け言語。通常は JVM のバイトコードにして JVM の上で動かす",
+        cell: { w: 150, h: 84 },
+        nodes: [
+          {
+            id: "src",
+            label: "Scala の\nソースコード",
+            col: 0,
+            row: 0,
+            tone: "ok",
+            note: "オブジェクト指向と\n関数型の両方で書ける（ア）",
+          },
+          {
+            id: "comp",
+            label: "コンパイル",
+            col: 1.5,
+            row: 0,
+            shape: "round",
+            note: "型はここで決まる\n（型推論で記述は省ける。エ ×）",
+          },
+          { id: "bc", label: "JVM の\nバイトコード", col: 3, row: 0 },
+          {
+            id: "jvm",
+            label: "JVM の上で実行",
+            col: 4.5,
+            row: 0,
+            note: "ネイティブコードの\n生成は必須ではない（ウ ×）",
+          },
+          { id: "lib", label: "Java の\nライブラリ", col: 4.5, row: -1.6 },
+        ],
+        edges: [
+          { from: "src", to: "comp" },
+          { from: "comp", to: "bc" },
+          { from: "bc", to: "jvm" },
+          { from: "lib", to: "jvm", label: "Scala から\nそのまま使える" },
+        ],
+      },
+      {
+        type: "diagram",
+        caption: "クラスの継承は 1 つだけ（イ ×）。ほかの性質はトレイトのミックスインで取り込む",
+        cell: { w: 150, h: 84 },
+        nodes: [
+          { id: "a", label: "クラス A", col: 0, row: 0 },
+          { id: "b", label: "クラス B", col: 1.4, row: 0, tone: "muted" },
+          { id: "t", label: "トレイト T", col: 2.8, row: 0, tone: "ok" },
+          { id: "c", label: "クラス C", col: 1.4, row: 1.8 },
+        ],
+        edges: [
+          { from: "c", to: "a", label: "継承" },
+          { from: "c", to: "b", label: "2 つ目のクラス", blocked: true, tone: "ng" },
+          { from: "c", to: "t", label: "ミックスイン", tone: "ok" },
+        ],
+      },
+    ],
   },
   {
     source: at(8),
@@ -336,16 +556,67 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "並列性を見つけるのが「コンパイル時」ならVLIW、「実行時」ならスーパスカラ。",
       "CISC／RISCは命令セットの設計方針、MIMDは並列計算機の分類で、いずれも別の軸の用語。",
     ],
-    figure: {
-      type: "table",
-      caption: "並列に動かす判断を、いつ誰がするか",
-      headers: ["方式", "並列性を見つけるのは", "代償"],
-      rows: [
-        ["VLIW", "コンパイラ（コンパイル時）", "ハードウェアは単純。コンパイラの負担が大きい"],
-        ["スーパスカラ", "ハードウェア（実行時）", "回路が複雑になる"],
-        ["（別の軸）CISC／RISC", "命令セットの設計方針", "並列化の話ではない"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "VLIW はコンパイラが、スーパスカラはハードウェアが並列にできる動作を見つける",
+        cell: { w: 160, h: 90 },
+        nodes: [
+          {
+            id: "vc",
+            label: "コンパイラ",
+            col: 0,
+            row: 0.35,
+            tone: "accent",
+            note: "同時にできる動作を\n1 語にまとめる",
+          },
+          {
+            id: "vw",
+            label: "1 つの長い命令語",
+            col: 1.2,
+            row: 0.35,
+            fields: ["動作1", "動作2", "動作3"],
+          },
+          { id: "ve", label: "演算器", col: 2.4, row: 0.35, note: "そのまま同時に実行" },
+          { id: "sc", label: "コンパイラ", col: 0, row: 1.85, note: "ふつうの命令を\n順に並べる" },
+          {
+            id: "sw",
+            label: "ふつうの命令の列",
+            col: 1.2,
+            row: 1.85,
+            fields: ["命令1", "命令2", "命令3"],
+          },
+          {
+            id: "se",
+            label: "ハードウェア",
+            col: 2.4,
+            row: 1.85,
+            tone: "accent",
+            note: "実行時に並列性を\n判断して同時に実行",
+          },
+        ],
+        groups: [
+          { label: "VLIW", col: 0, row: 0, w: 3.4, h: 1.5 },
+          { label: "スーパスカラ", col: 0, row: 1.5, w: 3.4, h: 1.5 },
+        ],
+        edges: [
+          { from: "vc", to: "vw" },
+          { from: "vw", to: "ve" },
+          { from: "sc", to: "sw" },
+          { from: "sw", to: "se" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "並列に動かす判断を、いつ誰がするか",
+        headers: ["方式", "並列性を見つけるのは", "代償"],
+        rows: [
+          ["VLIW", "コンパイラ（コンパイル時）", "ハードウェアは単純。コンパイラの負担が大きい"],
+          ["スーパスカラ", "ハードウェア（実行時）", "回路が複雑になる"],
+          ["（別の軸）CISC／RISC", "命令セットの設計方針", "並列化の話ではない"],
+        ],
+      },
+    ],
   },
   {
     source: at(9),
@@ -376,6 +647,41 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "コストを下げられる代わりに、主記憶の帯域をCPUと表示回路で共有することになる。",
       "組込み機器や統合GPUのシステムで広く使われている方式。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "ユニファイドメモリ方式は、主記憶の一部をフレームバッファとして使う",
+      nodes: [
+        { id: "ucpu", label: "CPU", col: 0, row: 0.3 },
+        { id: "ugpu", label: "表示回路", col: 1.6, row: 0.3 },
+        { id: "udisp", label: "ディスプレイ", col: 2.9, row: 0.3 },
+        {
+          id: "umem",
+          label: "",
+          col: 0.8,
+          row: 1.45,
+          tone: "ok",
+          fields: ["プログラム・データ", "フレームバッファ"],
+          note: "1 つの主記憶を CPU と表示回路が取り合う",
+        },
+        { id: "vcpu", label: "CPU", col: 0, row: 3.1 },
+        { id: "vgpu", label: "表示回路", col: 1.6, row: 3.1 },
+        { id: "vdisp", label: "ディスプレイ", col: 2.9, row: 3.1 },
+        { id: "vmem", label: "主記憶", col: 0, row: 4.1 },
+        { id: "vram", label: "専用メモリ（VRAM）\nフレームバッファ", col: 1.6, row: 4.1 },
+      ],
+      groups: [
+        { label: "ユニファイドメモリ方式（イ）", col: 0, row: -0.2, w: 3.9, h: 2.7 },
+        { label: "専用のフレームバッファをもつ方式（ア）", col: 0, row: 2.6, w: 3.9, h: 2.4 },
+      ],
+      edges: [
+        { from: "ucpu", to: "umem", arrow: "both" },
+        { from: "ugpu", to: "umem", arrow: "both" },
+        { from: "ugpu", to: "udisp" },
+        { from: "vcpu", to: "vmem", arrow: "both" },
+        { from: "vgpu", to: "vram", arrow: "both" },
+        { from: "vgpu", to: "vdisp" },
+      ],
+    },
   },
   {
     source: at(10),
@@ -396,7 +702,10 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
         text: "100",
         note: "パルス1回を1回転と数えた場合の値。1回転に2パルス出る点を見落としている。",
       },
-      { text: "200", note: "10,000カウントをパルスの半周期と取り違えた場合の値。" },
+      {
+        text: "200",
+        note: "1回転を 10ミリ秒÷2＝5ミリ秒 と、2倍するところを2で割ってしまった場合の値。",
+      },
       { text: "5,000", note: "カウント値10,000を単純に2で割っただけの値で、時間に直していない。" },
     ],
     explain:
@@ -405,16 +714,37 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "クロック周波数の逆数が1カウントの時間。1MHzなら1マイクロ秒。",
       "「1回転あたりのパルス数」を掛け忘れるのが定番の誤り。図で周期がどこからどこまでかを確認する。",
     ],
-    figure: {
-      type: "calc",
-      caption: "回転数の求め方",
-      lines: [
-        { expr: "1 カウント ＝ 1 ÷ 1MHz ＝ 1 マイクロ秒", note: "タイマーの分解能" },
-        { expr: "10,000 カウント ＝ 10 ミリ秒", note: "パルス1周期" },
-        { expr: "1 回転 ＝ 10 ミリ秒 × 2 ＝ 20 ミリ秒", note: "1回転に2パルス" },
-        { expr: "1 秒 ÷ 20 ミリ秒 ＝ 50 回転", note: "選択肢 ア" },
-      ],
-    },
+    figure: [
+      {
+        type: "timeline",
+        caption: "パルス 1 周期が 10 ミリ秒。1 回転でパルスが 2 回出るので、1 回転は 20 ミリ秒",
+        span: 20,
+        unit: "ミリ秒",
+        tracks: [
+          {
+            label: "パルスの周期",
+            bars: [
+              { start: 0, length: 10, label: "1 周期（10,000 カウント）", tone: 1 },
+              { start: 10, length: 10, label: "1 周期（10,000 カウント）", tone: 2 },
+            ],
+          },
+          {
+            label: "軸の回転",
+            bars: [{ start: 0, length: 20, label: "1 回転 20 ミリ秒 → 1 秒に 50 回転", tone: 3 }],
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "回転数の求め方",
+        lines: [
+          { expr: "1 カウント ＝ 1 ÷ 1MHz ＝ 1 マイクロ秒", note: "タイマーの分解能" },
+          { expr: "10,000 カウント ＝ 10 ミリ秒", note: "パルス1周期" },
+          { expr: "1 回転 ＝ 10 ミリ秒 × 2 ＝ 20 ミリ秒", note: "1回転に2パルス" },
+          { expr: "1 秒 ÷ 20 ミリ秒 ＝ 50 回転", note: "選択肢 ア" },
+        ],
+      },
+    ],
   },
   {
     source: at(11, "選択肢の表を1行ずつの記述に変更"),
@@ -459,16 +789,60 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "ノード数は「総コア数 ÷ 更新後の1ノードあたりコア数」。更新前の値で割らない。",
       "総性能はコア数と1コアの性能の両方が効く。4倍×2倍で8倍になる。",
     ],
-    figure: {
-      type: "calc",
-      caption: "更新後の構成",
-      lines: [
-        { expr: "現状の総コア数 ＝ 8 × 1,000 ＝ 8,000", note: "1ノード8コア × 1,000ノード" },
-        { expr: "更新後の総コア数 ＝ 8,000 × 4 ＝ 32,000", note: "更新条件 (3)" },
-        { expr: "ノード数 ＝ 32,000 ÷ 16 ＝ 2,000", note: "1ノードのコア数は2倍の16" },
-        { expr: "総性能 ＝ 20GFLOPS × 32,000 ＝ 640 TFLOPS", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "1 ノードのコア数も 1 コアの性能も 2 倍。総コア数 4 倍の 32,000 を 16 コアずつ分けて 2,000 ノード",
+        cell: { w: 150, h: 84 },
+        nodes: [
+          {
+            id: "now",
+            label: "現状の 1 ノード：8 コア（1 コア 10 GFLOPS）",
+            col: 0.99,
+            row: 0.3,
+            fields: ["10", "10", "10", "10", "10", "10", "10", "10"],
+            note: "× 1,000 ノード ＝ 8,000 コア。総性能 10 × 8,000 ＝ 80 TFLOPS",
+          },
+          {
+            id: "next",
+            label: "更新後の 1 ノード：16 コア（1 コア 20 GFLOPS）",
+            col: 1.9,
+            row: 1.6,
+            tone: "ok",
+            fields: [
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+            ],
+            note: "32,000 コア ÷ 16 ＝ 2,000 ノード。総性能 20 × 32,000 ＝ 640 TFLOPS（イ）",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "更新後の構成",
+        lines: [
+          { expr: "現状の総コア数 ＝ 8 × 1,000 ＝ 8,000", note: "1ノード8コア × 1,000ノード" },
+          { expr: "更新後の総コア数 ＝ 8,000 × 4 ＝ 32,000", note: "更新条件 (3)" },
+          { expr: "ノード数 ＝ 32,000 ÷ 16 ＝ 2,000", note: "1ノードのコア数は2倍の16" },
+          { expr: "総性能 ＝ 20GFLOPS × 32,000 ＝ 640 TFLOPS", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(12),
@@ -499,6 +873,30 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "「コードで書く」と「ツールが自動で適用する」の両方がそろって初めてIaC。",
       "IaaS（サービス形態）と IaC（構成管理の手法）は名前が似ているが別物。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "IaC は構成をコードに書き、ツールが自動で適用する（同じ環境を何度でも作れる）",
+      nodes: [
+        {
+          id: "code",
+          label: "構成・設定を\n書いたコード",
+          col: 0,
+          row: 0.6,
+          tone: "accent",
+          note: "バージョン管理・\nレビューができる",
+        },
+        { id: "tool", label: "専用のツール", col: 1.4, row: 0.6, shape: "round" },
+        { id: "s1", label: "サーバ A", col: 2.8, row: 0 },
+        { id: "s2", label: "サーバ B", col: 2.8, row: 0.6 },
+        { id: "nw", label: "ネットワーク機器", col: 2.8, row: 1.2 },
+      ],
+      edges: [
+        { from: "code", to: "tool", label: "読み込む" },
+        { from: "tool", to: "s1" },
+        { from: "tool", to: "s2", label: "自動で適用" },
+        { from: "tool", to: "nw" },
+      ],
+    },
   },
   {
     source: at(13),
@@ -529,6 +927,31 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "稼働率＝MTBF／(MTBF＋MTTR)。分母は「動いていた時間＋止まっていた時間」。",
       "MTBFを伸ばす（壊れにくくする）だけでなく、MTTRを縮める（早く直す）ことでも稼働率は上がる。",
     ],
+    figure: {
+      type: "timeline",
+      caption:
+        "稼働していた時間の平均が MTBF、修理で止まっていた時間の平均が MTTR。稼働率＝MTBF／(MTBF＋MTTR)",
+      span: 20,
+      unit: "時間",
+      tracks: [
+        {
+          label: "システム",
+          bars: [
+            { start: 0, length: 7, label: "稼働（MTBF の元）", tone: 3 },
+            { start: 7, length: 2, label: "修理", tone: 4 },
+            { start: 9, length: 6, label: "稼働（MTBF の元）", tone: 3 },
+            { start: 15, length: 2, label: "修理", tone: 4 },
+            { start: 17, length: 3, label: "稼働", tone: 3 },
+          ],
+        },
+      ],
+      marks: [
+        { at: 7, label: "1 回目の故障" },
+        { at: 9, label: "修理完了" },
+        { at: 15, label: "2 回目の故障" },
+        { at: 17, label: "再び修理完了" },
+      ],
+    },
   },
   {
     source: at(14),
@@ -559,16 +982,51 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "「今の性能を引き出す」のがチューニング、「将来必要な能力を用意する」のがキャパシティプランニング。",
       "長期的な監視と予測が前提。実測値の傾向から増強の時期と量を決める。",
     ],
-    figure: {
-      type: "table",
-      caption: "今を絞り出すのか、将来に備えるのか",
-      headers: ["活動", "対象", "やること"],
-      rows: [
-        ["キャパシティプランニング", "将来", "業務量を予測し、必要な資源量と増強の時期を計画する"],
-        ["チューニング", "現在", "設定や実装を見直して、今の構成の性能を引き出す"],
-        ["前提", "—", "長期の監視と実測値の傾向がないと予測できない"],
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption: "業務量の伸びを予測し、処理能力が足りなくなる前に増強して応答時間を保つ",
+        x: { label: "時間", min: 0, max: 10 },
+        y: { label: "処理能力・業務量", min: 0, max: 100 },
+        series: [
+          {
+            label: "業務量（実測 → 予測）",
+            points: [
+              [0, 20],
+              [10, 70],
+            ],
+            color: 1,
+          },
+          {
+            label: "処理能力",
+            kind: "step",
+            points: [
+              [0, 40],
+              [3, 60],
+              [7, 80],
+              [10, 80],
+            ],
+            color: 2,
+          },
+        ],
+        guides: [{ x: 5, label: "現在（ここから先は予測）" }],
+        marks: [{ x: 7, y: 80, label: "予測をもとに前もって増強", place: "left" }],
+      },
+      {
+        type: "table",
+        caption: "今を絞り出すのか、将来に備えるのか",
+        headers: ["活動", "対象", "やること"],
+        rows: [
+          [
+            "キャパシティプランニング",
+            "将来",
+            "業務量を予測し、必要な資源量と増強の時期を計画する",
+          ],
+          ["チューニング", "現在", "設定や実装を見直して、今の構成の性能を引き出す"],
+          ["前提", "—", "長期の監視と実測値の傾向がないと予測できない"],
+        ],
+      },
+    ],
   },
   {
     source: at(15),
@@ -656,21 +1114,38 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "排他制御を目的とするなら、カウンタの初期値を1にした二値セマフォ（ミューテックス）を使う。",
       "キュー・メモリプールはタスク間通信や資源管理の機能で、排他制御とは役割が違う。",
     ],
-    figure: {
-      type: "table",
-      caption: "リアルタイム OS の機能を用途で選ぶ",
-      headers: ["機能", "仕組み", "この設問では"],
-      rows: [
-        [
-          "セマフォ",
-          "資源の空き数をカウンタで管理し、空きが無ければ待たせる",
-          "I²C バスを一度に一つのタスクだけに使わせる",
+    figure: [
+      {
+        type: "sequence",
+        caption: "セマフォ（初期値 1）で、I²C バスを一度に 1 つのタスクだけに使わせる",
+        actors: ["タスク A", "セマフォ", "タスク B", "I²C バス"],
+        steps: [
+          { over: ["セマフォ"], note: "値＝1（空きあり）" },
+          { from: "タスク A", to: "セマフォ", label: "P 操作（1 → 0、獲得）" },
+          { from: "タスク A", to: "I²C バス", label: "センサー 1 を読む" },
+          { from: "タスク B", to: "セマフォ", label: "P 操作（値が 0）" },
+          { over: ["タスク B"], note: "空くまで待たされる", tone: "accent" },
+          { from: "タスク A", to: "セマフォ", label: "V 操作（解放）" },
+          { from: "セマフォ", to: "タスク B", label: "待ちを解除（B が獲得）", dashed: true },
+          { from: "タスク B", to: "I²C バス", label: "センサー 2 を読む", tone: "ok" },
         ],
-        ["二値セマフォ（ミューテックス）", "カウンタの初期値を1にしたもの", "排他制御そのもの"],
-        ["メッセージキュー", "タスク間でデータを渡す", "通信であって排他制御ではない"],
-        ["メモリプール", "固定長の領域を貸し出す", "資源管理だが排他制御ではない"],
-      ],
-    },
+      },
+      {
+        type: "table",
+        caption: "リアルタイム OS の機能を用途で選ぶ",
+        headers: ["機能", "仕組み", "この設問では"],
+        rows: [
+          [
+            "セマフォ",
+            "資源の空き数をカウンタで管理し、空きが無ければ待たせる",
+            "I²C バスを一度に一つのタスクだけに使わせる",
+          ],
+          ["二値セマフォ（ミューテックス）", "カウンタの初期値を1にしたもの", "排他制御そのもの"],
+          ["メッセージキュー", "タスク間でデータを渡す", "通信であって排他制御ではない"],
+          ["メモリプール", "固定長の領域を貸し出す", "資源管理だが排他制御ではない"],
+        ],
+      },
+    ],
   },
   {
     source: at(17),
@@ -701,6 +1176,24 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "並列に動かしても壊れないこと（安全性の保証）が本質。呼び出しを制限することではない。",
       "共有データを持たなければ、排他制御をしなくてもスレッドセーフになる。",
     ],
+    figure: {
+      type: "sequence",
+      caption: "排他制御の無い共有変数は、2 つのスレッドから同時に足すと更新が失われる",
+      actors: ["スレッド 1", "共有変数 x", "スレッド 2"],
+      steps: [
+        { over: ["共有変数 x"], note: "x＝0" },
+        { from: "スレッド 1", to: "共有変数 x", label: "読む（0）" },
+        { from: "スレッド 2", to: "共有変数 x", label: "読む（0）" },
+        { from: "スレッド 1", to: "共有変数 x", label: "0＋1 を書く" },
+        { from: "スレッド 2", to: "共有変数 x", label: "0＋1 を書く", tone: "ng" },
+        { over: ["共有変数 x"], note: "2 回足したのに x＝1\n（スレッドセーフでない）", tone: "ng" },
+        { divider: "排他制御を入れる（x＝0 から）" },
+        { from: "スレッド 1", to: "共有変数 x", label: "ロック → 読んで書く（x＝1）" },
+        { over: ["スレッド 2"], note: "ロックが外れるまで待つ" },
+        { from: "スレッド 2", to: "共有変数 x", label: "ロック → 読んで書く（x＝2）", tone: "ok" },
+        { over: ["共有変数 x"], note: "x＝2（並列でも正しい）", tone: "ok" },
+      ],
+    },
   },
   {
     source: at(18),
@@ -731,17 +1224,52 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "デッドロックの4条件のうち、実務で崩しやすいのが「循環待ち」。獲得順序の統一が定番の対策。",
       "優先度の調整はスケジューリングの話で、デッドロックの予防にはならない。",
     ],
-    figure: {
-      type: "table",
-      caption: "デッドロックの4条件と、崩しやすいもの",
-      headers: ["条件", "内容", "崩し方"],
-      rows: [
-        ["相互排除", "資源を同時に使えない", "資源を共有可能にする（多くは不可）"],
-        ["保持と待ち", "持ったまま次を待つ", "必要な資源を一度にまとめて確保する"],
-        ["横取り不可", "取り上げられない", "強制的に解放させる（副作用が大きい）"],
-        ["循環待ち", "待ちの輪ができる", "獲得順序を全タスクでそろえる（定番の対策）"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "獲得の順序が逆（1 は A→B、2 は B→A）だと、互いの資源を待つ輪ができる",
+        cell: { w: 150, h: 90 },
+        nodes: [
+          { id: "t1", label: "タスク 1", col: 0, row: 0, shape: "round" },
+          { id: "ra", label: "資源 A", col: 2, row: 0 },
+          { id: "t2", label: "タスク 2", col: 2, row: 1.4, shape: "round" },
+          { id: "rb", label: "資源 B", col: 0, row: 1.4 },
+        ],
+        edges: [
+          { from: "ra", to: "t1", label: "保持中" },
+          { from: "t1", to: "rb", label: "要求して待つ", dashed: true, tone: "ng" },
+          { from: "rb", to: "t2", label: "保持中" },
+          { from: "t2", to: "ra", label: "要求して待つ", dashed: true, tone: "ng" },
+        ],
+      },
+      {
+        type: "diagram",
+        caption: "順序をそろえる（どちらも A→B）と、後から来た方は A で待つだけで輪ができない",
+        cell: { w: 150, h: 90 },
+        nodes: [
+          { id: "t1", label: "タスク 1", col: 0, row: 0, shape: "round" },
+          { id: "ra", label: "資源 A", col: 1.5, row: 0 },
+          { id: "t2", label: "タスク 2", col: 3, row: 0, shape: "round" },
+          { id: "rb", label: "資源 B", col: 0, row: 1.3 },
+        ],
+        edges: [
+          { from: "ra", to: "t1", label: "保持中" },
+          { from: "t2", to: "ra", label: "空くまで待つ", dashed: true },
+          { from: "t1", to: "rb", label: "続けて獲得", tone: "ok" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "デッドロックの4条件と、崩しやすいもの",
+        headers: ["条件", "内容", "崩し方"],
+        rows: [
+          ["相互排除", "資源を同時に使えない", "資源を共有可能にする（多くは不可）"],
+          ["保持と待ち", "持ったまま次を待つ", "必要な資源を一度にまとめて確保する"],
+          ["横取り不可", "取り上げられない", "強制的に解放させる（副作用が大きい）"],
+          ["循環待ち", "待ちの輪ができる", "獲得順序を全タスクでそろえる（定番の対策）"],
+        ],
+      },
+    ],
   },
   {
     source: at(19),
@@ -775,14 +1303,35 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "表の4つの列は、それぞれの方式が使う指標に対応している。問われた方式の列だけを比べればよい。",
     ],
     figure: {
-      type: "table",
-      caption: "方式ごとの置換対象",
-      headers: ["方式", "見る値", "置換対象"],
+      type: "array",
+      caption: "方式ごとに見る列と、追い出されるブロック（塗ったもの）",
+      cellWidth: 3.4,
+      headers: ["C0", "C1", "C2", "C3"],
       rows: [
-        ["FIFO", "ロード時刻が最古", "C0"],
-        ["LFU", "参照回数が最少", "C1"],
-        ["LIFO", "ロード時刻が最新", "C3"],
-        ["LRU", "最終参照時刻が最古", "C2"],
+        {
+          label: "FIFO",
+          cells: ["0:00", "0:03", "0:04", "0:05"],
+          marked: [0],
+          note: "ロード時刻が最も古い C0",
+        },
+        {
+          label: "LIFO",
+          cells: ["0:00", "0:03", "0:04", "0:05"],
+          marked: [3],
+          note: "ロード時刻が最も新しい C3",
+        },
+        {
+          label: "LFU",
+          cells: ["10", "1", "3", "5"],
+          marked: [1],
+          note: "参照回数が最も少ない C1",
+        },
+        {
+          label: "LRU",
+          cells: ["0:08", "0:06", "0:05", "0:10"],
+          marked: [2],
+          note: "最終参照時刻が最も古い C2（これが正解）",
+        },
       ],
     },
   },
@@ -806,16 +1355,39 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "直列接続では電流が共通なので、消費電力の比＝電圧の比。抵抗値を実際に求める必要はない。",
       "分母は回路全体（電源電圧10V）。抵抗側の8Vを分母にしないこと。",
     ],
-    figure: {
-      type: "calc",
-      caption: "消費電力の割合",
-      lines: [
-        { expr: "抵抗の電圧 ＝ 10V − 2V ＝ 8V", note: "電源電圧からLEDの順方向電圧を引く" },
-        { expr: "LEDの電力 ＝ 2V × 10mA ＝ 20mW", note: "電圧 × 電流" },
-        { expr: "回路全体 ＝ 10V × 10mA ＝ 100mW", note: "電流は共通" },
-        { expr: "20mW ÷ 100mW ＝ 20％", note: "選択肢 ア" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "直列回路は電流が共通なので、電力の比は電圧の比（LED 2V：抵抗 8V）になる",
+        nodes: [
+          { id: "pw", label: "電源 10V\n供給 100mW（回路全体）", col: -0.2, row: 0.75 },
+          { id: "led", label: "LED\n2V×10mA＝20mW", col: 2, row: 0, tone: "accent" },
+          { id: "res", label: "抵抗\n8V×10mA＝80mW", col: 2, row: 1.5 },
+          {
+            id: "memo",
+            label: "電流はどこも 10mA\n20mW ÷ 100mW＝20％",
+            col: 1,
+            row: 0.75,
+            shape: "text",
+          },
+        ],
+        edges: [
+          { from: "pw", to: "led", via: [[-0.2, 0]], label: "10mA" },
+          { from: "led", to: "res" },
+          { from: "res", to: "pw", via: [[-0.2, 1.5]] },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "消費電力の割合",
+        lines: [
+          { expr: "抵抗の電圧 ＝ 10V − 2V ＝ 8V", note: "電源電圧からLEDの順方向電圧を引く" },
+          { expr: "LEDの電力 ＝ 2V × 10mA ＝ 20mW", note: "電圧 × 電流" },
+          { expr: "回路全体 ＝ 10V × 10mA ＝ 100mW", note: "電流は共通" },
+          { expr: "20mW ÷ 100mW ＝ 20％", note: "選択肢 ア" },
+        ],
+      },
+    ],
   },
   {
     source: at(21),
@@ -837,17 +1409,71 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "立ち上がりの検出は a・b̅、立ち下がりの検出は a̅・b。前回値との論理積で表す。",
       "「変化したこと」は2時点の値の組合せなので、必ず論理積になる。論理和では絞り込めない。",
     ],
-    figure: {
-      type: "table",
-      caption: "変化の検出は、今回と前回の値の組合せ（a＝今回、b＝前回）",
-      headers: ["a（今回）", "b（前回）", "状態", "立ち上がりか"],
-      rows: [
-        ["0", "0", "放されたまま", "いいえ"],
-        ["1", "0", "押された瞬間", "はい（a・b̅）"],
-        ["1", "1", "押されたまま", "いいえ"],
-        ["0", "1", "放した瞬間", "いいえ（a̅・b は立ち下がり）"],
-      ],
-    },
+    figure: [
+      {
+        type: "timeline",
+        caption: "a・b̅ が 1 になるのは、押された直後の 1 回の読込みだけ",
+        span: 10,
+        unit: "回目",
+        tracks: [
+          {
+            label: "今回の値 a",
+            bars: [
+              { start: 0, length: 3, label: "0", tone: 5 },
+              { start: 3, length: 4, label: "1（押している）", tone: 2 },
+              { start: 7, length: 3, label: "0", tone: 5 },
+            ],
+          },
+          {
+            label: "前回の値 b",
+            bars: [
+              { start: 0, length: 4, label: "0", tone: 5 },
+              { start: 4, length: 4, label: "1", tone: 2 },
+              { start: 8, length: 2, label: "0", tone: 5 },
+            ],
+          },
+          { label: "a・b̅", bars: [{ start: 3, length: 1, label: "1", tone: 3 }] },
+          { label: "a̅・b", bars: [{ start: 7, length: 1, label: "1", tone: 4 }] },
+        ],
+        marks: [
+          { at: 3, label: "押された" },
+          { at: 7, label: "放された" },
+        ],
+      },
+      {
+        type: "venn",
+        caption:
+          "各式が 1 になる部分（塗った部分）。押された瞬間（今回 a＝1・前回 b＝0）だけを塗るのは a・b̅",
+        sets: ["a＝1（今回）", "b＝1（前回）"],
+        universe: "a と b の組合せ",
+        panels: [
+          {
+            label: "ア a・b̅",
+            shaded: ["A"],
+            verdict: "ok",
+            note: "今回 1・前回 0 の「押された瞬間」だけ",
+          },
+          {
+            label: "イ a̅・b",
+            shaded: ["B"],
+            verdict: "ng",
+            note: "今回 0・前回 1 の「放した瞬間」（立ち下がり）",
+          },
+          {
+            label: "ウ a＋b̅",
+            shaded: ["0", "A", "AB"],
+            verdict: "ng",
+            note: "押したまま・放したままでも 1 になる",
+          },
+          {
+            label: "エ a̅＋b",
+            shaded: ["0", "B", "AB"],
+            verdict: "ng",
+            note: "押された瞬間だけが 0 になる",
+          },
+        ],
+      },
+    ],
   },
   {
     source: at(22),
@@ -866,7 +1492,7 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       {
         text: "",
         image: fig("q22-choice-a", 200, 88, "入力側に二重線がある排他的論理和（XOR）素子の図記号"),
-        note: "XORは入力が異なるとき1。A＝0、B＝1の区間で0になり、Y＝1と合わない。",
+        note: "XORは入力が異なるとき1。A＝B＝0の区間で0になり、Y＝1と合わない。",
       },
       {
         text: "",
@@ -893,19 +1519,51 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "波形を区間ごとに見ると、Yが0になるのはAとBがともに1の区間だけで、それ以外は全て1になっている。これは否定論理積（NAND）の真理値表と一致する。",
     points: [
       "タイミングチャートは、入力の組合せが変わる区間ごとに真理値表の1行として読む。",
-      "A＝0・B＝1 の区間でYが1であることがXORとNORを、A＝B＝1 の区間でYが0であることがXNORを除外する。",
+      "A＝B＝0 の区間でYが1であることがXORを、A＝0・B＝1 の区間でYが1であることがNORとXNORを除外する。",
     ],
-    figure: {
-      type: "table",
-      caption: "波形から読み取れる真理値表",
-      headers: ["A", "B", "Y"],
-      rows: [
-        ["0", "0", "1"],
-        ["0", "1", "1"],
-        ["1", "1", "0"],
-        ["1", "0", "1"],
-      ],
-    },
+    figure: [
+      {
+        type: "venn",
+        caption: "塗った部分が Y＝1。波形で Y＝0 になるのは、A と B がともに 1 の部分だけ",
+        sets: ["A＝1", "B＝1"],
+        universe: "入力の組合せ全体",
+        panels: [
+          {
+            label: "ア XOR",
+            shaded: ["A", "B"],
+            verdict: "ng",
+            note: "A＝B＝0（外側）が 0 になり、波形の Y＝1 と合わない",
+          },
+          {
+            label: "イ XNOR",
+            shaded: ["0", "AB"],
+            verdict: "ng",
+            note: "A＝0・B＝1 が 0、A＝B＝1 が 1 になり合わない",
+          },
+          {
+            label: "ウ NAND",
+            shaded: ["0", "A", "B"],
+            verdict: "ok",
+            note: "A＝B＝1 の部分だけが 0。全区間で波形と一致",
+          },
+          {
+            label: "エ NOR",
+            shaded: ["0"],
+            verdict: "ng",
+            note: "A＝0・B＝1 が 0 になり合わない",
+          },
+        ],
+      },
+      {
+        type: "karnaugh",
+        caption:
+          "波形から読んだ Y の値。1 を 2 つにまとめると A̅＋B̅（＝A・B の否定）で、NAND になる",
+        rows: ["A"],
+        cols: ["B"],
+        values: ["11", "10"],
+        groups: ["0-", "-0"],
+      },
+    ],
   },
   {
     source: at(23),
@@ -924,15 +1582,47 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "分周は周波数を割ること。周期は逆に分周比の分だけ長くなる。",
       "「1カウントの時間 × カウント数」で求める。カウント値そのものを時間と取り違えない。",
     ],
-    figure: {
-      type: "calc",
-      caption: "割込みまでの時間",
-      lines: [
-        { expr: "16MHz ÷ 32 ＝ 500kHz", note: "タイマーの入力クロック" },
-        { expr: "1 ÷ 500,000 ＝ 2 マイクロ秒", note: "1カウントの時間" },
-        { expr: "2 × 150 ＝ 300 マイクロ秒", note: "選択肢 エ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "16MHz を 32 分周した 500kHz でカウンターを 150 から 0 まで減らすと割込み",
+        cell: { w: 140, h: 84 },
+        nodes: [
+          { id: "clk", label: "クロック\n16MHz", col: 0, row: 0 },
+          { id: "div", label: "32 分周", col: 1.3, row: 0, shape: "round" },
+          {
+            id: "cnt",
+            label: "ダウンカウンター\n150 → 0",
+            col: 2.75,
+            row: 0,
+            tone: "accent",
+            note: "1 カウント 2 マイクロ秒",
+          },
+          {
+            id: "irq",
+            label: "割込み",
+            col: 4.1,
+            row: 0,
+            tone: "ok",
+            note: "150 × 2＝300\nマイクロ秒後",
+          },
+        ],
+        edges: [
+          { from: "clk", to: "div" },
+          { from: "div", to: "cnt", label: "500kHz" },
+          { from: "cnt", to: "irq", label: "0 で" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "割込みまでの時間",
+        lines: [
+          { expr: "16MHz ÷ 32 ＝ 500kHz", note: "タイマーの入力クロック" },
+          { expr: "1 ÷ 500,000 ＝ 2 マイクロ秒", note: "1カウントの時間" },
+          { expr: "2 × 150 ＝ 300 マイクロ秒", note: "選択肢 エ" },
+        ],
+      },
+    ],
   },
   {
     source: at(24),
@@ -963,20 +1653,52 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "狭い画面でメニューを隠しておくための仕組み。アイコンの見た目がそのまま名前になっている。",
       "アコーディオンは階層の展開、ドロップダウンは候補の選択と、それぞれ使いどころが違う。",
     ],
-    figure: {
-      type: "table",
-      caption: "メニューの出し方の違い",
-      headers: ["仕組み", "見た目と動き", "使いどころ"],
-      rows: [
-        [
-          "ハンバーガーメニュー",
-          "三本線のアイコンを押すとメニューが現れる",
-          "画面が狭く、常時表示できないとき",
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "ハンバーガーメニューは、ふだんは三本線のアイコンだけを置き、押したときだけメニューを開く",
+        cell: { w: 150, h: 60 },
+        nodes: [
+          { id: "icon", label: "≡", col: 0, row: 0, tone: "accent", note: "三本線のアイコン" },
+          {
+            id: "body1",
+            label: "コンテンツ\n（画面を広く使える）",
+            col: 0.5,
+            row: 1.6,
+            w: 1.8,
+          },
+          {
+            id: "menu",
+            label: "メニュー\n項目 1\n項目 2\n項目 3",
+            col: 2.55,
+            row: 0.95,
+            tone: "ok",
+            align: "left",
+          },
+          { id: "body2", label: "コンテンツ", col: 3.45, row: 0.95, tone: "muted" },
         ],
-        ["ドロップダウン", "押すと候補が下に一覧で出る", "選択肢から1つ選ばせるとき"],
-        ["アコーディオン", "見出しの下に内容が開く", "階層のある内容を折りたたむとき"],
-      ],
-    },
+        groups: [
+          { label: "閉じているとき", col: 0.06, row: -0.2, w: 1.9, h: 2.9 },
+          { label: "≡ を押したとき", col: 2.66, row: -0.2, w: 1.81, h: 2.9, tone: "ok" },
+        ],
+        edges: [{ from: "icon", to: "menu", label: "押すと開く", labelAt: 0.75 }],
+      },
+      {
+        type: "table",
+        caption: "メニューの出し方の違い",
+        headers: ["仕組み", "見た目と動き", "使いどころ"],
+        rows: [
+          [
+            "ハンバーガーメニュー",
+            "三本線のアイコンを押すとメニューが現れる",
+            "画面が狭く、常時表示できないとき",
+          ],
+          ["ドロップダウン", "押すと候補が下に一覧で出る", "選択肢から1つ選ばせるとき"],
+          ["アコーディオン", "見出しの下に内容が開く", "階層のある内容を折りたたむとき"],
+        ],
+      },
+    ],
   },
   {
     source: at(25),
@@ -995,15 +1717,57 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "標本化定理：サンプリング周波数 ≧ 最高周波数 × 2。周期にすると 1／(2×最高周波数) が上限。",
       "「最大のサンプリング周期」＝「最小のサンプリング周波数」を聞かれている点に注意。",
     ],
-    figure: {
-      type: "calc",
-      caption: "サンプリング周期の上限",
-      lines: [
-        { expr: "サンプリング周波数 ≧ 20kHz × 2 ＝ 40kHz", note: "標本化定理" },
-        { expr: "周期 ＝ 1 ÷ 40,000 ＝ 0.000025 秒", note: "周波数の逆数" },
-        { expr: "＝ 25 マイクロ秒", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "最高周波数 20kHz の波は 1 周期 50 マイクロ秒。点の位置で、1 周期に 2 回（25 マイクロ秒ごと）標本化する",
+        x: { label: "時間（マイクロ秒）", min: -6, max: 100, ticks: [0, 25, 50, 75, 100] },
+        y: { label: "振幅", min: -1.2, max: 1.2 },
+        series: [
+          {
+            label: "20kHz の波",
+            kind: "curve",
+            labelAt: 9,
+            points: [
+              [0, 1],
+              [6.25, 0.71],
+              [12.5, 0],
+              [18.75, -0.71],
+              [25, -1],
+              [31.25, -0.71],
+              [37.5, 0],
+              [43.75, 0.71],
+              [50, 1],
+              [56.25, 0.71],
+              [62.5, 0],
+              [68.75, -0.71],
+              [75, -1],
+              [81.25, -0.71],
+              [87.5, 0],
+              [93.75, 0.71],
+              [100, 1],
+            ],
+          },
+        ],
+        marks: [
+          { x: 0, y: 1, label: "標本1", place: "above" },
+          { x: 25, y: -1, label: "標本2", place: "below" },
+          { x: 50, y: 1, label: "標本3", place: "above" },
+          { x: 75, y: -1, label: "標本4", place: "below" },
+          { x: 100, y: 1, label: "標本5", place: "above" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "サンプリング周期の上限",
+        lines: [
+          { expr: "サンプリング周波数 ≧ 20kHz × 2 ＝ 40kHz", note: "標本化定理" },
+          { expr: "周期 ＝ 1 ÷ 40,000 ＝ 0.000025 秒", note: "周波数の逆数" },
+          { expr: "＝ 25 マイクロ秒", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(26),
@@ -1043,6 +1807,23 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "ACIDは一貫性を最優先、BASEは可用性を最優先。CAP定理のどこを取るかの違いと合わせて覚える。",
       "結果整合性では、更新直後に他のノードを読むと古い値が返り得る。これは仕様であって障害ではない。",
     ],
+    figure: {
+      type: "sequence",
+      caption: "結果整合性：更新直後は古い値が読めてしまうが、いつかは全ノードに反映される",
+      actors: ["クライアント", "ノード 1", "ノード 2", "ノード 3"],
+      steps: [
+        { over: ["ノード 1", "ノード 3"], note: "はじめは全ノードで x＝1" },
+        { from: "クライアント", to: "ノード 1", label: "x を 2 に更新" },
+        { from: "ノード 1", to: "クライアント", label: "完了（ほかを待たない）", dashed: true },
+        { from: "ノード 1", to: "ノード 2", label: "更新を伝える" },
+        { from: "クライアント", to: "ノード 3", label: "x を読む" },
+        { from: "ノード 3", to: "クライアント", label: "x＝1（まだ古い値）", dashed: true },
+        { from: "ノード 1", to: "ノード 3", label: "更新を伝える" },
+        { divider: "障害が無ければ、いつかは全ノードが x＝2 になる" },
+        { from: "クライアント", to: "ノード 3", label: "x を読む" },
+        { from: "ノード 3", to: "クライアント", label: "x＝2", dashed: true, tone: "ok" },
+      ],
+    },
   },
   {
     source: at(27),
@@ -1134,6 +1915,50 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "ビューで「できないこと」は更新の側にある。定義そのものは柔軟に書ける。",
       "更新可能なビューの条件は、ビューの1行が基の表の1行に一意に対応すること。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "ビューは基の表への問合せに名前を付けたもの。列の別名・WHERE・結合・UNION で定義できるが、更新には条件がある",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        {
+          id: "emp",
+          label: "基の表：社員",
+          col: 0.9,
+          row: 0.4,
+          fields: ["社員番号", "氏名", "部署コード"],
+        },
+        {
+          id: "dept",
+          label: "基の表：部署",
+          col: 0.9,
+          row: 2.2,
+          fields: ["部署コード", "部署名"],
+        },
+        {
+          id: "v1",
+          label: "ビュー",
+          col: 3.4,
+          row: 0.4,
+          tone: "ok",
+          fields: ["番号", "名前"],
+          note: "列名を別名にできる（ア）\nWHERE で行も絞れる（イ ×）",
+        },
+        {
+          id: "v2",
+          label: "結合ビュー",
+          col: 3.4,
+          row: 2.2,
+          fields: ["氏名", "部署名"],
+          note: "1 行が基の表の 1 行に一意に\n対応しないと更新できない（ウ ×）",
+        },
+      ],
+      edges: [
+        { from: "emp", to: "v1", label: "列を選び別名を付ける" },
+        { from: "emp", to: "v2" },
+        { from: "dept", to: "v2", label: "結合" },
+      ],
+    },
   },
   {
     source: at(29),
@@ -1161,6 +1986,26 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "MVCCでは「読む側は書く側をブロックせず、書く側も読む側をブロックしない」。",
       "2相ロッキングとWALは、それぞれ同時実行制御と障害回復の基本だが、多版管理の仕組みではない。",
     ],
+    figure: {
+      type: "sequence",
+      caption: "MVCC は更新前の版を残し、読取りを更新の完了まで待たせない",
+      actors: ["更新する T1", "データ x", "読み取る T2"],
+      steps: [
+        { over: ["データ x"], note: "版 1：x＝100（確定）" },
+        { from: "更新する T1", to: "データ x", label: "x を 200 に更新" },
+        { over: ["データ x"], note: "版 2：x＝200（未確定）を\n別に作る。版 1 も残す" },
+        { from: "読み取る T2", to: "データ x", label: "x を読む" },
+        {
+          from: "データ x",
+          to: "読み取る T2",
+          label: "版 1 の 100（待たせない）",
+          dashed: true,
+          tone: "ok",
+        },
+        { from: "更新する T1", to: "データ x", label: "コミット" },
+        { over: ["データ x"], note: "コミット後に始まる\nトランザクションは版 2 を読む" },
+      ],
+    },
   },
   {
     source: at(30),
@@ -1182,16 +2027,57 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "両方の回線に共通の時間（ここでは送信間隔）は、差を取ると打ち消される。",
       "バイトとビットの取り違えが定番の誤り。1,250バイト＝10,000ビット。",
     ],
-    figure: {
-      type: "calc",
-      caption: "パケット数の求め方",
-      lines: [
-        { expr: "1,250 バイト ＝ 10,000 ビット", note: "1バイト＝8ビット" },
-        { expr: "100M：10,000 ÷ 1×10⁸ ＝ 0.1 ミリ秒", note: "1パケットの送信時間" },
-        { expr: "1G：10,000 ÷ 1×10⁹ ＝ 0.01 ミリ秒", note: "1パケットの送信時間" },
-        { expr: "9 ÷ (0.1 − 0.01) ＝ 100", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "送信時間は「パケットを送る時間＋送信間隔」の繰返し。間隔の 1 ミリ秒はどちらの LAN にも同じだけ入る",
+        cell: { w: 150, h: 60 },
+        nodes: [
+          {
+            id: "pkt",
+            label: "1 パケット：1,250 バイト ＝ 10,000 ビット",
+            col: 1.3,
+            row: 0,
+            fields: ["ヘッダー", "データ"],
+          },
+          {
+            id: "l100",
+            label: "100M ビット／秒の LAN（単位：ミリ秒）",
+            col: 1.3,
+            row: 1.35,
+            fields: ["送信 0.1", "間隔 1", "送信 0.1", "間隔 1", "…"],
+          },
+          {
+            id: "l1g",
+            label: "1G ビット／秒の LAN（単位：ミリ秒）",
+            col: 1.3,
+            row: 2.7,
+            fields: ["送信 0.01", "間隔 1", "送信 0.01", "間隔 1", "…"],
+          },
+          {
+            id: "memo",
+            label:
+              "間隔は両方に同じだけ入るので差に効かない\n→ 差は送信の分だけ：0.1 − 0.01 ＝ 0.09 ミリ秒／個\nN 個で 9 ミリ秒の差 → N ＝ 9 ÷ 0.09 ＝ 100（ウ）",
+            col: 1.9,
+            row: 3.9,
+            shape: "text",
+            tone: "ok",
+            align: "left",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "パケット数の求め方",
+        lines: [
+          { expr: "1,250 バイト ＝ 10,000 ビット", note: "1バイト＝8ビット" },
+          { expr: "100M：10,000 ÷ 1×10⁸ ＝ 0.1 ミリ秒", note: "1パケットの送信時間" },
+          { expr: "1G：10,000 ÷ 1×10⁹ ＝ 0.01 ミリ秒", note: "1パケットの送信時間" },
+          { expr: "9 ÷ (0.1 − 0.01) ＝ 100", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(31),
@@ -1219,15 +2105,64 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "内側から外へ中継するのがプロキシ、外側から内へ中継するのがリバースプロキシ。向きで見分ける。",
       "リバースプロキシは公開サーバの保護と性能向上の両方に使われる。",
     ],
-    figure: {
-      type: "table",
-      caption: "中継の向きで見分ける",
-      headers: ["仕組み", "向き", "主な用途"],
-      rows: [
-        ["プロキシ（フォワード）", "内側 → 外側", "社内から外部への通信を代理し、制御・記録する"],
-        ["リバースプロキシ", "外側 → 内側", "サーバの IP を隠す、TLS 処理やキャッシュ、負荷分散"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "リバースプロキシは、公開 Web サーバの手前で外からの要求を受けて中継する",
+        cell: { w: 140, h: 84 },
+        nodes: [
+          { id: "user", label: "外部の利用者", col: 0, row: 0.35, shape: "actor" },
+          { id: "net", label: "インターネット", col: 1.4, row: 0.35, shape: "cloud" },
+          {
+            id: "rp",
+            label: "リバース\nプロキシ",
+            col: 2.8,
+            row: 0.35,
+            tone: "ok",
+            note: "サーバの代理で受ける",
+          },
+          { id: "web", label: "公開\nWeb サーバ", col: 4.1, row: 0.35 },
+        ],
+        groups: [{ label: "内部ネットワーク", col: 2.8, row: -0.25, w: 2.25, h: 1.7 }],
+        edges: [
+          { from: "user", to: "net" },
+          { from: "net", to: "rp", label: "要求" },
+          { from: "rp", to: "web", label: "中継" },
+        ],
+      },
+      {
+        type: "diagram",
+        caption: "（フォワード）プロキシは、社内の PC の代わりに外のサーバへ出ていく（エ）",
+        cell: { w: 140, h: 84 },
+        nodes: [
+          { id: "pc", label: "社内の PC", col: 0, row: 0.35, shape: "actor" },
+          {
+            id: "px",
+            label: "プロキシ",
+            col: 1.3,
+            row: 0.35,
+            note: "PC の代理で出ていく",
+          },
+          { id: "net", label: "インターネット", col: 2.75, row: 0.35, shape: "cloud" },
+          { id: "web", label: "外部の\nWeb サーバ", col: 4.1, row: 0.35 },
+        ],
+        groups: [{ label: "内部ネットワーク", col: 0, row: -0.25, w: 2.25, h: 1.7 }],
+        edges: [
+          { from: "pc", to: "px", label: "要求" },
+          { from: "px", to: "net", label: "中継" },
+          { from: "net", to: "web" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "中継の向きで見分ける",
+        headers: ["仕組み", "向き", "主な用途"],
+        rows: [
+          ["プロキシ（フォワード）", "内側 → 外側", "社内から外部への通信を代理し、制御・記録する"],
+          ["リバースプロキシ", "外側 → 内側", "サーバの IP を隠す、TLS 処理やキャッシュ、負荷分散"],
+        ],
+      },
+    ],
   },
   {
     source: at(32),
@@ -1252,19 +2187,53 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "「/24」のような表記がCIDR。クラスに縛られずに境目を決められる。",
       "DHCPは配布、DNSは名前解決、NAPTは変換。いずれもアドレスの区切り方の話ではない。",
     ],
-    figure: {
-      type: "table",
-      caption: "CIDR はクラスの区切りに縛られない",
-      headers: ["方式", "ネットワーク部の長さ", "割当ての無駄"],
-      rows: [
-        ["クラスによる区分", "8・16・24ビットに固定", "必要数と大きく食い違う"],
-        [
-          "CIDR",
-          "プレフィックス長で任意（例：/22）",
-          "必要な数に近い大きさで割り当てられる。経路の集約もできる",
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "約 1,000 台分のアドレスが要るとき：クラスの区切りでは合わず、/22 ならちょうどよい",
+        cell: { w: 150, h: 78 },
+        nodes: [
+          {
+            id: "c",
+            label: "クラス C：254 台まで（足りない）",
+            col: 0,
+            row: 0,
+            tone: "ng",
+            fields: ["ネットワーク部 24 ビット", "ホスト部 8"],
+          },
+          {
+            id: "b",
+            label: "クラス B：65,534 台まで（余りすぎる）",
+            col: 0,
+            row: 1,
+            tone: "ng",
+            fields: ["ネットワーク部 16", "ホスト部 16 ビット"],
+          },
+          {
+            id: "cidr",
+            label: "CIDR の /22：1,022 台まで（無駄が少ない）",
+            col: 0,
+            row: 2,
+            tone: "ok",
+            fields: ["ネットワーク部 22 ビット", "ホスト部 10"],
+          },
         ],
-      ],
-    },
+      },
+      {
+        type: "table",
+        caption: "CIDR はクラスの区切りに縛られない",
+        headers: ["方式", "ネットワーク部の長さ", "割当ての無駄"],
+        rows: [
+          ["クラスによる区分", "8・16・24ビットに固定", "必要数と大きく食い違う"],
+          [
+            "CIDR",
+            "プレフィックス長で任意（例：/22）",
+            "必要な数に近い大きさで割り当てられる。経路の集約もできる",
+          ],
+        ],
+      },
+    ],
   },
   {
     source: at(33),
@@ -1286,20 +2255,45 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "UDPヘッダーは8バイト4項目だけ。これを覚えておけば消去法で答えられる。",
       "シーケンス番号と確認応答番号があるから、TCPは到達確認と順序の保証ができる。",
     ],
-    figure: {
-      type: "table",
-      caption: "UDP ヘッダー（8バイト・4項目）と TCP ヘッダー",
-      headers: ["項目", "UDP", "TCP"],
-      rows: [
-        ["送信元・宛先ポート番号", "あり", "あり"],
-        ["チェックサム", "あり", "あり"],
-        ["データ長", "あり", "なし（代わりにヘッダー長）"],
-        ["シーケンス番号", "なし", "あり（順序の保証）"],
-        ["確認応答番号", "なし", "あり（到達確認と再送）"],
-        ["ウィンドウサイズ", "なし", "あり（フロー制御）"],
-        ["制御フラグ（SYN など）", "なし", "あり（コネクション管理）"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "ヘッダーの並び（1 段が 32 ビット）。シーケンス番号は TCP にだけある",
+        cell: { w: 160, h: 44 },
+        nodes: [
+          { id: "u1", label: "送信元ポート番号", col: 0, row: 0, w: 1 },
+          { id: "u2", label: "宛先ポート番号", col: 1, row: 0, w: 1 },
+          { id: "u3", label: "データ長", col: 0, row: 1, w: 1 },
+          { id: "u4", label: "チェックサム", col: 1, row: 1, w: 1 },
+          { id: "t1", label: "送信元ポート番号", col: 0, row: 3, w: 1 },
+          { id: "t2", label: "宛先ポート番号", col: 1, row: 3, w: 1 },
+          { id: "t3", label: "シーケンス番号", col: 0.5, row: 4, w: 2, tone: "ok" },
+          { id: "t4", label: "確認応答番号", col: 0.5, row: 5, w: 2 },
+          { id: "t5", label: "ヘッダー長・フラグ", col: 0, row: 6, w: 1 },
+          { id: "t6", label: "ウィンドウサイズ", col: 1, row: 6, w: 1 },
+          { id: "t7", label: "チェックサム", col: 0, row: 7, w: 1 },
+          { id: "t8", label: "緊急ポインタ", col: 1, row: 7, w: 1 },
+        ],
+        groups: [
+          { label: "UDP ヘッダー（8 バイト・4 項目）", col: 0, row: -0.45, w: 2, h: 2.45 },
+          { label: "TCP ヘッダー（20 バイト＋オプション）", col: 0, row: 2.55, w: 2, h: 5.5 },
+        ],
+      },
+      {
+        type: "table",
+        caption: "UDP ヘッダー（8バイト・4項目）と TCP ヘッダー",
+        headers: ["項目", "UDP", "TCP"],
+        rows: [
+          ["送信元・宛先ポート番号", "あり", "あり"],
+          ["チェックサム", "あり", "あり"],
+          ["データ長", "あり", "なし（代わりにヘッダー長）"],
+          ["シーケンス番号", "なし", "あり（順序の保証）"],
+          ["確認応答番号", "なし", "あり（到達確認と再送）"],
+          ["ウィンドウサイズ", "なし", "あり（フロー制御）"],
+          ["制御フラグ（SYN など）", "なし", "あり（コネクション管理）"],
+        ],
+      },
+    ],
   },
   {
     source: at(34),
@@ -1321,19 +2315,49 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "レイヤー2にはTTLがないので、ループしたフレームは自然には消えない。だからSTPが要る。",
       "RIPやOSPFはレイヤー3のループ対策。層が違うので混同しないこと。",
     ],
-    figure: {
-      type: "table",
-      caption: "ループ対策は層ごとに別のプロトコル",
-      headers: ["層", "プロトコル", "仕組み"],
-      rows: [
-        [
-          "レイヤー2",
-          "スパニングツリープロトコル",
-          "冗長なポートをブロックして木構造にする（TTL が無いので必要）",
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "スパニングツリープロトコルは、閉路の 1 か所をブロックしてループの無い木の形にする",
+        cell: { w: 150, h: 90 },
+        nodes: [
+          { id: "s1", label: "スイッチ 1\n（ルートブリッジ）", col: 1, row: 0, tone: "accent" },
+          { id: "s2", label: "スイッチ 2", col: 0, row: 1.4 },
+          { id: "s3", label: "スイッチ 3", col: 2, row: 1.4 },
+          {
+            id: "memo",
+            label: "× のポートはブロッキング\n（障害時だけ開いて迂回）",
+            col: 1,
+            row: 1.95,
+            shape: "text",
+            tone: "ng",
+          },
+          { id: "pc1", label: "PC", col: 0, row: 2.6, shape: "actor" },
+          { id: "pc2", label: "PC", col: 2, row: 2.6, shape: "actor" },
         ],
-        ["レイヤー3", "RIP、OSPF", "TTL と経路計算でループを防ぐ"],
-      ],
-    },
+        edges: [
+          { from: "s1", to: "s2", arrow: "none" },
+          { from: "s1", to: "s3", arrow: "none" },
+          { from: "s2", to: "s3", arrow: "none", blocked: true, tone: "ng" },
+          { from: "s2", to: "pc1", arrow: "none" },
+          { from: "s3", to: "pc2", arrow: "none" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "ループ対策は層ごとに別のプロトコル",
+        headers: ["層", "プロトコル", "仕組み"],
+        rows: [
+          [
+            "レイヤー2",
+            "スパニングツリープロトコル",
+            "冗長なポートをブロックして木構造にする（TTL が無いので必要）",
+          ],
+          ["レイヤー3", "RIP、OSPF", "TTL と経路計算でループを防ぐ"],
+        ],
+      },
+    ],
   },
   {
     source: at(35),
@@ -1358,16 +2382,44 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "％を小数に直すときは100で割る。0.0001％＝0.000001＝10⁻⁶。",
       "パケット長はビットに直してから誤り率を掛ける。バイトのまま掛けると8分の1になる。",
     ],
-    figure: {
-      type: "calc",
-      caption: "誤りパケット数の期待値",
-      lines: [
-        { expr: "0.0001％ ＝ 1 × 10⁻⁶", note: "ビット誤り率" },
-        { expr: "1,500 バイト ＝ 12,000 ビット", note: "1パケットのビット数" },
-        { expr: "12,000 × 10⁻⁶ ＝ 0.012", note: "1パケットに誤りが含まれる確率" },
-        { expr: "10,000 × 0.012 ＝ 120 個", note: "選択肢 エ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "1 パケットの 12,000 ビットのどれか 1 つでも誤れば誤りパケット。それを 10,000 個分数える",
+        cell: { w: 150, h: 70 },
+        nodes: [
+          {
+            id: "pkt",
+            label: "1 パケット：1,500 バイト ＝ 12,000 ビット",
+            col: 1.2,
+            row: 0,
+            fields: ["1", "2", "3", "…", "12,000"],
+            note: "1 ビットが誤る確率：0.0001％ ＝ 10⁻⁶\n1 個に誤りが入る確率 ≒ 12,000 × 10⁻⁶ ＝ 0.012",
+          },
+          {
+            id: "all",
+            label: "送るパケット",
+            col: 3.7,
+            row: 0,
+            tone: "ok",
+            fields: ["1 個目", "2 個目", "…", "10,000 個目"],
+            note: "誤りを含む個数の期待値\n10,000 × 0.012 ＝ 120 個（エ）",
+          },
+        ],
+        edges: [{ from: "pkt", to: "all", label: "× 10,000 個" }],
+      },
+      {
+        type: "calc",
+        caption: "誤りパケット数の期待値",
+        lines: [
+          { expr: "0.0001％ ＝ 1 × 10⁻⁶", note: "ビット誤り率" },
+          { expr: "1,500 バイト ＝ 12,000 ビット", note: "1パケットのビット数" },
+          { expr: "12,000 × 10⁻⁶ ＝ 0.012", note: "1パケットに誤りが含まれる確率" },
+          { expr: "10,000 × 0.012 ＝ 120 個", note: "選択肢 エ" },
+        ],
+      },
+    ],
   },
   {
     source: at(36),
@@ -1399,16 +2451,63 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "段階を分けて捉えることで、どこで断ち切れば被害を防げるかを検討できる。",
     ],
     figure: {
-      type: "flow",
-      caption: "サイバーキルチェーンの7段階",
-      steps: [
-        { actor: "① 偵察", text: "標的の組織や公開情報、利用製品を調べる" },
-        { actor: "② 武器化", text: "脆弱性を突く攻撃コードとマルウェアを用意する" },
-        { actor: "③ 配送", text: "メールの添付や不正サイトなどで標的へ届ける" },
-        { actor: "④ エクスプロイト", text: "脆弱性を悪用し、送り込んだコードを実行させる" },
-        { actor: "⑤ インストール", text: "マルウェアを常駐させ、居座れるようにする" },
-        { actor: "⑥ 遠隔操作", text: "C&C サーバと通信し、外部から操る" },
-        { actor: "⑦ 目的の実行", text: "情報を持ち出す、破壊するなど目的を果たす" },
+      type: "diagram",
+      caption: "サイバーキルチェーンの 7 段階と、各選択肢が当たる段階",
+      cell: { w: 150, h: 50 },
+      nodes: [
+        { id: "s1", label: "① 偵察", col: 0, row: 0, shape: "round" },
+        { id: "s2", label: "② 武器化", col: 0, row: 1, shape: "round" },
+        { id: "s3", label: "③ 配送", col: 0, row: 2, shape: "round" },
+        { id: "s4", label: "④ エクスプロイト", col: 0, row: 3, shape: "round", tone: "ok" },
+        { id: "s5", label: "⑤ インストール", col: 0, row: 4, shape: "round" },
+        { id: "s6", label: "⑥ 遠隔操作", col: 0, row: 5, shape: "round" },
+        { id: "s7", label: "⑦ 目的の実行", col: 0, row: 6, shape: "round" },
+        { id: "a", label: "ア 公開情報やメールで標的を調べる", col: 1.85, row: 0 },
+        {
+          id: "d2",
+          label: "攻撃コードやマルウェアを用意する",
+          col: 1.85,
+          row: 1,
+          shape: "text",
+          tone: "muted",
+        },
+        { id: "e", label: "エ マルウェア付きのメールを送りつける", col: 1.85, row: 2 },
+        {
+          id: "i",
+          label: "イ OS の脆弱性を突いて攻撃ツールを実行",
+          col: 1.85,
+          row: 3,
+          tone: "ok",
+        },
+        {
+          id: "d5",
+          label: "マルウェアを常駐させ、居座る",
+          col: 1.85,
+          row: 4,
+          shape: "text",
+          tone: "muted",
+        },
+        {
+          id: "d6",
+          label: "C&C サーバと通信し、外から操る",
+          col: 1.85,
+          row: 5,
+          shape: "text",
+          tone: "muted",
+        },
+        { id: "u", label: "ウ 秘密情報を攻撃者のサーバへ送る", col: 1.85, row: 6 },
+      ],
+      edges: [
+        { from: "s1", to: "s2" },
+        { from: "s2", to: "s3" },
+        { from: "s3", to: "s4" },
+        { from: "s4", to: "s5" },
+        { from: "s5", to: "s6" },
+        { from: "s6", to: "s7" },
+        { from: "a", to: "s1", arrow: "none", dashed: true },
+        { from: "e", to: "s3", arrow: "none", dashed: true },
+        { from: "i", to: "s4", arrow: "none", tone: "ok" },
+        { from: "u", to: "s7", arrow: "none", dashed: true },
       ],
     },
   },
@@ -1435,20 +2534,51 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "用途で使い分ける。サーバの認証＝サーバ証明書、利用者の認証＝クライアント証明書、ソフトウェアの署名＝コードサイニング証明書。",
       "署名の検証で分かるのは「誰が作ったか」と「改ざんされていないか」の2点。",
     ],
-    figure: {
-      type: "table",
-      caption: "証明書は用途で使い分ける",
-      headers: ["証明書", "証明するもの", "使う場面"],
-      rows: [
-        [
-          "コードサイニング証明書",
-          "ソフトウェアの発行元と、改ざんされていないこと",
-          "インストール時の検証",
+    figure: [
+      {
+        type: "sequence",
+        caption: "コードサイニング証明書で、発行元が確かなことと改ざんが無いことを確かめる",
+        actors: ["認証局", "ソフトウェアの\n発行元", "利用者の PC"],
+        steps: [
+          { from: "ソフトウェアの\n発行元", to: "認証局", label: "身元の審査を受けて申請" },
+          {
+            from: "認証局",
+            to: "ソフトウェアの\n発行元",
+            label: "コードサイニング証明書",
+            dashed: true,
+          },
+          {
+            over: ["ソフトウェアの\n発行元"],
+            note: "ソフトウェアのハッシュ値に\n秘密鍵で署名する",
+          },
+          {
+            from: "ソフトウェアの\n発行元",
+            to: "利用者の PC",
+            label: "ソフトウェア＋署名＋証明書",
+          },
+          { over: ["利用者の PC"], note: "証明書を検証する\n→ 発行元が確かだと分かる" },
+          {
+            over: ["利用者の PC"],
+            note: "証明書の公開鍵で署名を検証\n→ 改ざんが無いと分かる",
+            tone: "ok",
+          },
         ],
-        ["サーバ証明書", "サーバが本物であること", "TLS 接続"],
-        ["クライアント証明書", "利用者が本人であること", "クライアント認証"],
-      ],
-    },
+      },
+      {
+        type: "table",
+        caption: "証明書は用途で使い分ける",
+        headers: ["証明書", "証明するもの", "使う場面"],
+        rows: [
+          [
+            "コードサイニング証明書",
+            "ソフトウェアの発行元と、改ざんされていないこと",
+            "インストール時の検証",
+          ],
+          ["サーバ証明書", "サーバが本物であること", "TLS 接続"],
+          ["クライアント証明書", "利用者が本人であること", "クライアント認証"],
+        ],
+      },
+    ],
   },
   {
     source: at(38),
@@ -1479,6 +2609,43 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "アルゴリズムが数学的に安全でも、実装から漏れる情報で破られ得る点が要点。",
       "対策は処理時間や消費電力を入力に依存させないこと（耐タンパ性の確保）。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "サイドチャネル攻撃は、処理に伴って漏れる物理的な情報から中の鍵を推定する",
+      nodes: [
+        { id: "in", label: "平文", col: 0, row: 0 },
+        {
+          id: "dev",
+          label: "暗号化装置（IC カードなど）\n中に秘密鍵がある",
+          col: 1.4,
+          row: 0,
+          tone: "accent",
+        },
+        { id: "out", label: "暗号文", col: 3.3, row: 0 },
+        {
+          id: "leak",
+          label: "消費電力・処理時間\n電磁波など",
+          col: 1.4,
+          row: 1.5,
+          tone: "ng",
+        },
+        {
+          id: "atk",
+          label: "攻撃者",
+          col: 2.8,
+          row: 1.5,
+          shape: "actor",
+          tone: "ng",
+          note: "測定して統計処理し\n鍵を推定する",
+        },
+      ],
+      edges: [
+        { from: "in", to: "dev" },
+        { from: "dev", to: "out", label: "本来の出力" },
+        { from: "dev", to: "leak", dashed: true, tone: "ng", label: "漏れ出る", labelAt: 0.6 },
+        { from: "leak", to: "atk", tone: "ng", label: "測定" },
+      ],
+    },
   },
   {
     source: at(39),
@@ -1509,16 +2676,39 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "CRLに載るのは「有効期限内なのに失効した」証明書。期限切れの証明書は載せる必要がない。",
       "失効確認をリアルタイムに行う仕組みとしてOCSPがある。CRLは一覧を配布する方式。",
     ],
-    figure: {
-      type: "table",
-      caption: "CRL に載るもの・載らないもの",
-      headers: ["証明書の状態", "CRL に載るか", "理由"],
-      rows: [
-        ["有効期限内に失効させた", "載る", "期限内なので、失効を知らせる必要がある"],
-        ["有効期限が切れた", "載らない", "期限で無効と分かる"],
-        ["失効確認の別方式", "—", "OCSP は1件ずつリアルタイムに問い合わせる"],
-      ],
-    },
+    figure: [
+      {
+        type: "sequence",
+        caption: "CRL には、有効期限内に失効させた証明書のシリアル番号が載る",
+        actors: ["認証局", "CRL の\n配布ポイント", "利用者"],
+        steps: [
+          { over: ["認証局"], note: "有効期限内の証明書を\n失効させる" },
+          {
+            from: "認証局",
+            to: "CRL の\n配布ポイント",
+            label: "シリアル番号と失効日時を載せる",
+          },
+          { over: ["CRL の\n配布ポイント"], note: "CRL（認証局の署名付き）" },
+          { from: "利用者", to: "CRL の\n配布ポイント", label: "CRL を取得" },
+          { from: "CRL の\n配布ポイント", to: "利用者", label: "CRL", dashed: true },
+          {
+            over: ["利用者"],
+            note: "相手の証明書のシリアル番号が\n載っていないか確かめる",
+            tone: "ok",
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "CRL に載るもの・載らないもの",
+        headers: ["証明書の状態", "CRL に載るか", "理由"],
+        rows: [
+          ["有効期限内に失効させた", "載る", "期限内なので、失効を知らせる必要がある"],
+          ["有効期限が切れた", "載らない", "期限で無効と分かる"],
+          ["失効確認の別方式", "—", "OCSP は1件ずつリアルタイムに問い合わせる"],
+        ],
+      },
+    ],
   },
   {
     source: at(40),
@@ -1549,6 +2739,29 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "守る対象が「自社のシステム」ならCSIRT、「自社が売った製品」ならPSIRT。",
       "PSIRTは社外の発見者や利用者とのやり取りが多く、脆弱性情報の公表調整も担う。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "CSIRT は自社の情報システム、PSIRT は顧客に提供した自社製品のインシデントを受け持つ",
+      cell: { w: 150, h: 70 },
+      nodes: [
+        { id: "csirt", label: "CSIRT", col: 0, row: 0.9 },
+        { id: "psirt", label: "PSIRT", col: 0, row: 3, tone: "ok" },
+        { id: "i", label: "イ 在庫管理システム", col: 1.8, row: 0.3 },
+        { id: "u", label: "ウ 販売管理システム", col: 1.8, row: 0.9 },
+        { id: "e", label: "エ 従業員の個人情報の管理", col: 1.8, row: 1.5 },
+        { id: "a", label: "ア 顧客に販売した製品", col: 1.8, row: 3, tone: "ok" },
+      ],
+      groups: [
+        { label: "自社の情報システム", col: 1.4, row: 0.2, w: 1.8, h: 2.2 },
+        { label: "顧客の手元にある自社製品", col: 1.4, row: 2.6, w: 1.8, h: 1.3, tone: "ok" },
+      ],
+      edges: [
+        { from: "csirt", to: "i" },
+        { from: "csirt", to: "u", label: "対応" },
+        { from: "csirt", to: "e" },
+        { from: "psirt", to: "a", label: "対応", tone: "ok" },
+      ],
+    },
   },
   {
     source: at(41, "選択肢の表を1行ずつの記述に変更"),
@@ -1578,6 +2791,63 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "機密性・完全性・可用性の3つに加えて、真正性・責任追跡性・否認防止・信頼性が挙げられている。",
       "真正性は「本人か」、信頼性は「いつも同じ結果になるか」。混同しやすいので定義文で押さえる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "情報セキュリティは機密性・完全性・可用性が基本で、真正性や信頼性なども含めることがある。b が真正性、a が信頼性",
+      cell: { w: 140, h: 84 },
+      nodes: [
+        {
+          id: "conf",
+          label: "機密性（d）",
+          col: 0,
+          row: 0.45,
+          note: "認可されていない者に\n使わせない・開示しない",
+        },
+        { id: "integ", label: "完全性", col: 1.4, row: 0.45, note: "正確さ・完全さ" },
+        {
+          id: "avail",
+          label: "可用性（c）",
+          col: 2.8,
+          row: 0.45,
+          note: "認可された者が\n要求したときに使える",
+        },
+        {
+          id: "auth",
+          label: "真正性（b）",
+          col: 0,
+          row: 2.0,
+          tone: "ok",
+          note: "主張するとおりの\nものである",
+        },
+        {
+          id: "rel",
+          label: "信頼性（a）",
+          col: 1.4,
+          row: 2.0,
+          tone: "ok",
+          note: "意図する行動と\n結果が一貫している",
+        },
+        {
+          id: "acc",
+          label: "責任追跡性",
+          col: 2.8,
+          row: 2.0,
+          note: "動作を行った主体まで\n追跡できる",
+        },
+        {
+          id: "nr",
+          label: "否認防止",
+          col: 4.2,
+          row: 2.0,
+          note: "起きた事象と実行者を\n後から証明できる",
+        },
+      ],
+      groups: [
+        { label: "基本の 3 要素", col: -0.05, row: 0.2, w: 3.9, h: 1.45 },
+        { label: "含めることもある特性", col: -0.05, row: 1.75, w: 5.3, h: 1.45 },
+      ],
+    },
   },
   {
     source: at(42),
@@ -1608,6 +2878,29 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "クラウドの「設定の状態（posture）」を管理するのがCSPM。利用状況を見張るCASBとは対象が違う。",
       "責任共有モデルでは設定は利用者側の責任。だからこそ自動点検の仕組みが要る。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "CSPM はクラウドの設定を見張って直し、CASB は従業員の SaaS の使い方を見張る",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "emp", label: "従業員", col: 0, row: 0.35, shape: "actor" },
+        { id: "casb", label: "CASB（ウ）", col: 1.25, row: 0.35 },
+        { id: "saas", label: "SaaS", col: 3.05, row: 0.35 },
+        {
+          id: "cfg",
+          label: "クラウドの設定\n公開範囲・権限など",
+          col: 3.05,
+          row: 1.55,
+        },
+        { id: "cspm", label: "CSPM", col: 1.25, row: 1.55, tone: "ok" },
+      ],
+      groups: [{ label: "クラウドサービス", col: 3, row: -0.25, w: 1.15, h: 2.65 }],
+      edges: [
+        { from: "emp", to: "casb" },
+        { from: "casb", to: "saas", label: "可視化・制限" },
+        { from: "cspm", to: "cfg", label: "監視・自動修正", tone: "ok" },
+      ],
+    },
   },
   {
     source: at(43),
@@ -1639,13 +2932,32 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "UDPはICMPの到達不能通知が返れば閉。無応答は開いているかフィルタされているかの区別がつかない。",
     ],
     figure: {
-      type: "table",
-      caption: "ポートスキャンでの判定",
-      headers: ["プロトコル", "開いているとき", "閉じているとき"],
-      rows: [
-        ["TCP", "SYN に対して SYN/ACK が返る", "RST/ACK が返る"],
-        ["UDP", "通常は何も返らない", "ICMP port unreachable が返る"],
-        ["UDP の難しさ", "無応答は「開いている」か「フィルタされている」かの区別がつかない", "—"],
+      type: "sequence",
+      caption: "ポートスキャンの応答と判定",
+      actors: ["スキャンする側", "対象ホスト"],
+      steps: [
+        { divider: "TCP：開いているポート" },
+        { from: "スキャンする側", to: "対象ホスト", label: "SYN" },
+        { from: "対象ホスト", to: "スキャンする側", label: "SYN/ACK → 開いている", dashed: true },
+        { divider: "TCP：閉じているポート" },
+        { from: "スキャンする側", to: "対象ホスト", label: "SYN" },
+        { from: "対象ホスト", to: "スキャンする側", label: "RST/ACK → 閉じている", dashed: true },
+        { divider: "UDP：閉じているポート" },
+        { from: "スキャンする側", to: "対象ホスト", label: "UDP パケット" },
+        {
+          from: "対象ホスト",
+          to: "スキャンする側",
+          label: "ICMP port unreachable → 閉じている",
+          dashed: true,
+          tone: "ok",
+        },
+        { divider: "UDP：開いているポート" },
+        { from: "スキャンする側", to: "対象ホスト", label: "UDP パケット" },
+        { over: ["対象ホスト"], note: "通常は何も返さない" },
+        {
+          over: ["スキャンする側", "対象ホスト"],
+          note: "無応答は「開いている」か「フィルタされている」か区別できない",
+        },
       ],
     },
   },
@@ -1679,13 +2991,89 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "証拠の同一性と保管の連鎖（chain of custody）を保つことが前提になる。",
     ],
     figure: {
-      type: "flow",
-      caption: "デジタルフォレンジックスの4つの手順",
-      steps: [
-        { actor: "① 収集", text: "書込み禁止で複製を取り、ハッシュ値を記録して同一性を示す" },
-        { actor: "② 検査", text: "削除されたファイルの復元など、証拠となるデータを取り出す" },
-        { actor: "③ 分析", text: "痕跡を突き合わせ、いつ誰が何をしたのかを組み立てる" },
-        { actor: "④ 報告", text: "事実と根拠をまとめる。保管の連鎖（chain of custody）も残す" },
+      type: "diagram",
+      caption:
+        "デジタルフォレンジックスは、インシデントが起きた後に証拠を扱う 4 つの手順。予防や検知の対策は含まない",
+      cell: { w: 140, h: 84 },
+      nodes: [
+        {
+          id: "u",
+          label: "ウ 暗号化して\n漏えいを防ぐ",
+          col: 0,
+          row: 0.45,
+          tone: "ng",
+        },
+        {
+          id: "a",
+          label: "ア SIEM で相関分析し\n不正アクセスを検出",
+          col: 1.5,
+          row: 0.45,
+          tone: "ng",
+        },
+        {
+          id: "e",
+          label: "エ ハッシュ値で\nマルウェアを検査",
+          col: 3,
+          row: 0.45,
+          tone: "ng",
+        },
+        {
+          id: "c1",
+          label: "① 収集",
+          col: 0,
+          row: 1.75,
+          shape: "round",
+          note: "書込み禁止で複製し\nハッシュ値を記録",
+        },
+        {
+          id: "c2",
+          label: "② 検査",
+          col: 1.5,
+          row: 1.75,
+          shape: "round",
+          tone: "ok",
+          note: "削除されたログを\n復元する（イ）",
+        },
+        {
+          id: "c3",
+          label: "③ 分析",
+          col: 3,
+          row: 1.75,
+          shape: "round",
+          tone: "ok",
+          note: "痕跡を見つけ、いつ誰が\n何をしたかを組み立てる",
+        },
+        {
+          id: "c4",
+          label: "④ 報告",
+          col: 4.5,
+          row: 1.75,
+          shape: "round",
+          note: "事実と根拠をまとめ\n保管の連鎖も残す",
+        },
+      ],
+      groups: [
+        {
+          label: "インシデントの前・最中の対策（予防・検知）",
+          col: -0.05,
+          row: 0.35,
+          w: 4.1,
+          h: 1.0,
+          tone: "ng",
+        },
+        {
+          label: "デジタルフォレンジックス（インシデントが起きた後）",
+          col: -0.05,
+          row: 1.35,
+          w: 5.6,
+          h: 1.6,
+          tone: "ok",
+        },
+      ],
+      edges: [
+        { from: "c1", to: "c2" },
+        { from: "c2", to: "c3" },
+        { from: "c3", to: "c4" },
       ],
     },
   },
@@ -1715,16 +3103,47 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "SPFは送信元IPアドレスの確認だけ。改ざんの検知はできないのでDKIMと役割が違う。",
       "SPFとDKIMの結果を使って方針を示すのがDMARC。3つの関係で覚える。",
     ],
-    figure: {
-      type: "table",
-      caption: "送信ドメイン認証の3つ",
-      headers: ["技術", "照合するもの", "分かること"],
-      rows: [
-        ["SPF", "接続してきたサーバの IP アドレス", "送信元ドメインの詐称"],
-        ["DKIM", "ヘッダーと本文に付けたデジタル署名", "ドメインの詐称と、本文の改ざん"],
-        ["DMARC", "SPF と DKIM の判定結果", "詐称時の扱い（何もしない／隔離／拒否）と報告"],
-      ],
-    },
+    figure: [
+      {
+        type: "sequence",
+        caption:
+          "DKIM は送信側メールサーバが署名し、受信側が送信ドメインの DNS にある公開鍵で検証する",
+        actors: ["送信側\nメールサーバ", "送信ドメインの\nDNS サーバ", "受信側\nメールサーバ"],
+        steps: [
+          {
+            over: ["送信側\nメールサーバ"],
+            note: "秘密鍵で署名し\nDKIM-Signature ヘッダーを付ける",
+          },
+          { from: "送信側\nメールサーバ", to: "受信側\nメールサーバ", label: "メール（署名付き）" },
+          {
+            from: "受信側\nメールサーバ",
+            to: "送信ドメインの\nDNS サーバ",
+            label: "公開鍵を問い合わせる",
+          },
+          {
+            from: "送信ドメインの\nDNS サーバ",
+            to: "受信側\nメールサーバ",
+            label: "公開鍵",
+            dashed: true,
+          },
+          {
+            over: ["受信側\nメールサーバ"],
+            note: "公開鍵で署名を検証\n→ なりすまし・改ざんを検知",
+            tone: "ok",
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "送信ドメイン認証の3つ",
+        headers: ["技術", "照合するもの", "分かること"],
+        rows: [
+          ["SPF", "接続してきたサーバの IP アドレス", "送信元ドメインの詐称"],
+          ["DKIM", "ヘッダーと本文に付けたデジタル署名", "ドメインの詐称と、本文の改ざん"],
+          ["DMARC", "SPF と DKIM の判定結果", "詐称時の扱い（何もしない／隔離／拒否）と報告"],
+        ],
+      },
+    ],
   },
   {
     source: at(46),
@@ -1746,6 +3165,41 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "統計的な「平均的利用者」ではなく、行動や動機まで具体化した一人の像を描くのが特徴。",
       "ペルソナの行動を時系列で描いたものがカスタマージャーニーマップ。あわせて使われる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "ペルソナは、利用者を役割ごとに一人の典型的な人物像にまとめた仮想の人物。関係者はこの像を共有して要件や画面を考える",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "u1", label: "利用者 A", col: 0, row: 0, shape: "actor" },
+        { id: "u2", label: "利用者 B", col: 0, row: 1, shape: "actor" },
+        { id: "u3", label: "利用者 C", col: 0, row: 2, shape: "actor" },
+        {
+          id: "p",
+          label: "ペルソナ\n（仮想の人物）",
+          col: 1.8,
+          row: 1,
+          shape: "actor",
+          tone: "ok",
+          note: "名前・年齢・職業・\n利用場面・困りごとまで描く",
+        },
+        { id: "s1", label: "プロダクト\nオーナー", col: 3.6, row: 0, shape: "actor" },
+        { id: "s2", label: "デザイナー", col: 3.6, row: 1, shape: "actor" },
+        { id: "s3", label: "開発者", col: 3.6, row: 2, shape: "actor" },
+      ],
+      groups: [
+        { label: "調査した利用者", col: 0.05, row: -0.3, w: 0.9, h: 3.2 },
+        { label: "関係者（ステークホルダ）", col: 3.55, row: -0.3, w: 1.1, h: 3.2 },
+      ],
+      edges: [
+        { from: "u1", to: "p" },
+        { from: "u2", to: "p", label: "典型的な姿に\nまとめる" },
+        { from: "u3", to: "p" },
+        { from: "s1", to: "p", dashed: true },
+        { from: "s2", to: "p", dashed: true, label: "同じ像を\n共有する" },
+        { from: "s3", to: "p", dashed: true },
+      ],
+    },
   },
   {
     source: at(47),
@@ -1769,18 +3223,8 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
     ],
     figure: [
       {
-        type: "table",
-        caption: "型を描くのか、実体を描くのか",
-        headers: ["図", "描くもの", "時間"],
-        rows: [
-          ["クラス図", "クラス（型）とその関係", "時間の概念はない"],
-          ["オブジェクト図", "ある瞬間のインスタンスとリンク", "ある時点のスナップショット"],
-          ["シーケンス図", "インスタンス間のやり取り", "時系列を持つ"],
-        ],
-      },
-      {
         type: "sketch",
-        caption: "型を描くのか、実体を描くのか",
+        caption: "インスタンスを描く図と、そうでない図の形",
         items: [
           {
             name: "オブジェクト図",
@@ -1792,6 +3236,16 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
           },
           { name: "アクティビティ図", note: "処理の流れ。インスタンスの関係は描かない。" },
           { name: "ユースケース図", note: "利用者と機能の関係。インスタンスの関係は描かない。" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "型を描くのか、実体を描くのか",
+        headers: ["図", "描くもの", "時間"],
+        rows: [
+          ["クラス図", "クラス（型）とその関係", "時間の概念はない"],
+          ["オブジェクト図", "ある瞬間のインスタンスとリンク", "ある時点のスナップショット"],
+          ["シーケンス図", "インスタンス間のやり取り", "時系列を持つ"],
         ],
       },
     ],
@@ -1816,15 +3270,41 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "埋込みエラーの発見率を、真のエラーの発見率と同じとみなすのがこの手法の前提。",
       "求めた56は「総数」。問われているのは残存数なので、発見済みの数を引くのを忘れない。",
     ],
-    figure: {
-      type: "calc",
-      caption: "残存エラー数の推定",
-      lines: [
-        { expr: "発見率 ＝ 36 ÷ 48 ＝ 0.75", note: "埋込みエラーの発見割合" },
-        { expr: "真のエラー総数 ＝ 42 ÷ 0.75 ＝ 56", note: "同じ割合で発見できたとみなす" },
-        { expr: "56 − 42 ＝ 14 個", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "埋込みエラーの発見率 75％ を、真のエラーにも当てはめて総数と残りを推定する",
+        nodes: [
+          {
+            id: "seed",
+            label: "埋込みエラー 48 個",
+            col: 0,
+            row: 0,
+            fields: ["発見 36", "未発見 12"],
+            note: "発見率 36÷48＝75％",
+          },
+          {
+            id: "real",
+            label: "真のエラー（推定 56 個）",
+            col: 2,
+            row: 0,
+            tone: "accent",
+            fields: ["発見 42", "残存 14"],
+            note: "総数 42÷0.75＝56\n残存 56−42＝14",
+          },
+        ],
+        edges: [{ from: "seed", to: "real", label: "同じ発見率とみなす", dashed: true }],
+      },
+      {
+        type: "calc",
+        caption: "残存エラー数の推定",
+        lines: [
+          { expr: "発見率 ＝ 36 ÷ 48 ＝ 0.75", note: "埋込みエラーの発見割合" },
+          { expr: "真のエラー総数 ＝ 42 ÷ 0.75 ＝ 56", note: "同じ割合で発見できたとみなす" },
+          { expr: "56 − 42 ＝ 14 個", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(49),
@@ -1855,6 +3335,23 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "鍵になる仕組みはサービスワーカー。ページとは独立して動き、通信を横取りしてキャッシュを返す。",
       "ストアを介さずにホーム画面に追加でき、インストールの手間がない点も特徴。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "サービスワーカーがページとサーバの間で通信を仲介し、キャッシュでオフラインでも動かす",
+      nodes: [
+        { id: "page", label: "Web アプリ\n（ページ）", col: 0, row: 0.35 },
+        { id: "sw", label: "サービスワーカー", col: 1.5, row: 0.35, tone: "ok" },
+        { id: "cache", label: "キャッシュ", col: 1.5, row: 1.6, shape: "db" },
+        { id: "net", label: "Web サーバ", col: 3.3, row: 0.35 },
+      ],
+      groups: [{ label: "ブラウザ（端末の中）", col: 0, row: -0.25, w: 2.5, h: 2.7 }],
+      edges: [
+        { from: "page", to: "sw", label: "要求" },
+        { from: "sw", to: "net", arrow: "both", label: "取得・同期" },
+        { from: "sw", to: "cache", arrow: "both", label: "オフラインでも\nここから返す" },
+      ],
+    },
   },
   {
     source: at(50),
@@ -1885,6 +3382,43 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "著作権（財産権）は譲渡できるが、著作者人格権（公表権・氏名表示権・同一性保持権）は譲渡できない。",
       "だから譲渡条項だけでは足りず、人格権の不行使特約を併せて結ぶのが実務上の定番。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "著作権（財産権）は譲渡できるが、著作者人格権は委託先に残る。「行使しない」と約束させれば委託元は自由に直せる",
+      nodes: [
+        { id: "dev", label: "委託先（著作者）", col: 0, row: 0.6 },
+        { id: "client", label: "委託元", col: 2.8, row: 0.6 },
+        {
+          id: "moral",
+          label: "著作者人格権\n（同一性保持権など）",
+          col: 0,
+          row: 2.1,
+          note: "譲渡できず、委託先に残る",
+        },
+        {
+          id: "mod",
+          label: "修正する・\n他社に修正を頼む",
+          col: 2.8,
+          row: 2.1,
+          tone: "ok",
+        },
+      ],
+      edges: [
+        { from: "dev", to: "client", bend: 0.25, label: "著作権（財産権）を譲渡" },
+        {
+          from: "dev",
+          to: "client",
+          bend: -0.25,
+          dashed: true,
+          tone: "ok",
+          label: "人格権を行使しないと約束",
+        },
+        { from: "dev", to: "moral", arrow: "none", dashed: true },
+        { from: "client", to: "mod", tone: "ok" },
+        { from: "moral", to: "mod", blocked: true, tone: "ng", label: "約束が無いと改変を拒める" },
+      ],
+    },
   },
   {
     source: at(51),
@@ -1906,6 +3440,38 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "「何を作るか・どこまでやるか」がスコープ、「いつまでに」が時間、「いくらで」がコスト。",
       "活動期間の見積りは、WBSで洗い出した活動に対して行うので時間の対象群になる。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "WBS はプロジェクトの成果物と作業を階層に分解し、何をやるか（スコープ）を確定させる",
+      cell: { w: 130, h: 72 },
+      nodes: [
+        {
+          id: "root",
+          label: "システム開発プロジェクト",
+          col: 1.5,
+          row: 0,
+          tone: "accent",
+        },
+        { id: "req", label: "要件定義", col: 0, row: 1.2 },
+        { id: "des", label: "設計", col: 1, row: 1.2 },
+        { id: "imp", label: "製造", col: 2, row: 1.2 },
+        { id: "tst", label: "テスト", col: 3, row: 1.2 },
+        { id: "d1", label: "外部設計", col: 0.6, row: 2.4 },
+        { id: "d2", label: "内部設計", col: 1.4, row: 2.4 },
+        { id: "t1", label: "結合テスト", col: 2.6, row: 2.4 },
+        { id: "t2", label: "総合テスト", col: 3.4, row: 2.4 },
+      ],
+      edges: [
+        { from: "root", to: "req", arrow: "none" },
+        { from: "root", to: "des", arrow: "none" },
+        { from: "root", to: "imp", arrow: "none" },
+        { from: "root", to: "tst", arrow: "none" },
+        { from: "des", to: "d1", arrow: "none" },
+        { from: "des", to: "d2", arrow: "none" },
+        { from: "tst", to: "t1", arrow: "none" },
+        { from: "tst", to: "t2", arrow: "none" },
+      ],
+    },
   },
   {
     source: at(52),
@@ -1928,14 +3494,58 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "動乱期ではリーダーが対立を放置せず、議論を整理して共通の目標に戻すことが求められる。",
     ],
     figure: {
-      type: "flow",
-      caption: "タックマンモデル。動乱期は避けずに通る段階",
-      steps: [
-        { actor: "① 成立期（Forming）", text: "集まったばかりで、様子をうかがっている" },
-        { actor: "② 動乱期（Storming）", text: "考え方や価値観の違いが表に出て、意見がぶつかる" },
-        { actor: "③ 安定期（Norming）", text: "共通の目標と役割が定まり、進め方が共有される" },
-        { actor: "④ 遂行期（Performing）", text: "チームとして成果を出せるようになる" },
-        { actor: "⑤ 解散期（Adjourning）", text: "目的を果たして解散する" },
+      type: "diagram",
+      caption:
+        "タックマンモデルの 5 段階。考え方や価値観がぶつかり合うのは 2 番目の動乱期で、避けずに通る段階",
+      cell: { w: 135, h: 84 },
+      nodes: [
+        {
+          id: "f",
+          label: "ウ 成立期\nForming",
+          col: 0,
+          row: 0,
+          shape: "round",
+          note: "集まったばかりで\n様子をうかがう",
+        },
+        {
+          id: "s",
+          label: "エ 動乱期\nStorming",
+          col: 1.2,
+          row: 0,
+          shape: "round",
+          tone: "ok",
+          note: "考え方の違いが表に出て\n意見がぶつかる",
+        },
+        {
+          id: "n",
+          label: "ア 安定期\nNorming",
+          col: 2.4,
+          row: 0,
+          shape: "round",
+          note: "共通の目標と\n役割が定まる",
+        },
+        {
+          id: "p",
+          label: "イ 遂行期\nPerforming",
+          col: 3.6,
+          row: 0,
+          shape: "round",
+          note: "チームとして\n成果を出せる",
+        },
+        {
+          id: "a",
+          label: "解散期\nAdjourning",
+          col: 4.8,
+          row: 0,
+          shape: "round",
+          note: "目的を果たして\n解散する",
+        },
+      ],
+      edges: [
+        { from: "f", to: "s" },
+        { from: "s", to: "n" },
+        { from: "n", to: "p" },
+        { from: "p", to: "a" },
       ],
     },
   },
@@ -1970,16 +3580,49 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "「増加額」を問われているので、抜けるメンバーの人件費が減る分を必ず差し引く。",
       "引継ぎ期間は開発が進まないので、その分も不足する作業量に足す。人数の算定を誤りやすい。",
     ],
-    figure: {
-      type: "calc",
-      caption: "増加する人件費",
-      lines: [
-        { expr: "不足 ＝ 4人 × 2か月 ＋ 4人 × 0.5か月 ＝ 10 人月", note: "離脱分と引継ぎ分" },
-        { expr: "増員人数 ＝ 10 ÷ 2 ＝ 5 人", note: "増員は8〜9月の2か月だけ開発する" },
-        { expr: "増員の人件費 ＝ 5 × 2.5 × 100 ＝ 1,250 万円", note: "引継ぎ0.5か月を含む" },
-        { expr: "1,250 − 4 × 2 × 100 ＝ 450 万円", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "timeline",
+        caption:
+          "抜ける 4 人の 8〜9 月分と引継ぎの 0.5 か月分（計 10 人月）を、増員 5 人の 8〜9 月（2 か月）で埋める",
+        span: 12,
+        unit: "半月",
+        tracks: [
+          {
+            label: "残るメンバー",
+            bars: [{ start: 0, length: 12, label: "開発（4〜9 月）", tone: 1 }],
+          },
+          {
+            label: "抜ける 4 人",
+            bars: [
+              { start: 0, length: 7, label: "開発（4 月〜7 月半ば）", tone: 1 },
+              { start: 7, length: 1, label: "引継", tone: 4 },
+            ],
+          },
+          {
+            label: "増員 5 人",
+            bars: [
+              { start: 7, length: 1, label: "引継", tone: 4 },
+              { start: 8, length: 4, label: "開発（8〜9 月）", tone: 2 },
+            ],
+          },
+        ],
+        marks: [
+          { at: 7, label: "7 月半ば" },
+          { at: 8, label: "8 月初め" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "増加する人件費",
+        lines: [
+          { expr: "不足 ＝ 4人 × 2か月 ＋ 4人 × 0.5か月 ＝ 10 人月", note: "離脱分と引継ぎ分" },
+          { expr: "増員人数 ＝ 10 ÷ 2 ＝ 5 人", note: "増員は8〜9月の2か月だけ開発する" },
+          { expr: "増員の人件費 ＝ 5 × 2.5 × 100 ＝ 1,250 万円", note: "引継ぎ0.5か月を含む" },
+          { expr: "1,250 − 4 × 2 × 100 ＝ 450 万円", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(54),
@@ -2009,15 +3652,50 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "EMVは「分岐の終点の値 × 確率」の合計。図に投資額を引いた後の値が書かれていれば、そのまま使う。",
       "参考までに既存システム改修は 0.6×20＋0.4×0＝12億円なので、EMVの比較では新規開発が有利になる。",
     ],
-    figure: {
-      type: "calc",
-      caption: "新規システム開発のEMV",
-      lines: [
-        { expr: "需要が大きい：80 − 50 ＝ 30 億円", note: "確率60％" },
-        { expr: "需要が小さい：40 − 50 ＝ −10 億円", note: "確率40％" },
-        { expr: "0.6 × 30 ＋ 0.4 × (−10) ＝ 14 億円", note: "選択肢 ア" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "機会ノードごとに「終点の値 × 確率」を足す。新規開発の EMV は 14 億円（既存改修は 12 億円）",
+        cell: { w: 130, h: 60 },
+        nodes: [
+          { id: "d", label: "増強する", col: 0, row: 1.5 },
+          {
+            id: "n1",
+            label: "新規システム開発\n投資 50 億円",
+            col: 1.3,
+            row: 0.5,
+            tone: "ok",
+          },
+          { id: "n2", label: "既存システム改修\n投資 20 億円", col: 1.3, row: 2.5 },
+          { id: "c1", label: "EMV\n14", col: 2.5, row: 0.5, shape: "circle", tone: "ok" },
+          { id: "c2", label: "EMV\n12", col: 2.5, row: 2.5, shape: "circle" },
+          { id: "e11", label: "需要大：80−50＝30 億円", col: 4.1, row: 0 },
+          { id: "e12", label: "需要小：40−50＝−10 億円", col: 4.1, row: 1 },
+          { id: "e21", label: "需要大：40−20＝20 億円", col: 4.1, row: 2 },
+          { id: "e22", label: "需要小：20−20＝0 億円", col: 4.1, row: 3 },
+        ],
+        edges: [
+          { from: "d", to: "n1", arrow: "none" },
+          { from: "d", to: "n2", arrow: "none" },
+          { from: "n1", to: "c1", arrow: "none" },
+          { from: "n2", to: "c2", arrow: "none" },
+          { from: "c1", to: "e11", arrow: "none", label: "60％" },
+          { from: "c1", to: "e12", arrow: "none", label: "40％" },
+          { from: "c2", to: "e21", arrow: "none", label: "60％" },
+          { from: "c2", to: "e22", arrow: "none", label: "40％" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "新規システム開発のEMV",
+        lines: [
+          { expr: "需要が大きい：80 − 50 ＝ 30 億円", note: "確率60％" },
+          { expr: "需要が小さい：40 − 50 ＝ −10 億円", note: "確率40％" },
+          { expr: "0.6 × 30 ＋ 0.4 × (−10) ＝ 14 億円", note: "選択肢 ア" },
+        ],
+      },
+    ],
   },
   {
     source: at(55),
@@ -2048,19 +3726,57 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "FTAは結果から原因へたどるトップダウン、FMEAは原因から結果へたどるボトムアップ。",
       "AND接続は確率の積、OR接続は確率の和（近似）で頂上事象の確率を求める。",
     ],
-    figure: {
-      type: "table",
-      caption: "FTA と FMEA はたどる向きが逆",
-      headers: ["技法", "向き", "できること"],
-      rows: [
-        [
-          "FTA",
-          "結果 → 原因（トップダウン）",
-          "発生経路を木で展開し、AND は積・OR は和で確率を計算できる",
+    figure: [
+      {
+        type: "diagram",
+        caption: "FTA は避けたい事象（頂上事象）から原因へ、AND・OR でつないで木に展開する",
+        cell: { w: 140, h: 70 },
+        nodes: [
+          { id: "top", label: "サービス停止\n（頂上事象）", col: 1.5, row: 0, tone: "accent" },
+          { id: "or", label: "OR", col: 1.5, row: 1.1, shape: "circle" },
+          {
+            id: "ornote",
+            label: "どれか 1 つで起きる\n確率は和（近似）",
+            col: 2.75,
+            row: 1.1,
+            shape: "text",
+          },
+          { id: "srv", label: "サーバが止まる", col: 0.6, row: 2.15 },
+          { id: "line", label: "回線が切れる", col: 2.4, row: 2.15 },
+          { id: "and", label: "AND", col: 0.6, row: 3.2, shape: "circle" },
+          {
+            id: "andnote",
+            label: "両方で起きる\n確率は積",
+            col: 1.75,
+            row: 3.2,
+            shape: "text",
+          },
+          { id: "p", label: "本系が故障", col: 0, row: 4.25 },
+          { id: "s", label: "待機系が故障", col: 1.2, row: 4.25 },
         ],
-        ["FMEA", "原因 → 結果（ボトムアップ）", "部品ごとの故障が及ぼす影響と重大度を洗い出す"],
-      ],
-    },
+        edges: [
+          { from: "top", to: "or", arrow: "none" },
+          { from: "or", to: "srv", arrow: "none" },
+          { from: "or", to: "line", arrow: "none" },
+          { from: "srv", to: "and", arrow: "none" },
+          { from: "and", to: "p", arrow: "none" },
+          { from: "and", to: "s", arrow: "none" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "FTA と FMEA はたどる向きが逆",
+        headers: ["技法", "向き", "できること"],
+        rows: [
+          [
+            "FTA",
+            "結果 → 原因（トップダウン）",
+            "発生経路を木で展開し、AND は積・OR は和で確率を計算できる",
+          ],
+          ["FMEA", "原因 → 結果（ボトムアップ）", "部品ごとの故障が及ぼす影響と重大度を洗い出す"],
+        ],
+      },
+    ],
   },
   {
     source: at(56),
@@ -2082,16 +3798,43 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "インシデント管理＝早く復旧させる、問題管理＝二度と起こさない。目的の違いで区別する。",
       "問題管理が突き止めた恒久対策を実施するときは、変更管理の手続を通す。",
     ],
-    figure: {
-      type: "table",
-      caption: "目的の違いで区別する",
-      headers: ["プロセス", "目的", "記録するもの"],
-      rows: [
-        ["インシデント管理", "できるだけ早く復旧させる", "回避策、復旧の記録"],
-        ["問題管理", "根本原因を特定して再発を防ぐ", "既知の誤り、恒久対策の案"],
-        ["変更管理", "恒久対策を安全に反映する", "変更要求と承認の記録"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "問題管理はインシデントの根本原因を突き止め、恒久対策を変更管理に渡して再発を防ぐ",
+        cell: { w: 150, h: 84 },
+        nodes: [
+          { id: "inc", label: "インシデント\n発生", col: 0, row: 0, shape: "round" },
+          { id: "im", label: "インシデント管理\n回避策で早く復旧", col: 1.45, row: 0 },
+          {
+            id: "pm",
+            label: "問題管理\n根本原因の特定（ア）",
+            col: 1.45,
+            row: 1.45,
+            tone: "ok",
+            note: "原因が分かるまでは\n既知の誤りとして記録",
+          },
+          { id: "cm", label: "変更管理\n変更要求の記録（ウ）", col: 2.95, row: 1.45 },
+          { id: "rm", label: "リリース及び展開管理\nリリースの検証（エ）", col: 2.95, row: 2.75 },
+        ],
+        edges: [
+          { from: "inc", to: "im" },
+          { from: "im", to: "pm", label: "原因が分からない・\n繰り返すもの" },
+          { from: "pm", to: "cm", label: "恒久対策" },
+          { from: "cm", to: "rm", label: "承認した変更" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "目的の違いで区別する",
+        headers: ["プロセス", "目的", "記録するもの"],
+        rows: [
+          ["インシデント管理", "できるだけ早く復旧させる", "回避策、復旧の記録"],
+          ["問題管理", "根本原因を特定して再発を防ぐ", "既知の誤り、恒久対策の案"],
+          ["変更管理", "恒久対策を安全に反映する", "変更要求と承認の記録"],
+        ],
+      },
+    ],
   },
   {
     source: at(57),
@@ -2124,20 +3867,67 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "液浸冷却＝丸ごと漬ける、直接液冷＝発熱部品に冷却板を当てて配管で冷やす。",
       "電子機器を漬ける以上、冷媒は絶縁性でなければならない。ここが水との違い。",
     ],
-    figure: {
-      type: "table",
-      caption: "液体を使う冷却方式の違い",
-      headers: ["方式", "冷やし方", "冷媒"],
-      rows: [
-        [
-          "液浸冷却（単相）",
-          "サーバを筐体ごと液体に沈め、循環させて熱交換器で冷やす",
-          "絶縁性の液体（フッ素系など）",
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "液浸冷却はサーバを丸ごと絶縁性の液体に沈め、直接液冷は発熱部品に金属の冷却板を当てて配管で冷やす",
+        nodes: [
+          {
+            id: "srv1",
+            label: "サーバ\n（筐体ごと沈める）",
+            col: 0.3,
+            row: 0.55,
+            tone: "accent",
+          },
+          {
+            id: "hx1",
+            label: "熱交換器",
+            col: 2,
+            row: 0.55,
+            note: "二相式は液体の気化と\n凝縮で熱を運ぶ",
+          },
+          {
+            id: "srv2",
+            label: "サーバ",
+            col: 0.3,
+            row: 2.5,
+            fields: ["CPU など", "冷却板（金属板）"],
+          },
+          {
+            id: "hx2",
+            label: "熱交換器",
+            col: 2,
+            row: 2.5,
+            note: "冷媒は水など\n（部品には触れさせない）",
+          },
         ],
-        ["液浸冷却（二相）", "沈めた液体の気化と凝縮を利用する", "同上"],
-        ["直接液冷", "発熱部品に冷却板を当て、配管で熱を運ぶ", "水など（部品には触れさせない）"],
-      ],
-    },
+        groups: [
+          { label: "液浸冷却（a・c）", col: 0, row: 0, w: 3, h: 1.75, tone: "ok" },
+          { label: "絶縁性の液体", col: 0.25, row: 0.5, w: 1.1, h: 0.95 },
+          { label: "直接液冷（b）", col: 0, row: 1.9, w: 3, h: 1.75 },
+        ],
+        edges: [
+          { from: "srv1", to: "hx1", bend: 0.3, label: "温まった液体" },
+          { from: "hx1", to: "srv1", bend: 0.3, label: "冷えた液体" },
+          { from: "srv2", to: "hx2", arrow: "both", label: "水などが循環", labelAt: 0.35 },
+        ],
+      },
+      {
+        type: "table",
+        caption: "液体を使う冷却方式の違い",
+        headers: ["方式", "冷やし方", "冷媒"],
+        rows: [
+          [
+            "液浸冷却（単相）",
+            "サーバを筐体ごと液体に沈め、循環させて熱交換器で冷やす",
+            "絶縁性の液体（フッ素系など）",
+          ],
+          ["液浸冷却（二相）", "沈めた液体の気化と凝縮を利用する", "同上"],
+          ["直接液冷", "発熱部品に冷却板を当て、配管で熱を運ぶ", "水など（部品には触れさせない）"],
+        ],
+      },
+    ],
   },
   {
     source: at(58),
@@ -2168,6 +3958,43 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "独立性には、身分上の関係を問う外観上の独立性と、態度を問う精神上の独立性がある。",
       "所見は「発見事項に対する監査人の判断」。事実そのもの（監査証拠）とは区別する。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "独立性・正当な懐疑心・正当な注意は監査人の立場と姿勢、所見は監査で発見したことに基づく考えや意見",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "tgt", label: "監査対象", col: 0, row: 0 },
+        { id: "info", label: "提示された情報", col: 0, row: 2.2 },
+        {
+          id: "aud",
+          label: "システム監査人",
+          col: 2.8,
+          row: 1.1,
+          shape: "actor",
+          tone: "accent",
+          note: "専門家として当然の注意を払う\n＝正当な注意",
+        },
+        {
+          id: "find",
+          label: "所見",
+          col: 4.8,
+          row: 1.1,
+          note: "発見したことに基づく\n監査人の考えや意見",
+        },
+      ],
+      edges: [
+        {
+          from: "tgt",
+          to: "aud",
+          label: "不当な影響・圧力を受けない\n＝独立性（エ）",
+          blocked: true,
+          tone: "ok",
+        },
+        { from: "info", to: "aud", label: "鵜呑みにせず批判的に評価\n＝正当な懐疑心" },
+        { from: "aud", to: "find", label: "監査手続で\n発見したこと" },
+      ],
+    },
   },
   {
     source: at(59),
@@ -2198,6 +4025,37 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "監査人の役割は「確かめて助言する」まで。「指示する」「実施する」「管理する」は越権になる。",
       "自分が関与した対象を後で監査することになると、外観上の独立性が損なわれる。",
     ],
+    figure: {
+      type: "sequence",
+      caption:
+        "フォローアップは改善状況を確かめること。指示・管理・計画づくりは監査人の役割ではない",
+      actors: ["システム監査人", "監査対象部門"],
+      steps: [
+        { from: "システム監査人", to: "監査対象部門", label: "改善提案（監査報告書）" },
+        {
+          over: ["監査対象部門"],
+          note: "改善計画を作り、実施し、管理する\n（部門の責任。エ・イは部門の仕事）",
+        },
+        {
+          from: "システム監査人",
+          to: "監査対象部門",
+          label: "実施を指示（ア）",
+          blocked: true,
+          tone: "ng",
+        },
+        {
+          from: "システム監査人",
+          to: "監査対象部門",
+          label: "改善状況を確かめる（ウ）",
+          tone: "ok",
+        },
+        { from: "監査対象部門", to: "システム監査人", label: "改善の進み具合", dashed: true },
+        {
+          over: ["システム監査人", "監査対象部門"],
+          note: "監査人は確かめて助言するまで。踏み込むと独立性を損なう",
+        },
+      ],
+    },
   },
   {
     source: at(60),
@@ -2228,20 +4086,49 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "ガバナンス＝経営者の方向付け、マネジメント＝管理の仕組み、コントロール＝個々の統制手続。",
       "PDCAという語が出たらマネジメント、投資対効果や戦略整合が出たらガバナンスと見当を付けられる。",
     ],
-    figure: {
-      type: "table",
-      caption: "3つの視点は「誰が・何を」見るか",
-      headers: ["視点", "見るもの", "目印になる言葉"],
-      rows: [
-        ["ガバナンス", "経営者による方向付けと監視", "投資対効果、戦略との整合"],
-        ["マネジメント", "目標達成に向けた管理の仕組み", "PDCA、計画と評価"],
-        [
-          "コントロール",
-          "業務に組み込まれた個々の統制活動",
-          "定められた対処と報告が行われているか",
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "3 つの視点は上から下へ具体的になる。個々の統制活動が働いているかを見るのがコントロール",
+        cell: { w: 150, h: 80 },
+        nodes: [
+          { id: "gov", label: "ガバナンス\n経営者の方向付け・監視", col: 0, row: 0 },
+          { id: "mgmt", label: "マネジメント\nPDCA で管理する仕組み", col: 0, row: 1.2 },
+          {
+            id: "ctrl",
+            label: "コントロール\n業務に組み込んだ統制",
+            col: 0,
+            row: 2.4,
+            tone: "ok",
+          },
+          { id: "ae", label: "ア IT 投資のリターン\nエ 新技術の戦略的な活用", col: 1.9, row: 0 },
+          { id: "u", label: "ウ PDCA サイクルによる\nセキュリティ対策の管理", col: 1.9, row: 1.2 },
+          { id: "i", label: "イ 異常アクセス時の\n対処と報告", col: 1.9, row: 2.4, tone: "ok" },
         ],
-      ],
-    },
+        edges: [
+          { from: "gov", to: "mgmt" },
+          { from: "mgmt", to: "ctrl" },
+          { from: "ae", to: "gov", arrow: "none", dashed: true },
+          { from: "u", to: "mgmt", arrow: "none", dashed: true },
+          { from: "i", to: "ctrl", arrow: "none", tone: "ok" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "3つの視点は「誰が・何を」見るか",
+        headers: ["視点", "見るもの", "目印になる言葉"],
+        rows: [
+          ["ガバナンス", "経営者による方向付けと監視", "投資対効果、戦略との整合"],
+          ["マネジメント", "目標達成に向けた管理の仕組み", "PDCA、計画と評価"],
+          [
+            "コントロール",
+            "業務に組み込まれた個々の統制活動",
+            "定められた対処と報告が行われているか",
+          ],
+        ],
+      },
+    ],
   },
   {
     source: at(61),
@@ -2272,6 +4159,32 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "プロジェクト単体の成功より、事業としての成果を優先するのがプログラムマネジメント。",
       "ここでの“プログラム”はソフトウェアのプログラムではなく、関連する取組みのまとまりを指す。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "プログラムマネジメントは、関連する複数のプロジェクトを束ね、連携させて戦略の実現を図る",
+      nodes: [
+        { id: "goal", label: "組織の戦略・事業目標", col: 1, row: 0 },
+        {
+          id: "prog",
+          label: "プログラム（複数のプロジェクトのまとまり）",
+          col: 1,
+          row: 1.15,
+          tone: "ok",
+        },
+        { id: "p1", label: "プロジェクト A", col: 0, row: 2.4 },
+        { id: "p2", label: "プロジェクト B", col: 1, row: 2.4 },
+        { id: "p3", label: "プロジェクト C", col: 2, row: 2.4 },
+      ],
+      edges: [
+        { from: "prog", to: "goal", label: "全体として実現する" },
+        { from: "prog", to: "p1", arrow: "none" },
+        { from: "prog", to: "p2", arrow: "none" },
+        { from: "prog", to: "p3", arrow: "none" },
+        { from: "p1", to: "p2", arrow: "both", dashed: true },
+        { from: "p2", to: "p3", arrow: "both", dashed: true },
+      ],
+    },
   },
   {
     source: at(62),
@@ -2302,6 +4215,36 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "分割の単位が「利用者から見た業務機能」である点が要点。技術的な階層で分けるのではない。",
       "サービスを疎結合にしておくことで、再利用と差し替えがしやすくなる。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "SOA は業務の単位でサービスという部品に分け、組み合わせて業務プロセスを作る",
+      cell: { w: 140, h: 80 },
+      nodes: [
+        { id: "b1", label: "受注", col: 0, row: 0.3, shape: "round" },
+        { id: "b2", label: "在庫引当", col: 1, row: 0.3, shape: "round" },
+        { id: "b3", label: "出荷", col: 2, row: 0.3, shape: "round" },
+        { id: "b4", label: "請求", col: 3, row: 0.3, shape: "round" },
+        { id: "s1", label: "受注\nサービス", col: 0, row: 1.9 },
+        { id: "s2", label: "在庫\nサービス", col: 1, row: 1.9, tone: "ok" },
+        { id: "s3", label: "配送\nサービス", col: 2, row: 1.9 },
+        { id: "s4", label: "請求\nサービス", col: 3, row: 1.9 },
+        { id: "other", label: "別の業務システム", col: 1, row: 3.2 },
+      ],
+      groups: [
+        { label: "業務プロセス", col: 0, row: 0, w: 4, h: 1.1 },
+        { label: "サービス", col: 0, row: 1.2, w: 4, h: 1.6 },
+      ],
+      edges: [
+        { from: "b1", to: "b2" },
+        { from: "b2", to: "b3" },
+        { from: "b3", to: "b4" },
+        { from: "b1", to: "s1", dashed: true },
+        { from: "b2", to: "s2", dashed: true, label: "呼び出す" },
+        { from: "b3", to: "s3", dashed: true },
+        { from: "b4", to: "s4", dashed: true },
+        { from: "other", to: "s2", tone: "ok", label: "再利用" },
+      ],
+    },
   },
   {
     source: at(63),
@@ -2332,24 +4275,50 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "支持度＝そのルールが現れる割合、信頼度＝Xを買った人がYも買う割合、リフト値＝偶然と比べた強さ。",
       "リフト値が1を超えて初めて「意味のある組合せ」と判断できる。",
     ],
-    figure: {
-      type: "calc",
-      caption: "アソシエーション分析の3指標（ルール「X を買えば Y も買う」）",
-      lines: [
-        {
-          expr: "支持度 ＝ X と Y の両方を含む件数 ／ 全件数",
-          note: "そのルールがどれだけ現れるか",
-        },
-        {
-          expr: "信頼度 ＝ X と Y の両方を含む件数 ／ X を含む件数",
-          note: "X を買った人が Y も買う割合",
-        },
-        {
-          expr: "リフト値 ＝ 信頼度 ／ Y を含む件数の割合",
-          note: "偶然と比べた強さ。1 を超えて意味がある",
-        },
-      ],
-    },
+    figure: [
+      {
+        type: "venn",
+        caption: "3 つの指標は、同じ「X と Y の両方」の件数を何で割るかが違う",
+        sets: ["X を買った", "Y を買った"],
+        universe: "全取引",
+        panels: [
+          { label: "分子：X と Y の両方", shaded: ["AB"], note: "支持度にも信頼度にも使う" },
+          {
+            label: "支持度の分母：全件",
+            shaded: ["0", "A", "B", "AB"],
+            note: "支持度＝両方 ÷ 全件",
+          },
+          {
+            label: "信頼度の分母：X を含む",
+            shaded: ["A", "AB"],
+            note: "信頼度＝両方 ÷ X を含む件数",
+          },
+          {
+            label: "リフト値の比べる相手",
+            shaded: ["B", "AB"],
+            note: "Y を含む割合（÷ 全件）。信頼度をこれで割る",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "アソシエーション分析の3指標（ルール「X を買えば Y も買う」）",
+        lines: [
+          {
+            expr: "支持度 ＝ X と Y の両方を含む件数 ／ 全件数",
+            note: "そのルールがどれだけ現れるか",
+          },
+          {
+            expr: "信頼度 ＝ X と Y の両方を含む件数 ／ X を含む件数",
+            note: "X を買った人が Y も買う割合",
+          },
+          {
+            expr: "リフト値 ＝ 信頼度 ／ Y を含む件数の割合",
+            note: "偶然と比べた強さ。1 を超えて意味がある",
+          },
+        ],
+      },
+    ],
   },
   {
     source: at(64),
@@ -2380,17 +4349,53 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "PBP法は割引をしない。割引率を使うのはNPV法・IRR法・DCF法。",
       "回収期間が同じでも、その後の収益が大きく違うことがある。PBP法だけで決めない。",
     ],
-    figure: {
-      type: "table",
-      caption: "投資評価の手法。割引を使うかどうかで分かれる",
-      headers: ["手法", "見るもの", "貨幣の時間的価値"],
-      rows: [
-        ["PBP法（回収期間法）", "投資額を何年で回収できるか", "考慮しない"],
-        ["NPV法", "割引後の正味現在価値", "考慮する"],
-        ["IRR法", "正味現在価値が0になる割引率", "考慮する"],
-        ["PBP法の弱点", "回収後の利益は評価に入らない", "—"],
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "PBP 法は累計が 0 に戻るまでの年数だけを見る（例：投資 100、毎年 30 回収）。割引も、回収後の利益も考えない",
+        x: { label: "経過年数", min: 0, max: 6, ticks: [0, 1, 2, 3, 4, 5, 6] },
+        y: { label: "累計キャッシュフロー", min: -100, max: 80 },
+        series: [
+          {
+            label: "累計",
+            points: [
+              [0, -100],
+              [1, -70],
+              [2, -40],
+              [3, -10],
+              [4, 20],
+              [5, 50],
+              [6, 80],
+            ],
+          },
+        ],
+        guides: [{ y: 0, label: "投資額を回収" }],
+        marks: [{ x: 3.33, y: 0, label: "回収期間 約 3.3 年", place: "left" }],
+        areas: [
+          {
+            points: [
+              [3.33, 0],
+              [6, 80],
+              [6, 0],
+            ],
+            label: "回収後\n（評価しない）",
+            tone: "muted",
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "投資評価の手法。割引を使うかどうかで分かれる",
+        headers: ["手法", "見るもの", "貨幣の時間的価値"],
+        rows: [
+          ["PBP法（回収期間法）", "投資額を何年で回収できるか", "考慮しない"],
+          ["NPV法", "割引後の正味現在価値", "考慮する"],
+          ["IRR法", "正味現在価値が0になる割引率", "考慮する"],
+          ["PBP法の弱点", "回収後の利益は評価に入らない", "—"],
+        ],
+      },
+    ],
   },
   {
     source: at(65),
@@ -2423,15 +4428,58 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "分母は「全項目が最高評価だった場合の点数」。重みの合計に最高点3を掛ける。",
       "評価点の対応（3＝目標どおり、1＝部分改善、0＝変わらず）を取り違えないこと。",
     ],
-    figure: {
-      type: "calc",
-      caption: "目標達成度の求め方",
-      lines: [
-        { expr: "5 × 3 ＋ 8 × 0 ＋ 12 × 1 ＝ 27 点", note: "重み × 評価点の合計" },
-        { expr: "(5 ＋ 8 ＋ 12) × 3 ＝ 75 点", note: "全て目標どおりの場合" },
-        { expr: "27 ÷ 75 ＝ 36％", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "項目ごとの満点（重み × 3）と得点（重み × 評価点）。満点の合計 75 点のうち、得点は 27 点",
+        x: {
+          label: "評価項目（重み）",
+          min: 0.4,
+          max: 3.6,
+          ticks: [1, 2, 3],
+          tickLabels: ["省力化効果（5）", "期間の短縮（8）", "情報の統合化（12）"],
+        },
+        y: { label: "点", min: 0, max: 40, ticks: [0, 10, 20, 30, 40] },
+        series: [
+          {
+            label: "満点（重み × 3）",
+            kind: "bar",
+            points: [
+              [0.85, 15],
+              [1.85, 24],
+              [2.85, 36],
+            ],
+          },
+          {
+            label: "得点（重み × 評価点）",
+            kind: "bar",
+            points: [
+              [1.15, 15],
+              [2.15, 0],
+              [3.15, 12],
+            ],
+          },
+        ],
+        marks: [
+          { x: 0.85, y: 15, label: "15", place: "above" },
+          { x: 1.85, y: 24, label: "24", place: "above" },
+          { x: 2.85, y: 36, label: "36", place: "above" },
+          { x: 1.15, y: 15, label: "15", place: "above" },
+          { x: 2.15, y: 0, label: "0", place: "above" },
+          { x: 3.15, y: 12, label: "12", place: "above" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "目標達成度の求め方",
+        lines: [
+          { expr: "5 × 3 ＋ 8 × 0 ＋ 12 × 1 ＝ 27 点", note: "重み × 評価点の合計" },
+          { expr: "(5 ＋ 8 ＋ 12) × 3 ＝ 75 点", note: "全て目標どおりの場合" },
+          { expr: "27 ÷ 75 ＝ 36％", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(66),
@@ -2456,6 +4504,38 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "定額契約は超過リスクを受託者が負い、実費償還契約は委託者が負う。契約の種類で負担者が決まる。",
       "原因がどちらにあるかを確認する。C社に落ち度がなければC社は負担しない。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "定額契約の超過分は受託者（B 社）、実費償還契約の実費は委託者（B 社）が負う。遅延の原因も B 社なので B 社の負担",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "a", label: "A 社（サービス運営）", col: 0, row: 0 },
+        { id: "b", label: "B 社（ボード開発）", col: 0, row: 1.6, tone: "ok" },
+        { id: "c", label: "C 社（工場設備の管理）", col: 0, row: 3.2 },
+        {
+          id: "memo",
+          label: "B 社の人的リソース不足で遅延\n→ 追加費用は B 社が負担（ウ）",
+          col: 1.75,
+          row: 1.6,
+          shape: "text",
+          tone: "ok",
+        },
+      ],
+      edges: [
+        { from: "a", to: "b", bend: 1, label: "委託（定額契約）" },
+        {
+          from: "b",
+          to: "a",
+          bend: 1,
+          dashed: true,
+          tone: "ng",
+          label: "超過分は請求できない",
+        },
+        { from: "b", to: "c", bend: 1, label: "借用（実費償還契約）" },
+        { from: "c", to: "b", bend: 1, dashed: true, label: "延びた分の実費を請求" },
+      ],
+    },
   },
   {
     source: at(67),
@@ -2477,6 +4557,31 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "Product→顧客価値、Price→顧客コスト、Place→利便性、Promotion→コミュニケーション。",
       "4Cは「売り手が何をするか」ではなく「買い手が何を得るか」で捉え直した枠組み。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "4P を買手の目線で言い直したのが 4C。プロモーションはコミュニケーションに当たる",
+      cell: { w: 150, h: 60 },
+      nodes: [
+        { id: "p1", label: "製品\nProduct", col: 0, row: 0 },
+        { id: "p2", label: "価格\nPrice", col: 0, row: 1 },
+        { id: "p3", label: "流通\nPlace", col: 0, row: 2 },
+        { id: "p4", label: "プロモーション\nPromotion", col: 0, row: 3, tone: "ok" },
+        { id: "c1", label: "ア 顧客価値\nCustomer Value", col: 2.2, row: 0 },
+        { id: "c2", label: "イ 顧客コスト\nCost", col: 2.2, row: 1 },
+        { id: "c3", label: "エ 利便性\nConvenience", col: 2.2, row: 2 },
+        { id: "c4", label: "ウ コミュニケーション\nCommunication", col: 2.2, row: 3, tone: "ok" },
+      ],
+      groups: [
+        { label: "4P（売手）", col: -0.05, row: -0.65, w: 1.1, h: 4.65 },
+        { label: "4C（買手）", col: 2.1, row: -0.65, w: 1.2, h: 4.65 },
+      ],
+      edges: [
+        { from: "p1", to: "c1", arrow: "both" },
+        { from: "p2", to: "c2", arrow: "both" },
+        { from: "p3", to: "c3", arrow: "both" },
+        { from: "p4", to: "c4", arrow: "both", tone: "ok" },
+      ],
+    },
   },
   {
     source: at(68),
@@ -2507,17 +4612,55 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "4つの視点は下から学習と成長→内部ビジネスプロセス→顧客→財務の順に因果がつながる。",
       "戦略マップは因果関係を示す図、スコアカードは指標と目標値を並べた表。役割が違う。",
     ],
-    figure: {
-      type: "table",
-      caption: "戦略マップは因果の図、スコアカードは指標の表",
-      headers: ["視点", "戦略マップでの位置", "上位への効果"],
-      rows: [
-        ["学習と成長", "最下層", "人材と組織の力が業務改善の土台になる"],
-        ["内部ビジネスプロセス", "下から2番目", "業務が改善すると提供価値が上がる"],
-        ["顧客", "下から3番目", "満足度とシェアが上がる"],
-        ["財務", "最上層", "売上・利益という成果になる"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "戦略マップ（例）。4 つの視点の目標を、下から上へ因果の矢印でつなぐ",
+        cell: { w: 160, h: 72 },
+        nodes: [
+          { id: "vf", label: "財務の視点", col: 0, row: 0, shape: "text", tone: "muted" },
+          { id: "vc", label: "顧客の視点", col: 0, row: 1, shape: "text", tone: "muted" },
+          {
+            id: "vp",
+            label: "内部ビジネス\nプロセスの視点",
+            col: 0,
+            row: 2,
+            shape: "text",
+            tone: "muted",
+          },
+          { id: "vl", label: "学習と成長の視点", col: 0, row: 3, shape: "text", tone: "muted" },
+          { id: "f", label: "売上・利益の増加", col: 1.8, row: 0, tone: "ok" },
+          { id: "c", label: "顧客満足度の向上", col: 1.8, row: 1 },
+          { id: "p1", label: "業務プロセスの改善", col: 1.3, row: 2 },
+          { id: "p2", label: "品質の向上", col: 2.4, row: 2 },
+          { id: "l1", label: "社員のスキル向上", col: 1.3, row: 3 },
+          { id: "l2", label: "情報システムの整備", col: 2.4, row: 3 },
+        ],
+        edges: [
+          { from: "l1", to: "p1" },
+          { from: "l2", to: "p1" },
+          { from: "l2", to: "p2" },
+          { from: "p1", to: "c" },
+          { from: "p2", to: "c" },
+          { from: "c", to: "f" },
+        ],
+      },
+      {
+        type: "sketch",
+        caption:
+          "戦略マップは BSC の 4 視点を因果でつなぐ形。2 つの軸で位置や区分を示す図とは形が違う",
+        items: [
+          {
+            name: "バランススコアカード",
+            note: "財務・顧客・内部ビジネスプロセス・学習と成長の 4 視点。下の視点から上の視点へ因果がつながる。戦略マップはこの因果を目標どうしの矢印で描いたもの。これが正解の形（イ）",
+          },
+          {
+            name: "PPM",
+            note: "2 つの軸の高低で 4 つに分ける形。ア（ポジショニングマップ）やウ（ビジネススクリーン）も、2 つの軸で自社や事業の位置を示す図の仲間で、因果の矢印は無い",
+          },
+        ],
+      },
+    ],
   },
   {
     source: at(69),
@@ -2548,20 +4691,48 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "「投資する前に実現できるか確かめる」のがフィージビリティスタディ。",
       "デルファイ法・ブレーンストーミングは発想や予測の技法で、実現性の検証とは目的が違う。",
     ],
-    figure: {
-      type: "table",
-      caption: "目的が違う3つの活動",
-      headers: ["活動", "いつ", "目的"],
-      rows: [
-        [
-          "フィージビリティスタディ",
-          "実行に移す前",
-          "技術・経済・法制度の面から実現可能性と採算性を確かめる",
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "フィージビリティスタディは、投資を決める前に「本当に実現できるか・採算が合うか」を確かめる",
+        cell: { w: 140, h: 84 },
+        nodes: [
+          { id: "idea", label: "構想・計画", col: 0, row: 0, shape: "round" },
+          {
+            id: "fs",
+            label: "フィージビリティ\nスタディ",
+            col: 1.4,
+            row: 0,
+            tone: "ok",
+            note: "技術・経済・法制度から\n実現性と採算を調べる",
+          },
+          { id: "dec", label: "投資する？", col: 2.9, row: 0, shape: "diamond" },
+          { id: "go", label: "実行（投資）", col: 2.9, row: 1.5, shape: "round" },
+          { id: "stop", label: "見送り・見直し", col: 4.3, row: 0, shape: "round" },
         ],
-        ["ブレーンストーミング", "検討の初期", "アイディアを数多く出す"],
-        ["デルファイ法", "検討の途中", "専門家の意見を匿名で収束させる"],
-      ],
-    },
+        edges: [
+          { from: "idea", to: "fs" },
+          { from: "fs", to: "dec" },
+          { from: "dec", to: "go", label: "実現できる" },
+          { from: "dec", to: "stop", label: "難しい" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "目的が違う3つの活動",
+        headers: ["活動", "いつ", "目的"],
+        rows: [
+          [
+            "フィージビリティスタディ",
+            "実行に移す前",
+            "技術・経済・法制度の面から実現可能性と採算性を確かめる",
+          ],
+          ["ブレーンストーミング", "検討の初期", "アイディアを数多く出す"],
+          ["デルファイ法", "検討の途中", "専門家の意見を匿名で収束させる"],
+        ],
+      },
+    ],
   },
   {
     source: at(70),
@@ -2601,12 +4772,22 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "「新しい地域」は新市場、「上位機種」は新製品。どちらが新しくなったかで区別する。",
     ],
     figure: {
-      type: "table",
-      caption: "アンゾフの成長マトリクス（製品 × 市場）",
-      headers: ["製品＼市場", "既存市場", "新市場"],
-      rows: [
-        ["既存製品", "市場浸透（頻度とシェアを高める）", "新市場開拓（別の地域・客層へ）"],
-        ["新製品", "新製品開発（今の客へ新しい製品）", "多角化（どちらも新しい。最も高リスク）"],
+      type: "quadrant",
+      caption: "アンゾフの成長マトリクスと選択肢（問題の図と同じ向き。上が既存市場、下が新市場）",
+      x: { label: "製品", low: "既存", high: "新規" },
+      y: { label: "市場", low: "新規", high: "既存" },
+      cells: [
+        {
+          title: "市場浸透戦略",
+          note: "既存市場 × 既存製品。イ：特別価格で同じ地域のより多くの住民に売る",
+          tone: "ok",
+        },
+        { title: "新製品開発戦略", note: "既存市場 × 新製品。ア：今のユーザーに上位機種を売る" },
+        { title: "新市場開拓戦略", note: "新市場 × 既存製品。ウ：同じ商品を他の地方でも売る" },
+        {
+          title: "多角化戦略",
+          note: "新市場 × 新製品。エ：販売実績の無い国向けに一から開発して売る",
+        },
       ],
     },
   },
@@ -2631,13 +4812,25 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "MESは計画と現場をつなぐ役割。実績を吸い上げて計画にフィードバックする点が重要。",
     ],
     figure: {
-      type: "table",
-      caption: "生産事業所のシステムの3層",
-      headers: ["層", "主なシステム", "役割"],
-      rows: [
-        ["計画層", "ERP、MRP", "生産計画や資材所要量を立てる"],
-        ["実行層", "MES", "現場へ作業を指示し、進捗・品質・実績を集めて計画層へ返す"],
-        ["制御層", "PLC、SCADA", "機械・機器を直接制御し、監視する"],
+      type: "diagram",
+      caption: "MES は計画層と制御層の間の実行層で、現場に作業を指示し、実績を集めて計画層へ返す",
+      cell: { w: 170, h: 84 },
+      nodes: [
+        { id: "plan", label: "計画層（ERP・MRP）\n生産計画・資材の所要量", col: 0, row: 0 },
+        {
+          id: "exec",
+          label: "実行層（MES）\n作業指示・工程と品質の管理",
+          col: 0,
+          row: 1.5,
+          tone: "ok",
+        },
+        { id: "ctrl", label: "制御層（PLC・SCADA）\n機械・機器の制御と監視", col: 0, row: 3 },
+      ],
+      edges: [
+        { from: "plan", to: "exec", bend: 0.6, label: "生産計画" },
+        { from: "exec", to: "plan", bend: 0.6, label: "進捗・実績" },
+        { from: "exec", to: "ctrl", bend: 0.6, label: "作業指示" },
+        { from: "ctrl", to: "exec", bend: 0.6, label: "稼働・品質データ" },
       ],
     },
   },
@@ -2670,17 +4863,51 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "管理の対象は「製品に関する情報」で、期間は「企画から廃棄まで」。範囲の広さが特徴。",
       "SCMはモノと情報の流れ、MRPは資材の所要量、FMSは生産設備の自動化と、それぞれ対象が違う。",
     ],
-    figure: {
-      type: "table",
-      caption: "管理する対象と範囲で見分ける",
-      headers: ["略語", "管理する対象", "範囲"],
-      rows: [
-        ["PLM", "製品に関する情報", "企画・設計から製造・保守・廃棄・リサイクルまで"],
-        ["SCM", "モノと情報の流れ", "調達から販売まで（企業をまたぐ）"],
-        ["MRP", "資材の所要量", "生産計画から部品の手配まで"],
-        ["FMS", "生産設備", "多品種少量生産の自動化"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "PLM は企画から廃棄・リサイクルまでの製品情報を一元管理し、どの工程でも同じ情報を使う",
+        cell: { w: 130, h: 84 },
+        nodes: [
+          { id: "s1", label: "企画・設計", col: 0, row: 0, shape: "round" },
+          { id: "s2", label: "製造", col: 1, row: 0, shape: "round" },
+          { id: "s3", label: "販売", col: 2, row: 0, shape: "round" },
+          { id: "s4", label: "保守", col: 3, row: 0, shape: "round" },
+          { id: "s5", label: "廃棄・リサイクル", col: 4.1, row: 0, shape: "round" },
+          {
+            id: "db",
+            label: "製品情報\n（一元管理）",
+            col: 2,
+            row: 1.6,
+            shape: "db",
+            tone: "ok",
+          },
+        ],
+        edges: [
+          { from: "s1", to: "s2" },
+          { from: "s2", to: "s3" },
+          { from: "s3", to: "s4" },
+          { from: "s4", to: "s5" },
+          { from: "db", to: "s1", arrow: "both", dashed: true },
+          { from: "db", to: "s2", arrow: "both", dashed: true },
+          { from: "db", to: "s3", arrow: "both", dashed: true },
+          { from: "db", to: "s4", arrow: "both", dashed: true },
+          { from: "db", to: "s5", arrow: "both", dashed: true },
+        ],
+      },
+      {
+        type: "table",
+        caption: "管理する対象と範囲で見分ける",
+        headers: ["略語", "管理する対象", "範囲"],
+        rows: [
+          ["PLM", "製品に関する情報", "企画・設計から製造・保守・廃棄・リサイクルまで"],
+          ["SCM", "モノと情報の流れ", "調達から販売まで（企業をまたぐ）"],
+          ["MRP", "資材の所要量", "生産計画から部品の手配まで"],
+          ["FMS", "生産設備", "多品種少量生産の自動化"],
+        ],
+      },
+    ],
   },
   {
     source: at(73),
@@ -2711,6 +4938,22 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "低速・低消費電力・広域・多数接続がLPWAの特徴。高速大容量とは逆の方向に振った技術。",
       "LPWAには免許不要帯を使うLoRaWANやSigfoxと、携帯網を使うLTE-M・NB-IoTがある。",
     ],
+    figure: {
+      type: "quadrant",
+      caption: "無線通信の位置付け。LPWA は低速だが、少ない電力で広い範囲をカバーする",
+      x: { label: "通信距離", low: "近距離", high: "広域" },
+      y: { label: "通信速度", low: "低速", high: "高速" },
+      cells: [
+        { title: "無線 LAN・ミリ波", note: "近距離で大容量（アは GHz 帯の近距離大容量無線）" },
+        { title: "携帯電話（LTE・5G）", note: "広い範囲で高速。消費電力は大きめ" },
+        { title: "Bluetooth・ZigBee", note: "近距離・低速・低消費電力" },
+        {
+          title: "LPWA",
+          note: "広域・低速・低消費電力。1 つの基地局に多数の機器がつながる（ウ）",
+          tone: "ok",
+        },
+      ],
+    },
   },
   {
     source: at(74),
@@ -2750,16 +4993,77 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "経済的発注量 ＝ √(2 × 年間需要量 × 1回の発注費用 ÷ 1個当たりの年間保管費)。",
       "保管費は発注量そのものではなく平均在庫（発注量の半分）に掛かる。ここが公式の2の出どころ。",
     ],
-    figure: {
-      type: "calc",
-      caption: "経済的発注量の求め方",
-      lines: [
-        { expr: "年間の発注費 ＝ (100,000 ÷ Q) × 5,000", note: "発注回数 × 1回の費用" },
-        { expr: "年間の保管費 ＝ (Q ÷ 2) × 1,000", note: "平均在庫 × 1個の保管費" },
-        { expr: "Q² ＝ 2 × 100,000 × 5,000 ÷ 1,000 ＝ 1,000,000", note: "両者を等しいとおく" },
-        { expr: "Q ＝ 1,000 個", note: "選択肢 エ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption: "発注量 1,000 個で発注費と保管費がどちらも 50 万円になり、総費用 100 万円が最小",
+        x: {
+          label: "1 回当たりの発注量（個）",
+          min: 0,
+          max: 3000,
+          ticks: [0, 1000, 2000, 3000],
+        },
+        y: { label: "年間の費用（万円）", min: 0, max: 200, ticks: [0, 50, 100, 150, 200] },
+        series: [
+          {
+            label: "年間の発注費",
+            kind: "curve",
+            points: [
+              [300, 166.67],
+              [400, 125],
+              [500, 100],
+              [600, 83.33],
+              [800, 62.5],
+              [1000, 50],
+              [1250, 40],
+              [1500, 33.33],
+              [2000, 25],
+              [2500, 20],
+              [3000, 16.67],
+            ],
+          },
+          {
+            label: "年間の保管費",
+            points: [
+              [0, 0],
+              [3000, 150],
+            ],
+          },
+          {
+            label: "年間の総費用",
+            kind: "curve",
+            points: [
+              [300, 181.67],
+              [400, 145],
+              [500, 125],
+              [600, 113.33],
+              [800, 102.5],
+              [1000, 100],
+              [1250, 102.5],
+              [1500, 108.33],
+              [2000, 125],
+              [2500, 145],
+              [3000, 166.67],
+            ],
+          },
+        ],
+        guides: [{ x: 1000, label: "経済的発注量 1,000 個" }],
+        marks: [
+          { x: 1000, y: 100, label: "総費用 100 万円（最小）", place: "above" },
+          { x: 1000, y: 50, label: "各 50 万円", place: "right" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "経済的発注量の求め方",
+        lines: [
+          { expr: "年間の発注費 ＝ (100,000 ÷ Q) × 5,000", note: "発注回数 × 1回の費用" },
+          { expr: "年間の保管費 ＝ (Q ÷ 2) × 1,000", note: "平均在庫 × 1個の保管費" },
+          { expr: "Q² ＝ 2 × 100,000 × 5,000 ÷ 1,000 ＝ 1,000,000", note: "両者を等しいとおく" },
+          { expr: "Q ＝ 1,000 個", note: "選択肢 エ" },
+        ],
+      },
+    ],
   },
   {
     source: at(75),
@@ -2784,16 +5088,70 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "線形計画法の基本形。最適解は制約式の交点（頂点）のいずれかに現れる。",
       "2本の制約式を連立して交点を求め、両端（片方だけ作る場合）と比べれば最大値が決まる。",
     ],
-    figure: {
-      type: "calc",
-      caption: "制約式と最適解",
-      lines: [
-        { expr: "部品A：3x ＋ 2y ≦ 120", note: "Xに3個、Yに2個" },
-        { expr: "部品B：x ＋ 2y ≦ 60", note: "Xに1個、Yに2個" },
-        { expr: "2式の差：2x ≦ 60 ⇒ x ≦ 30", note: "Xの上限" },
-        { expr: "x＝30、y＝15 ⇒ x＋y＝45", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "作れる範囲（塗った部分）の角のうち、x＋y が最大になるのは 2 本の制約の交点 (30, 15)",
+        x: {
+          label: "製品 X の台数 x",
+          min: 0,
+          max: 60,
+          ticks: [0, 10, 20, 30, 40, 50, 60],
+        },
+        y: { label: "製品 Y の台数 y", min: 0, max: 60, ticks: [0, 15, 30, 45, 60] },
+        series: [
+          {
+            label: "部品A 3x＋2y＝120",
+            labelAt: 0,
+            points: [
+              [0, 60],
+              [40, 0],
+            ],
+          },
+          {
+            label: "部品B x＋2y＝60",
+            labelAt: 0,
+            points: [
+              [0, 30],
+              [60, 0],
+            ],
+          },
+          {
+            label: "利益 x＋y＝45",
+            labelAt: 0,
+            dashed: true,
+            points: [
+              [0, 45],
+              [45, 0],
+            ],
+          },
+        ],
+        areas: [
+          {
+            points: [
+              [0, 0],
+              [40, 0],
+              [30, 15],
+              [0, 30],
+            ],
+            label: "作れる範囲",
+            tone: "ok",
+          },
+        ],
+        marks: [{ x: 30, y: 15, label: "x＝30、y＝15 → 利益 45 万円", place: "right" }],
+      },
+      {
+        type: "calc",
+        caption: "制約式と最適解",
+        lines: [
+          { expr: "部品A：3x ＋ 2y ≦ 120", note: "Xに3個、Yに2個" },
+          { expr: "部品B：x ＋ 2y ≦ 60", note: "Xに1個、Yに2個" },
+          { expr: "2式の差：2x ≦ 60 ⇒ x ≦ 30", note: "Xの上限" },
+          { expr: "x＝30、y＝15 ⇒ x＋y＝45", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(76),
@@ -2823,18 +5181,47 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "自己資本＝純資産。資本金だけでなく資本剰余金・利益剰余金も含める。",
       "分母は総資本（＝総資産）。負債と純資産の合計なので、資産の側から求めてもよい。",
     ],
-    figure: {
-      type: "calc",
-      caption: "自己資本比率",
-      lines: [
-        {
-          expr: "自己資本 ＝ 2,000 ＋ 1,000 ＋ 500 ＝ 3,500",
-          note: "資本金＋資本剰余金＋利益剰余金",
-        },
-        { expr: "総資本 ＝ 6,000 ＋ 4,000 ＝ 10,000", note: "流動資産＋固定資産" },
-        { expr: "3,500 ÷ 10,000 ＝ 35％", note: "選択肢 エ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "自己資本は純資産の 3 つを合わせた 3,500。総資本は資産の合計 10,000（負債と純資産の合計と同じ）。単位は百万円",
+        cell: { w: 150, h: 44 },
+        nodes: [
+          { id: "ca", label: "流動資産\n6,000", col: 0, row: 1.6, w: 1.4 },
+          { id: "fa", label: "固定資産\n4,000", col: 0, row: 4.3, w: 1.4 },
+          { id: "cl", label: "流動負債 4,500", col: 1.6, row: 0.6, w: 1.4 },
+          { id: "fl", label: "固定負債 2,000", col: 1.6, row: 1.6, w: 1.4 },
+          { id: "cap", label: "資本金 2,000", col: 1.6, row: 3.2, w: 1.4, tone: "ok" },
+          { id: "cs", label: "資本剰余金 1,000", col: 1.6, row: 4.2, w: 1.4, tone: "ok" },
+          { id: "re", label: "利益剰余金 500", col: 1.6, row: 5.2, w: 1.4, tone: "ok" },
+        ],
+        groups: [
+          { label: "資産（総資本）10,000", col: -0.22, row: 0.2, w: 1.45, h: 6.1 },
+          { label: "負債 6,500", col: 1.38, row: 0.2, w: 1.45, h: 2.5 },
+          {
+            label: "純資産＝自己資本 3,500",
+            col: 1.38,
+            row: 2.75,
+            w: 1.45,
+            h: 3.55,
+            tone: "ok",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "自己資本比率",
+        lines: [
+          {
+            expr: "自己資本 ＝ 2,000 ＋ 1,000 ＋ 500 ＝ 3,500",
+            note: "資本金＋資本剰余金＋利益剰余金",
+          },
+          { expr: "総資本 ＝ 6,000 ＋ 4,000 ＝ 10,000", note: "流動資産＋固定資産" },
+          { expr: "3,500 ÷ 10,000 ＝ 35％", note: "選択肢 エ" },
+        ],
+      },
+    ],
   },
   {
     source: at(77),
@@ -2871,16 +5258,42 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "制約条件が1つのときは、その資源1単位当たりの限界利益が大きい製品に集中させる。",
       "1個当たりの限界利益だけで比べるとBが有利に見える。制約となる機械時間で割るのが肝心。",
     ],
-    figure: {
-      type: "calc",
-      caption: "利益が最大になる組合せ",
-      lines: [
-        { expr: "A：(30,000 − 18,000) ÷ 8 ＝ 1,500 円／時間", note: "機械1時間当たりの限界利益" },
-        { expr: "B：(25,000 − 10,000) ÷ 12 ＝ 1,250 円／時間", note: "Aより小さい" },
-        { expr: "15,000 ÷ 8 ＝ 1,875 個", note: "Aだけを作った場合の生産量" },
-        { expr: "1,875 × 12,000 − 15,000,000 ＝ 7,500,000 円", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption: "機械時間を B に回すほど利益は減る。15,000 時間すべてを A に使うと最大の 750 万円",
+        x: {
+          label: "B に回す機械時間（時間）",
+          min: 0,
+          max: 15000,
+          ticks: [0, 5000, 10000, 15000],
+        },
+        y: { label: "利益（万円）", min: 0, max: 800, ticks: [0, 200, 400, 600, 800] },
+        series: [
+          {
+            label: "利益",
+            points: [
+              [0, 750],
+              [15000, 375],
+            ],
+          },
+        ],
+        marks: [
+          { x: 0, y: 750, label: "A だけ：750 万円（イ）", place: "right" },
+          { x: 15000, y: 375, label: "B だけ：375 万円（ア）", place: "below" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "利益が最大になる組合せ",
+        lines: [
+          { expr: "A：(30,000 − 18,000) ÷ 8 ＝ 1,500 円／時間", note: "機械1時間当たりの限界利益" },
+          { expr: "B：(25,000 − 10,000) ÷ 12 ＝ 1,250 円／時間", note: "Aより小さい" },
+          { expr: "15,000 ÷ 8 ＝ 1,875 個", note: "Aだけを作った場合の生産量" },
+          { expr: "1,875 × 12,000 − 15,000,000 ＝ 7,500,000 円", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(78),
@@ -2908,6 +5321,46 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "保護されるのは「表現」であって「アイディアや規則」ではない。言語・規約・解法はその例外規定。",
       "無償で公開されているソフトウェアも著作物。フリー＝著作権がない、ではない。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "著作権法が守るのは表現。プログラムを作るのに使う言語・規約・解法には保護が及ばない",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        {
+          id: "a",
+          label: "ア フリーソフトウェア",
+          col: 0,
+          row: 0.5,
+          note: "無償で公開しても\nプログラムの著作物",
+        },
+        { id: "b", label: "イ 操作マニュアル", col: 1.5, row: 0.5, note: "言語の著作物" },
+        {
+          id: "c",
+          label: "ウ データベース",
+          col: 3,
+          row: 0.5,
+          note: "情報の選択・体系的な\n構成に創作性があれば",
+        },
+        {
+          id: "e",
+          label: "エ プログラム言語・\n規約・解法",
+          col: 0,
+          row: 2.45,
+          tone: "ok",
+          note: "プログラムの作成に用いる\n約束事や考え方",
+        },
+      ],
+      groups: [
+        {
+          label: "著作物として保護される",
+          col: -0.15,
+          row: 0.2,
+          w: 4.2,
+          h: 1.5,
+        },
+        { label: "保護が及ばない", col: -0.15, row: 1.85, w: 1.3, h: 1.9, tone: "ok" },
+      ],
+    },
   },
   {
     source: at(79),
@@ -2932,6 +5385,47 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "意匠法が守るのは「見た目のデザイン」。技術的な仕組みは特許法、名称やロゴは商標法。",
       "GUIのようなソフトウェアの画面も、条件を満たせば意匠登録の対象になる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "1 つのソフトウェアでも、守る法律は面ごとに違う。見た目のデザイン（GUI）は意匠法、技術的な仕組みは特許法の対象になり得る",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "app", label: "独自の\nソフトウェア・\nサービス", col: 0, row: 1.25 },
+        {
+          id: "look",
+          label: "見た目のデザイン\nア GUI",
+          col: 2.2,
+          row: 0,
+          tone: "ok",
+          note: "意匠法（画像意匠として登録できる）",
+          notePlace: "right",
+        },
+        {
+          id: "tech",
+          label: "技術的な仕組み\nイ アルゴリズム\nウ 通信プロトコル\nエ ビジネスモデル",
+          col: 2.2,
+          row: 1.4,
+          align: "left",
+          note: "特許法の対象になり得る\n（技術的思想の創作）\nエは情報技術と結び付けば\nビジネスモデル特許",
+          notePlace: "right",
+        },
+        {
+          id: "name",
+          label: "名称・ロゴ",
+          col: 2.2,
+          row: 2.6,
+          tone: "muted",
+          note: "商標法",
+          notePlace: "right",
+        },
+      ],
+      edges: [
+        { from: "app", to: "look" },
+        { from: "app", to: "tech" },
+        { from: "app", to: "name" },
+      ],
+    },
   },
   {
     source: at(80),
@@ -2957,10 +5451,50 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       },
     ],
     explain:
-      "労働施策総合推進法は、労働者が能力を有効に発揮できるようにするための総合的な施策を定めた法律。2020年の改正で、職場における優越的な関係を背景とした言動（パワーハラスメント）について、相談体制の整備などの雇用管理上の措置を事業主に義務付けた。",
+      "労働施策総合推進法は、労働者が能力を有効に発揮できるようにするための総合的な施策を定めた法律。2019年の改正（2020年6月から順次施行）で、職場における優越的な関係を背景とした言動（パワーハラスメント）について、相談体制の整備などの雇用管理上の措置を事業主に義務付けた。",
     points: [
       "通称「パワハラ防止法」と呼ばれるのはこの法律。事業主に防止措置を義務付けている点が要点。",
       "最低賃金法・労働組合法・労働基準法など、隣接する法律との守備範囲の違いを押さえる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "労働施策総合推進法は、事業主にパワーハラスメントの防止措置（相談体制の整備など）を義務付けている",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "law", label: "労働施策\n総合推進法", col: 0, row: 0, tone: "ok" },
+        { id: "emp", label: "事業主", col: 2, row: 0 },
+        { id: "wk", label: "労働者", col: 4, row: 0, shape: "actor" },
+        {
+          id: "mw",
+          label: "最低賃金法\n最低賃金の決め方（ウ）",
+          col: 0,
+          row: 1.95,
+          tone: "muted",
+        },
+        { id: "lu", label: "労働組合法\n団体交渉（エ）", col: 2, row: 1.95, tone: "muted" },
+        {
+          id: "in",
+          label: "関係省庁の申合せなど\nインターンシップ（イ）",
+          col: 4,
+          row: 1.95,
+          tone: "muted",
+        },
+      ],
+      groups: [
+        {
+          label: "ほかの選択肢の内容は、別の法律や取決めの守備範囲",
+          col: -0.3,
+          row: 1.4,
+          w: 5.45,
+          h: 1.5,
+        },
+      ],
+      edges: [
+        { from: "law", to: "emp", label: "パワハラ防止の\n措置を義務付け（ア）", tone: "ok" },
+        { from: "emp", to: "wk", bend: 0.25, label: "相談体制の整備・\n適切な対応" },
+        { from: "wk", to: "emp", bend: 0.25, label: "相談" },
+      ],
+    },
   },
 ];

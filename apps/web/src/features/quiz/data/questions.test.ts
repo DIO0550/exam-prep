@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import {
+  chartProblems,
+  diagramProblems,
+  karnaughProblems,
+  sequenceProblems,
+  vennProblems,
+} from "../figure-layout";
 import type { Question } from "../types";
 import { figuresOf, SKETCH_NAMES, shortSource, sourceId, timelineGroups } from "../types";
 import { QUESTION_SETS } from "./questions";
@@ -193,6 +200,46 @@ describe("問題データ", () => {
         for (const index of row.swap ?? []) {
           expect(index, `${nameOf(question)} の段「${row.label}」の交換`).toBeLessThan(width ?? 0);
         }
+      }
+    }
+  });
+
+  it("1 つの問題の図は、見出しが重ならない", () => {
+    // 見出しを React のキーに使っているので、同じ見出しの図が 2 つあると片方が消える。
+    for (const question of ALL) {
+      const captions = figuresOf(question).map((figure) => figure.caption);
+      expect(new Set(captions).size, `${nameOf(question)} の図の見出し`).toBe(captions.length);
+    }
+  });
+
+  it("構成図・シーケンス図・グラフ・ベン図・カルノー図は、描いたときに崩れない", () => {
+    // 部品の重なり、枠をまたぐ部品、軸からはみ出す点、無い登場人物への矢印など。
+    // 型では落ちず、画面を開くまで気付けないものを、描くときと同じ座標で確かめる。
+    for (const question of ALL) {
+      for (const figure of figuresOf(question)) {
+        const problems =
+          figure.type === "diagram"
+            ? diagramProblems(figure)
+            : figure.type === "sequence"
+              ? sequenceProblems(figure)
+              : figure.type === "chart"
+                ? chartProblems(figure)
+                : figure.type === "venn"
+                  ? vennProblems(figure)
+                  : figure.type === "karnaugh"
+                    ? karnaughProblems(figure)
+                    : [];
+        expect(problems, `${nameOf(question)} の「${figure.caption}」`).toEqual([]);
+      }
+    }
+  });
+
+  it("4 象限の図は、4 つのマスの呼び名がそろって別々になっている", () => {
+    for (const question of ALL) {
+      for (const figure of figuresOf(question)) {
+        if (figure.type !== "quadrant") continue;
+        const titles = figure.cells.map((cell) => cell.title);
+        expect(new Set(titles).size, `${nameOf(question)} の「${figure.caption}」`).toBe(4);
       }
     }
   });

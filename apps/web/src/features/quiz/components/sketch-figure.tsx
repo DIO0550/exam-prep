@@ -30,6 +30,102 @@ const Frame = ({ children }: { children: ReactNode }) => (
   </svg>
 );
 
+/** 見本の中の文字。線の色（currentColor）ではなく文字の色で出す。 */
+const Label = ({
+  x,
+  y,
+  size = 9,
+  bold = false,
+  anchor = "middle",
+  children,
+}: {
+  x: number;
+  y: number;
+  size?: number;
+  bold?: boolean;
+  anchor?: "start" | "middle" | "end";
+  children: ReactNode;
+}) => (
+  <text
+    x={x}
+    y={y}
+    textAnchor={anchor}
+    fontSize={size}
+    fontWeight={bold ? 700 : 400}
+    className="fill-ink"
+    stroke="none"
+  >
+    {children}
+  </text>
+);
+
+/**
+ * 2×2 の区分の見本（SWOT・アンゾフ）。上に列の見出し、左に行の見出しを置き、
+ * マスには左上・右上・左下・右下の順に文字を入れる。filled のマスだけ塗る。
+ */
+const Grid2x2 = ({
+  cols,
+  rows,
+  cells,
+  filled = [],
+}: {
+  cols: [string, string];
+  rows: [string, string];
+  cells: [ReactNode, ReactNode, ReactNode, ReactNode];
+  filled?: number[];
+}) => (
+  <>
+    {[0, 1, 2, 3].map((index) => (
+      <rect
+        key={index}
+        x={index % 2 === 0 ? 46 : 121}
+        y={index < 2 ? 22 : 69}
+        width="75"
+        height="47"
+        className={filled.includes(index) ? FILL : BOX}
+      />
+    ))}
+    <Label x={83.5} y={15}>
+      {cols[0]}
+    </Label>
+    <Label x={158.5} y={15}>
+      {cols[1]}
+    </Label>
+    <Label x={23} y={49}>
+      {rows[0]}
+    </Label>
+    <Label x={23} y={96}>
+      {rows[1]}
+    </Label>
+    {cells.map((cell, index) => (
+      <g
+        // biome-ignore lint/suspicious/noArrayIndexKey: マスの位置そのものがキー
+        key={index}
+        transform={`translate(${index % 2 === 0 ? 83.5 : 158.5} ${index < 2 ? 45.5 : 92.5})`}
+      >
+        {cell}
+      </g>
+    ))}
+  </>
+);
+
+/** 2×2 のマスの中身。大きい記号と、その下の小さい言葉。 */
+const Cell = ({ mark, word }: { mark?: string; word: string }) =>
+  mark ? (
+    <>
+      <Label x={0} y={-1} size={14} bold>
+        {mark}
+      </Label>
+      <Label x={0} y={13}>
+        {word}
+      </Label>
+    </>
+  ) : (
+    <Label x={0} y={4} size={10} bold>
+      {word}
+    </Label>
+  );
+
 /** 矢印の先端。角度は使う側で transform を付けて合わせる。 */
 const Arrow = ({ x, y, angle = 0 }: { x: number; y: number; angle?: number }) => (
   <path
@@ -469,6 +565,273 @@ const SKETCHES: Record<SketchName, ReactNode> = {
     </Frame>
   ),
 
+  SWOT分析: (
+    <Frame>
+      <title>SWOT分析</title>
+      <Grid2x2
+        cols={["プラス要因", "マイナス要因"]}
+        rows={["内部", "外部"]}
+        cells={[
+          <Cell key="s" mark="S" word="強み" />,
+          <Cell key="w" mark="W" word="弱み" />,
+          <Cell key="o" mark="O" word="機会" />,
+          <Cell key="t" mark="T" word="脅威" />,
+        ]}
+        filled={[0, 2]}
+      />
+    </Frame>
+  ),
+
+  "3C分析": (
+    <Frame>
+      <title>3C分析</title>
+      <circle cx="100" cy="34" r="26" className={BOX} />
+      <circle cx="58" cy="86" r="26" className={BOX} />
+      <circle cx="142" cy="86" r="26" className={FILL} />
+      <Label x={100} y={32} size={11} bold>
+        顧客
+      </Label>
+      <Label x={100} y={45} size={8}>
+        市場
+      </Label>
+      <Label x={58} y={90} size={11} bold>
+        競合
+      </Label>
+      <Label x={142} y={90} size={11} bold>
+        自社
+      </Label>
+    </Frame>
+  ),
+
+  PEST分析: (
+    <Frame>
+      <title>PEST分析</title>
+      <rect x="62" y="46" width="76" height="28" rx="4" className={FILL} />
+      <Label x={100} y={64} size={10} bold>
+        マクロ環境
+      </Label>
+      {(
+        [
+          [6, 8, "P", "政治"],
+          [138, 8, "E", "経済"],
+          [6, 88, "S", "社会"],
+          [138, 88, "T", "技術"],
+        ] as const
+      ).map(([x, y, mark, word]) => (
+        <g key={mark}>
+          <rect x={x} y={y} width="56" height="24" rx="3" className={BOX} />
+          <Label x={x + 17} y={y + 17} size={13} bold>
+            {mark}
+          </Label>
+          <Label x={x + 38} y={y + 16}>
+            {word}
+          </Label>
+        </g>
+      ))}
+      <path
+        d="M62 32 L74 46 M138 32 L126 46 M62 88 L74 74 M138 88 L126 74"
+        className="stroke-current"
+        fill="none"
+      />
+    </Frame>
+  ),
+
+  ファイブフォース分析: (
+    <Frame>
+      <title>ファイブフォース分析</title>
+      <rect x="62" y="46" width="76" height="28" rx="4" className={FILL} />
+      <Label x={100} y={64} size={9} bold>
+        業界内の競争
+      </Label>
+      {(
+        [
+          [70, 4, 60, "新規参入"],
+          [70, 96, 60, "代替品"],
+          [2, 50, 44, "売り手"],
+          [154, 50, 44, "買い手"],
+        ] as const
+      ).map(([x, y, w, word]) => (
+        <g key={word}>
+          <rect x={x} y={y} width={w} height="20" rx="3" className={BOX} />
+          <Label x={x + w / 2} y={y + 14}>
+            {word}
+          </Label>
+        </g>
+      ))}
+      <path
+        d="M100 24 V44 M100 96 V76 M46 60 H60 M154 60 H140"
+        className="stroke-current"
+        fill="none"
+      />
+      <Arrow x={100} y={45} angle={90} />
+      <Arrow x={100} y={75} angle={-90} />
+      <Arrow x={61} y={60} angle={0} />
+      <Arrow x={139} y={60} angle={180} />
+    </Frame>
+  ),
+
+  バリューチェーン: (
+    <Frame>
+      <title>バリューチェーン</title>
+      {["全般管理", "人事・労務", "技術開発", "調達"].map((word, index) => (
+        <g key={word}>
+          <rect x="8" y={6 + index * 13} width="150" height="13" className={BOX} />
+          <Label x={83} y={16 + index * 13} size={8}>
+            {word}
+          </Label>
+        </g>
+      ))}
+      {["購買", "製造", "出荷", "販売", "サービス"].map((word, index) => (
+        <g key={word}>
+          <rect x={8 + index * 30} y="62" width="30" height="50" className={FILL} />
+          <Label x={23 + index * 30} y={90} size={8}>
+            {word}
+          </Label>
+        </g>
+      ))}
+      <path d="M158 6 L194 59 L158 112 Z" className={BOX} />
+      <Label x={172} y={62} size={8}>
+        利益
+      </Label>
+    </Frame>
+  ),
+
+  バランススコアカード: (
+    <Frame>
+      <title>バランススコアカード</title>
+      {["財務", "顧客", "業務プロセス", "学習と成長"].map((word, index) => (
+        <g key={word}>
+          <rect
+            x="44"
+            y={4 + index * 29}
+            width="112"
+            height="20"
+            rx="3"
+            className={index === 0 ? FILL : BOX}
+          />
+          <Label x={100} y={18 + index * 29} size={10} bold={index === 0}>
+            {word}
+          </Label>
+        </g>
+      ))}
+      {[1, 2, 3].map((index) => (
+        <g key={index}>
+          <path
+            d={`M100 ${4 + index * 29} V${24 + (index - 1) * 29 + 2}`}
+            className="stroke-current"
+          />
+          <Arrow x={100} y={25 + (index - 1) * 29} angle={-90} />
+        </g>
+      ))}
+      <Label x={170} y={62} size={8} anchor="start">
+        因果
+      </Label>
+    </Frame>
+  ),
+
+  PPM: (
+    <Frame>
+      <title>PPM</title>
+      <Grid2x2
+        cols={["占有率 高", "占有率 低"]}
+        rows={["成長率高", "成長率低"]}
+        cells={[
+          <Cell key="star" word="花形" />,
+          <Cell key="q" word="問題児" />,
+          <Cell key="cow" word="金のなる木" />,
+          <Cell key="dog" word="負け犬" />,
+        ]}
+        filled={[0]}
+      />
+    </Frame>
+  ),
+
+  アンゾフの成長マトリクス: (
+    <Frame>
+      <title>アンゾフの成長マトリクス</title>
+      <Grid2x2
+        cols={["既存製品", "新製品"]}
+        rows={["既存市場", "新市場"]}
+        cells={[
+          <Cell key="pen" word="市場浸透" />,
+          <Cell key="dev" word="製品開発" />,
+          <Cell key="mkt" word="市場開拓" />,
+          <Cell key="div" word="多角化" />,
+        ]}
+        filled={[3]}
+      />
+    </Frame>
+  ),
+
+  VRIO分析: (
+    <Frame>
+      <title>VRIO分析</title>
+      {(
+        [
+          ["V", "経済価値"],
+          ["R", "希少性"],
+          ["I", "模倣困難"],
+          ["O", "組織"],
+        ] as const
+      ).map(([mark, word], index) => (
+        <g key={mark}>
+          <rect
+            x={4 + index * 49}
+            y="30"
+            width="40"
+            height="44"
+            rx="3"
+            className={index === 3 ? FILL : BOX}
+          />
+          <Label x={24 + index * 49} y={52} size={14} bold>
+            {mark}
+          </Label>
+          <Label x={24 + index * 49} y={67} size={8}>
+            {word}
+          </Label>
+        </g>
+      ))}
+      {[0, 1, 2].map((index) => (
+        <g key={index}>
+          <path d={`M${44 + index * 49} 52 H${51 + index * 49}`} className="stroke-current" />
+          <Arrow x={53 + index * 49} y={52} />
+        </g>
+      ))}
+      <Label x={100} y={98}>
+        順に問い、全部満たすと
+      </Label>
+      <Label x={100} y={111}>
+        持続的な競争優位
+      </Label>
+    </Frame>
+  ),
+
+  ビジネスモデルキャンバス: (
+    <Frame>
+      <title>ビジネスモデルキャンバス</title>
+      {(
+        [
+          [4, 4, 38, 76, "パートナー"],
+          [42, 4, 38, 38, "主な活動"],
+          [42, 42, 38, 38, "リソース"],
+          [80, 4, 40, 76, "価値提案"],
+          [120, 4, 38, 38, "顧客関係"],
+          [120, 42, 38, 38, "チャネル"],
+          [158, 4, 38, 76, "顧客"],
+          [4, 80, 96, 34, "コスト構造"],
+          [100, 80, 96, 34, "収益の流れ"],
+        ] as const
+      ).map(([x, y, w, h, word]) => (
+        <g key={word}>
+          <rect x={x} y={y} width={w} height={h} className={word === "価値提案" ? FILL : BOX} />
+          <Label x={x + w / 2} y={y + h / 2 + 3} size={7}>
+            {word}
+          </Label>
+        </g>
+      ))}
+    </Frame>
+  ),
+
   信頼度成長曲線: (
     <Frame>
       <title>信頼度成長曲線</title>
@@ -493,7 +856,7 @@ type SketchFigureBlockProps = {
 
 export const SketchFigureBlock = ({ figure }: SketchFigureBlockProps) => {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3.5">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3.5">
       {figure.items.map((item) => (
         <div
           key={item.name}
