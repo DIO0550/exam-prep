@@ -1136,7 +1136,7 @@ export const GAIP_MOCK_1: [Question, ...Question[]] = [
     source: at(43),
     field: CH5,
     answer: 3,
-    text: "3 つの基本理念に関する次の記述のうち、誤っているものはどれか。",
+    text: "「人間中心の AI 社会原則」が掲げる 3 つの基本理念に関する次の記述のうち、誤っているものはどれか。",
     choices: [
       {
         text: "Dignity は、人間が AI を道具として使いこなし、人間の様々な能力をさらに発揮できる社会を指す。",
