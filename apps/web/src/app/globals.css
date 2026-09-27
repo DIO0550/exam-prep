@@ -133,3 +133,20 @@
   /* 演習画面の問題文。 */
   font-size: calc(17px * var(--text-scale));
 }
+
+/*
+ * 横にはみ出す図の、はみ出している側にだけ影を出す（スクロールできることを示す）。
+ * 手前の地色のグラデーションは中身と一緒に動き（local）、奥の影は枠に固定される（scroll）。
+ * 端までスクロールすると地色が影を覆うので、はみ出していない側には影が出ない。
+ */
+@utility scroll-shadow-x {
+  background:
+    linear-gradient(to right, var(--color-surface) 30%, transparent) left / 24px 100% no-repeat
+    local,
+    linear-gradient(to left, var(--color-surface) 30%, transparent) right / 24px 100% no-repeat
+    local,
+    radial-gradient(farthest-side at 0 50%, rgb(22 24 29 / 0.14), transparent) left / 10px 100%
+    no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(22 24 29 / 0.14), transparent) right / 10px 100%
+    no-repeat scroll;
+}

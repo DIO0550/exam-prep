@@ -27,7 +27,7 @@ export const SvgFrame = ({
   label: string;
   children: ReactNode;
 }) => (
-  <div className="overflow-x-auto text-read-sm">
+  <div className="scroll-shadow-x overflow-x-auto text-read-sm">
     <svg
       viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
       role="img"
