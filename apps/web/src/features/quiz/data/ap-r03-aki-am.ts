@@ -448,7 +448,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
     explain:
       "再使用可能プログラムは、ロードし直さずに繰り返し呼び出せるプログラム。そのために、開始時に変数を初期化するか、終了時に変数を初期状態へ戻す必要がある。",
     points: [
-      "再帰的なら再入可能、再入可能なら再使用可能、という入れ子の関係。再帰的 ⊂ 再入可能 ⊂ 再使用可能 の順に範囲が狭く、条件は厳しくなる。",
+      "再帰的なら再入可能、再入可能なら再使用可能、という入れ子の関係（再帰的 ⊂ 再入可能 ⊂ 再使用可能）。内側ほど範囲が狭く、条件が厳しい。再配置可能はこの入れ子とは別の性質。",
       "再入可能はコードを共用しデータは各タスクに持つ。「両方を共用」は誤り、という形で問われやすい。",
     ],
     figure: [
@@ -569,12 +569,11 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
             points: [
               [0, 32767],
               [32767, 32767],
-              [32767, 32767],
-              [32767, 32767],
               [32767, 0],
             ],
             label: "オーバフロー",
             tone: "ng",
+            labelAt: [24000, 16000],
           },
           {
             points: [
@@ -609,7 +608,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
         guides: [{ x: 0 }, { y: 0 }],
         marks: [
           { x: 16384, y: 16384, label: "ア：16,384＋16,384", place: "left" },
-          { x: 32000, y: 32000, label: "イ：32,000＋32,000", place: "left" },
+          { x: 32000, y: 32000, label: "イ：32,000＋32,000", place: "below" },
         ],
       },
       {
@@ -1835,33 +1834,21 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       caption: "主キーの一部（受注番号）だけで決まる項目が残っている＝第2正規形ではない",
       cell: { w: 150, h: 70 },
       nodes: [
-        { id: "keyname", label: "主キー", col: 0, row: 1.6, shape: "text" },
-        {
-          id: "key",
-          label: "",
-          col: 0.9,
-          row: 1.6,
-          fields: ["受注番号", "　項番　"],
-          tone: "accent",
-        },
+        { id: "no", label: "受注番号", col: 0.45, row: 1.6, tone: "accent" },
+        { id: "seq", label: "項番", col: 1.35, row: 1.6, tone: "accent" },
+        { id: "whole", label: "（2 つ合わせたキー全体）", col: 0.9, row: 2.3, shape: "text" },
         { id: "date", label: "受注日", col: 0.35, row: 0 },
-        { id: "cust", label: "得意先コード", col: 1.4, row: 0 },
-        { id: "item", label: "商品コード", col: 0.45, row: 3.1 },
-        { id: "qty", label: "数量", col: 1.35, row: 3.1 },
-        { id: "price", label: "単価", col: 0.45, row: 4.5 },
+        { id: "cust", label: "得意先コード", col: 1.35, row: 0 },
+        { id: "item", label: "商品コード", col: 0.45, row: 3.7 },
+        { id: "qty", label: "数量", col: 1.35, row: 3.7 },
+        { id: "price", label: "単価", col: 0.45, row: 5.1 },
       ],
+      groups: [{ label: "主キー", col: 0.4, row: 1.5, w: 2, h: 1.6, tone: "accent" }],
       edges: [
-        {
-          from: "key",
-          to: "date",
-          fromField: 0,
-          tone: "ng",
-          label: "部分関数従属",
-          labelAt: 0.62,
-        },
-        { from: "key", to: "cust", fromField: 0, tone: "ng" },
-        { from: "key", to: "item" },
-        { from: "key", to: "qty", label: "キー全体で決まる" },
+        { from: "no", to: "date", tone: "ng", label: "部分関数従属" },
+        { from: "no", to: "cust", tone: "ng" },
+        { from: "whole", to: "item" },
+        { from: "whole", to: "qty", label: "キー全体で決まる" },
         { from: "item", to: "price", label: "推移的関数従属" },
       ],
     },
@@ -2364,7 +2351,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       },
       {
         text: "IoT機器メーカ、IoTシステムやサービスの提供者、利用者の役割の整理",
-        note: "関係者の役割を明確にする方針段階の対策例。",
+        note: "要点20「IoTシステム・サービスにおける関係者の役割を認識する」の対策例。要点17と同じ運用・保守の段階だが、別の要点。",
       },
       {
         text: "PDCAサイクルの実施、組織としてIoTシステムやサービスのリスクの認識、対策を行う体制の構築",
@@ -2375,19 +2362,28 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "出荷・リリース後に脆弱性が見つかっても、アップデートの手段がなければ対処できない。そのため、アップデート機能をあらかじめ搭載し、実際に配信・適用できる体制を作ることが対策例として挙げられている。",
     points: [
       "ガイドラインは「方針・分析・設計・構築／接続・運用／保守」の5指針から成る。要点17は運用／保守の段階。",
-      "選択肢が「いつの話か」で分かれている。設問が運用段階を問うているので、出荷後に続く活動を選ぶ。",
+      "要点17の名前「出荷・リリース後も安全安心な状態を維持する」に直結するのは、出荷後に見つかった脆弱性をふさぐアップデート。ウの役割の整理も同じ運用・保守の段階だが、要点20の対策例。",
     ],
     figure: {
       type: "flow",
-      caption: "IoT セキュリティガイドラインの5指針。要点17 は運用／保守の段階",
+      caption: "IoT セキュリティガイドラインの5指針と、選択肢の対策例の位置",
       steps: [
-        { actor: "方針", text: "経営者が IoT セキュリティに取り組む方針を定める" },
-        { actor: "分析", text: "守るべきものと、起こりうるリスクを洗い出す" },
+        {
+          actor: "方針",
+          text: "経営者が IoT セキュリティにコミットし、体制を作る（エ の PDCA・体制の構築は要点1）",
+        },
+        {
+          actor: "分析",
+          text: "守るべきものを特定し、リスクを想定する（ア の保護すべきデータの特定は要点3）",
+        },
         { actor: "設計", text: "守るべきものを守る設計を考える" },
-        { actor: "構築・接続", text: "機能・性能を確かめ、安全につなぐ" },
+        {
+          actor: "構築・接続",
+          text: "ネットワーク上での対策を考える（状態の記録、初期設定、認証など）",
+        },
         {
           actor: "運用・保守",
-          text: "出荷後も脆弱性に対応できるよう、アップデート機能と配信体制を用意する",
+          text: "出荷後も安全安心な状態を保ち、情報を発信・共有する（イ のアップデートは要点17、ウ の役割の整理は要点20）",
         },
       ],
     },
@@ -3219,7 +3215,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
           210,
           "Aの終点から複数のダミー作業を引いたアローダイアグラム",
         ),
-        note: "A→Hに相当する余計なダミー作業があり、元にはない依存関係を加えてしまっている。",
+        note: "A→Fのダミーに加えてA→Hのダミーもある。A→HはA→F→Hで既に成り立つので、余計なダミー作業になっている。",
       },
       {
         text: "",
@@ -4680,8 +4676,10 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
             ],
           },
         ],
+        plot: { w: 360 },
+        guides: [{ y: 10, label: "マクシミンなら A" }],
         marks: [
-          { x: 0.82, y: 10, label: "マクシミンなら A", place: "above" },
+          { x: 0.82, y: 10, label: "" },
           { x: 4.18, y: 40, label: "マクシマックスなら D", place: "left" },
         ],
       },
