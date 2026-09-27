@@ -346,7 +346,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
       caption: "乱数で π を求める手順",
       steps: [
         { actor: "1辺1の正方形", text: "一様乱数で点(x, y)を多数打つ" },
-        { actor: "判定", text: "原点からの距離が半径以内かを調べ、円の中の点を数える" },
+        { actor: "判定", text: "円の中心からの距離が半径以内かを調べ、円の中の点を数える" },
         { actor: "割合", text: "円の中の点 ÷ 全部の点 → 面積比 π/4 に近づく" },
         { actor: "推定", text: "その割合を4倍して π の近似値とする" },
       ],
@@ -503,9 +503,9 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
               {
                 label: "主記憶",
                 bars: [
-                  { start: 0, length: 4, label: "番地0" },
-                  { start: 4, length: 4, label: "番地1" },
-                  { start: 8, length: 4, label: "番地2" },
+                  { start: 0, length: 4, label: "番地0", tone: 5 },
+                  { start: 4, length: 4, label: "番地1", tone: 5 },
+                  { start: 8, length: 4, label: "番地2", tone: 5 },
                 ],
               },
             ],
@@ -1253,10 +1253,13 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
         tickLabels: ["0", "1周期", "2周期", "3周期"],
       },
       y: { label: "出力電圧", min: -0.15, max: 1.3, ticks: [0, 1], tickLabels: ["0", "一定"] },
+      plot: { w: 520 },
       series: [
         {
           label: "出力（パルス）",
           kind: "step",
+          labelAt: 3,
+          labelPlace: "left",
           points: [
             [0, 0],
             [0, 1],
@@ -1537,8 +1540,8 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
         },
       ],
       edges: [
-        { from: "nonyu", to: "buhin", fromField: 0, label: "外部キー" },
-        { from: "nonyu", to: "maker", fromField: 3, label: "外部キー" },
+        { from: "nonyu", to: "buhin", label: "外部キー" },
+        { from: "nonyu", to: "maker", label: "外部キー" },
       ],
     },
   },
@@ -1615,17 +1618,6 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
           { from: "key", to: "qty", tone: "ok", label: "④" },
           { from: "key", to: "pr", tone: "ok", label: "⑤" },
           { from: "pn", to: "pm", label: "⑥" },
-        ],
-      },
-      {
-        type: "table",
-        caption: "関数従属性ごとに分解先を決める",
-        headers: ["関数従属性", "分解先の関係", "主キー"],
-        rows: [
-          ["① ② 注文番号 → 注文日、顧客番号", "注文", "注文番号"],
-          ["③ 顧客番号 → 顧客名", "顧客", "顧客番号"],
-          ["⑥ 商品番号 → 商品名", "商品", "商品番号"],
-          ["④ ⑤ {注文番号、商品番号} → 数量、販売単価", "注文明細", "注文番号＋商品番号"],
         ],
       },
     ],
@@ -2152,7 +2144,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "diagram",
-      caption: "IPsec はネットワーク層で IP パケットごと暗号化する",
+      caption: "IPsec はネットワーク層で IP パケットを暗号化する",
       cell: { w: 150, h: 58 },
       nodes: [
         { id: "app", label: "アプリケーション層", col: 0, row: 0, w: 1.6 },
@@ -2327,14 +2319,14 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
       nodes: [
         { id: "doc", label: "文書ファイル", col: 0, row: 0 },
         { id: "sig", label: "ディジタル署名", col: 0, row: 1.6 },
-        { id: "h1", label: "ハッシュ値\n（計算した値）", col: 1.6, row: 0 },
-        { id: "h2", label: "ハッシュ値\n（署名から取り出す）", col: 1.6, row: 1.6 },
-        { id: "cmp", label: "一致？", col: 2.8, row: 0.8, shape: "diamond" },
-        { id: "ok", label: "改ざんなし、\n鍵 Y の持ち主が署名", col: 4.1, row: -0.1, tone: "ok" },
+        { id: "h1", label: "ハッシュ値\n（計算した値）", col: 1.9, row: 0 },
+        { id: "h2", label: "ハッシュ値\n（署名から取り出す）", col: 1.9, row: 1.6 },
+        { id: "cmp", label: "一致？", col: 3.1, row: 0.8, shape: "diamond" },
+        { id: "ok", label: "改ざんなし、\n鍵 Y の持ち主が署名", col: 4.4, row: -0.1, tone: "ok" },
         {
           id: "ng",
           label: "何かが変わった\n（どこか・どちらかは不明）",
-          col: 4.1,
+          col: 4.4,
           row: 1.7,
           tone: "ng",
         },
@@ -2441,17 +2433,18 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
       {
         type: "diagram",
         caption: "共通鍵は同じ鍵、公開鍵は対の鍵。秘匿と署名では使う鍵の持ち主が逆になる",
+        cell: { w: 170 },
         groups: [
           {
             label: "共通鍵暗号方式（AES など）",
             col: -0.2,
             row: -0.35,
-            w: 4.3,
+            w: 4.5,
             h: 1.1,
             tone: "ok",
           },
-          { label: "公開鍵暗号方式で秘匿（RSA など）", col: -0.2, row: 1.05, w: 4.3, h: 1.1 },
-          { label: "ディジタル署名（公開鍵暗号方式）", col: -0.2, row: 2.45, w: 4.3, h: 1.2 },
+          { label: "公開鍵暗号方式で秘匿（RSA など）", col: -0.2, row: 1.05, w: 4.5, h: 1.1 },
+          { label: "ディジタル署名（公開鍵暗号方式）", col: -0.2, row: 2.45, w: 4.5, h: 1.2 },
         ],
         nodes: [
           { id: "p1", label: "平文", col: 0, row: 0 },
@@ -2672,7 +2665,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "sketch",
-      caption: "振る舞いを表す図の形",
+      caption: "UML の図の形（クラス図だけが構造図で、ほかは振る舞い図）",
       items: [
         {
           name: "アクティビティ図",
@@ -2817,7 +2810,8 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
     figure: [
       {
         type: "diagram",
-        caption: "スクラムの 1 スプリント。イベント（丸）を回しながら作成物（四角）を作る",
+        caption:
+          "スクラムの 1 スプリント。イベントと作業（角の丸い箱）を回しながら作成物（四角）を作る",
         groups: [
           { label: "1 回のスプリント（1 か月以内）", col: 0.9, row: -0.8, w: 4.55, h: 3.45 },
         ],
@@ -2911,7 +2905,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
             label: "工場で製造\n（業として実施）",
             col: 0.5,
             row: 0,
-            tone: "ng",
+            tone: "accent",
             note: "許諾が必要",
           },
           {
@@ -2919,8 +2913,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
             label: "家庭で個人的に利用",
             col: 0.5,
             row: 1.1,
-            tone: "ok",
-            note: "業としての実施ではない",
+            note: "業としての実施ではない（許諾は不要）",
           },
           { id: "sale", label: "米国で販売", col: 3, row: 0 },
         ],
@@ -3121,7 +3114,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
             label: "どちらにも使う",
             shaded: ["AB"],
             verdict: "ok",
-            note: "受容（これが正解）・エスカレーション",
+            note: "受容・エスカレーション",
           },
         ],
       },
@@ -4067,49 +4060,33 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
       "SoE＝つながりを作る（顧客接点・変化が速い）、SoR＝記録を残す（基幹系・安定重視）。",
       "求められる性質が違うので、開発の進め方（アジャイルかウォーターフォールか）も変わる。",
     ],
-    figure: [
-      {
-        type: "diagram",
-        caption: "SoE は顧客との接点でつながりを作り、SoR は取引を正確に記録する",
-        nodes: [
-          { id: "cust", label: "顧客・消費者", col: 0, row: 0.5, shape: "actor" },
-          {
-            id: "soe",
-            label: "SoE\n（アプリ・SNS 連携・\nレコメンド）",
-            col: 1.8,
-            row: 0.5,
-            tone: "accent",
-            note: "変化に素早く追随",
-          },
-          {
-            id: "sor",
-            label: "SoR\n（会計・販売管理）",
-            col: 3.6,
-            row: 0.5,
-            shape: "db",
-            note: "正確さと安定を重視",
-          },
-        ],
-        edges: [
-          { from: "cust", to: "soe", arrow: "both", label: "つながりを深める" },
-          { from: "soe", to: "sor", arrow: "both", label: "取引を記録・参照" },
-        ],
-      },
-      {
-        type: "table",
-        caption: "SoE と SoR",
-        headers: ["区分", "目的", "例", "重視すること"],
-        rows: [
-          [
-            "SoE",
-            "顧客とのつながりを深める",
-            "モバイルアプリ、SNS連携、レコメンド",
-            "変化への追随、俊敏さ",
-          ],
-          ["SoR", "取引や事実を正確に記録する", "会計システム、販売管理システム", "正確性、安定性"],
-        ],
-      },
-    ],
+    figure: {
+      type: "diagram",
+      caption: "SoE は顧客との接点でつながりを作り、SoR は取引を正確に記録する",
+      nodes: [
+        { id: "cust", label: "顧客・消費者", col: 0, row: 0.5, shape: "actor" },
+        {
+          id: "soe",
+          label: "SoE\n（アプリ・SNS 連携・\nレコメンド）",
+          col: 1.9,
+          row: 0.5,
+          tone: "accent",
+          note: "変化に素早く追随",
+        },
+        {
+          id: "sor",
+          label: "SoR\n（会計・販売管理）",
+          col: 4.1,
+          row: 0.5,
+          shape: "db",
+          note: "正確さと安定を重視",
+        },
+      ],
+      edges: [
+        { from: "cust", to: "soe", arrow: "both", label: "つながりを深める" },
+        { from: "soe", to: "sor", arrow: "both", label: "取引を記録・参照" },
+      ],
+    },
   },
   {
     source: at(73),
@@ -4581,17 +4558,38 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
       type: "diagram",
       caption: "特定個人情報を提供できるのは、法律に定めがある場合だけ",
       nodes: [
-        { id: "biz", label: "事業者", col: 0, row: 1.2, note: "特定個人情報を持つ" },
-        { id: "ppc", label: "個人情報保護委員会\n（立入検査）", col: 2.6, row: 0, tone: "ok" },
-        { id: "b1", label: "転籍先の B 社", col: 2.6, row: 0.8 },
-        { id: "b2", label: "出向先の B 社", col: 2.6, row: 1.6 },
-        { id: "vd", label: "システムの\nベンダ", col: 2.6, row: 2.4 },
+        { id: "biz", label: "事業者", col: 0, row: 1.5, note: "特定個人情報を持つ" },
+        { id: "ppc", label: "個人情報保護委員会\n（立入検査）", col: 2.9, row: 0, tone: "ok" },
+        { id: "b1", label: "転籍先の B 社", col: 2.9, row: 1 },
+        { id: "b2", label: "出向先の B 社", col: 2.9, row: 2 },
+        { id: "vd", label: "システムの\nベンダ", col: 2.9, row: 3 },
       ],
       edges: [
-        { from: "biz", to: "ppc", tone: "ok", label: "資料を提出できる" },
-        { from: "biz", to: "b1", tone: "ng", blocked: true, label: "源泉徴収票のために渡す" },
-        { from: "biz", to: "b2", tone: "ng", blocked: true, label: "業務成績に付けて渡す" },
-        { from: "biz", to: "vd", tone: "ng", blocked: true, label: "営業担当のマスタに使う" },
+        { from: "biz", to: "ppc", tone: "ok", label: "資料を提出できる", labelAt: 0.6 },
+        {
+          from: "biz",
+          to: "b1",
+          tone: "ng",
+          blocked: true,
+          label: "源泉徴収票のために渡す",
+          labelAt: 0.6,
+        },
+        {
+          from: "biz",
+          to: "b2",
+          tone: "ng",
+          blocked: true,
+          label: "業務成績に付けて渡す",
+          labelAt: 0.6,
+        },
+        {
+          from: "biz",
+          to: "vd",
+          tone: "ng",
+          blocked: true,
+          label: "営業担当のマスタに使う",
+          labelAt: 0.6,
+        },
       ],
     },
   },
