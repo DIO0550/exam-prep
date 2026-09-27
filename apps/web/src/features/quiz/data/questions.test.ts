@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { chartProblems, diagramProblems, sequenceProblems, vennProblems } from "../figure-layout";
+import {
+  chartProblems,
+  diagramProblems,
+  karnaughProblems,
+  sequenceProblems,
+  vennProblems,
+} from "../figure-layout";
 import type { Question } from "../types";
 import { figuresOf, SKETCH_NAMES, shortSource, sourceId, timelineGroups } from "../types";
 import { QUESTION_SETS } from "./questions";
