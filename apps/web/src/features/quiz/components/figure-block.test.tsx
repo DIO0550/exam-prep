@@ -6,6 +6,7 @@ import type {
   ChartFigure,
   DiagramFigure,
   FlowFigure,
+  KarnaughFigure,
   QuadrantFigure,
   SequenceFigure,
   TimelineFigure,
@@ -223,5 +224,25 @@ describe("FigureBlock（ベン図と 4 象限）", () => {
     render(<FigureBlock figure={figure} variant="page" />);
     expect(screen.getByText("占有率 →")).toBeInTheDocument();
     expect(screen.getByText("金のなる木")).toBeInTheDocument();
+  });
+});
+
+describe("FigureBlock（カルノー図）", () => {
+  const figure: KarnaughFigure = {
+    type: "karnaugh",
+    caption: "カルノー図",
+    rows: ["A", "B"],
+    cols: ["C", "D"],
+    values: ["1001", "0110", "0110", "0000"],
+    groups: ["00-0", "-1-1"],
+  };
+
+  it("まとめから項と式を作って、図の下に出す", () => {
+    render(<FigureBlock figure={figure} variant="page" />);
+    expect(screen.getByText("A\u0305・B\u0305・D\u0305")).toBeInTheDocument();
+    expect(screen.getByText("まとめると A\u0305・B\u0305・D\u0305 ＋ B・D")).toBeInTheDocument();
+    // 列の見出しはグレイコード順（01 の次は 11）。
+    const codes = screen.getAllByText(/^(00|01|11|10)$/).map((element) => element.textContent);
+    expect(codes.slice(0, 4)).toEqual(["00", "01", "11", "10"]);
   });
 });

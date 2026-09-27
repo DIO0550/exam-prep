@@ -3,11 +3,14 @@ import { describe, expect, it } from "vitest";
 import {
   chartProblems,
   clipToNode,
+  coveredCells,
   diagramProblems,
+  karnaughProblems,
   layoutDiagram,
   layoutSequence,
   sequenceProblems,
   stepNumber,
+  termLabel,
   textWidth,
   vennProblems,
 } from "./figure-layout";
@@ -176,5 +179,40 @@ describe("vennProblems", () => {
     });
     expect(problems).toContain("塗る部分「C」が集合の数と合わない");
     expect(problems).toContain("全体集合が無いのに、どれにも入らない部分を塗っている");
+  });
+});
+
+describe("カルノー図", () => {
+  const base = { rows: ["A", "B"], cols: ["C", "D"] };
+
+  it("まとめの形から、覆うマスと項の文字を作る", () => {
+    // B・D は、AB＝01・11 の行 × CD＝01・11 の列（画面の並びで 1〜2 行目・1〜2 列目）。
+    expect(coveredCells(base, "-1-1")).toEqual([
+      [1, 1],
+      [1, 2],
+      [2, 1],
+      [2, 2],
+    ]);
+    // 両端の列（CD＝00 と 10）は隣どうし。
+    expect(coveredCells(base, "00-0")).toEqual([
+      [0, 0],
+      [0, 3],
+    ]);
+    expect(termLabel("00-0", ["A", "B", "C", "D"])).toBe("A\u0305・B\u0305・D\u0305");
+    expect(termLabel("----", ["A", "B", "C", "D"])).toBe("1");
+  });
+
+  it("0 を含むまとめと、どのまとめにも入らない 1 を拾う", () => {
+    const figure = {
+      type: "karnaugh" as const,
+      caption: "カルノー図",
+      ...base,
+      values: ["1001", "0110", "0110", "0000"],
+      groups: ["-0-0"],
+    };
+    const problems = karnaughProblems(figure);
+    expect(problems).toContain("まとめ「B\u0305・D\u0305」が 0 のマスを含んでいる");
+    expect(problems.some((problem) => problem.includes("どのまとめにも入っていない"))).toBe(true);
+    expect(karnaughProblems({ ...figure, groups: ["00-0", "-1-1"] })).toEqual([]);
   });
 });

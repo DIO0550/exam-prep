@@ -4,6 +4,7 @@ import type {
   DiagramFigure,
   DiagramNode,
   DiagramShape,
+  KarnaughFigure,
   SequenceFigure,
   SequenceStep,
   VennFigure,
@@ -846,6 +847,105 @@ export const vennProblems = (figure: VennFigure): string[] => {
       }
       if ([...region].some((letter) => !letters.includes(letter))) {
         problems.push(`塗る部分「${region}」が集合の数と合わない`);
+      }
+    }
+  }
+  return problems;
+};
+
+/* ------------------------------------------------------------------ */
+/* カルノー図                                                           */
+/* ------------------------------------------------------------------ */
+
+/** 変数の数に応じたグレイコードの並び（隣どうしが 1 ビットだけ違う順）。 */
+export const grayCodes = (count: number): string[] =>
+  count === 1 ? ["0", "1"] : ["00", "01", "11", "10"];
+
+/** まとめ（"-1-1" の形）から、項の文字（"B・D"）を作る。否定は上線（U+0305）で書く。 */
+export const termLabel = (term: string, variables: string[]): string => {
+  const parts = [...term]
+    .map((bit, index) => {
+      const name = variables[index] ?? "";
+      if (bit === "1") return name;
+      if (bit === "0") return `${name}̅`;
+      return "";
+    })
+    .filter((part) => part !== "");
+  return parts.length === 0 ? "1" : parts.join("・");
+};
+
+/** まとめが覆うマス（画面の並びでの [行, 列]）。 */
+export const coveredCells = (
+  figure: Pick<KarnaughFigure, "rows" | "cols">,
+  term: string,
+): [number, number][] => {
+  const rowCodes = grayCodes(figure.rows.length);
+  const colCodes = grayCodes(figure.cols.length);
+  const matches = (code: string, pattern: string) =>
+    [...code].every((bit, index) => pattern[index] === "-" || pattern[index] === bit);
+  const rowPattern = term.slice(0, figure.rows.length);
+  const colPattern = term.slice(figure.rows.length);
+  const cells: [number, number][] = [];
+  for (const [row, rowCode] of rowCodes.entries()) {
+    if (!matches(rowCode, rowPattern)) continue;
+    for (const [col, colCode] of colCodes.entries()) {
+      if (matches(colCode, colPattern)) cells.push([row, col]);
+    }
+  }
+  return cells;
+};
+
+/**
+ * 並びの上で連続する範囲に分ける。端をまたぐまとめ（両端の列など）は 2 つに分かれ、
+ * それぞれ図の縁で開いた形に描く。
+ */
+export const runsOf = (indexes: number[]): { from: number; to: number }[] => {
+  const sorted = [...new Set(indexes)].sort((a, b) => a - b);
+  const runs: { from: number; to: number }[] = [];
+  for (const index of sorted) {
+    const last = runs[runs.length - 1];
+    if (last && index === last.to + 1) last.to = index;
+    else runs.push({ from: index, to: index });
+  }
+  return runs;
+};
+
+export const karnaughProblems = (figure: KarnaughFigure): string[] => {
+  const problems: string[] = [];
+  const variables = [...figure.rows, ...figure.cols];
+  if (figure.rows.length < 1 || figure.rows.length > 2) problems.push("行の変数は 1〜2 個");
+  if (figure.cols.length < 1 || figure.cols.length > 2) problems.push("列の変数は 1〜2 個");
+  if (new Set(variables).size !== variables.length) problems.push("変数の名前が重複している");
+
+  const height = 2 ** figure.rows.length;
+  const width = 2 ** figure.cols.length;
+  if (figure.values.length !== height) problems.push(`行の数が ${height} ではない`);
+  for (const [index, row] of figure.values.entries()) {
+    if (row.length !== width) problems.push(`${index + 1} 行目のマスの数が ${width} ではない`);
+    if (!/^[01-]*$/.test(row)) problems.push(`${index + 1} 行目に 0・1・- 以外の文字がある`);
+  }
+
+  const covered = new Set<string>();
+  for (const term of figure.groups ?? []) {
+    if (term.length !== variables.length || !/^[01-]+$/.test(term)) {
+      problems.push(`まとめ「${term}」の形が変数の数と合わない`);
+      continue;
+    }
+    const cells = coveredCells(figure, term);
+    const values = cells.map(([row, col]) => figure.values[row]?.[col]);
+    if (values.some((value) => value === "0")) {
+      problems.push(`まとめ「${termLabel(term, variables)}」が 0 のマスを含んでいる`);
+    }
+    if (!values.includes("1")) problems.push(`まとめ「${termLabel(term, variables)}」に 1 が無い`);
+    for (const [row, col] of cells) covered.add(`${row}-${col}`);
+  }
+
+  if ((figure.groups ?? []).length > 0) {
+    for (const [row, line] of figure.values.entries()) {
+      for (const [col, value] of [...line].entries()) {
+        if (value === "1" && !covered.has(`${row}-${col}`)) {
+          problems.push(`${row + 1} 行 ${col + 1} 列の 1 がどのまとめにも入っていない`);
+        }
       }
     }
   }

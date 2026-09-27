@@ -2,6 +2,7 @@ import type { Figure } from "../types";
 import { ArrayFigureBlock } from "./array-figure";
 import { ChartFigureBlock } from "./chart-figure";
 import { DiagramFigureBlock } from "./diagram-figure";
+import { KarnaughFigureBlock } from "./karnaugh-figure";
 import { QuadrantFigureBlock } from "./quadrant-figure";
 import { SequenceFigureBlock } from "./sequence-figure";
 import { SketchFigureBlock } from "./sketch-figure";
@@ -161,6 +162,8 @@ export const FigureBlock = ({ figure, variant }: FigureBlockProps) => {
       {figure.type === "venn" && <VennFigureBlock figure={figure} />}
 
       {figure.type === "quadrant" && <QuadrantFigureBlock figure={figure} />}
+
+      {figure.type === "karnaugh" && <KarnaughFigureBlock figure={figure} />}
     </figure>
   );
 };

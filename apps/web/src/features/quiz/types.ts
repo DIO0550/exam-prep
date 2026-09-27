@@ -548,6 +548,33 @@ export type QuadrantFigure = {
   cells: [QuadrantCell, QuadrantCell, QuadrantCell, QuadrantCell];
 };
 
+/**
+ * カルノー図。論理式の簡単化で、1 のマスをどうまとめたかを囲みで見せる。
+ *
+ * 真理値表を表に並べただけでは、「両端の列が隣どうし」「4 マスで 2 変数が消える」が見えない。
+ * マスはグレイコード順（00, 01, 11, 10）に並べ、まとめは項の形（"-1-1" など）で書く。
+ * 囲みの位置と、囲みから作る項の文字（B・D）は、どちらも term から機械的に作るので、
+ * 絵と式が食い違うことがない。
+ */
+export type KarnaughFigure = {
+  type: "karnaugh";
+  caption: string;
+  /** 行に置く変数（1〜2 個）。左の見出しに、上位の変数から並べる。 */
+  rows: string[];
+  /** 列に置く変数（1〜2 個）。 */
+  cols: string[];
+  /**
+   * マスの値。画面に出る並び（行も列もグレイコード順）のまま、1 行を 1 つの文字列で書く。
+   * "1" と "0" のほか、"-" はどちらでもよい組合せ（ドントケア）。例: ["1001", "0110", "0110", "0000"]。
+   */
+  values: string[];
+  /**
+   * まとめ。変数を rows → cols の順に並べ、1（肯定）・0（否定）・-（消える）で書く。
+   * 例: 変数 A, B, C, D で "-1-1" は B・D、"00-0" は A̅・B̅・D̅。
+   */
+  groups?: string[];
+};
+
 /** 解説に添える図。こちらは本サイトで組んだもの。 */
 export type Figure =
   | FlowFigure
@@ -561,7 +588,8 @@ export type Figure =
   | SequenceFigure
   | ChartFigure
   | VennFigure
-  | QuadrantFigure;
+  | QuadrantFigure
+  | KarnaughFigure;
 
 export type Question = {
   source: Source;

@@ -206,7 +206,7 @@ describe("問題データ", () => {
     }
   });
 
-  it("構成図・シーケンス図・グラフ・ベン図は、描いたときに崩れない", () => {
+  it("構成図・シーケンス図・グラフ・ベン図・カルノー図は、描いたときに崩れない", () => {
     // 部品の重なり、枠をまたぐ部品、軸からはみ出す点、無い登場人物への矢印など。
     // 型では落ちず、画面を開くまで気付けないものを、描くときと同じ座標で確かめる。
     for (const question of ALL) {
@@ -220,7 +220,9 @@ describe("問題データ", () => {
                 ? chartProblems(figure)
                 : figure.type === "venn"
                   ? vennProblems(figure)
-                  : [];
+                  : figure.type === "karnaugh"
+                    ? karnaughProblems(figure)
+                    : [];
         expect(problems, `${nameOf(question)} の「${figure.caption}」`).toEqual([]);
       }
     }
