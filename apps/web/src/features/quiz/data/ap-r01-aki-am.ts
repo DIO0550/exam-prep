@@ -240,8 +240,8 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
           {
             id: "mc",
             label: "モンテカルロ法\n（イ）",
-            col: 2.9,
-            row: 2.4,
+            col: 3.4,
+            row: 0,
             tone: "muted",
             note: "乱数による数値計算。\n機械学習ではない",
           },
@@ -704,8 +704,8 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
           },
         ],
         edges: [
-          { from: "cpu", to: "cache", label: "ある：確率 1−r", tone: "ok" },
-          { from: "cpu", to: "mem", label: "無い：確率 r", via: [[0, 1.4]] },
+          { from: "cpu", to: "cache", label: "キャッシュにある：確率 1−r", tone: "ok" },
+          { from: "cpu", to: "mem", label: "キャッシュに無い：確率 r", via: [[0, 1.4]] },
         ],
       },
       {
@@ -876,13 +876,15 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
             tone: "ok",
             note: "参照は互いに独立なので\n台数に比例して伸びる",
           },
+          { id: "small", label: "サーバ", col: 2.85, row: 0.2 },
           {
             id: "big",
-            label: "サーバ",
-            col: 3.2,
-            row: 1,
+            label: "高性能な\nサーバ",
+            col: 2.85,
+            row: 1.8,
+            w: 1.1,
             tone: "accent",
-            note: "CPU・メモリを増強",
+            note: "台数は 1 台のまま",
           },
         ],
         groups: [
@@ -893,6 +895,7 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
           { from: "lb", to: "s1" },
           { from: "lb", to: "s2" },
           { from: "lb", to: "s3", tone: "ok" },
+          { from: "small", to: "big", label: "CPU・メモリを増強", tone: "accent" },
         ],
       },
       {
@@ -1551,7 +1554,7 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
       {
         type: "karnaugh",
         caption:
-          "c のカルノー図。1 が市松模様に並んで隣り合わないので、論理積・論理和ではまとめられない",
+          "c のカルノー図。1 が市松模様に並び、どの 1 も隣り合わないのでまとめて簡単にできない（XOR の形）",
         rows: ["x₁"],
         cols: ["x₂", "x₃"],
         values: ["0101", "1010"],
@@ -2209,12 +2212,13 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
         actors: ["PC A\n10.0.0.1", "PC B\n10.0.0.2", "PC C\n10.0.0.3"],
         steps: [
           { over: ["PC A\n10.0.0.1"], note: "10.0.0.2 へ送りたいが\nMAC アドレスが分からない" },
+          { divider: "ARP 要求は 1 回のブロードキャストで全員に届く" },
           {
             from: "PC A\n10.0.0.1",
             to: "PC B\n10.0.0.2",
             label: "ARP 要求「10.0.0.2 の MAC は？」",
           },
-          { from: "PC A\n10.0.0.1", to: "PC C\n10.0.0.3", label: "同じ要求（ブロードキャスト）" },
+          { from: "PC A\n10.0.0.1", to: "PC C\n10.0.0.3", label: "同じ要求が C にも届く" },
           { over: ["PC C\n10.0.0.3"], note: "自分ではないので\n応答しない" },
           {
             from: "PC B\n10.0.0.2",
@@ -2272,6 +2276,7 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
       type: "array",
       caption:
         "IPv6 は 16 ビットずつ 8 区切り。「::」が 2 か所あると、0 をどこに何個補うか決まらない",
+      cellWidth: 3.4,
       headers: ["1", "2", "3", "4", "5", "6", "7", "8"],
       rows: [
         {
@@ -2504,14 +2509,20 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
         { divider: "外から接続を始めようとすると" },
         {
           from: "攻撃者",
-          to: "内部 PC\n192.168.1.10",
-          label: "内部 PC へ直接接続したい",
-          blocked: true,
+          to: "NAPT 機器\n203.0.113.1",
+          label: "宛先 203.0.113.1 へ接続を開始",
           tone: "ng",
         },
         {
           over: ["NAPT 機器\n203.0.113.1"],
-          note: "変換表に無い通信は\n宛先が決まらず届かない",
+          note: "変換表に対応が無いので\n内部の宛先が決まらない",
+          tone: "ng",
+        },
+        {
+          from: "NAPT 機器\n203.0.113.1",
+          to: "内部 PC\n192.168.1.10",
+          label: "転送されない",
+          blocked: true,
           tone: "ng",
         },
       ],
@@ -2710,16 +2721,16 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
         {
           id: "vdi",
           label: "VDI サーバ\n（Web ブラウザ）",
-          col: 1.9,
+          col: 2.3,
           row: 1,
           tone: "accent",
           note: "受信データはここで処理",
         },
-        { id: "net", label: "インターネット", col: 3.8, row: 1, shape: "cloud" },
+        { id: "net", label: "インターネット", col: 4.2, row: 1, shape: "cloud" },
       ],
       groups: [
         { label: "内部ネットワーク", col: 0, row: 0.3, w: 1.1, h: 1.8 },
-        { label: "DMZ", col: 1.9, row: 0.3, w: 1.2, h: 1.8 },
+        { label: "DMZ", col: 2.3, row: 0.3, w: 1.2, h: 1.8 },
       ],
       edges: [
         { from: "pc", to: "vdi", bend: 0.25, label: "キー・マウスの操作" },
@@ -2729,8 +2740,8 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
           from: "net",
           to: "pc",
           via: [
-            [3.8, 2.3],
-            [0, 2.3],
+            [4.2, 2.4],
+            [0, 2.4],
           ],
           label: "マルウェアを含むファイルは PC に届かない",
           blocked: true,
@@ -2851,10 +2862,10 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
         {
           id: "sensor",
           label: "観測センサ",
-          col: 2.7,
-          row: 1.9,
+          col: 3.05,
+          row: 1.65,
           tone: "accent",
-          note: "届くのは不正な通信だけ",
+          note: "正規の通信は届かない",
         },
       ],
       groups: [{ label: "ダークネット（未使用のアドレス）", col: 2.7, row: 1.25, w: 1.7, h: 1.6 }],
@@ -2966,6 +2977,8 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
           {
             label: "他人受入率（FAR）",
             kind: "curve",
+            labelAt: 1,
+            labelPlace: "right",
             points: [
               [0, 9],
               [2, 5.5],
@@ -2990,7 +3003,8 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
             ],
           },
         ],
-        marks: [{ x: 5, y: 2.2, label: "両者が等しい点", place: "above" }],
+        marks: [{ x: 5, y: 2.2, label: "" }],
+        guides: [{ x: 5, label: "両者が等しい点" }],
       },
       {
         type: "table",
@@ -3037,7 +3051,8 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
     figure: [
       {
         type: "diagram",
-        caption: "ペトリネットの例。丸がプレース、四角がトランジション、● がトークン",
+        caption:
+          "ペトリネットの例。丸がプレース、四角（棒で描くことも多い）がトランジション、● がトークン",
         cell: { w: 120, h: 84 },
         nodes: [
           { id: "p1", label: "p1\n●", col: 0, row: 0, shape: "circle", tone: "accent" },
@@ -3149,7 +3164,7 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
         { id: "maint", label: "保守性", col: 2, row: 1.2, note: "直しやすいか" },
         { id: "port", label: "移植性", col: 3, row: 1.2, note: "別の環境へ\n移しやすいか" },
       ],
-      groups: [{ label: "製品品質モデル", col: -0.1, row: -0.45, w: 4, h: 2.8 }],
+      groups: [{ label: "製品品質モデル", col: -0.1, row: -0.15, w: 4, h: 2.8 }],
     },
   },
   {
@@ -3194,11 +3209,11 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
             shape: "actor",
             tone: "ok",
           },
-          { id: "meet", label: "レビュー会議", col: 1.5, row: 0.5, shape: "round" },
+          { id: "meet", label: "レビュー会議", col: 1.7, row: 0.5, shape: "round" },
           {
             id: "rec",
             label: "記録・分析",
-            col: 3,
+            col: 3.3,
             row: 0.5,
             shape: "db",
             tone: "ok",
@@ -3208,15 +3223,15 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
           {
             id: "meet2",
             label: "レビュー会議",
-            col: 1.5,
+            col: 1.7,
             row: 2.4,
             shape: "round",
             note: "記録の決まりは特に無い",
           },
         ],
         groups: [
-          { label: "インスペクション（公式）", col: -0.5, row: -0.1, w: 4.45, h: 1.7, tone: "ok" },
-          { label: "ウォークスルー（非公式）", col: -0.5, row: 1.75, w: 4.45, h: 1.7 },
+          { label: "インスペクション（公式）", col: -0.5, row: -0.1, w: 4.8, h: 1.8, tone: "ok" },
+          { label: "ウォークスルー（非公式）", col: -0.5, row: 1.8, w: 4.8, h: 1.8 },
         ],
         edges: [
           { from: "mod", to: "meet", label: "進行する", tone: "ok" },
@@ -3649,7 +3664,13 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
             tracks: [
               { label: "要員A", bars: [{ start: 0, length: 1, label: "y", tone: 1 }] },
               { label: "要員B", bars: [{ start: 0, length: 1, label: "z", tone: 2 }] },
-              { label: "要員C", bars: [{ start: 0, length: 4, label: "x", tone: 3 }] },
+              {
+                label: "要員C",
+                bars: [
+                  { start: 0, length: 2, label: "x", tone: 3 },
+                  { start: 2, length: 2, label: "x の残り", tone: 3 },
+                ],
+              },
             ],
             deadline: { at: 2, label: "期限" },
             missed: { track: "要員C", start: 2, length: 2 },
@@ -3727,15 +3748,15 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
             tone: "ok",
             note: "差別化のために加える",
           },
-          { id: "pipe", label: "サービス・パイプライン", col: 2.3, row: 0, note: "構想・開発中" },
+          { id: "pipe", label: "サービス・パイプライン", col: 2.05, row: 0, note: "構想・開発中" },
           {
             id: "cat",
             label: "サービス・カタログ",
-            col: 2.3,
+            col: 2.05,
             row: 1.1,
             note: "稼働中（顧客に見せる）",
           },
-          { id: "ret", label: "廃止済みサービス", col: 2.3, row: 2.2 },
+          { id: "ret", label: "廃止済みサービス", col: 2.05, row: 2.2 },
         ],
         groups: [
           {
@@ -4564,8 +4585,8 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
         },
       ],
       groups: [
-        { label: "4P（売手の視点）", col: -0.15, row: -0.55, w: 1.3, h: 4.9 },
-        { label: "4C（買手の視点）", col: 1.9, row: -0.55, w: 1.2, h: 4.9 },
+        { label: "4P（売手の視点）", col: -0.15, row: -0.35, w: 1.3, h: 5 },
+        { label: "4C（買手の視点）", col: 1.85, row: -0.35, w: 1.35, h: 5 },
       ],
       edges: [
         { from: "p1", to: "c1" },
@@ -4615,20 +4636,20 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
           {
             id: "touch",
             label: "顧客接点\n営業・サポート・Web",
-            col: 3.1,
+            col: 3.35,
             row: 1,
             tone: "ok",
           },
-          { id: "cust", label: "顧客", col: 4.4, row: 1, shape: "actor" },
+          { id: "cust", label: "顧客", col: 4.5, row: 1, shape: "actor" },
         ],
         groups: [
-          { label: "SCM：調達から販売までの供給網", col: -0.45, row: 0, w: 5.7, h: 2.1 },
+          { label: "SCM：調達から販売までの供給網", col: -0.45, row: 0, w: 5.85, h: 2.1 },
           { label: "ERP：社内の経営資源", col: 1.4, row: 0.45, w: 1.2, h: 1.45 },
-          { label: "CRM：顧客との関係（ウ）", col: 2.95, row: 0.45, w: 2.2, h: 1.45, tone: "ok" },
+          { label: "CRM：顧客との関係（ウ）", col: 2.95, row: 0.45, w: 2.35, h: 1.45, tone: "ok" },
         ],
         edges: [
           { from: "sup", to: "own", label: "調達" },
-          { from: "own", to: "touch", label: "販売" },
+          { from: "own", to: "touch", label: "販売", labelAt: 0.35 },
           { from: "touch", to: "cust", arrow: "both" },
         ],
       },
@@ -4690,7 +4711,7 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
       ],
       edges: [
         { from: "univ", to: "tlo", bend: 0.3, label: "研究成果" },
-        { from: "tlo", to: "comp", bend: 0.3, label: "ライセンス", tone: "ok" },
+        { from: "tlo", to: "comp", bend: 0.3, label: "特許をライセンス", tone: "ok" },
         { from: "comp", to: "tlo", bend: 0.3, label: "ライセンス料", dashed: true },
         { from: "tlo", to: "univ", bend: 0.3, label: "収益を還元", dashed: true },
       ],
@@ -4814,6 +4835,7 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
         type: "diagram",
         caption:
           "広告の表示から成果までの段階。コンバージョン率は、クリックして訪れた人のうち成果に至った割合",
+        cell: { w: 190, h: 84 },
         nodes: [
           { id: "imp", label: "広告の表示", col: 0, row: 0 },
           { id: "click", label: "クリック\n（サイト訪問）", col: 1.8, row: 0 },
@@ -4981,12 +5003,12 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
           },
         ],
         marks: [
-          { at: 1, label: "1回目 A" },
-          { at: 3, label: "2回目 A" },
-          { at: 5, label: "3回目 待ち" },
-          { at: 7, label: "4回目 B" },
-          { at: 9, label: "5回目 B" },
-          { at: 11, label: "6回目 A" },
+          { at: 1, label: "①Ａ" },
+          { at: 3, label: "②Ａ" },
+          { at: 5, label: "③待ち" },
+          { at: 7, label: "④Ｂ" },
+          { at: 9, label: "⑤Ｂ" },
+          { at: 11, label: "⑥Ａ" },
         ],
       },
       {
@@ -5034,6 +5056,7 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
     figure: {
       type: "diagram",
       caption: "IASB が作る共通の基準が IFRS。同じ基準で作った財務諸表なら、国をまたいで比べられる",
+      cell: { w: 170, h: 84 },
       nodes: [
         {
           id: "iasb",
@@ -5238,8 +5261,9 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
             label: "発注書面を電子メールで（承諾あり）",
             tone: "ok",
           },
-          { divider: "納品されたとき" },
+          { divider: "納品" },
           { from: "下請事業者", to: "親事業者", label: "ソフトウェアを納品" },
+          { divider: "納品物に不具合があった場合" },
           {
             from: "親事業者",
             to: "下請事業者",
@@ -5247,7 +5271,7 @@ export const AP_R01_AKI_AM: [Question, ...Question[]] = [
             tone: "ok",
             dashed: true,
           },
-          { divider: "受領した後" },
+          { divider: "不具合が無く、受領した後" },
           {
             from: "親事業者",
             to: "下請事業者",
