@@ -259,7 +259,7 @@ export const DiagramFigureBlock = ({ figure }: { figure: DiagramFigure }) => {
 
       {/* ポインタの起点の丸。部品の塗りに隠れないよう、部品の後に描く。 */}
       {layout.edges.map((edge, index) =>
-        edge.edge.fromField !== undefined && edge.points[0] ? (
+        edge.fromDot && edge.points[0] ? (
           <circle
             // biome-ignore lint/suspicious/noArrayIndexKey: 線と同じ並びで出す
             key={index}

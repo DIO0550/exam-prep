@@ -1,3 +1,4 @@
+import { textWidth } from "../figure-layout";
 import type { TreeFigure, TreeNode } from "../types";
 
 /**
@@ -43,17 +44,26 @@ export const TreeFigureBlock = ({ figure }: { figure: TreeFigure }) => {
   walk(root);
 
   const columns = Math.max(1, columnOf.size);
-  const width = columns * 52 + SIDE * 2;
+  // 右に置く注記が枠からはみ出さないよう、いちばん長い注記の分だけ右を空ける。
+  const noteRoom = Math.max(
+    0,
+    ...figure.nodes
+      .filter((node) => node.note && (byIndex.has(node.at * 2) || byIndex.has(node.at * 2 + 1)))
+      .map((node) => textWidth(node.note ?? "", 11) + NODE_R),
+  );
+  const width = columns * 52 + SIDE * 2 + noteRoom;
   // いちばん下の段の注記は節点の下にはみ出すので、その分だけ下を空ける。
   const deepNote = figure.nodes.some((node) => node.note && depthOf(node.at) === maxDepth);
   const height = (maxDepth + 1) * ROW_H + (deepNote ? 16 : 0);
 
   const xOf = (at: number): number => {
-    const inner = width - SIDE * 2;
+    // 右の注記の分の余白は除いて、節点は格子の幅だけに並べる。
+    const inner = columns * 52;
     return SIDE + (inner * ((columnOf.get(at) ?? 0) + 0.5)) / columns;
   };
   const yOf = (at: number): number => ROW_H * depthOf(at) + ROW_H / 2;
   const toneOf = (node: TreeNode) => TONE[node.tone ?? "plain"];
+  const hasChild = (at: number) => byIndex.has(at * 2) || byIndex.has(at * 2 + 1);
 
   return (
     // 木は横に広がるので、狭い画面では横へ流す（詰めると親子の線が読めなくなる）。
@@ -102,17 +112,31 @@ export const TreeFigureBlock = ({ figure }: { figure: TreeFigure }) => {
               >
                 {node.label}
               </text>
-              {node.note && (
-                <text
-                  x={xOf(node.at)}
-                  y={yOf(node.at) + NODE_R + 14}
-                  textAnchor="middle"
-                  className="fill-muted-soft"
-                  fontSize="11"
-                >
-                  {node.note}
-                </text>
-              )}
+              {/* 子を持つ節点の注記は、下に置くと親子の線に重なるので右に置く。 */}
+              {node.note &&
+                (hasChild(node.at) ? (
+                  <text
+                    x={xOf(node.at) + NODE_R + 5}
+                    y={yOf(node.at) + 4}
+                    textAnchor="start"
+                    className="fill-muted-soft stroke-surface"
+                    strokeWidth={3}
+                    paintOrder="stroke"
+                    fontSize="11"
+                  >
+                    {node.note}
+                  </text>
+                ) : (
+                  <text
+                    x={xOf(node.at)}
+                    y={yOf(node.at) + NODE_R + 14}
+                    textAnchor="middle"
+                    className="fill-muted-soft"
+                    fontSize="11"
+                  >
+                    {node.note}
+                  </text>
+                ))}
             </g>
           );
         })}

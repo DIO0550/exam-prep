@@ -233,6 +233,9 @@ export const clipToNode = (layout: NodeLayout, toward: Point): Point => {
   return { x: layout.cx + dx * t, y: layout.cy + dy * t };
 };
 
+/** ポインタを表す欄の中身（丸や空欄）。ここから出す矢印は欄の中心から丸付きで描く。 */
+export const isPointerMark = (text: string): boolean => ["", "●", "・", "•"].includes(text.trim());
+
 /** 欄の中心の x。fromField の矢印はここから出す。 */
 export const fieldCenter = (layout: NodeLayout, index: number): Point => {
   const left = layout.cx - layout.w / 2;
@@ -250,6 +253,8 @@ export type EdgeLayout = {
   labelAt: Point;
   /** × を付ける位置。 */
   blockAt: Point;
+  /** 欄の中心から丸付きで出すポインタか。 */
+  fromDot?: boolean;
   labelBox?: Box;
 };
 
@@ -350,10 +355,30 @@ const layoutEdge = (
     };
   }
 
-  const start = edge.fromField !== undefined ? fieldCenter(from, edge.fromField) : undefined;
   const via = (edge.via ?? []).map(([col, row]) => ({ x: col * cellW, y: row * cellH }));
-  const fromCenter = start ?? { x: from.cx, y: from.cy };
   const toCenter = { x: to.cx, y: to.cy };
+  // 欄から出すポインタ。欄が「●」や空ならその中心から丸付きで出し、文字が入っている欄なら
+  // 文字を隠さないよう欄の縁から出す。
+  const fieldText = edge.fromField !== undefined ? from.node.fields?.[edge.fromField] : undefined;
+  const fromDot = edge.fromField !== undefined && isPointerMark(fieldText ?? "");
+  let start: Point | undefined;
+  if (edge.fromField !== undefined) {
+    const center = fieldCenter(from, edge.fromField);
+    if (fromDot) {
+      start = center;
+    } else {
+      const toward = via[0] ?? toCenter;
+      const halfW = (from.fieldWidths[edge.fromField] ?? 0) / 2;
+      const dx = toward.x - center.x;
+      const dy = toward.y - center.y;
+      const t = Math.min(
+        dx === 0 ? Infinity : halfW / Math.abs(dx),
+        dy === 0 ? Infinity : from.h / 2 / Math.abs(dy),
+      );
+      start = t < 1 ? { x: center.x + dx * t, y: center.y + dy * t } : center;
+    }
+  }
+  const fromCenter = start ?? { x: from.cx, y: from.cy };
 
   let points: Point[];
   let curved = false;
@@ -397,6 +422,7 @@ const layoutEdge = (
     selfLoop: false,
     labelAt,
     blockAt,
+    fromDot,
     labelBox: edge.label ? textBox(edge.label, labelAt) : undefined,
   };
 };

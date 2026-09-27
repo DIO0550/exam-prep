@@ -1,4 +1,4 @@
-import { layoutSequence, linesOf, SMALL } from "../figure-layout";
+import { layoutSequence, linesOf, SMALL, textWidth } from "../figure-layout";
 import type { SequenceFigure } from "../types";
 import {
   ArrowHead,
@@ -77,6 +77,15 @@ export const SequenceFigureBlock = ({ figure }: { figure: SequenceFigure }) => {
                 strokeWidth={1}
                 strokeDasharray="2 3"
               />
+              {/* 生存線が文字の間から透けないよう、裏に地の色の四角を敷く。 */}
+              <rect
+                x={(left + right) / 2 - textWidth(row.label, SMALL) / 2 - 6}
+                y={row.y - 9}
+                width={textWidth(row.label, SMALL) + 12}
+                height={18}
+                rx={3}
+                className="fill-surface"
+              />
               <SvgText
                 text={row.label}
                 x={(left + right) / 2}
@@ -84,7 +93,6 @@ export const SequenceFigureBlock = ({ figure }: { figure: SequenceFigure }) => {
                 size={SMALL}
                 weight={700}
                 className="fill-muted-soft"
-                halo
               />
             </g>
           );
