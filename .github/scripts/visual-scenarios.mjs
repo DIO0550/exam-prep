@@ -183,6 +183,42 @@ export const SCENARIOS = [
     steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 5 }, { choice: 0 }],
   },
   {
+    name: "explain-diagram",
+    label: "解説（構成図・アローダイアグラム）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r03-haru-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 53 }, { choice: 0 }],
+  },
+  {
+    name: "explain-sequence",
+    label: "解説（シーケンス図）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r03-haru-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 45 }, { choice: 0 }],
+  },
+  {
+    name: "explain-venn",
+    label: "解説（ベン図を選択肢ごとに並べる）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r03-haru-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 1 }, { choice: 0 }],
+  },
+  {
+    name: "explain-quadrant",
+    label: "解説（4 象限・横軸を左ほど高く）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r03-haru-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 67 }, { choice: 0 }],
+  },
+  {
+    name: "explain-chart",
+    label: "解説（グラフ・損益分岐点）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r05-haru-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 77 }, { choice: 0 }],
+  },
+  {
+    name: "explain-karnaugh",
+    label: "解説（カルノー図）",
+    storage: { [RECORD_KEY]: { ...answeredRecord(0), setId: "ap-r04-aki-am" } },
+    steps: [{ click: "別画面" }, { click: "演習を開始" }, { dot: 2 }, { choice: 0 }],
+  },
+  {
     name: "result",
     label: "結果",
     // 79 問まで解いた状態から始め、残り 1 問を解いて結果へ進む。
