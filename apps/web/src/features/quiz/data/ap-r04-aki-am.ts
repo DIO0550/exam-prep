@@ -250,21 +250,21 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
           kind: "curve",
           points: [
             [0, 0.28],
-            [1, 0.5],
-            [2, 0.63],
-            [3, 0.7],
-            [4, 0.73],
-            [5, 0.72],
-            [6, 0.69],
-            [7, 0.65],
-            [8, 0.61],
-            [9, 0.57],
-            [10, 0.53],
+            [1, 0.52],
+            [2, 0.67],
+            [3, 0.76],
+            [4, 0.81],
+            [5, 0.8],
+            [6, 0.77],
+            [7, 0.73],
+            [8, 0.69],
+            [9, 0.65],
+            [10, 0.61],
           ],
         },
       ],
       guides: [{ x: 4, label: "ここから過学習" }],
-      marks: [{ x: 4, y: 0.73, label: "差が開き始める", place: "below" }],
+      marks: [{ x: 4, y: 0.81, label: "差が開き始める", place: "below" }],
     },
   },
   {
@@ -1312,6 +1312,8 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
           {
             label: "入力（交流）",
             dashed: true,
+            labelAt: 12,
+            labelPlace: "below",
             points: [
               [0, 0],
               [0.0625, 0.383],
@@ -1351,6 +1353,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
           {
             label: "ダイオードを通した後",
             labelAt: 20,
+            labelPlace: "above",
             points: [
               [0, 0],
               [0.0625, 0.383],
@@ -1437,13 +1440,21 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
       caption:
         "上書きはできず、ブロック単位でまとめて消去してから書き込む（この繰返しに回数の上限）",
       nodes: [
+        { id: "new", label: "新しいデータ", col: -2, row: 0.5, shape: "text" },
         { id: "full", label: "データあり", col: 0, row: 0.5, shape: "round" },
         { id: "empty", label: "消去済み（空き）", col: 2.4, row: 0.5, shape: "round", tone: "ok" },
       ],
       edges: [
+        {
+          from: "new",
+          to: "full",
+          label: "そのまま上書き",
+          blocked: true,
+          tone: "ng",
+          labelAt: 0.4,
+        },
         { from: "full", to: "empty", label: "ブロック単位で一括消去", bend: 0.25, tone: "ok" },
         { from: "empty", to: "full", label: "新しいデータを書込み", bend: 0.25, tone: "ok" },
-        { from: "full", to: "full", label: "そのまま上書き", blocked: true, tone: "ng" },
       ],
     },
   },
@@ -2079,7 +2090,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
         caption: "192.168.16.40/29 に入る 8 個。両端を除いた 6 個（塗った部分）がホスト用",
         rows: [
           {
-            label: "ホスト部 3 ビット",
+            label: "ホスト部",
             cells: ["000", "001", "010", "011", "100", "101", "110", "111"],
           },
           {
@@ -2148,11 +2159,11 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
           {
             from: "送信側",
             to: "受信側",
-            label: "データグラム（失われても再送しない）",
+            label: "データグラム（消失）",
             blocked: true,
             tone: "ng",
           },
-          { over: ["受信側"], note: "確認応答も\n順序制御もしない", tone: "ok" },
+          { over: ["受信側"], note: "確認応答も再送も\n順序制御もしない", tone: "ok" },
         ],
       },
       {
@@ -2208,26 +2219,19 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
           row: 0,
           fields: ["https", "://", "www.example.com", ":8080", "/member/login", "?id=user"],
         },
-        { id: "sch", label: "スキーム", col: 0.162, row: 1.2, shape: "text" },
-        { id: "host", label: "ホスト名", col: 1.039, row: 1.2, shape: "text" },
+        { id: "sch", label: "↑\nスキーム", col: 0.162, row: 0.62, shape: "text" },
+        { id: "host", label: "↑\nホスト名", col: 1.039, row: 0.62, shape: "text" },
         {
           id: "port",
-          label: "ポート番号",
+          label: "↑\nポート番号",
           col: 1.674,
-          row: 1.2,
-          shape: "round",
+          row: 0.62,
+          shape: "text",
           tone: "ok",
           note: "省略すると 443",
         },
-        { id: "path", label: "パス", col: 2.225, row: 1.2, shape: "text" },
-        { id: "query", label: "クエリ文字列", col: 2.841, row: 1.2, shape: "text" },
-      ],
-      edges: [
-        { from: "url", to: "sch", fromField: 0, arrow: "none" },
-        { from: "url", to: "host", fromField: 2, arrow: "none" },
-        { from: "url", to: "port", fromField: 3, arrow: "none", tone: "ok" },
-        { from: "url", to: "path", fromField: 4, arrow: "none" },
-        { from: "url", to: "query", fromField: 5, arrow: "none" },
+        { id: "path", label: "↑\nパス", col: 2.225, row: 0.62, shape: "text" },
+        { id: "query", label: "↑\nクエリ文字列", col: 2.841, row: 0.62, shape: "text" },
       ],
     },
   },
@@ -2686,7 +2690,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
       edges: [
         { from: "pc1", to: "rt", label: "WPA：無線区間を暗号化", arrow: "both" },
         { from: "pc2", to: "rt", arrow: "both" },
-        { from: "rt", to: "net", label: "グローバル IP 1 つ\n（PPPoE で接続）", arrow: "both" },
+        { from: "rt", to: "net", label: "グローバル IP\n1 つで通信", arrow: "both" },
         {
           from: "atk",
           to: "rt",
@@ -2736,7 +2740,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
           over: ["DNS\n（送信元ドメイン）"],
           note: "SPF レコード：\n送信してよいサーバの IP",
         },
-        { from: "送信サーバ", to: "受信サーバ", label: "メール（差出人のドメインを名乗る）" },
+        { from: "送信サーバ", to: "受信サーバ", label: "メール（送信元ドメインを名乗る）" },
         { from: "受信サーバ", to: "DNS\n（送信元ドメイン）", label: "SPF レコードを問合せ" },
         {
           from: "DNS\n（送信元ドメイン）",
@@ -2976,7 +2980,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
             labelAt: 0.12,
             tone: "accent",
           },
-          { from: "i1", to: "d2" },
+          { from: "i1", to: "d2", tone: "ok" },
           { from: "d2", to: "i2", label: "Yes（ケース1）", tone: "ok" },
           { from: "d2", to: "d3", label: "No（ケース2）", tone: "accent" },
           { from: "d3", to: "i3", label: "Yes（ケース2）", tone: "accent" },
@@ -2993,7 +2997,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
             dashed: true,
             tone: "ng",
           },
-          { from: "i2", to: "d4" },
+          { from: "i2", to: "d4", tone: "ok" },
           {
             from: "i3",
             to: "d4",
@@ -3001,6 +3005,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
               [1.8, 4.5],
               [0, 4.5],
             ],
+            tone: "accent",
           },
           { from: "d4", to: "i4", label: "Yes（ケース1）", tone: "ok" },
           { from: "d4", to: "d5", label: "No（ケース2）", tone: "accent" },
@@ -3018,7 +3023,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
             dashed: true,
             tone: "ng",
           },
-          { from: "i4", to: "end" },
+          { from: "i4", to: "end", tone: "ok" },
           {
             from: "i5",
             to: "end",
@@ -3026,6 +3031,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
               [1.8, 6.5],
               [0, 6.5],
             ],
+            tone: "accent",
           },
         ],
       },
@@ -3242,9 +3248,9 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
           { at: 7, label: "C 開始（4＋3）" },
         ],
         tracks: [
-          { label: "アクティビティA", bars: [{ start: 0, length: 6, label: "A 6日", tone: 4 }] },
-          { label: "アクティビティB", bars: [{ start: 4, length: 7, label: "B 7日", tone: 5 }] },
-          { label: "アクティビティC", bars: [{ start: 7, length: 5, label: "C 5日", tone: 3 }] },
+          { label: "A", bars: [{ start: 0, length: 6, label: "A 6日", tone: 4 }] },
+          { label: "B", bars: [{ start: 4, length: 7, label: "B 7日", tone: 5 }] },
+          { label: "C", bars: [{ start: 7, length: 5, label: "C 5日", tone: 3 }] },
         ],
       },
       {
@@ -3314,17 +3320,6 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
               { label: "結合テスト", bars: [{ start: 5, length: 4, label: "12÷3", tone: 3 }] },
             ],
           },
-        ],
-      },
-      {
-        type: "table",
-        caption: "工程ごとの所要期間",
-        headers: ["開発工程", "見積工数", "現状の期間", "上級1人追加後の期間"],
-        rows: [
-          ["設計", "6人月", "6÷2＝3か月", "6÷3＝2か月"],
-          ["プログラム作成・単体テスト", "12人月", "12÷3＝4か月", "12÷4＝3か月"],
-          ["結合テスト", "12人月", "12÷2＝6か月", "12÷3＝4か月"],
-          ["合計", "30人月", "13か月", "9か月"],
         ],
       },
     ],
@@ -3756,7 +3751,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
           ["BCM", "Business Continuity Management", "BCP の策定・運用・見直しまでを回す活動"],
           ["BPM", "Business Process Management", "業務プロセスを継続的に改善する取組み"],
           ["BPO", "Business Process Outsourcing", "業務プロセスを外部へ委託すること"],
-          ["BSC", "Balanced Score Card", "4つの視点で戦略を管理する手法"],
+          ["BSC", "Balanced Scorecard", "4つの視点で戦略を管理する手法"],
         ],
       },
     ],
@@ -3833,7 +3828,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
           fields: ["BA", "DA", "AA", "TA"],
         },
         { id: "gap", label: "ギャップ分析", col: 1.9, row: 0.8, shape: "round", tone: "accent" },
-        { id: "plan", label: "移行計画", col: 3.4, row: 0.8, shape: "round", tone: "ok" },
+        { id: "plan", label: "移行計画", col: 3.8, row: 0.8, shape: "round", tone: "ok" },
         {
           id: "legend",
           label: "BA ビジネス／DA データ\nAA アプリケーション／TA テクノロジ",
@@ -3969,7 +3964,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
       },
     ],
     explain:
-      "モデル取引・契約書では、仕様が固まり成果物を明確に定義できるシステム内部設計からシステム結合までを請負型、ユーザの主体的な関与が欠かせない要件定義や受入・導入支援を準委任型とすることが適切だとしている。システム外部設計とシステムテストは、状況に応じて準委任型か請負型を選ぶ。",
+      "モデル取引・契約書では、仕様が固まり成果物を明確に定義できるシステム内部設計からシステム結合までを請負型、ユーザの主体的な関与が欠かせないシステム化計画・要件定義や受入・導入支援を準委任型とすることが適切だとしている。システム外部設計とシステムテストは、状況に応じて準委任型か請負型を選ぶ。",
     points: [
       "請負は仕事の完成に責任を負う契約。完成の判断基準を決められる工程でないと適用しにくい。",
       "準委任は善管注意義務に基づき作業を行う契約。仕様が固まりきらない上流・下流の工程に向く。",
@@ -3988,7 +3983,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
         { id: "p5", label: "システム\n結合", col: 5, row: 0, tone: "ok" },
         { id: "p6", label: "システム\nテスト", col: 6, row: 0 },
         { id: "p7", label: "受入・\n導入支援", col: 7, row: 0 },
-        { id: "c0", label: "ユーザ主体", col: 0, row: 1, shape: "text", tone: "muted" },
+        { id: "c0", label: "準委任", col: 0, row: 1, shape: "text" },
         { id: "c1", label: "準委任", col: 1, row: 1, shape: "text" },
         { id: "c2", label: "準委任\nか請負", col: 2, row: 1, shape: "text" },
         { id: "c3", label: "請負", col: 3, row: 1, shape: "text", tone: "ok" },
@@ -4557,7 +4552,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
         ],
         marks: [
           { x: 0, y: 1250, label: "乙だけ 1,250 個：限界利益 13,750 千円", place: "right" },
-          { x: 1000, y: 0, label: "甲だけ 1,000 個：限界利益 12,000 千円", place: "above" },
+          { x: 1000, y: 0, label: "甲だけ 1,000 個：限界利益 12,000 千円", place: "right" },
         ],
       },
       {
@@ -4652,9 +4647,9 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
         nodes: [
           { id: "ord", label: "発注者", col: 0, row: 0 },
           { id: "con", label: "受注者", col: 3.2, row: 0 },
-          { id: "wk", label: "受注者の作業者", col: 0.9, row: 1.5, shape: "actor" },
+          { id: "wk", label: "受注者の\n作業者", col: 0.9, row: 1.5, shape: "actor" },
         ],
-        groups: [{ label: "発注者の事業所", col: 0.1, row: -0.1, w: 1.75, h: 2.55 }],
+        groups: [{ label: "発注者の事業所", col: 0.1, row: -0.1, w: 1.75, h: 2.75 }],
         edges: [
           { from: "ord", to: "con", label: "請負契約", arrow: "both" },
           { from: "con", to: "wk", label: "指揮命令・雇用", tone: "ok" },
