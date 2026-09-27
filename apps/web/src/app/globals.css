@@ -69,6 +69,16 @@
   --color-bar-5-line: #bfaedd;
   --color-bar-5-ink: #4f3b7a;
 
+  /* 構成図・シーケンス図の線と枠。罫線（line）より濃くして、部品の形が地から浮くようにする。 */
+  --color-diagram-line: #7d8594;
+
+  /* グラフの系列。並べる順に使う 4 色で、隣り合う組の色覚多様性での見分けを検証済み。
+     3 番（緑）は白地とのコントラストが 3:1 を下回るので、線の横に必ず名前を添える。 */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+  --color-series-3: #1baf7a;
+  --color-series-4: #4a3aa7;
+
   --animate-rise-in: rise-in 0.3s ease both;
 }
 

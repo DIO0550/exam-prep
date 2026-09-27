@@ -316,6 +316,238 @@ export type TreeFigure = {
   nodes: TreeNode[];
 };
 
+/**
+ * 図の部品に付ける色。ok（正しい・通る）と ng（誤り・止まる）だけが意味を持ち、
+ * accent は「ここを見て」、muted は脇役（背景として置いているだけのもの）。
+ */
+export type FigureTone = "accent" | "ok" | "ng" | "muted";
+
+/**
+ * 構成図の部品の形。
+ *
+ * 形は見た目の約束ごとに合わせる（箱＝装置や処理、円柱＝データベース、雲＝インターネット、
+ * 人＝利用者や攻撃者、円＝状態やグラフの節点、ひし形＝判断）。形で種類が分かれば、
+ * ラベルを読む前に図の骨組みが頭に入る。
+ */
+export const DIAGRAM_SHAPES = [
+  "box",
+  "round",
+  "circle",
+  "diamond",
+  "db",
+  "actor",
+  "cloud",
+  "text",
+] as const;
+
+export type DiagramShape = (typeof DIAGRAM_SHAPES)[number];
+
+export type DiagramNode = {
+  /** 線の端から指す名前。画面には出ない。 */
+  id: string;
+  /** 部品の中に書く文字。改行は \n。fields を持つ部品では、箱の上に出す見出しになる。 */
+  label: string;
+  /**
+   * 部品の中心を置く格子の位置（0 始まり）。0.5 刻みで、2 つの間にも置ける。
+   * 座標を px で書かせると、書き足したときに全部を測り直すことになるので、格子で持つ。
+   */
+  col: number;
+  row: number;
+  shape?: DiagramShape;
+  tone?: FigureTone;
+  /** 部品の下に添える小さい文字（アドレス、値、補足）。 */
+  note?: string;
+  /**
+   * 横に区切った欄。連結リストの「値｜次へのポインタ」やパケットのヘッダのように、
+   * 1 つの箱の中身を区切って見せたいときに使う。
+   */
+  fields?: string[];
+  /** 幅を格子のマス数で決める。省略すると中の文字に合わせる。 */
+  w?: number;
+};
+
+export type DiagramEdge = {
+  from: string;
+  to: string;
+  label?: string;
+  /** 矢印の付け方。to＝to の側だけ（既定）、both＝両端、none＝線だけ。 */
+  arrow?: "to" | "both" | "none";
+  dashed?: boolean;
+  tone?: FigureTone;
+  /** 経由する点（格子の座標）。折れ線で引く。 */
+  via?: [number, number][];
+  /**
+   * 線をふくらませる量（格子 1 マスの幅に対する割合）。同じ 2 つを行き来する線が重ならないよう、
+   * 行きと帰りで符号を変えて使う。正なら進む向きの左へふくらむ。
+   */
+  bend?: number;
+  /** from の何番目の欄から出すか（fields を持つ部品だけ）。ポインタの矢印に使う。 */
+  fromField?: number;
+  /** 線の途中に × を付ける（遮断される・届かない）。 */
+  blocked?: boolean;
+  /** ラベルを線のどこに置くか（0＝from 側の端、1＝to 側の端）。既定は真ん中。 */
+  labelAt?: number;
+};
+
+export type DiagramGroup = {
+  label: string;
+  /** 囲むマスの範囲。左上のマス（col, row）から横 w マス・縦 h マス。 */
+  col: number;
+  row: number;
+  w: number;
+  h: number;
+  tone?: FigureTone;
+};
+
+/**
+ * 部品と矢印で組む図（構成図・ブロック図・状態遷移図・データ構造の図）。
+ *
+ * ネットワークの構成、装置どうしのデータの流れ、状態の移り変わり、ポインタのつながりのように、
+ * 「何と何がどうつながっているか」が要点のものに使う。部品は格子の上に置き、線は部品の縁から縁へ
+ * 自動で引く。囲み（groups）で DMZ や社内 LAN のような範囲を示せる。
+ */
+export type DiagramFigure = {
+  type: "diagram";
+  caption: string;
+  nodes: DiagramNode[];
+  edges?: DiagramEdge[];
+  groups?: DiagramGroup[];
+  /** 格子 1 マスの大きさ（px）。既定は横 150・縦 84。 */
+  cell?: { w?: number; h?: number };
+};
+
+/** シーケンス図の 1 段。やり取り・注記・区切りのどれか。 */
+export type SequenceStep =
+  | {
+      from: string;
+      to: string;
+      label: string;
+      /** 応答や、あとから返ってくるものは点線にする。 */
+      dashed?: boolean;
+      tone?: FigureTone;
+      /** 相手に届かない（遮断される）やり取り。矢印の手前に × を付ける。 */
+      blocked?: boolean;
+    }
+  | {
+      /** 注記を置く登場人物。2 つ渡すと、その間にまたがって置く。 */
+      over: [string] | [string, string];
+      note: string;
+      tone?: FigureTone;
+    }
+  | {
+      /** 段の区切り。「ここから暗号化」のように、流れの節目を横線で示す。 */
+      divider: string;
+    };
+
+/**
+ * 登場人物の間のやり取りを、時間を上から下へ流して見せる図（シーケンス図）。
+ *
+ * 通信の手順や攻撃の成立手順は、「誰が誰に何を送るか」の向きが要点なので、
+ * 登場人物を横に並べて矢印で結ぶ。やり取りには自動で ①②… の番号が付く。
+ */
+export type SequenceFigure = {
+  type: "sequence";
+  caption: string;
+  /** 登場人物。左から並べる順。改行は \n。 */
+  actors: string[];
+  steps: SequenceStep[];
+};
+
+export type ChartAxis = {
+  label: string;
+  min: number;
+  max: number;
+  /** 目盛りを置く値。省略すると数字を出さない（形だけを見せる図）。 */
+  ticks?: number[];
+  /** 目盛りに、値の代わりに出す文字（ticks と同じ並び）。 */
+  tickLabels?: string[];
+};
+
+/** 系列の色の番号。並べる順に 1 から振る（検証済みの 4 色）。 */
+export type SeriesColor = 1 | 2 | 3 | 4;
+
+export type ChartSeries = {
+  label: string;
+  points: [number, number][];
+  /** line＝折れ線（既定）、curve＝なめらかな曲線、step＝階段、bar＝棒。 */
+  kind?: "line" | "curve" | "step" | "bar";
+  color?: SeriesColor;
+  dashed?: boolean;
+  /** 線の横に出す名前の位置（points の添字）。既定は最後の点。 */
+  labelAt?: number;
+};
+
+/**
+ * 値の変化を座標に描く図（グラフ）。
+ *
+ * 損益分岐点、待ち時間の曲線、発注量と費用のように、「どこで交わるか」「どこで跳ね上がるか」が
+ * 要点のものに使う。数値そのものより形を見せたいときは ticks を省いて目盛りを消す。
+ */
+export type ChartFigure = {
+  type: "chart";
+  caption: string;
+  x: ChartAxis;
+  y: ChartAxis;
+  series: ChartSeries[];
+  /** 目印の点（交点や最適点）。 */
+  marks?: {
+    x: number;
+    y: number;
+    label: string;
+    /** 名前を点のどちら側に出すか。既定は右上。 */
+    place?: "above" | "below" | "left" | "right";
+  }[];
+  /** 基準線。x を渡すと縦線、y を渡すと横線。 */
+  guides?: { x?: number; y?: number; label?: string }[];
+  /** 塗る範囲（多角形）。実行可能領域や、利益が出る範囲を示す。 */
+  areas?: { points: [number, number][]; label?: string; tone?: FigureTone }[];
+};
+
+/**
+ * ベン図で塗る部分。含まれる集合の記号（A・B・C）を並べて書き、どの集合にも入らない部分は "0"。
+ * 3 つの集合では "AB" は「A と B に入り、C には入らない部分」を指す。
+ */
+export type VennRegion = "0" | "A" | "B" | "C" | "AB" | "AC" | "BC" | "ABC";
+
+export type VennPanel = {
+  /** 見出し。選択肢の記号（ア〜エ）や式。 */
+  label?: string;
+  note?: string;
+  shaded: VennRegion[];
+  verdict?: "ok" | "ng";
+};
+
+/**
+ * ベン図。集合演算や論理式のように、「どの部分を指しているか」が要点のものに使う。
+ * panels を並べると、選択肢の式ごとに塗り分けて見比べられる。
+ */
+export type VennFigure = {
+  type: "venn";
+  caption: string;
+  /** 集合の名前。2 つか 3 つ。順に A・B・C と呼ぶ。 */
+  sets: [string, string] | [string, string, string];
+  /** 全体集合の名前。付けると外枠を描き、"0" を塗れるようになる。 */
+  universe?: string;
+  panels: VennPanel[];
+};
+
+export type QuadrantCell = { title: string; note?: string; tone?: FigureTone };
+
+/**
+ * 2 つの軸で 4 つに分ける図。PPM や SL 理論のように、「どちらの軸が高いか低いか」の
+ * 組合せで呼び名が決まるものに使う。表に並べると、軸との対応を頭の中で組み直すことになる。
+ */
+export type QuadrantFigure = {
+  type: "quadrant";
+  caption: string;
+  /** 横軸。low が左端、high が右端に出る。 */
+  x: { label: string; low: string; high: string };
+  /** 縦軸。low が下端、high が上端に出る。 */
+  y: { label: string; low: string; high: string };
+  /** 左上・右上・左下・右下の順。 */
+  cells: [QuadrantCell, QuadrantCell, QuadrantCell, QuadrantCell];
+};
+
 /** 解説に添える図。こちらは本サイトで組んだもの。 */
 export type Figure =
   | FlowFigure
@@ -324,7 +556,12 @@ export type Figure =
   | ArrayFigure
   | TimelineFigure
   | SketchFigure
-  | TreeFigure;
+  | TreeFigure
+  | DiagramFigure
+  | SequenceFigure
+  | ChartFigure
+  | VennFigure
+  | QuadrantFigure;
 
 export type Question = {
   source: Source;
