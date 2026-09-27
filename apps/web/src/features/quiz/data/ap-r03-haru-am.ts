@@ -3900,15 +3900,14 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "quadrant",
-      caption:
-        "縦軸 a＝市場成長率、横軸 b＝市場占有率（ここでは右ほど高い。問題の図は横軸の左が「高」なので左右が逆になる）",
-      x: { label: "b 市場占有率", low: "低", high: "高" },
+      caption: "縦軸 a＝市場成長率、横軸 b＝市場占有率（問題の図と同じく、横軸は左ほど高い）",
+      x: { label: "b 市場占有率", low: "低", high: "高", reverse: true },
       y: { label: "a 市場成長率", low: "低", high: "高" },
       cells: [
-        { title: "問題児", note: "成長市場だが占有率が低い。投資して花形を狙う" },
         { title: "花形", note: "成長も占有率も高い。稼ぐが投資も要る", tone: "accent" },
-        { title: "負け犬", note: "どちらも低い。撤退を検討する" },
+        { title: "問題児", note: "成長市場だが占有率が低い。投資して花形を狙う" },
         { title: "金のなる木", note: "成長は鈍いが占有率が高い。資金の供給源", tone: "ok" },
+        { title: "負け犬", note: "どちらも低い。撤退を検討する" },
       ],
     },
   },

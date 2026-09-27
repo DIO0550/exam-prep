@@ -227,6 +227,20 @@ describe("FigureBlock（ベン図と 4 象限）", () => {
     expect(screen.getByText("占有率 →")).toBeInTheDocument();
     expect(screen.getByText("金のなる木")).toBeInTheDocument();
   });
+
+  it("横軸を逆にすると、左端に高い側を出し、矢印を左へ向ける", () => {
+    const figure: QuadrantFigure = {
+      type: "quadrant",
+      caption: "PPM",
+      x: { label: "占有率", low: "低い側", high: "高い側", reverse: true },
+      y: { label: "成長率", low: "低", high: "高" },
+      cells: [{ title: "花形" }, { title: "問題児" }, { title: "金のなる木" }, { title: "負け犬" }],
+    };
+    render(<FigureBlock figure={figure} variant="page" />);
+    expect(screen.getByText("← 占有率")).toBeInTheDocument();
+    const ends = screen.getAllByText(/^(低い側|高い側)$/).map((element) => element.textContent);
+    expect(ends).toEqual(["高い側", "低い側"]);
+  });
 });
 
 describe("FigureBlock（カルノー図）", () => {

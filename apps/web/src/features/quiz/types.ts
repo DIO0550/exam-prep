@@ -557,8 +557,11 @@ export type QuadrantCell = { title: string; note?: string; tone?: FigureTone };
 export type QuadrantFigure = {
   type: "quadrant";
   caption: string;
-  /** 横軸。low が左端、high が右端に出る。 */
-  x: { label: string; low: string; high: string };
+  /**
+   * 横軸。low が左端、high が右端に出る。reverse を付けると左が high になる
+   * （PPM の相対的市場占有率のように、左ほど高く描くのが慣例の図に合わせるため）。
+   */
+  x: { label: string; low: string; high: string; reverse?: boolean };
   /** 縦軸。low が下端、high が上端に出る。 */
   y: { label: string; low: string; high: string };
   /** 左上・右上・左下・右下の順。 */

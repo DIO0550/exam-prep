@@ -37,14 +37,18 @@ export const QuadrantFigureBlock = ({ figure }: { figure: QuadrantFigure }) => (
 
       <span className="col-span-2" />
       <span className="border-diagram-line border-t-2 pt-1 text-read-xs text-muted-soft">
-        {figure.x.low}
+        {figure.x.reverse ? figure.x.high : figure.x.low}
       </span>
       <span className="border-diagram-line border-t-2 pt-1 text-right text-read-xs text-muted-soft">
-        {figure.x.high}
+        {figure.x.reverse ? figure.x.low : figure.x.high}
       </span>
 
-      <span className="col-span-4 text-right font-bold text-muted text-read-xs">
-        {figure.x.label} →
+      {/* 矢印は高くなる向き。左ほど高い軸では、名前を左に寄せて左向きの矢印を付ける。 */}
+      {figure.x.reverse ? <span className="col-span-2" /> : null}
+      <span
+        className={`${figure.x.reverse ? "col-span-2" : "col-span-4 text-right"} font-bold text-muted text-read-xs`}
+      >
+        {figure.x.reverse ? `← ${figure.x.label}` : `${figure.x.label} →`}
       </span>
     </div>
   </div>
