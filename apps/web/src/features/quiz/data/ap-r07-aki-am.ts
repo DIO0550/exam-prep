@@ -475,6 +475,63 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "「Scalable Language」が名前の由来。JavaのクラスやライブラリとScalaのコードを混在させられる。",
       "多重継承の代わりにトレイト、動的型付けの代わりに型推論、と代替の仕組みを押さえておく。",
     ],
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "Scala は実行前のコンパイルで型が決まる静的型付け言語。通常は JVM のバイトコードにして JVM の上で動かす",
+        cell: { w: 150, h: 84 },
+        nodes: [
+          {
+            id: "src",
+            label: "Scala の\nソースコード",
+            col: 0,
+            row: 0,
+            tone: "ok",
+            note: "オブジェクト指向と\n関数型の両方で書ける（ア）",
+          },
+          {
+            id: "comp",
+            label: "コンパイル",
+            col: 1.5,
+            row: 0,
+            shape: "round",
+            note: "型はここで決まる\n（型推論で記述は省ける。エ ×）",
+          },
+          { id: "bc", label: "JVM の\nバイトコード", col: 3, row: 0 },
+          {
+            id: "jvm",
+            label: "JVM の上で実行",
+            col: 4.5,
+            row: 0,
+            note: "ネイティブコードの\n生成は必須ではない（ウ ×）",
+          },
+          { id: "lib", label: "Java の\nライブラリ", col: 4.5, row: -1.6 },
+        ],
+        edges: [
+          { from: "src", to: "comp" },
+          { from: "comp", to: "bc" },
+          { from: "bc", to: "jvm" },
+          { from: "lib", to: "jvm", label: "Scala から\nそのまま使える" },
+        ],
+      },
+      {
+        type: "diagram",
+        caption: "クラスの継承は 1 つだけ（イ ×）。ほかの性質はトレイトのミックスインで取り込む",
+        cell: { w: 150, h: 84 },
+        nodes: [
+          { id: "a", label: "クラス A", col: 0, row: 0 },
+          { id: "b", label: "クラス B", col: 1.4, row: 0, tone: "muted" },
+          { id: "t", label: "トレイト T", col: 2.8, row: 0, tone: "ok" },
+          { id: "c", label: "クラス C", col: 1.4, row: 1.8 },
+        ],
+        edges: [
+          { from: "c", to: "a", label: "継承" },
+          { from: "c", to: "b", label: "2 つ目のクラス", blocked: true, tone: "ng" },
+          { from: "c", to: "t", label: "ミックスイン", tone: "ok" },
+        ],
+      },
+    ],
   },
   {
     source: at(8),
@@ -732,16 +789,60 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "ノード数は「総コア数 ÷ 更新後の1ノードあたりコア数」。更新前の値で割らない。",
       "総性能はコア数と1コアの性能の両方が効く。4倍×2倍で8倍になる。",
     ],
-    figure: {
-      type: "calc",
-      caption: "更新後の構成",
-      lines: [
-        { expr: "現状の総コア数 ＝ 8 × 1,000 ＝ 8,000", note: "1ノード8コア × 1,000ノード" },
-        { expr: "更新後の総コア数 ＝ 8,000 × 4 ＝ 32,000", note: "更新条件 (3)" },
-        { expr: "ノード数 ＝ 32,000 ÷ 16 ＝ 2,000", note: "1ノードのコア数は2倍の16" },
-        { expr: "総性能 ＝ 20GFLOPS × 32,000 ＝ 640 TFLOPS", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "1 ノードのコア数も 1 コアの性能も 2 倍。総コア数 4 倍の 32,000 を 16 コアずつ分けて 2,000 ノード",
+        cell: { w: 150, h: 84 },
+        nodes: [
+          {
+            id: "now",
+            label: "現状の 1 ノード：8 コア（1 コア 10 GFLOPS）",
+            col: 0.99,
+            row: 0.3,
+            fields: ["10", "10", "10", "10", "10", "10", "10", "10"],
+            note: "× 1,000 ノード ＝ 8,000 コア。総性能 10 × 8,000 ＝ 80 TFLOPS",
+          },
+          {
+            id: "next",
+            label: "更新後の 1 ノード：16 コア（1 コア 20 GFLOPS）",
+            col: 1.9,
+            row: 1.6,
+            tone: "ok",
+            fields: [
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+              "20",
+            ],
+            note: "32,000 コア ÷ 16 ＝ 2,000 ノード。総性能 20 × 32,000 ＝ 640 TFLOPS（イ）",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "更新後の構成",
+        lines: [
+          { expr: "現状の総コア数 ＝ 8 × 1,000 ＝ 8,000", note: "1ノード8コア × 1,000ノード" },
+          { expr: "更新後の総コア数 ＝ 8,000 × 4 ＝ 32,000", note: "更新条件 (3)" },
+          { expr: "ノード数 ＝ 32,000 ÷ 16 ＝ 2,000", note: "1ノードのコア数は2倍の16" },
+          { expr: "総性能 ＝ 20GFLOPS × 32,000 ＝ 640 TFLOPS", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(12),
@@ -1552,20 +1653,52 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "狭い画面でメニューを隠しておくための仕組み。アイコンの見た目がそのまま名前になっている。",
       "アコーディオンは階層の展開、ドロップダウンは候補の選択と、それぞれ使いどころが違う。",
     ],
-    figure: {
-      type: "table",
-      caption: "メニューの出し方の違い",
-      headers: ["仕組み", "見た目と動き", "使いどころ"],
-      rows: [
-        [
-          "ハンバーガーメニュー",
-          "三本線のアイコンを押すとメニューが現れる",
-          "画面が狭く、常時表示できないとき",
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "ハンバーガーメニューは、ふだんは三本線のアイコンだけを置き、押したときだけメニューを開く",
+        cell: { w: 150, h: 60 },
+        nodes: [
+          { id: "icon", label: "≡", col: 0, row: 0, tone: "accent", note: "三本線のアイコン" },
+          {
+            id: "body1",
+            label: "コンテンツ\n（画面を広く使える）",
+            col: 0.5,
+            row: 1.6,
+            w: 1.8,
+          },
+          {
+            id: "menu",
+            label: "メニュー\n項目 1\n項目 2\n項目 3",
+            col: 2.55,
+            row: 0.95,
+            tone: "ok",
+            align: "left",
+          },
+          { id: "body2", label: "コンテンツ", col: 3.45, row: 0.95, tone: "muted" },
         ],
-        ["ドロップダウン", "押すと候補が下に一覧で出る", "選択肢から1つ選ばせるとき"],
-        ["アコーディオン", "見出しの下に内容が開く", "階層のある内容を折りたたむとき"],
-      ],
-    },
+        groups: [
+          { label: "閉じているとき", col: 0.06, row: -0.2, w: 1.9, h: 2.9 },
+          { label: "≡ を押したとき", col: 2.66, row: -0.2, w: 1.81, h: 2.9, tone: "ok" },
+        ],
+        edges: [{ from: "icon", to: "menu", label: "押すと開く", labelAt: 0.75 }],
+      },
+      {
+        type: "table",
+        caption: "メニューの出し方の違い",
+        headers: ["仕組み", "見た目と動き", "使いどころ"],
+        rows: [
+          [
+            "ハンバーガーメニュー",
+            "三本線のアイコンを押すとメニューが現れる",
+            "画面が狭く、常時表示できないとき",
+          ],
+          ["ドロップダウン", "押すと候補が下に一覧で出る", "選択肢から1つ選ばせるとき"],
+          ["アコーディオン", "見出しの下に内容が開く", "階層のある内容を折りたたむとき"],
+        ],
+      },
+    ],
   },
   {
     source: at(25),
@@ -1782,6 +1915,50 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "ビューで「できないこと」は更新の側にある。定義そのものは柔軟に書ける。",
       "更新可能なビューの条件は、ビューの1行が基の表の1行に一意に対応すること。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "ビューは基の表への問合せに名前を付けたもの。列の別名・WHERE・結合・UNION で定義できるが、更新には条件がある",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        {
+          id: "emp",
+          label: "基の表：社員",
+          col: 0.9,
+          row: 0.4,
+          fields: ["社員番号", "氏名", "部署コード"],
+        },
+        {
+          id: "dept",
+          label: "基の表：部署",
+          col: 0.9,
+          row: 2.2,
+          fields: ["部署コード", "部署名"],
+        },
+        {
+          id: "v1",
+          label: "ビュー",
+          col: 3.4,
+          row: 0.4,
+          tone: "ok",
+          fields: ["番号", "名前"],
+          note: "列名を別名にできる（ア）\nWHERE で行も絞れる（イ ×）",
+        },
+        {
+          id: "v2",
+          label: "結合ビュー",
+          col: 3.4,
+          row: 2.2,
+          fields: ["氏名", "部署名"],
+          note: "1 行が基の表の 1 行に一意に\n対応しないと更新できない（ウ ×）",
+        },
+      ],
+      edges: [
+        { from: "emp", to: "v1", label: "列を選び別名を付ける" },
+        { from: "emp", to: "v2" },
+        { from: "dept", to: "v2", label: "結合" },
+      ],
+    },
   },
   {
     source: at(29),
@@ -1850,16 +2027,57 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "両方の回線に共通の時間（ここでは送信間隔）は、差を取ると打ち消される。",
       "バイトとビットの取り違えが定番の誤り。1,250バイト＝10,000ビット。",
     ],
-    figure: {
-      type: "calc",
-      caption: "パケット数の求め方",
-      lines: [
-        { expr: "1,250 バイト ＝ 10,000 ビット", note: "1バイト＝8ビット" },
-        { expr: "100M：10,000 ÷ 1×10⁸ ＝ 0.1 ミリ秒", note: "1パケットの送信時間" },
-        { expr: "1G：10,000 ÷ 1×10⁹ ＝ 0.01 ミリ秒", note: "1パケットの送信時間" },
-        { expr: "9 ÷ (0.1 − 0.01) ＝ 100", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "送信時間は「パケットを送る時間＋送信間隔」の繰返し。間隔の 1 ミリ秒はどちらの LAN にも同じだけ入る",
+        cell: { w: 150, h: 60 },
+        nodes: [
+          {
+            id: "pkt",
+            label: "1 パケット：1,250 バイト ＝ 10,000 ビット",
+            col: 1.3,
+            row: 0,
+            fields: ["ヘッダー", "データ"],
+          },
+          {
+            id: "l100",
+            label: "100M ビット／秒の LAN（単位：ミリ秒）",
+            col: 1.3,
+            row: 1.35,
+            fields: ["送信 0.1", "間隔 1", "送信 0.1", "間隔 1", "…"],
+          },
+          {
+            id: "l1g",
+            label: "1G ビット／秒の LAN（単位：ミリ秒）",
+            col: 1.3,
+            row: 2.7,
+            fields: ["送信 0.01", "間隔 1", "送信 0.01", "間隔 1", "…"],
+          },
+          {
+            id: "memo",
+            label:
+              "間隔は両方に同じだけ入るので差に効かない\n→ 差は送信の分だけ：0.1 − 0.01 ＝ 0.09 ミリ秒／個\nN 個で 9 ミリ秒の差 → N ＝ 9 ÷ 0.09 ＝ 100（ウ）",
+            col: 1.9,
+            row: 3.9,
+            shape: "text",
+            tone: "ok",
+            align: "left",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "パケット数の求め方",
+        lines: [
+          { expr: "1,250 バイト ＝ 10,000 ビット", note: "1バイト＝8ビット" },
+          { expr: "100M：10,000 ÷ 1×10⁸ ＝ 0.1 ミリ秒", note: "1パケットの送信時間" },
+          { expr: "1G：10,000 ÷ 1×10⁹ ＝ 0.01 ミリ秒", note: "1パケットの送信時間" },
+          { expr: "9 ÷ (0.1 − 0.01) ＝ 100", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(31),
@@ -2164,16 +2382,44 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "％を小数に直すときは100で割る。0.0001％＝0.000001＝10⁻⁶。",
       "パケット長はビットに直してから誤り率を掛ける。バイトのまま掛けると8分の1になる。",
     ],
-    figure: {
-      type: "calc",
-      caption: "誤りパケット数の期待値",
-      lines: [
-        { expr: "0.0001％ ＝ 1 × 10⁻⁶", note: "ビット誤り率" },
-        { expr: "1,500 バイト ＝ 12,000 ビット", note: "1パケットのビット数" },
-        { expr: "12,000 × 10⁻⁶ ＝ 0.012", note: "1パケットに誤りが含まれる確率" },
-        { expr: "10,000 × 0.012 ＝ 120 個", note: "選択肢 エ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "1 パケットの 12,000 ビットのどれか 1 つでも誤れば誤りパケット。それを 10,000 個分数える",
+        cell: { w: 150, h: 70 },
+        nodes: [
+          {
+            id: "pkt",
+            label: "1 パケット：1,500 バイト ＝ 12,000 ビット",
+            col: 1.2,
+            row: 0,
+            fields: ["1", "2", "3", "…", "12,000"],
+            note: "1 ビットが誤る確率：0.0001％ ＝ 10⁻⁶\n1 個に誤りが入る確率 ≒ 12,000 × 10⁻⁶ ＝ 0.012",
+          },
+          {
+            id: "all",
+            label: "送るパケット",
+            col: 3.7,
+            row: 0,
+            tone: "ok",
+            fields: ["1 個目", "2 個目", "…", "10,000 個目"],
+            note: "誤りを含む個数の期待値\n10,000 × 0.012 ＝ 120 個（エ）",
+          },
+        ],
+        edges: [{ from: "pkt", to: "all", label: "× 10,000 個" }],
+      },
+      {
+        type: "calc",
+        caption: "誤りパケット数の期待値",
+        lines: [
+          { expr: "0.0001％ ＝ 1 × 10⁻⁶", note: "ビット誤り率" },
+          { expr: "1,500 バイト ＝ 12,000 ビット", note: "1パケットのビット数" },
+          { expr: "12,000 × 10⁻⁶ ＝ 0.012", note: "1パケットに誤りが含まれる確率" },
+          { expr: "10,000 × 0.012 ＝ 120 個", note: "選択肢 エ" },
+        ],
+      },
+    ],
   },
   {
     source: at(36),
@@ -2545,6 +2791,63 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "機密性・完全性・可用性の3つに加えて、真正性・責任追跡性・否認防止・信頼性が挙げられている。",
       "真正性は「本人か」、信頼性は「いつも同じ結果になるか」。混同しやすいので定義文で押さえる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "情報セキュリティは機密性・完全性・可用性が基本で、真正性や信頼性なども含めることがある。b が真正性、a が信頼性",
+      cell: { w: 140, h: 84 },
+      nodes: [
+        {
+          id: "conf",
+          label: "機密性（d）",
+          col: 0,
+          row: 0.45,
+          note: "認可されていない者に\n使わせない・開示しない",
+        },
+        { id: "integ", label: "完全性", col: 1.4, row: 0.45, note: "正確さ・完全さ" },
+        {
+          id: "avail",
+          label: "可用性（c）",
+          col: 2.8,
+          row: 0.45,
+          note: "認可された者が\n要求したときに使える",
+        },
+        {
+          id: "auth",
+          label: "真正性（b）",
+          col: 0,
+          row: 2.0,
+          tone: "ok",
+          note: "主張するとおりの\nものである",
+        },
+        {
+          id: "rel",
+          label: "信頼性（a）",
+          col: 1.4,
+          row: 2.0,
+          tone: "ok",
+          note: "意図する行動と\n結果が一貫している",
+        },
+        {
+          id: "acc",
+          label: "責任追跡性",
+          col: 2.8,
+          row: 2.0,
+          note: "動作を行った主体まで\n追跡できる",
+        },
+        {
+          id: "nr",
+          label: "否認防止",
+          col: 4.2,
+          row: 2.0,
+          note: "起きた事象と実行者を\n後から証明できる",
+        },
+      ],
+      groups: [
+        { label: "基本の 3 要素", col: -0.05, row: 0.2, w: 3.9, h: 1.45 },
+        { label: "含めることもある特性", col: -0.05, row: 1.75, w: 5.3, h: 1.45 },
+      ],
+    },
   },
   {
     source: at(42),
@@ -2688,13 +2991,89 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "証拠の同一性と保管の連鎖（chain of custody）を保つことが前提になる。",
     ],
     figure: {
-      type: "flow",
-      caption: "デジタルフォレンジックスの4つの手順",
-      steps: [
-        { actor: "① 収集", text: "書込み禁止で複製を取り、ハッシュ値を記録して同一性を示す" },
-        { actor: "② 検査", text: "削除されたファイルの復元など、証拠となるデータを取り出す" },
-        { actor: "③ 分析", text: "痕跡を突き合わせ、いつ誰が何をしたのかを組み立てる" },
-        { actor: "④ 報告", text: "事実と根拠をまとめる。保管の連鎖（chain of custody）も残す" },
+      type: "diagram",
+      caption:
+        "デジタルフォレンジックスは、インシデントが起きた後に証拠を扱う 4 つの手順。予防や検知の対策は含まない",
+      cell: { w: 140, h: 84 },
+      nodes: [
+        {
+          id: "u",
+          label: "ウ 暗号化して\n漏えいを防ぐ",
+          col: 0,
+          row: 0.45,
+          tone: "ng",
+        },
+        {
+          id: "a",
+          label: "ア SIEM で相関分析し\n不正アクセスを検出",
+          col: 1.5,
+          row: 0.45,
+          tone: "ng",
+        },
+        {
+          id: "e",
+          label: "エ ハッシュ値で\nマルウェアを検査",
+          col: 3,
+          row: 0.45,
+          tone: "ng",
+        },
+        {
+          id: "c1",
+          label: "① 収集",
+          col: 0,
+          row: 1.75,
+          shape: "round",
+          note: "書込み禁止で複製し\nハッシュ値を記録",
+        },
+        {
+          id: "c2",
+          label: "② 検査",
+          col: 1.5,
+          row: 1.75,
+          shape: "round",
+          tone: "ok",
+          note: "削除されたログを\n復元する（イ）",
+        },
+        {
+          id: "c3",
+          label: "③ 分析",
+          col: 3,
+          row: 1.75,
+          shape: "round",
+          tone: "ok",
+          note: "痕跡を見つけ、いつ誰が\n何をしたかを組み立てる",
+        },
+        {
+          id: "c4",
+          label: "④ 報告",
+          col: 4.5,
+          row: 1.75,
+          shape: "round",
+          note: "事実と根拠をまとめ\n保管の連鎖も残す",
+        },
+      ],
+      groups: [
+        {
+          label: "インシデントの前・最中の対策（予防・検知）",
+          col: -0.05,
+          row: 0.35,
+          w: 4.1,
+          h: 1.0,
+          tone: "ng",
+        },
+        {
+          label: "デジタルフォレンジックス（インシデントが起きた後）",
+          col: -0.05,
+          row: 1.35,
+          w: 5.6,
+          h: 1.6,
+          tone: "ok",
+        },
+      ],
+      edges: [
+        { from: "c1", to: "c2" },
+        { from: "c2", to: "c3" },
+        { from: "c3", to: "c4" },
       ],
     },
   },
@@ -2786,6 +3165,41 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "統計的な「平均的利用者」ではなく、行動や動機まで具体化した一人の像を描くのが特徴。",
       "ペルソナの行動を時系列で描いたものがカスタマージャーニーマップ。あわせて使われる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "ペルソナは、利用者を役割ごとに一人の典型的な人物像にまとめた仮想の人物。関係者はこの像を共有して要件や画面を考える",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "u1", label: "利用者 A", col: 0, row: 0, shape: "actor" },
+        { id: "u2", label: "利用者 B", col: 0, row: 1, shape: "actor" },
+        { id: "u3", label: "利用者 C", col: 0, row: 2, shape: "actor" },
+        {
+          id: "p",
+          label: "ペルソナ\n（仮想の人物）",
+          col: 1.8,
+          row: 1,
+          shape: "actor",
+          tone: "ok",
+          note: "名前・年齢・職業・\n利用場面・困りごとまで描く",
+        },
+        { id: "s1", label: "プロダクト\nオーナー", col: 3.6, row: 0, shape: "actor" },
+        { id: "s2", label: "デザイナー", col: 3.6, row: 1, shape: "actor" },
+        { id: "s3", label: "開発者", col: 3.6, row: 2, shape: "actor" },
+      ],
+      groups: [
+        { label: "調査した利用者", col: 0.05, row: -0.3, w: 0.9, h: 3.2 },
+        { label: "関係者（ステークホルダ）", col: 3.55, row: -0.3, w: 1.1, h: 3.2 },
+      ],
+      edges: [
+        { from: "u1", to: "p" },
+        { from: "u2", to: "p", label: "典型的な姿に\nまとめる" },
+        { from: "u3", to: "p" },
+        { from: "s1", to: "p", dashed: true },
+        { from: "s2", to: "p", dashed: true, label: "同じ像を\n共有する" },
+        { from: "s3", to: "p", dashed: true },
+      ],
+    },
   },
   {
     source: at(47),
@@ -3080,14 +3494,58 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "動乱期ではリーダーが対立を放置せず、議論を整理して共通の目標に戻すことが求められる。",
     ],
     figure: {
-      type: "flow",
-      caption: "タックマンモデル。動乱期は避けずに通る段階",
-      steps: [
-        { actor: "① 成立期（Forming）", text: "集まったばかりで、様子をうかがっている" },
-        { actor: "② 動乱期（Storming）", text: "考え方や価値観の違いが表に出て、意見がぶつかる" },
-        { actor: "③ 安定期（Norming）", text: "共通の目標と役割が定まり、進め方が共有される" },
-        { actor: "④ 遂行期（Performing）", text: "チームとして成果を出せるようになる" },
-        { actor: "⑤ 解散期（Adjourning）", text: "目的を果たして解散する" },
+      type: "diagram",
+      caption:
+        "タックマンモデルの 5 段階。考え方や価値観がぶつかり合うのは 2 番目の動乱期で、避けずに通る段階",
+      cell: { w: 135, h: 84 },
+      nodes: [
+        {
+          id: "f",
+          label: "ウ 成立期\nForming",
+          col: 0,
+          row: 0,
+          shape: "round",
+          note: "集まったばかりで\n様子をうかがう",
+        },
+        {
+          id: "s",
+          label: "エ 動乱期\nStorming",
+          col: 1.2,
+          row: 0,
+          shape: "round",
+          tone: "ok",
+          note: "考え方の違いが表に出て\n意見がぶつかる",
+        },
+        {
+          id: "n",
+          label: "ア 安定期\nNorming",
+          col: 2.4,
+          row: 0,
+          shape: "round",
+          note: "共通の目標と\n役割が定まる",
+        },
+        {
+          id: "p",
+          label: "イ 遂行期\nPerforming",
+          col: 3.6,
+          row: 0,
+          shape: "round",
+          note: "チームとして\n成果を出せる",
+        },
+        {
+          id: "a",
+          label: "解散期\nAdjourning",
+          col: 4.8,
+          row: 0,
+          shape: "round",
+          note: "目的を果たして\n解散する",
+        },
+      ],
+      edges: [
+        { from: "f", to: "s" },
+        { from: "s", to: "n" },
+        { from: "n", to: "p" },
+        { from: "p", to: "a" },
       ],
     },
   },
@@ -3500,6 +3958,43 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "独立性には、身分上の関係を問う外観上の独立性と、態度を問う精神上の独立性がある。",
       "所見は「発見事項に対する監査人の判断」。事実そのもの（監査証拠）とは区別する。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "独立性・正当な懐疑心・正当な注意は監査人の立場と姿勢、所見は監査で発見したことに基づく考えや意見",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "tgt", label: "監査対象", col: 0, row: 0 },
+        { id: "info", label: "提示された情報", col: 0, row: 2.2 },
+        {
+          id: "aud",
+          label: "システム監査人",
+          col: 2.8,
+          row: 1.1,
+          shape: "actor",
+          tone: "accent",
+          note: "専門家として当然の注意を払う\n＝正当な注意",
+        },
+        {
+          id: "find",
+          label: "所見",
+          col: 4.8,
+          row: 1.1,
+          note: "発見したことに基づく\n監査人の考えや意見",
+        },
+      ],
+      edges: [
+        {
+          from: "tgt",
+          to: "aud",
+          label: "不当な影響・圧力を受けない\n＝独立性（エ）",
+          blocked: true,
+          tone: "ok",
+        },
+        { from: "info", to: "aud", label: "鵜呑みにせず批判的に評価\n＝正当な懐疑心" },
+        { from: "aud", to: "find", label: "監査手続で\n発見したこと" },
+      ],
+    },
   },
   {
     source: at(59),
@@ -3933,15 +4428,58 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "分母は「全項目が最高評価だった場合の点数」。重みの合計に最高点3を掛ける。",
       "評価点の対応（3＝目標どおり、1＝部分改善、0＝変わらず）を取り違えないこと。",
     ],
-    figure: {
-      type: "calc",
-      caption: "目標達成度の求め方",
-      lines: [
-        { expr: "5 × 3 ＋ 8 × 0 ＋ 12 × 1 ＝ 27 点", note: "重み × 評価点の合計" },
-        { expr: "(5 ＋ 8 ＋ 12) × 3 ＝ 75 点", note: "全て目標どおりの場合" },
-        { expr: "27 ÷ 75 ＝ 36％", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "項目ごとの満点（重み × 3）と得点（重み × 評価点）。満点の合計 75 点のうち、得点は 27 点",
+        x: {
+          label: "評価項目（重み）",
+          min: 0.4,
+          max: 3.6,
+          ticks: [1, 2, 3],
+          tickLabels: ["省力化効果（5）", "期間の短縮（8）", "情報の統合化（12）"],
+        },
+        y: { label: "点", min: 0, max: 40, ticks: [0, 10, 20, 30, 40] },
+        series: [
+          {
+            label: "満点（重み × 3）",
+            kind: "bar",
+            points: [
+              [0.85, 15],
+              [1.85, 24],
+              [2.85, 36],
+            ],
+          },
+          {
+            label: "得点（重み × 評価点）",
+            kind: "bar",
+            points: [
+              [1.15, 15],
+              [2.15, 0],
+              [3.15, 12],
+            ],
+          },
+        ],
+        marks: [
+          { x: 0.85, y: 15, label: "15", place: "above" },
+          { x: 1.85, y: 24, label: "24", place: "above" },
+          { x: 2.85, y: 36, label: "36", place: "above" },
+          { x: 1.15, y: 15, label: "15", place: "above" },
+          { x: 2.15, y: 0, label: "0", place: "above" },
+          { x: 3.15, y: 12, label: "12", place: "above" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "目標達成度の求め方",
+        lines: [
+          { expr: "5 × 3 ＋ 8 × 0 ＋ 12 × 1 ＝ 27 点", note: "重み × 評価点の合計" },
+          { expr: "(5 ＋ 8 ＋ 12) × 3 ＝ 75 点", note: "全て目標どおりの場合" },
+          { expr: "27 ÷ 75 ＝ 36％", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(66),
@@ -4074,38 +4612,55 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "4つの視点は下から学習と成長→内部ビジネスプロセス→顧客→財務の順に因果がつながる。",
       "戦略マップは因果関係を示す図、スコアカードは指標と目標値を並べた表。役割が違う。",
     ],
-    figure: {
-      type: "diagram",
-      caption: "戦略マップ（例）。4 つの視点の目標を、下から上へ因果の矢印でつなぐ",
-      cell: { w: 160, h: 72 },
-      nodes: [
-        { id: "vf", label: "財務の視点", col: 0, row: 0, shape: "text", tone: "muted" },
-        { id: "vc", label: "顧客の視点", col: 0, row: 1, shape: "text", tone: "muted" },
-        {
-          id: "vp",
-          label: "内部ビジネス\nプロセスの視点",
-          col: 0,
-          row: 2,
-          shape: "text",
-          tone: "muted",
-        },
-        { id: "vl", label: "学習と成長の視点", col: 0, row: 3, shape: "text", tone: "muted" },
-        { id: "f", label: "売上・利益の増加", col: 1.8, row: 0, tone: "ok" },
-        { id: "c", label: "顧客満足度の向上", col: 1.8, row: 1 },
-        { id: "p1", label: "業務プロセスの改善", col: 1.3, row: 2 },
-        { id: "p2", label: "品質の向上", col: 2.4, row: 2 },
-        { id: "l1", label: "社員のスキル向上", col: 1.3, row: 3 },
-        { id: "l2", label: "情報システムの整備", col: 2.4, row: 3 },
-      ],
-      edges: [
-        { from: "l1", to: "p1" },
-        { from: "l2", to: "p1" },
-        { from: "l2", to: "p2" },
-        { from: "p1", to: "c" },
-        { from: "p2", to: "c" },
-        { from: "c", to: "f" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "戦略マップ（例）。4 つの視点の目標を、下から上へ因果の矢印でつなぐ",
+        cell: { w: 160, h: 72 },
+        nodes: [
+          { id: "vf", label: "財務の視点", col: 0, row: 0, shape: "text", tone: "muted" },
+          { id: "vc", label: "顧客の視点", col: 0, row: 1, shape: "text", tone: "muted" },
+          {
+            id: "vp",
+            label: "内部ビジネス\nプロセスの視点",
+            col: 0,
+            row: 2,
+            shape: "text",
+            tone: "muted",
+          },
+          { id: "vl", label: "学習と成長の視点", col: 0, row: 3, shape: "text", tone: "muted" },
+          { id: "f", label: "売上・利益の増加", col: 1.8, row: 0, tone: "ok" },
+          { id: "c", label: "顧客満足度の向上", col: 1.8, row: 1 },
+          { id: "p1", label: "業務プロセスの改善", col: 1.3, row: 2 },
+          { id: "p2", label: "品質の向上", col: 2.4, row: 2 },
+          { id: "l1", label: "社員のスキル向上", col: 1.3, row: 3 },
+          { id: "l2", label: "情報システムの整備", col: 2.4, row: 3 },
+        ],
+        edges: [
+          { from: "l1", to: "p1" },
+          { from: "l2", to: "p1" },
+          { from: "l2", to: "p2" },
+          { from: "p1", to: "c" },
+          { from: "p2", to: "c" },
+          { from: "c", to: "f" },
+        ],
+      },
+      {
+        type: "sketch",
+        caption:
+          "戦略マップは BSC の 4 視点を因果でつなぐ形。2 つの軸で位置や区分を示す図とは形が違う",
+        items: [
+          {
+            name: "バランススコアカード",
+            note: "財務・顧客・内部ビジネスプロセス・学習と成長の 4 視点。下の視点から上の視点へ因果がつながる。戦略マップはこの因果を目標どうしの矢印で描いたもの。これが正解の形（イ）",
+          },
+          {
+            name: "PPM",
+            note: "2 つの軸の高低で 4 つに分ける形。ア（ポジショニングマップ）やウ（ビジネススクリーン）も、2 つの軸で自社や事業の位置を示す図の仲間で、因果の矢印は無い",
+          },
+        ],
+      },
+    ],
   },
   {
     source: at(69),
@@ -4626,18 +5181,47 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "自己資本＝純資産。資本金だけでなく資本剰余金・利益剰余金も含める。",
       "分母は総資本（＝総資産）。負債と純資産の合計なので、資産の側から求めてもよい。",
     ],
-    figure: {
-      type: "calc",
-      caption: "自己資本比率",
-      lines: [
-        {
-          expr: "自己資本 ＝ 2,000 ＋ 1,000 ＋ 500 ＝ 3,500",
-          note: "資本金＋資本剰余金＋利益剰余金",
-        },
-        { expr: "総資本 ＝ 6,000 ＋ 4,000 ＝ 10,000", note: "流動資産＋固定資産" },
-        { expr: "3,500 ÷ 10,000 ＝ 35％", note: "選択肢 エ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "自己資本は純資産の 3 つを合わせた 3,500。総資本は資産の合計 10,000（負債と純資産の合計と同じ）。単位は百万円",
+        cell: { w: 150, h: 44 },
+        nodes: [
+          { id: "ca", label: "流動資産\n6,000", col: 0, row: 1.6, w: 1.4 },
+          { id: "fa", label: "固定資産\n4,000", col: 0, row: 4.3, w: 1.4 },
+          { id: "cl", label: "流動負債 4,500", col: 1.6, row: 0.6, w: 1.4 },
+          { id: "fl", label: "固定負債 2,000", col: 1.6, row: 1.6, w: 1.4 },
+          { id: "cap", label: "資本金 2,000", col: 1.6, row: 3.2, w: 1.4, tone: "ok" },
+          { id: "cs", label: "資本剰余金 1,000", col: 1.6, row: 4.2, w: 1.4, tone: "ok" },
+          { id: "re", label: "利益剰余金 500", col: 1.6, row: 5.2, w: 1.4, tone: "ok" },
+        ],
+        groups: [
+          { label: "資産（総資本）10,000", col: -0.22, row: 0.2, w: 1.45, h: 6.1 },
+          { label: "負債 6,500", col: 1.38, row: 0.2, w: 1.45, h: 2.5 },
+          {
+            label: "純資産＝自己資本 3,500",
+            col: 1.38,
+            row: 2.75,
+            w: 1.45,
+            h: 3.55,
+            tone: "ok",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "自己資本比率",
+        lines: [
+          {
+            expr: "自己資本 ＝ 2,000 ＋ 1,000 ＋ 500 ＝ 3,500",
+            note: "資本金＋資本剰余金＋利益剰余金",
+          },
+          { expr: "総資本 ＝ 6,000 ＋ 4,000 ＝ 10,000", note: "流動資産＋固定資産" },
+          { expr: "3,500 ÷ 10,000 ＝ 35％", note: "選択肢 エ" },
+        ],
+      },
+    ],
   },
   {
     source: at(77),
@@ -4737,6 +5321,46 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "保護されるのは「表現」であって「アイディアや規則」ではない。言語・規約・解法はその例外規定。",
       "無償で公開されているソフトウェアも著作物。フリー＝著作権がない、ではない。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "著作権法が守るのは表現。プログラムを作るのに使う言語・規約・解法には保護が及ばない",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        {
+          id: "a",
+          label: "ア フリーソフトウェア",
+          col: 0,
+          row: 0.5,
+          note: "無償で公開しても\nプログラムの著作物",
+        },
+        { id: "b", label: "イ 操作マニュアル", col: 1.5, row: 0.5, note: "言語の著作物" },
+        {
+          id: "c",
+          label: "ウ データベース",
+          col: 3,
+          row: 0.5,
+          note: "情報の選択・体系的な\n構成に創作性があれば",
+        },
+        {
+          id: "e",
+          label: "エ プログラム言語・\n規約・解法",
+          col: 0,
+          row: 2.45,
+          tone: "ok",
+          note: "プログラムの作成に用いる\n約束事や考え方",
+        },
+      ],
+      groups: [
+        {
+          label: "著作物として保護される",
+          col: -0.15,
+          row: 0.2,
+          w: 4.2,
+          h: 1.5,
+        },
+        { label: "保護が及ばない", col: -0.15, row: 1.85, w: 1.3, h: 1.9, tone: "ok" },
+      ],
+    },
   },
   {
     source: at(79),
@@ -4761,6 +5385,47 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       "意匠法が守るのは「見た目のデザイン」。技術的な仕組みは特許法、名称やロゴは商標法。",
       "GUIのようなソフトウェアの画面も、条件を満たせば意匠登録の対象になる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "1 つのソフトウェアでも、守る法律は面ごとに違う。見た目のデザイン（GUI）は意匠法、技術的な仕組みは特許法の対象になり得る",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "app", label: "独自の\nソフトウェア・\nサービス", col: 0, row: 1.25 },
+        {
+          id: "look",
+          label: "見た目のデザイン\nア GUI",
+          col: 2.2,
+          row: 0,
+          tone: "ok",
+          note: "意匠法（画像意匠として登録できる）",
+          notePlace: "right",
+        },
+        {
+          id: "tech",
+          label: "技術的な仕組み\nイ アルゴリズム\nウ 通信プロトコル\nエ ビジネスモデル",
+          col: 2.2,
+          row: 1.4,
+          align: "left",
+          note: "特許法の対象になり得る\n（技術的思想の創作）\nエは情報技術と結び付けば\nビジネスモデル特許",
+          notePlace: "right",
+        },
+        {
+          id: "name",
+          label: "名称・ロゴ",
+          col: 2.2,
+          row: 2.6,
+          tone: "muted",
+          note: "商標法",
+          notePlace: "right",
+        },
+      ],
+      edges: [
+        { from: "app", to: "look" },
+        { from: "app", to: "tech" },
+        { from: "app", to: "name" },
+      ],
+    },
   },
   {
     source: at(80),
@@ -4786,10 +5451,50 @@ export const AP_R07_AKI_AM: [Question, ...Question[]] = [
       },
     ],
     explain:
-      "労働施策総合推進法は、労働者が能力を有効に発揮できるようにするための総合的な施策を定めた法律。2020年の改正で、職場における優越的な関係を背景とした言動（パワーハラスメント）について、相談体制の整備などの雇用管理上の措置を事業主に義務付けた。",
+      "労働施策総合推進法は、労働者が能力を有効に発揮できるようにするための総合的な施策を定めた法律。2019年の改正（2020年6月から順次施行）で、職場における優越的な関係を背景とした言動（パワーハラスメント）について、相談体制の整備などの雇用管理上の措置を事業主に義務付けた。",
     points: [
       "通称「パワハラ防止法」と呼ばれるのはこの法律。事業主に防止措置を義務付けている点が要点。",
       "最低賃金法・労働組合法・労働基準法など、隣接する法律との守備範囲の違いを押さえる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "労働施策総合推進法は、事業主にパワーハラスメントの防止措置（相談体制の整備など）を義務付けている",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "law", label: "労働施策\n総合推進法", col: 0, row: 0, tone: "ok" },
+        { id: "emp", label: "事業主", col: 2, row: 0 },
+        { id: "wk", label: "労働者", col: 4, row: 0, shape: "actor" },
+        {
+          id: "mw",
+          label: "最低賃金法\n最低賃金の決め方（ウ）",
+          col: 0,
+          row: 1.95,
+          tone: "muted",
+        },
+        { id: "lu", label: "労働組合法\n団体交渉（エ）", col: 2, row: 1.95, tone: "muted" },
+        {
+          id: "in",
+          label: "関係省庁の申合せなど\nインターンシップ（イ）",
+          col: 4,
+          row: 1.95,
+          tone: "muted",
+        },
+      ],
+      groups: [
+        {
+          label: "ほかの選択肢の内容は、別の法律や取決めの守備範囲",
+          col: -0.3,
+          row: 1.4,
+          w: 5.45,
+          h: 1.5,
+        },
+      ],
+      edges: [
+        { from: "law", to: "emp", label: "パワハラ防止の\n措置を義務付け（ア）", tone: "ok" },
+        { from: "emp", to: "wk", bend: 0.25, label: "相談体制の整備・\n適切な対応" },
+        { from: "wk", to: "emp", bend: 0.25, label: "相談" },
+      ],
+    },
   },
 ];

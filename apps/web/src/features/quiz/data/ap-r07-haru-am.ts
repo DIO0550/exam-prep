@@ -136,15 +136,70 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "二分法は1回の繰返しで区間が半分。n回で1／2ⁿになる指数的な収束。",
       "2¹⁰＝1,024≒10³ は暗算の目安。「10回で1／1,000」と覚えておくと速い。",
     ],
-    figure: {
-      type: "calc",
-      caption: "終了条件の求め方",
-      lines: [
-        { expr: "k 回目の x₁ − x ＝ 1 ／ 2ᵏ", note: "区間幅が毎回半分になる" },
-        { expr: "1 ／ 2ᵏ ＜ 0.001", note: "終了条件" },
-        { expr: "2ᵏ ＞ 1,000 → k ＝ 10", note: "2¹⁰＝1,024" },
-      ],
-    },
+    figure: [
+      {
+        type: "array",
+        caption:
+          "(2) を k 回実行した直後の x₁ − x。毎回半分になり、10 回目で初めて 0.001 を下回って終了する",
+        cellWidth: 4,
+        headers: [
+          "1回目",
+          "2回目",
+          "3回目",
+          "4回目",
+          "5回目",
+          "6回目",
+          "7回目",
+          "8回目",
+          "9回目",
+          "10回目",
+        ],
+        rows: [
+          {
+            label: "x₁ − x（分数）",
+            cells: [
+              "1/2",
+              "1/4",
+              "1/8",
+              "1/16",
+              "1/32",
+              "1/64",
+              "1/128",
+              "1/256",
+              "1/512",
+              "1/1024",
+            ],
+            marked: [9],
+          },
+          {
+            label: "（小数で約）",
+            cells: [
+              "0.5",
+              "0.25",
+              "0.125",
+              "0.0625",
+              "0.031",
+              "0.016",
+              "0.0078",
+              "0.0039",
+              "0.0020",
+              "0.00098",
+            ],
+            marked: [9],
+            note: "9 回目はまだ 0.001 以上。10 回目で 0.001 未満（ア）",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "終了条件の求め方",
+        lines: [
+          { expr: "k 回目の x₁ − x ＝ 1 ／ 2ᵏ", note: "区間幅が毎回半分になる" },
+          { expr: "1 ／ 2ᵏ ＜ 0.001", note: "終了条件" },
+          { expr: "2ᵏ ＞ 1,000 → k ＝ 10", note: "2¹⁰＝1,024" },
+        ],
+      },
+    ],
   },
   {
     source: at(3),
@@ -1081,17 +1136,61 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "コピーレフトの強さ：GPL ＞ LGPL ＞ MPL ＞ BSD／MIT／Apache。",
       "LGPLは動的リンクなら利用側のソースを公開しなくてよい点が、GPLとの分かれ目。",
     ],
-    figure: {
-      type: "table",
-      caption: "コピーレフトの強さの順（○＝ソースコードの公開が要る）",
-      headers: ["ライセンス", "改変した部分", "静的リンク", "動的リンク"],
-      rows: [
-        ["GPL", "○", "○", "○"],
-        ["LGPL", "○", "○", "×"],
-        ["MPL", "○", "×", "×"],
-        ["BSD／MIT／Apache", "×", "×", "×"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "問題の表で○（ソースコードの公開が要る）の範囲。コピーレフトが強いほど範囲が広い（a＝GPL、b＝LGPL、c＝MPL、d＝BSD）",
+        cell: { w: 150, h: 50 },
+        nodes: [
+          {
+            id: "h1",
+            label: "OSS を修正した\nプログラム",
+            col: 1.2,
+            row: 0,
+            shape: "text",
+            tone: "muted",
+          },
+          {
+            id: "h2",
+            label: "OSS に静的リンク\nしたプログラム",
+            col: 2.4,
+            row: 0,
+            shape: "text",
+            tone: "muted",
+          },
+          {
+            id: "h3",
+            label: "OSS に動的リンク\nしたプログラム",
+            col: 3.6,
+            row: 0,
+            shape: "text",
+            tone: "muted",
+          },
+          { id: "gpl", label: "a＝GPL", col: 2.4, row: 1.1, w: 3.467, tone: "accent" },
+          { id: "lgpl", label: "b＝LGPL", col: 1.8, row: 2.1, w: 2.267, tone: "accent" },
+          { id: "mpl", label: "c＝MPL", col: 1.2, row: 3.1, w: 1.067, tone: "accent" },
+          {
+            id: "bsd",
+            label: "d＝BSD／MIT／Apache：どれも公開の義務なし",
+            col: 2.4,
+            row: 4,
+            shape: "text",
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "コピーレフトの強さの順（○＝ソースコードの公開が要る）",
+        headers: ["ライセンス", "改変した部分", "静的リンク", "動的リンク"],
+        rows: [
+          ["GPL", "○", "○", "○"],
+          ["LGPL", "○", "○", "×"],
+          ["MPL", "○", "×", "×"],
+          ["BSD／MIT／Apache", "×", "×", "×"],
+        ],
+      },
+    ],
   },
   {
     source: at(17),
@@ -1158,14 +1257,50 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "分解能（1LSBあたりの電圧）×データの値が出力。まず基数変換を済ませる。",
       "8ビットなら0〜255の256段階。最大出力は255×10＝2,550ミリV。",
     ],
-    figure: {
-      type: "calc",
-      caption: "出力電圧の求め方",
-      lines: [
-        { expr: "(82)₁₆ ＝ 8 × 16 ＋ 2 ＝ 130", note: "16進数を10進数に直す" },
-        { expr: "130 × 10 ミリV ＝ 1,300 ミリV", note: "1LSB＝10ミリV" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "データ (82)₁₆ は 2 進数で 1000 0010、10 進数で 130。1 あたり 10 ミリV なので出力は 1,300 ミリV",
+        cell: { w: 140, h: 84 },
+        nodes: [
+          {
+            id: "data",
+            label: "データ (82)₁₆ ＝ (1000 0010)₂",
+            col: 1,
+            row: 0,
+            fields: ["1", "0", "0", "0", "0", "0", "1", "0"],
+            note: "重み 128 と 2 のビットが 1\n128 ＋ 2 ＝ 130",
+          },
+          {
+            id: "dac",
+            label: "8 ビット\nD/A 変換器",
+            col: 3,
+            row: 0,
+            note: "最下位 1 ビットで\n10 ミリV",
+          },
+          {
+            id: "out",
+            label: "出力（ウ）\n130 × 10 ＝ 1,300 ミリV",
+            col: 4.6,
+            row: 0,
+            tone: "ok",
+          },
+        ],
+        edges: [
+          { from: "data", to: "dac" },
+          { from: "dac", to: "out" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "出力電圧の求め方",
+        lines: [
+          { expr: "(82)₁₆ ＝ 8 × 16 ＋ 2 ＝ 130", note: "16進数を10進数に直す" },
+          { expr: "130 × 10 ミリV ＝ 1,300 ミリV", note: "1LSB＝10ミリV" },
+        ],
+      },
+    ],
   },
   {
     source: at(19),
@@ -1196,6 +1331,44 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "PLC＝ラダー図によるシーケンス制御。「ハードウェアのリレー回路」との対比で覚える。",
       "PID制御は連続量のフィードバック制御で、シーケンス制御とは制御の考え方が異なる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "PLC は、リレー盤の配線で組んでいたシーケンス制御を、ラダー図のプログラムで置き換えたもの",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "in1", label: "入力\n（スイッチ・センサー）", col: 0, row: 0.5 },
+        {
+          id: "relay",
+          label: "リレー盤（エ）\n配線で論理を組む",
+          col: 1.7,
+          row: 0.5,
+          tone: "muted",
+          note: "動作を変えるには\n配線をやり直す",
+        },
+        { id: "out1", label: "出力\n（モーター・ランプ）", col: 3.4, row: 0.5 },
+        { id: "in2", label: "入力\n（スイッチ・センサー）", col: 0, row: 2.35 },
+        {
+          id: "plc",
+          label: "PLC（イ）\nラダー図の\nシーケンスプログラム",
+          col: 1.7,
+          row: 2.35,
+          tone: "ok",
+          note: "プログラムの書換えで\n動作を変えられる",
+        },
+        { id: "out2", label: "出力\n（モーター・ランプ）", col: 3.4, row: 2.35 },
+      ],
+      groups: [
+        { label: "PLC 以前：リレー回路のハードウェア", col: -0.15, row: 0.1, w: 4.65, h: 1.7 },
+        { label: "PLC", col: -0.15, row: 1.85, w: 4.65, h: 1.9, tone: "ok" },
+      ],
+      edges: [
+        { from: "in1", to: "relay" },
+        { from: "relay", to: "out1" },
+        { from: "in2", to: "plc" },
+        { from: "plc", to: "out2" },
+      ],
+    },
   },
   {
     source: at(20),
@@ -1217,6 +1390,39 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "代表的なHDLはVHDLとVerilog HDL。どちらも論理合成とシミュレーションに使う。",
       "DDL（データベース定義）、UML（モデリング）、XML（文書）は回路記述の言語ではない。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "HDL で書いた回路の記述を論理合成するとゲートの回路になり、FPGA の構成データや ASIC の設計データになる",
+      cell: { w: 140, h: 84 },
+      nodes: [
+        {
+          id: "hdl",
+          label: "HDL で回路を記述（イ）\n（VHDL・Verilog HDL）",
+          col: 0,
+          row: 0.6,
+          tone: "ok",
+        },
+        { id: "syn", label: "論理合成", col: 1.8, row: 0.6, shape: "round" },
+        {
+          id: "sim",
+          label: "シミュレーション\n（動作の確認）",
+          col: 1.8,
+          row: 1.9,
+          shape: "round",
+        },
+        { id: "gate", label: "ゲートレベルの\n回路", col: 3.3, row: 0.6 },
+        { id: "fpga", label: "FPGA の\n構成データ", col: 4.8, row: 0 },
+        { id: "asic", label: "ASIC の\n設計データ", col: 4.8, row: 1.2 },
+      ],
+      edges: [
+        { from: "hdl", to: "syn" },
+        { from: "hdl", to: "sim" },
+        { from: "syn", to: "gate" },
+        { from: "gate", to: "fpga" },
+        { from: "gate", to: "asic" },
+      ],
+    },
   },
   {
     source: at(21),
@@ -1311,19 +1517,47 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "「発話」「回顧」「アンケート」は利用者の声を集める手法なので利用者が参加する側。",
       "ヒューリスティック評価法＝経験則との照合、認知的ウォークスルー法＝手順を専門家がなぞる。",
     ],
-    figure: {
-      type: "table",
-      caption: "ユーザビリティ評価の手法と、誰が関わるか",
-      headers: ["手法", "実施者", "やり方"],
-      rows: [
-        ["アンケート", "利用者が参加", "使ったあとに質問紙で意見を集める"],
-        ["思考発話法", "利用者が参加", "操作しながら考えていることを声に出してもらう"],
-        ["回顧法", "利用者が参加", "操作の後で振り返って語ってもらう"],
-        ["ユーザーテスト", "利用者が参加", "課題を与えて操作の様子を観察する"],
-        ["ヒューリスティック評価法", "専門家だけ", "経験則の一覧と照らして問題点を洗い出す"],
-        ["認知的ウォークスルー法", "専門家だけ", "想定利用者になったつもりで手順をなぞる"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "利用者に操作や回答をしてもらう手法と、専門家だけで点検する手法。思考発話法は前者、ヒューリスティック評価法は後者（ウ）",
+        cell: { w: 140, h: 70 },
+        nodes: [
+          { id: "user", label: "利用者", col: 0, row: 0.7, shape: "actor" },
+          { id: "q", label: "アンケート", col: 1.4, row: 0.35 },
+          { id: "think", label: "思考発話法（ウ）", col: 2.8, row: 0.35, tone: "ok" },
+          { id: "retro", label: "回顧法", col: 1.4, row: 1.05 },
+          { id: "test", label: "ユーザーテスト", col: 2.8, row: 1.05 },
+          { id: "pro", label: "専門家", col: 0, row: 2.25, shape: "actor" },
+          {
+            id: "heu",
+            label: "ヒューリスティック\n評価法（ウ）",
+            col: 1.4,
+            row: 2.15,
+            tone: "ok",
+          },
+          { id: "walk", label: "認知的\nウォークスルー法", col: 2.8, row: 2.15 },
+        ],
+        groups: [
+          { label: "利用者が参加する手法", col: -0.1, row: 0.25, w: 4, h: 1.7 },
+          { label: "専門家だけで実施する手法", col: -0.1, row: 1.95, w: 4, h: 1.35 },
+        ],
+      },
+      {
+        type: "table",
+        caption: "ユーザビリティ評価の手法と、誰が関わるか",
+        headers: ["手法", "実施者", "やり方"],
+        rows: [
+          ["アンケート", "利用者が参加", "使ったあとに質問紙で意見を集める"],
+          ["思考発話法", "利用者が参加", "操作しながら考えていることを声に出してもらう"],
+          ["回顧法", "利用者が参加", "操作の後で振り返って語ってもらう"],
+          ["ユーザーテスト", "利用者が参加", "課題を与えて操作の様子を観察する"],
+          ["ヒューリスティック評価法", "専門家だけ", "経験則の一覧と照らして問題点を洗い出す"],
+          ["認知的ウォークスルー法", "専門家だけ", "想定利用者になったつもりで手順をなぞる"],
+        ],
+      },
+    ],
   },
   {
     source: at(23),
@@ -1348,6 +1582,46 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "ベクタ（SVG）は拡大に強い、ラスタ（PNG・JPEG・TIFF）は画素の集まりなので拡大で粗くなる。",
       "SVGはテキストなので差分管理や検索ができる点も特徴。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "SVG は図形を座標や半径の XML 要素で書くベクタ形式。拡大しても描き直すので輪郭が滑らか。ラスタ形式は画素の並び",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        {
+          id: "xml",
+          label: '<circle cx="50"\ncy="50" r="40"/>',
+          col: 0,
+          row: 0.55,
+          tone: "ok",
+          note: "XML のテキスト（ウ）",
+        },
+        { id: "vec", label: "拡大しても\n輪郭が滑らか", col: 2.4, row: 0.55, tone: "ok" },
+        {
+          id: "px",
+          label: "画素（点）ごとの\n色の並び",
+          col: 0,
+          row: 2.05,
+          note: "PNG・TIFF（イ・エ）",
+        },
+        { id: "ras", label: "拡大すると\n輪郭が粗くなる", col: 2.4, row: 2.05, tone: "ng" },
+      ],
+      groups: [
+        {
+          label: "SVG：ベクタ形式（W3C が仕様を定義）",
+          col: -0.15,
+          row: 0.3,
+          w: 3.5,
+          h: 1.4,
+          tone: "ok",
+        },
+        { label: "ラスタ形式", col: -0.15, row: 1.75, w: 3.5, h: 1.4 },
+      ],
+      edges: [
+        { from: "xml", to: "vec", label: "拡大して描く" },
+        { from: "px", to: "ras", label: "拡大して描く" },
+      ],
+    },
   },
   {
     source: at(24),
@@ -2351,6 +2625,40 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "クリアランス（clearance）＝適格性の認定。クリアデスクとは別の概念。",
       "日本でも重要経済安保情報の保護及び活用に関する法律で同様の適性評価制度が整備された。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "セキュリティクリアランスは「人」の適性を評価して、秘密情報を扱う資格を与える制度。設備や運用の対策とは対象が違う",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        { id: "person", label: "配属予定の個人", col: 0, row: 0.5, shape: "actor" },
+        {
+          id: "eval",
+          label: "適性評価\n（経歴・信頼性の調査）",
+          col: 1.6,
+          row: 0.5,
+          tone: "ok",
+          note: "セキュリティ\nクリアランス（ウ）",
+        },
+        { id: "info", label: "重要な秘密情報", col: 3.3, row: 0.5, shape: "db" },
+        { id: "a", label: "ア ネットワークを\n物理的に分離", col: 0, row: 2.25, tone: "muted" },
+        { id: "i", label: "イ アカウントの\n棚卸し", col: 1.6, row: 2.25, tone: "muted" },
+        { id: "e", label: "エ クリアデスク", col: 3.2, row: 2.25, tone: "muted" },
+      ],
+      groups: [
+        {
+          label: "人ではなく、設備や運用の対策",
+          col: -0.1,
+          row: 1.75,
+          w: 4.3,
+          h: 1.4,
+        },
+      ],
+      edges: [
+        { from: "person", to: "eval" },
+        { from: "eval", to: "info", label: "資格を得た人\nだけが扱う" },
+      ],
+    },
   },
   {
     source: at(40),
@@ -2797,6 +3105,44 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "XPのプラクティスは「ペアプログラミング」「テスト駆動開発」「リファクタリング」が頻出。",
       "構造化プログラミングやコンポーネント指向は、XP以前からある一般的な設計の考え方。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "ペアプログラミングは 2 人 1 組で 1 つのコードを書く XP のプラクティス。ほかの選択肢は XP に限らない一般の考え方",
+      cell: { w: 150, h: 70 },
+      nodes: [
+        { id: "d", label: "書く人", col: 0, row: 0.6, shape: "actor" },
+        { id: "n", label: "見る人", col: 1.1, row: 0.6, shape: "actor" },
+        {
+          id: "pp",
+          label: "ペアプログラミング（エ）\n2 人 1 組で 1 つのコードを書く",
+          col: 0.55,
+          row: 1.9,
+          tone: "ok",
+        },
+        { id: "tdd", label: "テスト駆動開発", col: 2.5, row: 0.6 },
+        { id: "ref", label: "リファクタリング", col: 3.8, row: 0.6 },
+        { id: "ci", label: "継続的\nインテグレーション", col: 2.5, row: 1.9 },
+        { id: "rel", label: "小さなリリース", col: 3.8, row: 1.9 },
+        { id: "a", label: "ア 構造化プログラミング", col: 0.4, row: 3.55, tone: "muted" },
+        { id: "i", label: "イ コンポーネント指向", col: 2, row: 3.55, tone: "muted" },
+        { id: "u", label: "ウ ビジュアルプログラミング", col: 3.7, row: 3.55, tone: "muted" },
+      ],
+      groups: [
+        { label: "XP のプラクティス（例）", col: 0.2, row: 0.35, w: 4.75, h: 2.55, tone: "ok" },
+        {
+          label: "XP のプラクティスではない（一般的な設計・開発の考え方）",
+          col: 0.2,
+          row: 2.95,
+          w: 4.75,
+          h: 1.5,
+        },
+      ],
+      edges: [
+        { from: "d", to: "pp", arrow: "none" },
+        { from: "n", to: "pp", arrow: "none" },
+      ],
+    },
   },
   {
     source: at(49),
@@ -3272,16 +3618,63 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "可用性の母数は「サービス提供時間帯」。24時間×日数ではない点に注意する。",
       "停止時間の差＝提供時間×（目標可用性−実績可用性）と、直接求めてもよい。",
     ],
-    figure: {
-      type: "calc",
-      caption: "不足していた停止時間",
-      lines: [
-        { expr: "15 時間 × 20 日 ＝ 300 時間", note: "月間のサービス提供時間" },
-        { expr: "300 × 0.7％ ＝ 2.1 時間", note: "実績99.3％のときの停止時間" },
-        { expr: "300 × 0.5％ ＝ 1.5 時間", note: "目標99.5％で許される停止時間" },
-        { expr: "2.1 − 1.5 ＝ 0.6 時間", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "提供時間 300 時間のうち停止が 1.5 時間までなら可用性 99.5％。実績の停止 2.1 時間より 0.6 時間少なければよかった",
+        x: {
+          label: "月の停止時間（時間）",
+          min: 0,
+          max: 3,
+          ticks: [0, 1.5, 2.1, 3],
+        },
+        y: {
+          label: "可用性（％）＝ (300 − 停止時間) ÷ 300 × 100",
+          min: 99,
+          max: 100,
+          ticks: [99, 99.3, 99.5, 100],
+        },
+        series: [
+          {
+            label: "",
+            points: [
+              [0, 100],
+              [0.9, 99.7],
+              [3, 99],
+            ],
+          },
+        ],
+        guides: [{ y: 99.5, label: "目標 99.5％" }],
+        marks: [
+          { x: 1.5, y: 99.5, label: "目標ちょうど：停止 1.5 時間", place: "right" },
+          { x: 2.1, y: 99.3, label: "実績：停止 2.1 時間", place: "right" },
+        ],
+        areas: [
+          {
+            points: [
+              [1.5, 99],
+              [2.1, 99],
+              [2.1, 99.3],
+              [1.5, 99.5],
+            ],
+            label: "0.6 時間（イ）",
+            tone: "ok",
+            labelAt: [1.8, 99.12],
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "不足していた停止時間",
+        lines: [
+          { expr: "15 時間 × 20 日 ＝ 300 時間", note: "月間のサービス提供時間" },
+          { expr: "300 × 0.7％ ＝ 2.1 時間", note: "実績99.3％のときの停止時間" },
+          { expr: "300 × 0.5％ ＝ 1.5 時間", note: "目標99.5％で許される停止時間" },
+          { expr: "2.1 − 1.5 ＝ 0.6 時間", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(56, "選択肢の表を1行ずつの記述に変更"),
@@ -3554,13 +3947,49 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "「十分かつ適切な監査証拠」は監査意見の根拠。手続はそのための手段。",
     ],
     figure: {
-      type: "flow",
-      caption: "監査手続は「証拠を集める手順」",
-      steps: [
-        { actor: "監査計画", text: "目的・対象・体制・日程を決める（手続そのものではない）" },
-        { actor: "監査手続の実施", text: "質問・査閲・突合・ウォークスルーなどで監査証拠を集める" },
-        { actor: "監査証拠", text: "十分かつ適切であることが、監査意見の根拠になる" },
-        { actor: "監査報告", text: "集めた証拠を基に意見と指摘事項をまとめる" },
+      type: "diagram",
+      caption:
+        "監査手続は、監査証拠を十分かつ適切に集めるための手順。計画や体制づくり、報告書の作成は別の段階",
+      cell: { w: 145, h: 84 },
+      nodes: [
+        {
+          id: "plan",
+          label: "監査計画",
+          col: 0,
+          row: 0,
+          shape: "round",
+          note: "計画の立案・進捗管理（ア）\n体制・チームの編成（エ）",
+        },
+        {
+          id: "proc",
+          label: "監査手続の実施（ウ）",
+          col: 1.6,
+          row: 0,
+          shape: "round",
+          tone: "ok",
+          note: "質問・査閲・突合・\nウォークスルーなど",
+        },
+        {
+          id: "evid",
+          label: "監査証拠",
+          col: 3.1,
+          row: 0,
+          shape: "db",
+          note: "十分かつ適切なもの\n＝監査意見の根拠",
+        },
+        {
+          id: "rep",
+          label: "監査報告",
+          col: 4.5,
+          row: 0,
+          shape: "round",
+          note: "結論や指摘事項を\n報告書に記述（イ）",
+        },
+      ],
+      edges: [
+        { from: "plan", to: "proc" },
+        { from: "proc", to: "evid", label: "集める" },
+        { from: "evid", to: "rep" },
       ],
     },
   },
@@ -3660,6 +4089,46 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "DX認定は「準備が整っている」ことの認定。成果の達成を条件にはしていない。",
       "対象は企業規模を問わない。「DX銘柄」は上場企業が対象という点と混同しない。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "DX 認定は、ビジョンと DX 戦略を策定・公表して準備が整った事業者を認定する。成果の達成は条件ではない",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        {
+          id: "vis",
+          label: "経営ビジョンと\nビジネスモデルの\n方向性を公表",
+          col: 0,
+          row: 0.55,
+        },
+        { id: "str", label: "実現の方策として\nDX 戦略を公表", col: 1.6, row: 0.55 },
+        {
+          id: "cert",
+          label: "DX 認定\n（準備が整った事業者）",
+          col: 3.3,
+          row: 0.55,
+          tone: "accent",
+          note: "企業規模は問わない（ウ ×）\nデジタルガバナンス・コードの\n全項目は求めない（エ ×）",
+          notePlace: "right",
+        },
+        {
+          id: "res",
+          label: "成果の達成\n（ビジネスモデルの革新など）",
+          col: 3.3,
+          row: 2.2,
+          tone: "muted",
+          note: "認定の条件ではない（ア ×）",
+        },
+      ],
+      groups: [
+        { label: "認定基準の中心（イ）", col: -0.05, row: 0.35, w: 2.7, h: 1.2, tone: "ok" },
+      ],
+      edges: [
+        { from: "vis", to: "str" },
+        { from: "str", to: "cert" },
+        { from: "cert", to: "res", dashed: true, label: "その後" },
+      ],
+    },
   },
   {
     source: at(62),
@@ -3684,17 +4153,45 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "CRM＝顧客との関係、SCM＝供給連鎖、HRM＝人材、ERP＝経営資源の統合。対象で見分ける。",
       "ワントゥワン、顧客生涯価値（LTV）、顧客ロイヤルティといった語はCRMの周辺用語。",
     ],
-    figure: {
-      type: "table",
-      caption: "対象で見分ける",
-      headers: ["略語", "対象", "周辺の言葉"],
-      rows: [
-        ["CRM", "顧客との関係", "ワントゥワンマーケティング、顧客生涯価値（LTV）、ロイヤルティ"],
-        ["SCM", "供給連鎖", "在庫、納期"],
-        ["ERP", "経営資源全体", "会計・人事・生産の統合"],
-        ["HRM", "人材", "採用・育成・評価"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "CRM は接点ごとに得た顧客情報を統合し、顧客一人ひとりに合わせた働きかけ（ワントゥワンマーケティング）に使う",
+        cell: { w: 150, h: 84 },
+        nodes: [
+          { id: "cust", label: "顧客", col: 0, row: 1, shape: "actor" },
+          { id: "touch", label: "営業・販売・\nサポートの接点", col: 1.6, row: 0 },
+          {
+            id: "db",
+            label: "CRM（ア）\n顧客情報を統合",
+            col: 3.2,
+            row: 1,
+            shape: "db",
+            tone: "ok",
+            note: "属性・購買履歴など",
+          },
+          { id: "one", label: "一人ひとりに合わせた\n提案・対応", col: 1.6, row: 2 },
+        ],
+        edges: [
+          { from: "cust", to: "touch", label: "問合せ・購買" },
+          { from: "touch", to: "db", label: "記録" },
+          { from: "db", to: "one", label: "分析" },
+          { from: "one", to: "cust", label: "ワントゥワン\nマーケティング" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "対象で見分ける",
+        headers: ["略語", "対象", "周辺の言葉"],
+        rows: [
+          ["CRM", "顧客との関係", "ワントゥワンマーケティング、顧客生涯価値（LTV）、ロイヤルティ"],
+          ["SCM", "供給連鎖", "在庫、納期"],
+          ["ERP", "経営資源全体", "会計・人事・生産の統合"],
+          ["HRM", "人材", "採用・育成・評価"],
+        ],
+      },
+    ],
   },
   {
     source: at(63),
@@ -3809,16 +4306,60 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "ABCは活動ごとに配賦率（単価）を出してから対象に割り当てる。活動をまたいで平均しない。",
       "見積作成と提案書作成は単価が異なるので、必ず別々に計算する。",
     ],
-    figure: {
-      type: "calc",
-      caption: "活動ごとの単価と削減額",
-      lines: [
-        { expr: "見積作成 ＝ 60 万円 ÷(50 ＋ 100)＝ 0.4 万円／時間", note: "活動の配賦率" },
-        { expr: "提案書作成 ＝ 360 万円 ÷(50 ＋ 400)＝ 0.8 万円／時間", note: "活動の配賦率" },
-        { expr: "製品X ＝ 50 × 0.4 ＋ 50 × 0.8 ＝ 60 万円", note: "製品Xに掛かる人件費" },
-        { expr: "60 × 20％ ＝ 12 万円", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "ABC では活動ごとに単価（配賦率）を求め、製品が使った時間で割り当てる。製品 X の人件費 60 万円の 20％が 12 万円",
+        cell: { w: 150, h: 84 },
+        nodes: [
+          {
+            id: "est",
+            label: "見積作成\n60 万円 ÷ 150 時間\n＝ 0.4 万円／時間",
+            col: 0,
+            row: 0,
+          },
+          {
+            id: "prop",
+            label: "提案書作成\n360 万円 ÷ 450 時間\n＝ 0.8 万円／時間",
+            col: 0,
+            row: 2.4,
+          },
+          {
+            id: "x",
+            label: "製品 X\n20 ＋ 40 ＝ 60 万円",
+            col: 3.4,
+            row: 0,
+            tone: "ok",
+            note: "20％削減\n4 ＋ 8 ＝ 12 万円（ウ）",
+            notePlace: "right",
+          },
+          {
+            id: "y",
+            label: "製品 Y\n40 ＋ 320 ＝ 360 万円",
+            col: 3.4,
+            row: 2.4,
+            tone: "muted",
+          },
+        ],
+        edges: [
+          { from: "est", to: "x", label: "50 時間 × 0.4 ＝ 20 万円", tone: "ok" },
+          { from: "est", to: "y", label: "100 時間 × 0.4 ＝ 40 万円", labelAt: 0.2 },
+          { from: "prop", to: "x", label: "50 時間 × 0.8 ＝ 40 万円", labelAt: 0.2, tone: "ok" },
+          { from: "prop", to: "y", label: "400 時間 × 0.8 ＝ 320 万円" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "活動ごとの単価と削減額",
+        lines: [
+          { expr: "見積作成 ＝ 60 万円 ÷(50 ＋ 100)＝ 0.4 万円／時間", note: "活動の配賦率" },
+          { expr: "提案書作成 ＝ 360 万円 ÷(50 ＋ 400)＝ 0.8 万円／時間", note: "活動の配賦率" },
+          { expr: "製品X ＝ 50 × 0.4 ＋ 50 × 0.8 ＝ 60 万円", note: "製品Xに掛かる人件費" },
+          { expr: "60 × 20％ ＝ 12 万円", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(65),
@@ -3850,19 +4391,66 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "「インタフェース」「性能の測定量」は開発・運用プロセスの語。企画段階の観点ではない。",
     ],
     figure: {
-      type: "flow",
-      caption: "企画プロセスの流れ。ビジネス分析は最初",
-      steps: [
+      type: "diagram",
+      caption:
+        "ビジネス分析は企画プロセスの最初。あるべき姿を描いて問題やメリットを明らかにする。ほかの選択肢は後の段階の観点",
+      cell: { w: 140, h: 84 },
+      nodes: [
         {
-          actor: "ビジネス分析",
-          text: "目指すビジネスモデルと業務プロセスを描き、現状との差から課題と効果を明らかにする",
+          id: "ba",
+          label: "ビジネス分析",
+          col: 0,
+          row: 0.55,
+          shape: "round",
+          tone: "ok",
+          note: "あるべき姿と現状を比べ\n問題とメリットを明確に（ア）",
         },
-        { actor: "情報システム化の方針", text: "どこをシステム化するかの方針を定める" },
-        { actor: "全体開発計画", text: "体制・日程・投資の全体計画を立てる" },
+        { id: "pol", label: "情報システム化\nの方針", col: 1.6, row: 0.55, shape: "round" },
+        { id: "plan", label: "全体開発計画", col: 3.2, row: 0.55, shape: "round" },
         {
-          actor: "（この後）",
-          text: "要件定義・開発・運用。インタフェースや性能の測定量はこちらの話",
+          id: "req",
+          label: "要件定義",
+          col: 0,
+          row: 2.35,
+          shape: "round",
+          tone: "muted",
+          note: "要望を業務要件にして\n関係者と合意（エ）",
         },
+        {
+          id: "dev",
+          label: "開発",
+          col: 1.6,
+          row: 2.35,
+          shape: "round",
+          tone: "muted",
+          note: "構成要素間の\nインタフェースの特定（イ）",
+        },
+        {
+          id: "ops",
+          label: "運用",
+          col: 3.2,
+          row: 2.35,
+          shape: "round",
+          tone: "muted",
+          note: "性能・稼動率などの\n実績の測定量（ウ）",
+        },
+      ],
+      groups: [{ label: "企画プロセス", col: -0.1, row: 0.3, w: 4.3, h: 1.45, tone: "ok" }],
+      edges: [
+        { from: "ba", to: "pol" },
+        { from: "pol", to: "plan" },
+        {
+          from: "plan",
+          to: "req",
+          via: [
+            [3.2, 1.55],
+            [0, 1.55],
+          ],
+          dashed: true,
+          label: "この後",
+        },
+        { from: "req", to: "dev" },
+        { from: "dev", to: "ops" },
       ],
     },
   },
@@ -3980,18 +4568,42 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "PPMの2軸は市場成長率（資金の必要度）と相対的市場シェア（資金の生む力）。",
       "「金のなる木」は成長率が低くシェアが高い。安定した資金源になる。",
     ],
-    figure: {
-      type: "quadrant",
-      caption: "PPM は市場成長率と相対的市場シェアの高低で 4 つに分ける",
-      x: { label: "相対的市場シェア", low: "低", high: "高" },
-      y: { label: "市場成長率", low: "低", high: "高" },
-      cells: [
-        { title: "問題児", note: "資金を使う。投資して花形へ育てる" },
-        { title: "花形", note: "稼ぐが投資も要る。シェアを維持する", tone: "accent" },
-        { title: "負け犬", note: "どちらも小さい。撤退を検討" },
-        { title: "金のなる木", note: "安定した資金源。得た資金を他へ回す", tone: "ok" },
-      ],
-    },
+    figure: [
+      {
+        type: "quadrant",
+        caption: "PPM は市場成長率と相対的市場シェアの高低で 4 つに分ける",
+        x: { label: "相対的市場シェア", low: "低", high: "高" },
+        y: { label: "市場成長率", low: "低", high: "高" },
+        cells: [
+          { title: "問題児", note: "資金を使う。投資して花形へ育てる" },
+          { title: "花形", note: "稼ぐが投資も要る。シェアを維持する", tone: "accent" },
+          { title: "負け犬", note: "どちらも小さい。撤退を検討" },
+          { title: "金のなる木", note: "安定した資金源。得た資金を他へ回す", tone: "ok" },
+        ],
+      },
+      {
+        type: "sketch",
+        caption: "選択肢の 4 つの手法の形。市場成長率とシェアの 2 軸で事業を分けるのは PPM だけ",
+        items: [
+          {
+            name: "PPM",
+            note: "市場成長率と相対的市場シェアの 2 軸で事業を 4 つに分け、資源配分の方針を決める。これが正解の形（ウ）。見本はシェアの高い側を左に描く慣例の向き",
+          },
+          {
+            name: "3C分析",
+            note: "顧客（市場）・競合・自社の 3 つの視点で環境を見る。2 軸の分類ではない（ア）",
+          },
+          {
+            name: "バランススコアカード",
+            note: "財務・顧客・業務プロセス・学習と成長の 4 視点で、戦略目標と指標を整理する（イ）",
+          },
+          {
+            name: "SWOT分析",
+            note: "内部の強み・弱みと外部の機会・脅威の 4 つに整理する。軸は市場成長率やシェアではない（エ）",
+          },
+        ],
+      },
+    ],
   },
   {
     source: at(68),
@@ -4022,21 +4634,56 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "価格戦略の名称は混同しやすい。ライニング（段階）、スキミング（高値で回収）、ペネトレーション（低価格で浸透）。",
       "キャプティブ価格は本体を安く、消耗品で回収する方式。プリンタとインクが典型例。",
     ],
-    figure: {
-      type: "table",
-      caption: "紛らわしい価格戦略",
-      headers: ["戦略", "やり方", "ねらい"],
-      rows: [
-        [
-          "プライスライニング",
-          "数段階の価格帯に整理して品ぞろえする",
-          "消費者は比較しやすく、売る側は管理しやすい",
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "プライスライニングは、商品を松・竹・梅のような少数の価格帯に分けてそろえ、消費者が比べて選びやすくする",
+        cell: { w: 150, h: 70 },
+        nodes: [
+          { id: "cons", label: "消費者", col: 0, row: 1, shape: "actor" },
+          { id: "hi", label: "松：高価格帯", col: 2.5, row: 0, fields: ["商品", "商品", "商品"] },
+          {
+            id: "mid",
+            label: "竹：中価格帯",
+            col: 2.5,
+            row: 1,
+            fields: ["商品", "商品", "商品"],
+          },
+          { id: "lo", label: "梅：低価格帯", col: 2.5, row: 2, fields: ["商品", "商品", "商品"] },
         ],
-        ["スキミングプライシング", "初期に高価格で出す", "開発費を早く回収する"],
-        ["ペネトレーションプライシング", "初期に低価格で出す", "早くシェアを取る"],
-        ["キャプティブプライシング", "本体を安く、消耗品で回収する", "プリンタとインクなど"],
-      ],
-    },
+        groups: [
+          {
+            label: "価格帯を数段階に絞る（ア）",
+            col: 2.38,
+            row: -0.35,
+            w: 1.25,
+            h: 3.2,
+            tone: "ok",
+          },
+        ],
+        edges: [
+          { from: "cons", to: "hi" },
+          { from: "cons", to: "mid", label: "価格帯で\n比べて選ぶ" },
+          { from: "cons", to: "lo" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "紛らわしい価格戦略",
+        headers: ["戦略", "やり方", "ねらい"],
+        rows: [
+          [
+            "プライスライニング",
+            "数段階の価格帯に整理して品ぞろえする",
+            "消費者は比較しやすく、売る側は管理しやすい",
+          ],
+          ["スキミングプライシング", "初期に高価格で出す", "開発費を早く回収する"],
+          ["ペネトレーションプライシング", "初期に低価格で出す", "早くシェアを取る"],
+          ["キャプティブプライシング", "本体を安く、消耗品で回収する", "プリンタとインクなど"],
+        ],
+      },
+    ],
   },
   {
     source: at(69),
@@ -4140,6 +4787,49 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "フリーミアム＝free＋premium。無料の利用者が多数、有料は少数という構造。",
       "1人増えても追加費用がほぼ生じないデジタルサービスだからこそ成り立つモデル。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "フリーミアムは、基本機能を無料にして利用者を多く集め、その一部に有料版を使ってもらう。無料と有料の境界がはっきりしていることが鍵",
+      cell: { w: 150, h: 84 },
+      nodes: [
+        {
+          id: "svc",
+          label: "デジタルサービス",
+          col: 1.5,
+          row: 0,
+          note: "1 人増えても追加費用は\nごく小さい",
+          notePlace: "right",
+        },
+        {
+          id: "free",
+          label: "無料の利用者（多数）",
+          col: 0,
+          row: 1.8,
+          shape: "actor",
+          note: "基本機能を無料で使う",
+        },
+        {
+          id: "paid",
+          label: "有料の利用者（一部）",
+          col: 3,
+          row: 1.8,
+          shape: "actor",
+          tone: "ok",
+          note: "高度な機能・充実した内容に\n料金を払う（これが収益源）",
+        },
+      ],
+      edges: [
+        { from: "svc", to: "free", label: "無料版" },
+        { from: "svc", to: "paid", label: "有料版" },
+        {
+          from: "free",
+          to: "paid",
+          label: "境界がはっきりしていると\n一部が有料へ移る（ウ）",
+          tone: "ok",
+        },
+      ],
+    },
   },
   {
     source: at(71),
@@ -4236,6 +4926,41 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "マシンビジョン＝「機械の目」。画像を入力として判定するのが本質。",
       "需要予測（データ分析）やXRによる作業支援は、目的も入力データも異なる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "マシンビジョンはカメラの画像を AI が判定する「機械の目」。人が目で見ていた外観検査を代わりに行う",
+      cell: { w: 140, h: 84 },
+      nodes: [
+        { id: "prod", label: "製造ラインの\n製品", col: 0, row: 0 },
+        { id: "cam", label: "カメラで撮影", col: 1.5, row: 0 },
+        {
+          id: "ai",
+          label: "AI が画像から\n良・不良を判定",
+          col: 3,
+          row: 0,
+          shape: "round",
+          tone: "ok",
+        },
+        { id: "good", label: "良品", col: 4.4, row: -0.55 },
+        { id: "bad", label: "不良品", col: 4.4, row: 0.55, tone: "ng" },
+        { id: "human", label: "人の目視検査", col: 3, row: 1.7, shape: "actor", tone: "muted" },
+      ],
+      edges: [
+        { from: "prod", to: "cam" },
+        { from: "cam", to: "ai", label: "画像" },
+        { from: "ai", to: "good" },
+        { from: "ai", to: "bad" },
+        {
+          from: "ai",
+          to: "human",
+          dashed: true,
+          arrow: "none",
+          label: "代わりに行う（エ）",
+          tone: "ok",
+        },
+      ],
+    },
   },
   {
     source: at(73),
@@ -4266,20 +4991,55 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "コンピテンシー＝知識や資格ではなく「実際の行動」に着目した能力の捉え方。",
       "動機付けの理論（X理論・Y理論、欲求段階説、動機付け衛生理論）とは別の枠組み。",
     ],
-    figure: {
-      type: "table",
-      caption: "何に着目して人を捉えるか",
-      headers: ["枠組み", "着目するもの", "使い道"],
-      rows: [
-        [
-          "コンピテンシーモデル",
-          "高い成果を上げる人に共通する行動特性",
-          "採用・評価・育成の共通の物差し",
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "コンピテンシーモデルは、高い成果を上げ続ける人に共通する行動・思考特性を定義し、採用・評価・育成の物差しにする",
+        cell: { w: 140, h: 84 },
+        nodes: [
+          { id: "high", label: "高い成果を\n上げ続ける人", col: 0, row: 1, shape: "actor" },
+          {
+            id: "ext",
+            label: "共通する行動・\n思考特性を抽出",
+            col: 1.5,
+            row: 1,
+            shape: "round",
+          },
+          {
+            id: "model",
+            label: "コンピテンシーモデル（ウ）\n職務ごとに定義",
+            col: 3.2,
+            row: 1,
+            tone: "ok",
+          },
+          { id: "r1", label: "採用", col: 4.9, row: 0.2 },
+          { id: "r2", label: "評価", col: 4.9, row: 1 },
+          { id: "r3", label: "育成", col: 4.9, row: 1.8 },
         ],
-        ["職能資格制度", "知識や経験の等級", "処遇の決定"],
-        ["動機付け理論", "人が何で動くか（欲求・衛生要因）", "働きかけ方の設計"],
-      ],
-    },
+        edges: [
+          { from: "high", to: "ext" },
+          { from: "ext", to: "model" },
+          { from: "model", to: "r1" },
+          { from: "model", to: "r2", label: "共通の物差し" },
+          { from: "model", to: "r3" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "何に着目して人を捉えるか",
+        headers: ["枠組み", "着目するもの", "使い道"],
+        rows: [
+          [
+            "コンピテンシーモデル",
+            "高い成果を上げる人に共通する行動特性",
+            "採用・評価・育成の共通の物差し",
+          ],
+          ["職能資格制度", "知識や経験の等級", "処遇の決定"],
+          ["動機付け理論", "人が何で動くか（欲求・衛生要因）", "働きかけ方の設計"],
+        ],
+      },
+    ],
   },
   {
     source: at(74),
@@ -4662,6 +5422,38 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       "「不特定の者」に対して使え、交換できることが要件。使える店が限られるものは該当しない。",
       "暗号資産交換業は登録制で、財務要件・分別管理・広告規制などの規制を受ける。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "暗号資産は、不特定の者への代金の支払に使え、不特定の者との間で法定通貨と相互に交換できる、電子的に記録・移転される財産的価値。交換の窓口が暗号資産交換業者",
+      cell: { w: 140, h: 84 },
+      nodes: [
+        { id: "user", label: "利用者", col: 0, row: 1, shape: "actor" },
+        {
+          id: "ca",
+          label: "暗号資産（イ）",
+          col: 1.6,
+          row: 1,
+          tone: "ok",
+          note: "電子的に記録され移転できる\n法定通貨・法定通貨建てではない",
+        },
+        { id: "shop", label: "不特定の者\n（店・個人）", col: 1.6, row: -0.6, shape: "actor" },
+        {
+          id: "exch",
+          label: "暗号資産交換業者",
+          col: 3.2,
+          row: 1,
+          note: "法定通貨との交換の窓口\n登録制で、財務規制も受ける（ア ×）",
+        },
+        { id: "fiat", label: "法定通貨\n（円など）", col: 4.6, row: 1 },
+      ],
+      edges: [
+        { from: "user", to: "ca", label: "保有" },
+        { from: "ca", to: "shop", label: "代金の支払に使える" },
+        { from: "ca", to: "exch", arrow: "both" },
+        { from: "exch", to: "fiat", arrow: "both" },
+      ],
+    },
   },
   {
     source: at(80),
