@@ -142,11 +142,12 @@ export const useQuizSession = (questions: Question[]) => {
 
   /**
    * 選択肢を選ぶ。選んだ時点で正誤が確定し、間違えた問題は苦手登録に入る。
-   * 押し間違えたときは undoPick で取り消せる。
+   * 押し間違えたときは undoPick で取り消せる。除外した選択肢は選べない。
    */
   const pick = useCallback(
     (choice: number) => {
       if (!current || current.attempt.revealed) return;
+      if (current.attempt.excluded.includes(choice)) return;
       setLastAnswer(
         progressStore.answer(
           sourceId(current.question.source),

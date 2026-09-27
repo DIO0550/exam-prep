@@ -312,6 +312,24 @@ describe("QuizApp", () => {
     expect(screen.getByText(FIRST.choices[0]?.text ?? "")).toHaveClass("line-through");
   });
 
+  it("除外した選択肢は押せず、除外を外すと選べる", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    const exclude = screen.getByRole("button", { name: "選択肢アを除外" });
+    await user.click(exclude);
+
+    expect(choiceButton(0)).toBeDisabled();
+    await user.click(choiceButton(0));
+    expect(screen.getByRole("button", { name: "次の問題へ" })).toBeDisabled();
+
+    await user.click(exclude);
+
+    expect(choiceButton(0)).toBeEnabled();
+    await user.click(choiceButton(0));
+    expect(screen.getByRole("button", { name: "次の問題へ" })).toBeEnabled();
+  });
+
   it("選択肢をシャッフルすると並びが変わり、正誤は選んだ中身で決まる", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
