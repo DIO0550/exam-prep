@@ -4,6 +4,7 @@ import type {
   DiagramFigure,
   DiagramNode,
   DiagramShape,
+  FigureTone,
   KarnaughFigure,
   SequenceFigure,
   SequenceStep,
@@ -118,7 +119,11 @@ export type NodeLayout = {
   h: number;
   /** fields を持つ部品の、各欄の幅。 */
   fieldWidths: number[];
-  /** 部品と、上の見出し・下の注記まで含めた範囲。重なりの検査に使う。 */
+  /** 欄を持つ部品の、箱の上に出す見出しの範囲。 */
+  headBox?: Box;
+  /** 注記の範囲（部品の下か右）。 */
+  noteBox?: Box;
+  /** 部品と、上の見出し・注記まで含めた範囲。重なりの検査に使う。 */
   bounds: Box;
 };
 
@@ -166,26 +171,36 @@ const layoutNode = (node: DiagramNode, cellW: number, cellH: number): NodeLayout
   const cx = node.col * cellW;
   const cy = node.row * cellH;
 
-  const parts: Box[] = [{ x: cx - w / 2, y: cy - h / 2, w, h }];
-  if (node.fields && node.label !== "") {
-    // 欄を持つ部品の見出しは、箱の上に小さく出す。
-    parts.push(
-      textBox(node.label, { x: cx, y: cy - h / 2 - 4 - SMALL_LINE / 2 }, SMALL, SMALL_LINE),
-    );
-  }
+  const body = { x: cx - w / 2, y: cy - h / 2, w, h };
+  // 欄を持つ部品の見出しは、箱の上に小さく出す。
+  const headBox =
+    node.fields && node.label !== ""
+      ? textBox(node.label, { x: cx, y: cy - h / 2 - 4 - SMALL_LINE / 2 }, SMALL, SMALL_LINE)
+      : undefined;
+  let noteBox: Box | undefined;
   if (node.note) {
     const lines = linesOf(node.note).length;
-    parts.push(
-      textBox(
+    if (node.notePlace === "right") {
+      // 右に置く注記は左寄せで、部品の縦の真ん中にそろえる。
+      const noteW = blockWidth(node.note, SMALL);
+      noteBox = {
+        x: cx + w / 2 + 6,
+        y: cy - (lines * SMALL_LINE) / 2,
+        w: noteW,
+        h: lines * SMALL_LINE,
+      };
+    } else {
+      noteBox = textBox(
         node.note,
         { x: cx, y: cy + h / 2 + 4 + (lines * SMALL_LINE) / 2 },
         SMALL,
         SMALL_LINE,
-      ),
-    );
+      );
+    }
   }
+  const parts = [body, headBox, noteBox].filter((part): part is Box => part !== undefined);
 
-  return { node, shape, cx, cy, w, h, fieldWidths, bounds: unionOf(parts) };
+  return { node, shape, cx, cy, w, h, fieldWidths, headBox, noteBox, bounds: unionOf(parts) };
 };
 
 /**
@@ -388,6 +403,49 @@ const layoutEdge = (
 
 export type GroupLayout = { box: Box; labelBox: Box };
 
+const shrink = (box: Box, by: number): Box => ({
+  x: box.x + by,
+  y: box.y + by,
+  w: Math.max(0, box.w - by * 2),
+  h: Math.max(0, box.h - by * 2),
+});
+
+/** 線分が箱と交わるか（Liang–Barsky の切り取り）。 */
+export const segmentHitsBox = (a: Point, b: Point, box: Box): boolean => {
+  let t0 = 0;
+  let t1 = 1;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const edges: [number, number][] = [
+    [-dx, a.x - box.x],
+    [dx, box.x + box.w - a.x],
+    [-dy, a.y - box.y],
+    [dy, box.y + box.h - a.y],
+  ];
+  for (const [p, q] of edges) {
+    if (p === 0) {
+      if (q < 0) return false;
+      continue;
+    }
+    const r = q / p;
+    if (p < 0) {
+      if (r > t1) return false;
+      if (r > t0) t0 = r;
+    } else {
+      if (r < t0) return false;
+      if (r < t1) t1 = r;
+    }
+  }
+  return true;
+};
+
+/** 線を折れ線に直したもの。曲線は細かく刻んで近似する。 */
+const edgePolyline = (edge: EdgeLayout): Point[] => {
+  if (!edge.curved) return edge.points;
+  const [p0, p1, p2] = edge.points as [Point, Point, Point];
+  return Array.from({ length: 13 }, (_, index) => quadAt(p0, p1, p2, index / 12));
+};
+
 export type DiagramLayout = {
   nodes: Map<string, NodeLayout>;
   edges: EdgeLayout[];
@@ -476,6 +534,9 @@ export const diagramProblems = (figure: DiagramFigure): string[] => {
 
   for (const [index, group] of layout.groups.entries()) {
     const label = figure.groups?.[index]?.label ?? "";
+    if (group.labelBox.x + group.labelBox.w > group.box.x + group.box.w - 6) {
+      problems.push(`囲み「${label}」の見出しが枠の幅に収まらない`);
+    }
     for (const node of placed) {
       const body = { x: node.cx - node.w / 2, y: node.cy - node.h / 2, w: node.w, h: node.h };
       if (overlaps(body, group.box) && !inside(node.bounds, group.box)) {
@@ -483,6 +544,39 @@ export const diagramProblems = (figure: DiagramFigure): string[] => {
       }
       if (overlaps(node.bounds, group.labelBox, 2)) {
         problems.push(`部品 ${node.node.id} が囲み「${label}」の見出しに重なっている`);
+      }
+    }
+  }
+
+  // 線が、端の部品以外の部品・注記・見出しの上を通っていないか。通っていると、どこへ
+  // つながる線なのか、どの注記の文字なのかが読めなくなる。
+  for (const edge of layout.edges) {
+    if (edge.selfLoop) continue;
+    const name = `線 ${edge.edge.from}→${edge.edge.to}`;
+    const path = edgePolyline(edge);
+    const crosses = (box: Box) =>
+      path.slice(1).some((point, index) => segmentHitsBox(path[index] as Point, point, box));
+    for (const node of placed) {
+      const isEnd = node.node.id === edge.edge.from || node.node.id === edge.edge.to;
+      const body = {
+        x: node.cx - node.w / 2 + 3,
+        y: node.cy - node.h / 2 + 3,
+        w: node.w - 6,
+        h: node.h - 6,
+      };
+      if (!isEnd && crosses(body)) problems.push(`${name} が部品 ${node.node.id} の上を通っている`);
+      if (node.noteBox && crosses(shrink(node.noteBox, 1))) {
+        problems.push(`${name} が部品 ${node.node.id} の注記を横切っている`);
+      }
+      if (node.headBox && crosses(shrink(node.headBox, 1))) {
+        problems.push(`${name} が部品 ${node.node.id} の見出しを横切っている`);
+      }
+    }
+    for (const [index, group] of layout.groups.entries()) {
+      if (crosses(shrink(group.labelBox, 1))) {
+        problems.push(
+          `${name} が囲み「${figure.groups?.[index]?.label ?? ""}」の見出しを横切っている`,
+        );
       }
     }
   }
@@ -695,11 +789,25 @@ export const sequenceProblems = (figure: SequenceFigure): string[] => {
 export const PLOT_W = 420;
 export const PLOT_H = 230;
 
+export type ChartLabel = {
+  kind: "series" | "mark" | "guide" | "area";
+  text: string;
+  /** 文字の基準の位置と揃え。描くときはこの値をそのまま SvgText に渡す。 */
+  x: number;
+  y: number;
+  anchor: "start" | "middle" | "end";
+  box: Box;
+  /** 塗る範囲の名前だけが持つ、範囲と同じ色。 */
+  tone?: FigureTone;
+};
+
 export type ChartLayout = {
   /** 描く範囲（軸の内側）。 */
   plot: Box;
   sx: (value: number) => number;
   sy: (value: number) => number;
+  /** 図の中に出す名前（系列・目印・基準線・塗る範囲）。重なりの検査にも使う。 */
+  labels: ChartLabel[];
   view: Box;
 };
 
@@ -712,6 +820,38 @@ const tickText = (axis: ChartFigure["x"], index: number, value: number): string 
 
 export const chartTickText = tickText;
 
+/** 文字の基準の位置と揃えから、文字の塊の箱を出す（SvgText と同じく縦は真ん中にそろう）。 */
+const anchoredBox = (
+  text: string,
+  x: number,
+  y: number,
+  anchor: "start" | "middle" | "end",
+): Box => {
+  const w = blockWidth(text, SMALL);
+  const h = linesOf(text).length * SMALL_LINE;
+  const left = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2;
+  return { x: left, y: y - h / 2, w, h };
+};
+
+/** 名前を点のどちら側に出すかから、基準の位置と揃えを決める。 */
+const placeAt = (
+  place: "right" | "left" | "above" | "below" | undefined,
+  x: number,
+  y: number,
+  lift: number,
+) => {
+  switch (place) {
+    case "above":
+      return { x, y: y - 14, anchor: "middle" as const };
+    case "below":
+      return { x, y: y + 16, anchor: "middle" as const };
+    case "left":
+      return { x: x - 9, y: y - lift, anchor: "end" as const };
+    default:
+      return { x: x + 9, y: y - lift, anchor: "start" as const };
+  }
+};
+
 export const layoutChart = (figure: ChartFigure): ChartLayout => {
   const yTickW = Math.max(
     0,
@@ -721,32 +861,56 @@ export const layoutChart = (figure: ChartFigure): ChartLayout => {
   );
   const left = Math.max(30, yTickW + 14);
   const top = 30;
-  const plot = { x: left, y: top, w: PLOT_W, h: PLOT_H };
+  const plot = { x: left, y: top, w: figure.plot?.w ?? PLOT_W, h: figure.plot?.h ?? PLOT_H };
   const sx = (value: number) =>
     plot.x + ((value - figure.x.min) / (figure.x.max - figure.x.min)) * plot.w;
   const sy = (value: number) =>
     plot.y + plot.h - ((value - figure.y.min) / (figure.y.max - figure.y.min)) * plot.h;
 
-  // 線の横に出す名前が右へはみ出す分と、目印のラベルの分だけ右を空ける。
-  const labelRights = figure.series
-    .filter((series) => series.kind !== "bar")
-    .map((series) => sx(seriesLabelPoint(series)[0]) + 8 + textWidth(series.label, SMALL));
-  const markRights = (figure.marks ?? []).map(
-    (mark) => sx(mark.x) + 10 + blockWidth(mark.label, SMALL),
-  );
-  const guideRights = (figure.guides ?? [])
-    .filter((guide) => guide.y !== undefined && guide.label)
-    .map((guide) => plot.x + plot.w + 6 + textWidth(guide.label ?? "", SMALL));
+  const labels: ChartLabel[] = [];
+  const push = (
+    kind: ChartLabel["kind"],
+    text: string,
+    at: { x: number; y: number; anchor: "start" | "middle" | "end" },
+    tone?: FigureTone,
+  ) => {
+    if (text === "") return;
+    labels.push({ kind, text, ...at, box: anchoredBox(text, at.x, at.y, at.anchor), tone });
+  };
+
+  for (const series of figure.series) {
+    if (series.kind === "bar") continue;
+    const [x, y] = seriesLabelPoint(series);
+    push("series", series.label, placeAt(series.labelPlace, sx(x), sy(y), 0));
+  }
+  for (const mark of figure.marks ?? []) {
+    push("mark", mark.label, placeAt(mark.place, sx(mark.x), sy(mark.y), 9));
+  }
+  for (const guide of figure.guides ?? []) {
+    if (!guide.label) continue;
+    if (guide.x !== undefined) {
+      push("guide", guide.label, { x: sx(guide.x), y: plot.y - 10, anchor: "middle" });
+    } else if (guide.y !== undefined) {
+      push("guide", guide.label, { x: plot.x + plot.w + 6, y: sy(guide.y), anchor: "start" });
+    }
+  }
+  for (const area of figure.areas ?? []) {
+    if (!area.label) continue;
+    const [x, y] = area.labelAt ?? [
+      area.points.reduce((sum, [px]) => sum + px, 0) / area.points.length,
+      area.points.reduce((sum, [, py]) => sum + py, 0) / area.points.length,
+    ];
+    push("area", area.label, { x: sx(x), y: sy(y), anchor: "middle" }, area.tone ?? "accent");
+  }
+
   // 縦軸の名前は軸の上に左寄せ、横軸の名前は軸の下に右寄せで出す（どちらも横書きのまま）。
-  const right = Math.max(
-    plot.x + plot.w + 8,
-    textWidth(figure.y.label, SMALL),
-    ...labelRights,
-    ...markRights,
-    ...guideRights,
-  );
-  const view = { x: -PAD / 2, y: 0, w: right + PAD, h: plot.y + plot.h + 50 };
-  return { plot, sx, sy, view };
+  const all = unionOf([
+    { x: 0, y: 0, w: plot.x + plot.w + 14, h: plot.y + plot.h + 50 },
+    { x: 0, y: 0, w: textWidth(figure.y.label, SMALL), h: 1 },
+    ...labels.map((label) => label.box),
+  ]);
+  const view = { x: all.x - PAD / 2, y: all.y, w: all.w + PAD, h: all.h };
+  return { plot, sx, sy, labels, view };
 };
 
 export const chartProblems = (figure: ChartFigure): string[] => {
@@ -804,26 +968,11 @@ export const chartProblems = (figure: ChartFigure): string[] => {
     }
   }
 
-  // 線の横の名前どうしが、上下に詰まって読めなくなっていないか。
-  const layout = layoutChart(figure);
-  const labels = figure.series
-    .filter((series) => series.kind !== "bar")
-    .map((series) => {
-      const [x, y] = seriesLabelPoint(series);
-      return {
-        label: series.label,
-        box: {
-          x: layout.sx(x) + 8,
-          y: layout.sy(y) - SMALL_LINE / 2,
-          w: textWidth(series.label, SMALL),
-          h: SMALL_LINE,
-        },
-      };
-    });
+  // 図の中の名前（線の横・目印・基準線・塗る範囲）どうしが重なって読めなくなっていないか。
+  const { labels } = layoutChart(figure);
   for (const [index, a] of labels.entries()) {
     for (const b of labels.slice(index + 1)) {
-      if (overlaps(a.box, b.box, 1))
-        problems.push(`系列の名前「${a.label}」と「${b.label}」が重なる`);
+      if (overlaps(a.box, b.box, 1)) problems.push(`名前「${a.text}」と「${b.text}」が重なる`);
     }
   }
   if (figure.series.length > 4) problems.push("系列が 4 つを超えている（色が見分けられない）");
@@ -867,7 +1016,8 @@ export const termLabel = (term: string, variables: string[]): string => {
     .map((bit, index) => {
       const name = variables[index] ?? "";
       if (bit === "1") return name;
-      if (bit === "0") return `${name}̅`;
+      // 否定の上線は名前の全部の字に掛ける（x₁ なら x と ₁ の両方）。
+      if (bit === "0") return [...name].map((char) => `${char}\u0305`).join("");
       return "";
     })
     .filter((part) => part !== "");

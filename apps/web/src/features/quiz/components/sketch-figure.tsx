@@ -493,7 +493,7 @@ type SketchFigureBlockProps = {
 
 export const SketchFigureBlock = ({ figure }: SketchFigureBlockProps) => {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3.5">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3.5">
       {figure.items.map((item) => (
         <div
           key={item.name}

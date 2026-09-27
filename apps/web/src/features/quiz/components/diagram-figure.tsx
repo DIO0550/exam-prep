@@ -60,8 +60,18 @@ const NodeShape = ({ layout }: { layout: NodeLayout }) => {
     );
   }
 
+  // 左寄せの文字は、枠の左端から少し内側を起点にする（枠の無い text は余白を詰める）。
+  const alignLeft = node.align === "left";
+  const labelX = alignLeft ? left + (shape === "text" ? 4 : 12) : cx;
   const label = (y: number) => (
-    <SvgText text={node.label} x={cx} y={y} className={tone.text} weight={node.tone ? 700 : 500} />
+    <SvgText
+      text={node.label}
+      x={labelX}
+      y={y}
+      anchor={alignLeft ? "start" : "middle"}
+      className={tone.text}
+      weight={node.tone ? 700 : 500}
+    />
   );
 
   switch (shape) {
@@ -181,9 +191,6 @@ const EdgeLine = ({ layout }: { layout: EdgeLayout }) => {
         strokeDasharray={edge.dashed ? "5 4" : undefined}
         strokeLinejoin="round"
       />
-      {edge.fromField !== undefined && (
-        <circle cx={first.x} cy={first.y} r={3.2} className={tone.fill} />
-      )}
       {headEnd && <ArrowHead from={beforeLast} tip={last} className={tone.fill} />}
       {headStart && <ArrowHead from={afterFirst} tip={first} className={tone.fill} />}
     </g>
@@ -236,32 +243,56 @@ export const DiagramFigureBlock = ({ figure }: { figure: DiagramFigure }) => {
       {[...layout.nodes.values()].map((node) => (
         <g key={node.node.id}>
           <NodeShape layout={node} />
-          {node.node.note && (
+          {node.node.note && node.noteBox && (
             <SvgText
               text={node.node.note}
-              x={node.cx}
-              y={node.cy + node.h / 2 + 4 + (linesOf(node.node.note).length * SMALL_LINE) / 2}
+              x={node.node.notePlace === "right" ? node.noteBox.x : node.cx}
+              y={node.noteBox.y + node.noteBox.h / 2}
               size={SMALL}
               line={SMALL_LINE}
+              anchor={node.node.notePlace === "right" ? "start" : "middle"}
               className="fill-muted-soft"
             />
           )}
         </g>
       ))}
 
+      {/* ポインタの起点の丸。部品の塗りに隠れないよう、部品の後に描く。 */}
       {layout.edges.map((edge, index) =>
-        edge.edge.label ? (
-          <SvgText
+        edge.edge.fromField !== undefined && edge.points[0] ? (
+          <circle
             // biome-ignore lint/suspicious/noArrayIndexKey: 線と同じ並びで出す
             key={index}
-            text={edge.edge.label}
-            x={edge.labelAt.x}
-            y={edge.labelAt.y}
-            size={12}
-            line={LINE}
-            className={edge.edge.tone === "ng" ? "fill-ng" : "fill-ink-soft"}
-            halo
+            cx={edge.points[0].x}
+            cy={edge.points[0].y}
+            r={3.2}
+            className={LINE_TONE[edge.edge.tone ?? "plain"].fill}
           />
+        ) : null,
+      )}
+
+      {/* 線のラベル。裏に地の色の四角を敷いて、下を通る線（点線の隙間も）を隠す。 */}
+      {layout.edges.map((edge, index) =>
+        edge.edge.label && edge.labelBox ? (
+          // biome-ignore lint/suspicious/noArrayIndexKey: 線と同じ並びで出す
+          <g key={index}>
+            <rect
+              x={edge.labelBox.x - 3}
+              y={edge.labelBox.y - 1}
+              width={edge.labelBox.w + 6}
+              height={edge.labelBox.h + 2}
+              rx={3}
+              className="fill-surface"
+            />
+            <SvgText
+              text={edge.edge.label}
+              x={edge.labelAt.x}
+              y={edge.labelAt.y}
+              size={12}
+              line={LINE}
+              className={edge.edge.tone === "ng" ? "fill-ng" : "fill-ink-soft"}
+            />
+          </g>
         ) : null,
       )}
 

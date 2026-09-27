@@ -1,12 +1,5 @@
 import type { Point } from "../figure-layout";
-import {
-  chartTickText,
-  layoutChart,
-  PAD,
-  SMALL,
-  SMALL_LINE,
-  seriesLabelPoint,
-} from "../figure-layout";
+import { chartTickText, layoutChart, PAD, SMALL, SMALL_LINE } from "../figure-layout";
 import type { ChartFigure, ChartSeries, SeriesColor } from "../types";
 import { ArrowHead, NODE_TONE, polylinePath, SvgFrame, SvgText } from "./figure-svg";
 
@@ -91,26 +84,8 @@ const stepPath = (points: Point[]): string =>
     })
     .join(" ");
 
-/** 目印のラベルの置き場所。 */
-const markLabel = (
-  place: "above" | "below" | "left" | "right" | undefined,
-  x: number,
-  y: number,
-) => {
-  switch (place) {
-    case "above":
-      return { x, y: y - 14, anchor: "middle" as const };
-    case "below":
-      return { x, y: y + 16, anchor: "middle" as const };
-    case "left":
-      return { x: x - 9, y: y - 9, anchor: "end" as const };
-    default:
-      return { x: x + 9, y: y - 9, anchor: "start" as const };
-  }
-};
-
 export const ChartFigureBlock = ({ figure }: { figure: ChartFigure }) => {
-  const { plot, sx, sy, view } = layoutChart(figure);
+  const { plot, sx, sy, labels, view } = layoutChart(figure);
   const bottom = plot.y + plot.h;
   const rightEdge = plot.x + plot.w;
   const baseline = sy(Math.max(figure.y.min, Math.min(0, figure.y.max)));
@@ -142,29 +117,13 @@ export const ChartFigureBlock = ({ figure }: { figure: ChartFigure }) => {
         {(figure.areas ?? []).map((area) => {
           const tone = NODE_TONE[area.tone ?? "accent"];
           const points = area.points.map(([x, y]) => ({ x: sx(x), y: sy(y) }));
-          const center = {
-            x: points.reduce((sum, point) => sum + point.x, 0) / points.length,
-            y: points.reduce((sum, point) => sum + point.y, 0) / points.length,
-          };
           return (
-            <g key={`area-${area.label ?? ""}-${area.points.join()}`}>
-              <polygon
-                points={points.map((point) => `${point.x},${point.y}`).join(" ")}
-                className={`${tone.shape} [fill-opacity:0.7]`}
-                strokeWidth={1}
-              />
-              {area.label && (
-                <SvgText
-                  text={area.label}
-                  x={center.x}
-                  y={center.y}
-                  size={SMALL}
-                  line={SMALL_LINE}
-                  weight={700}
-                  className={tone.text}
-                />
-              )}
-            </g>
+            <polygon
+              key={`area-${area.label ?? ""}-${area.points.join()}`}
+              points={points.map((point) => `${point.x},${point.y}`).join(" ")}
+              className={`${tone.shape} [fill-opacity:0.7]`}
+              strokeWidth={1}
+            />
           );
         })}
 
@@ -180,16 +139,6 @@ export const ChartFigureBlock = ({ figure }: { figure: ChartFigure }) => {
                 strokeWidth={1}
                 strokeDasharray="4 4"
               />
-              {guide.label && (
-                <SvgText
-                  text={guide.label}
-                  x={sx(guide.x)}
-                  y={plot.y - 10}
-                  size={SMALL}
-                  className="fill-muted"
-                  halo
-                />
-              )}
             </g>
           ) : (
             <g key={`gy-${guide.y}`}>
@@ -202,17 +151,6 @@ export const ChartFigureBlock = ({ figure }: { figure: ChartFigure }) => {
                 strokeWidth={1}
                 strokeDasharray="4 4"
               />
-              {guide.label && (
-                <SvgText
-                  text={guide.label}
-                  x={rightEdge + 6}
-                  y={sy(guide.y ?? 0)}
-                  size={SMALL}
-                  anchor="start"
-                  className="fill-muted"
-                  halo
-                />
-              )}
             </g>
           ),
         )}
@@ -279,14 +217,15 @@ export const ChartFigureBlock = ({ figure }: { figure: ChartFigure }) => {
                 {series.points.map(([x, y]) => {
                   const px = sx(x);
                   const py = sy(y);
-                  const top = Math.min(py, baseline);
                   const height = Math.abs(baseline - py);
                   const x0 = px - barW / 2;
-                  const r = Math.min(4, height / 2, barW / 2);
+                  const x1 = x0 + barW;
+                  // 角を丸めるのは値の側の端だけ。0 より下の棒は下の端を丸める。
+                  const r = Math.min(4, height / 2, barW / 2) * (py <= baseline ? 1 : -1);
                   return (
                     <path
                       key={`${x}-${y}`}
-                      d={`M${x0} ${baseline} V${top + r} Q${x0} ${top} ${x0 + r} ${top} H${x0 + barW - r} Q${x0 + barW} ${top} ${x0 + barW} ${top + r} V${baseline} Z`}
+                      d={`M${x0} ${baseline} V${py + r} Q${x0} ${py} ${x0 + Math.abs(r)} ${py} H${x1 - Math.abs(r)} Q${x1} ${py} ${x1} ${py + r} V${baseline} Z`}
                     >
                       <title>{`${series.label}：${y.toLocaleString("ja-JP")}`}</title>
                     </path>
@@ -318,51 +257,45 @@ export const ChartFigureBlock = ({ figure }: { figure: ChartFigure }) => {
           );
         })}
 
-        {/* 線の横に出す名前。色は線に任せ、文字は地の文の色にする。 */}
-        {figure.series
-          .filter((series) => series.kind !== "bar")
-          .map((series) => {
-            const [x, y] = seriesLabelPoint(series);
-            return (
-              <SvgText
-                key={`label-${series.label}`}
-                text={series.label}
-                x={sx(x) + 8}
-                y={sy(y)}
-                size={SMALL}
-                anchor="start"
-                className="fill-ink-soft"
-                halo
-              />
-            );
-          })}
+        {(figure.marks ?? []).map((mark, index) => (
+          <circle
+            // biome-ignore lint/suspicious/noArrayIndexKey: 名前の無い目印もあり、並べ替えない
+            key={index}
+            cx={sx(mark.x)}
+            cy={sy(mark.y)}
+            r={4.5}
+            className="fill-ink-soft stroke-surface"
+            strokeWidth={2}
+          >
+            {mark.label && <title>{mark.label}</title>}
+          </circle>
+        ))}
 
-        {(figure.marks ?? []).map((mark) => {
-          const at = { x: sx(mark.x), y: sy(mark.y) };
-          const label = markLabel(mark.place, at.x, at.y);
-          return (
-            <g key={`mark-${mark.label}`}>
-              <circle
-                cx={at.x}
-                cy={at.y}
-                r={4.5}
-                className="fill-ink-soft stroke-surface"
-                strokeWidth={2}
-              />
-              <SvgText
-                text={mark.label}
-                x={label.x}
-                y={label.y}
-                size={SMALL}
-                line={SMALL_LINE}
-                anchor={label.anchor}
-                weight={700}
-                className="fill-ink"
-                halo
-              />
-            </g>
-          );
-        })}
+        {/* 図の中の名前。位置は layoutChart が決め、重ならないことは検査で確かめてある。
+            線の名前は色を線に任せ、文字は地の文の色にする。 */}
+        {labels.map((label, index) => (
+          <SvgText
+            // biome-ignore lint/suspicious/noArrayIndexKey: 同じ名前が別の種類で出ることがある
+            key={index}
+            text={label.text}
+            x={label.x}
+            y={label.y}
+            size={SMALL}
+            line={SMALL_LINE}
+            anchor={label.anchor}
+            weight={label.kind === "mark" || label.kind === "area" ? 700 : undefined}
+            className={
+              label.kind === "area"
+                ? NODE_TONE[label.tone ?? "accent"].text
+                : label.kind === "mark"
+                  ? "fill-ink"
+                  : label.kind === "guide"
+                    ? "fill-muted"
+                    : "fill-ink-soft"
+            }
+            halo
+          />
+        ))}
       </SvgFrame>
 
       {figure.series.length >= 2 && (

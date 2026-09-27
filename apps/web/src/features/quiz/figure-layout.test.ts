@@ -200,6 +200,7 @@ describe("カルノー図", () => {
     ]);
     expect(termLabel("00-0", ["A", "B", "C", "D"])).toBe("A\u0305・B\u0305・D\u0305");
     expect(termLabel("----", ["A", "B", "C", "D"])).toBe("1");
+    expect(termLabel("01", ["x₁", "x₂"])).toBe("x\u0305₁\u0305・x₂");
   });
 
   it("0 を含むまとめと、どのまとめにも入らない 1 を拾う", () => {

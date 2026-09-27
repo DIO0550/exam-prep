@@ -184,6 +184,8 @@ export type TableFigure = {
 export type ArrayFigure = {
   type: "array";
   caption: string;
+  /** セルの幅（em）。既定は 2.6。式や長い値を入れるときに広げる。 */
+  cellWidth?: number;
   /** セルの上に出す見出し（添字や枠の番地）。省略すると見出し行は出ない。 */
   headers?: string[];
   rows: {
@@ -355,8 +357,10 @@ export type DiagramNode = {
   row: number;
   shape?: DiagramShape;
   tone?: FigureTone;
-  /** 部品の下に添える小さい文字（アドレス、値、補足）。 */
+  /** 部品に添える小さい文字（アドレス、値、補足）。 */
   note?: string;
+  /** 注記を置く側。既定は下。下から線が入る部品は right にすると、線が文字を横切らない。 */
+  notePlace?: "below" | "right";
   /**
    * 横に区切った欄。連結リストの「値｜次へのポインタ」やパケットのヘッダのように、
    * 1 つの箱の中身を区切って見せたいときに使う。
@@ -364,6 +368,8 @@ export type DiagramNode = {
   fields?: string[];
   /** 幅を格子のマス数で決める。省略すると中の文字に合わせる。 */
   w?: number;
+  /** 複数行の文字の揃え。既定は中央。箇条書きのような説明は left にする。 */
+  align?: "center" | "left";
 };
 
 export type DiagramEdge = {
@@ -475,6 +481,8 @@ export type ChartSeries = {
   dashed?: boolean;
   /** 線の横に出す名前の位置（points の添字）。既定は最後の点。 */
   labelAt?: number;
+  /** 名前を点のどちら側に出すか。既定は右。途中の点に付けるときは上下にすると線と重ならない。 */
+  labelPlace?: "right" | "left" | "above" | "below";
 };
 
 /**
@@ -489,10 +497,13 @@ export type ChartFigure = {
   x: ChartAxis;
   y: ChartAxis;
   series: ChartSeries[];
+  /** 描く範囲の大きさ（px）。既定は横 420・縦 230。正方形にしたい図などで変える。 */
+  plot?: { w?: number; h?: number };
   /** 目印の点（交点や最適点）。 */
   marks?: {
     x: number;
     y: number;
+    /** 名前。空にすると点だけを置く。 */
     label: string;
     /** 名前を点のどちら側に出すか。既定は右上。 */
     place?: "above" | "below" | "left" | "right";
@@ -500,7 +511,13 @@ export type ChartFigure = {
   /** 基準線。x を渡すと縦線、y を渡すと横線。 */
   guides?: { x?: number; y?: number; label?: string }[];
   /** 塗る範囲（多角形）。実行可能領域や、利益が出る範囲を示す。 */
-  areas?: { points: [number, number][]; label?: string; tone?: FigureTone }[];
+  areas?: {
+    points: [number, number][];
+    label?: string;
+    tone?: FigureTone;
+    /** 名前を置く位置（軸の値）。既定は頂点の平均の位置。 */
+    labelAt?: [number, number];
+  }[];
 };
 
 /**

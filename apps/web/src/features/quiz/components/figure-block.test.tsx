@@ -191,7 +191,9 @@ describe("FigureBlock（グラフ）", () => {
     // 線に付けた <title>（なぞったときの表示）は数えない。
     const shown = screen.getAllByText("売上高線").filter((element) => element.tagName !== "title");
     expect(shown).toHaveLength(2);
-    expect(screen.getByText("損益分岐点")).toBeInTheDocument();
+    // 目印の点にも同じ名前の <title> が付くので、図の中の文字だけを見る。
+    const mark = screen.getAllByText("損益分岐点").filter((element) => element.tagName !== "title");
+    expect(mark).toHaveLength(1);
     expect(screen.getByText("5")).toBeInTheDocument();
   });
 });
