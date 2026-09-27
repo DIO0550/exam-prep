@@ -44,7 +44,9 @@ export const TreeFigureBlock = ({ figure }: { figure: TreeFigure }) => {
 
   const columns = Math.max(1, columnOf.size);
   const width = columns * 52 + SIDE * 2;
-  const height = (maxDepth + 1) * ROW_H;
+  // いちばん下の段の注記は節点の下にはみ出すので、その分だけ下を空ける。
+  const deepNote = figure.nodes.some((node) => node.note && depthOf(node.at) === maxDepth);
+  const height = (maxDepth + 1) * ROW_H + (deepNote ? 16 : 0);
 
   const xOf = (at: number): number => {
     const inner = width - SIDE * 2;

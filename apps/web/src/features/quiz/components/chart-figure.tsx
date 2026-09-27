@@ -156,13 +156,14 @@ export const ChartFigureBlock = ({ figure }: { figure: ChartFigure }) => {
         )}
 
         {/* 軸。先に矢じりを付けて、どちら向きに大きくなるかを示す。 */}
+        {/* 横軸は値 0 の高さに引く（負の値がある波形などでは真ん中を通る）。目盛りの数字は下端に置く。 */}
         <g className="stroke-muted-soft" strokeWidth={1.2}>
-          <line x1={plot.x} x2={rightEdge + 8} y1={bottom} y2={bottom} />
+          <line x1={plot.x} x2={rightEdge + 8} y1={baseline} y2={baseline} />
           <line x1={plot.x} x2={plot.x} y1={bottom} y2={plot.y - 8} />
         </g>
         <ArrowHead
-          from={{ x: plot.x, y: bottom }}
-          tip={{ x: rightEdge + 12, y: bottom }}
+          from={{ x: plot.x, y: baseline }}
+          tip={{ x: rightEdge + 12, y: baseline }}
           className="fill-muted-soft"
         />
         <ArrowHead
