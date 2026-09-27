@@ -1058,7 +1058,7 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
           col: 4.3,
           row: 1,
           tone: "muted",
-          note: "優先度の高いタスクの到着\nタイムクウォンタム切れ",
+          note: "優先度の高いタスクが来ても\n一定時間が過ぎても切り替えない",
         },
       ],
       edges: [
@@ -1493,18 +1493,23 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
     ],
     figure: {
       type: "diagram",
-      caption: "交流と直流の変換が 3 回から 1 回に減り、そのたびに出る損失が減る（色付きが変換）",
+      caption:
+        "交流と直流の変換が 3 回から 1 回に減り、そのたびに出る損失が減る（色付きが交流⇔直流の変換）",
       cell: { w: 150, h: 84 },
       nodes: [
-        { id: "src0", label: "受電\n（交流）", col: 0, row: 0, note: "従来の交流給電" },
+        { id: "src0", label: "受電\n（交流）", col: 0, row: 0 },
         { id: "u1", label: "UPS\nAC→DC", col: 1.1, row: 0, tone: "accent" },
         { id: "u2", label: "UPS\nDC→AC", col: 2.2, row: 0, tone: "accent" },
         { id: "s1", label: "サーバ電源\nAC→DC", col: 3.3, row: 0, tone: "accent" },
         { id: "cpu0", label: "CPU など", col: 4.4, row: 0 },
-        { id: "src1", label: "受電\n（交流）", col: 0, row: 1.8, note: "直流給電" },
+        { id: "src1", label: "受電\n（交流）", col: 0, row: 1.8 },
         { id: "r1", label: "整流装置\nAC→DC", col: 1.1, row: 1.8, tone: "accent" },
         { id: "s2", label: "サーバ電源\nDC→DC", col: 3.3, row: 1.8 },
         { id: "cpu1", label: "CPU など", col: 4.4, row: 1.8 },
+      ],
+      groups: [
+        { label: "従来の交流給電", col: 0, row: -0.45, w: 5.35, h: 1.4 },
+        { label: "直流給電", col: 0, row: 1.35, w: 5.35, h: 1.4, tone: "ok" },
       ],
       edges: [
         { from: "src0", to: "u1", label: "交流" },
@@ -1745,7 +1750,8 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
       {
         type: "chart",
         caption: "障害の時点でコミット済みかどうかで、復旧のしかたが分かれる",
-        x: { label: "時間", min: 0, max: 12 },
+        plot: { w: 540 },
+        x: { label: "時間", min: 0, max: 27 },
         y: {
           label: "トランザクション",
           min: 0,
@@ -1765,20 +1771,20 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
             label: "CP 後にコミット：ロールフォワード",
             points: [
               [2, 2],
-              [7, 2],
+              [13, 2],
             ],
           },
           {
             label: "未コミット：ロールバック",
             points: [
-              [6, 1],
-              [10, 1],
+              [8, 1],
+              [24, 1],
             ],
           },
         ],
         guides: [
-          { x: 4, label: "チェックポイント（CP）" },
-          { x: 10, label: "障害発生" },
+          { x: 11.5, label: "チェックポイント（CP）" },
+          { x: 24, label: "障害発生" },
         ],
       },
       {
@@ -2025,9 +2031,9 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
           row: 1.3,
           note: "10.x.x.x／172.16〜31.x.x\n／192.168.x.x",
         },
-        { id: "d2", label: "224〜239 で\n始まるか", col: 0, row: 2.9, shape: "diamond" },
-        { id: "multi", label: "マルチキャスト\nアドレス", col: 1.9, row: 2.9 },
-        { id: "glob", label: "グローバル\nアドレス", col: 0, row: 4.2, tone: "ok" },
+        { id: "d2", label: "224〜239 で\n始まるか", col: 0, row: 3.2, shape: "diamond" },
+        { id: "multi", label: "マルチキャスト\nアドレス", col: 1.9, row: 3.2 },
+        { id: "glob", label: "グローバル\nアドレス", col: 0, row: 4.65, tone: "ok" },
       ],
       edges: [
         { from: "ip", to: "d1", tone: "ok" },
@@ -2170,7 +2176,7 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
           col: 0,
           row: -0.45,
           w: 4,
-          h: 1.2,
+          h: 1.35,
           tone: "accent",
         },
         { label: "データプレーン（転送）", col: 0, row: 1.85, w: 4, h: 1.3 },
@@ -2438,13 +2444,13 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
           { id: "pd", label: "D", col: 4.3, row: 1.6, fields: ["公開鍵", "秘密鍵"], tone: "ok" },
         ],
         groups: [
-          { label: "共通鍵：線 1 本が鍵 1 個（6 個）", col: 0, row: -0.6, w: 2.2, h: 3 },
+          { label: "共通鍵：線 1 本が鍵 1 個（6 個）", col: 0, row: -0.6, w: 2.2, h: 3.25 },
           {
             label: "公開鍵：1 人が公開鍵と秘密鍵を持つ（8 個）",
             col: 2.4,
             row: -0.6,
             w: 3,
-            h: 3,
+            h: 3.25,
             tone: "ok",
           },
         ],
@@ -2593,7 +2599,7 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
           note: "対策を選んで\n実施する",
         },
       ],
-      groups: [{ label: "リスクアセスメント", col: 0, row: 0.35, w: 4, h: 1.8, tone: "accent" }],
+      groups: [{ label: "リスクアセスメント", col: 0, row: 0.5, w: 4, h: 1.85, tone: "accent" }],
       edges: [
         { from: "id", to: "an" },
         { from: "an", to: "ev" },
@@ -3481,9 +3487,9 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
         },
       ],
       groups: [
-        { label: "計画のプロセス群", col: 0, row: 0.35, w: 2.35, h: 1.8 },
-        { label: "実行のプロセス群", col: 3, row: 0.35, w: 1, h: 1.8 },
-        { label: "管理のプロセス群", col: 4.5, row: 0.35, w: 1.1, h: 1.8, tone: "ok" },
+        { label: "計画のプロセス群", col: 0, row: 0.5, w: 2.35, h: 1.85 },
+        { label: "実行のプロセス群", col: 3, row: 0.5, w: 1, h: 1.85 },
+        { label: "管理のプロセス群", col: 4.5, row: 0.5, w: 1.1, h: 1.85, tone: "ok" },
       ],
       edges: [
         { from: "i", to: "a" },
@@ -3766,14 +3772,14 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
           {
             id: "waste",
             label: "産業廃棄物\n処理事業者",
-            col: 3.8,
+            col: 4.1,
             row: 0.2,
             note: "処理で排出\nスコープ3（イ）",
           },
           {
             id: "user",
             label: "ハウジングを\n利用する企業",
-            col: 3.8,
+            col: 4.1,
             row: 1.8,
             note: "利用企業の購入電力\nスコープ3（エ）",
           },
@@ -3783,8 +3789,8 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
             label: "X 社（データセンター事業者）",
             col: 1.8,
             row: -0.45,
-            w: 1.4,
-            h: 3.1,
+            w: 1.3,
+            h: 3.3,
             tone: "ok",
           },
         ],
@@ -4139,11 +4145,11 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
         { id: "s2", label: "在庫\nサービス", col: 2, row: 1.6, tone: "accent" },
         { id: "s3", label: "出荷\nサービス", col: 3.1, row: 1.6 },
         { id: "s4", label: "請求\nサービス", col: 4.2, row: 1.6 },
-        { id: "other", label: "別のシステム\n（EC サイトなど）", col: 2, row: 2.9 },
+        { id: "other", label: "別のシステム\n（EC サイトなど）", col: 2, row: 3 },
       ],
       groups: [
-        { label: "業務プロセス", col: 0, row: -0.55, w: 5.1, h: 1.3 },
-        { label: "サービス（業務単位の部品）", col: 0, row: 1.05, w: 5.1, h: 1.4, tone: "ok" },
+        { label: "業務プロセス", col: 0, row: -0.55, w: 5.1, h: 1.45 },
+        { label: "サービス（業務単位の部品）", col: 0, row: 1.05, w: 5.1, h: 1.55, tone: "ok" },
       ],
       edges: [
         { from: "b1", to: "b2" },
@@ -4280,7 +4286,7 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
       "EMS は、自社の生産設備を使って他社ブランドの電子機器を受託製造するサービス。設計・開発は委託元が行い、EMS 事業者は量産と部品調達を担う。委託元は設備投資を抑えて開発とマーケティングに集中できる。",
     points: [
       "EMS＝受託製造。ファブレス企業（生産設備を持たずに設計・販売に専念）と対になる関係。",
-      "設計から請け負う形態は ODM、ブランドだけ借りて製造するのは OEM と呼び分ける。",
+      "設計まで請け負う形態は ODM、委託元が設計した製品を委託元のブランドで製造するのは OEM と呼び分ける。",
     ],
     figure: {
       type: "diagram",
@@ -4558,7 +4564,7 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
         { id: "sim", label: "シミュレーション\n・分析", col: 2.8, row: 2 },
       ],
       groups: [
-        { label: "現実世界", col: 0, row: -0.2, w: 1, h: 1.7 },
+        { label: "現実世界", col: 0, row: -0.2, w: 1, h: 1.85 },
         { label: "デジタル空間", col: 2.8, row: -0.2, w: 1.2, h: 3.05, tone: "ok" },
       ],
       edges: [
@@ -4602,28 +4608,35 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
       caption: "マスカスタマイゼーション：一人ひとりに合わせた設計を、量産の仕組みで効率よく作る",
       cell: { w: 150, h: 84 },
       nodes: [
-        { id: "c", label: "顧客（店舗）", col: 0, row: 0.5, shape: "actor" },
-        { id: "scan", label: "3D スキャナーで\n顔の形を計測", col: 1.5, row: 0.5, shape: "round" },
+        { id: "c", label: "顧客（店舗）", col: 0, row: 0.45, shape: "actor" },
+        { id: "scan", label: "3D スキャナーで\n顔の形を計測", col: 1.5, row: 0.45, shape: "round" },
         {
           id: "design",
           label: "パターンを\n組み合わせて設計",
           col: 3,
-          row: 0.5,
+          row: 0.45,
           shape: "round",
         },
         {
           id: "fact",
           label: "工場でパーツを\n組み合わせて製造",
           col: 3,
-          row: 2,
+          row: 2.05,
           shape: "round",
           tone: "ok",
         },
-        { id: "prod", label: "顧客ごとの\nフレーム", col: 1.5, row: 2, shape: "round", tone: "ok" },
+        {
+          id: "prod",
+          label: "顧客ごとの\nフレーム",
+          col: 1.5,
+          row: 2.05,
+          shape: "round",
+          tone: "ok",
+        },
       ],
       groups: [
-        { label: "一人ひとりに合わせる", col: 1.5, row: -0.1, w: 2.55, h: 1.45 },
-        { label: "量産の仕組みで作る", col: 1.5, row: 1.4, w: 2.55, h: 1.45, tone: "ok" },
+        { label: "一人ひとりに合わせる", col: 1.5, row: -0.1, w: 2.55, h: 1.55 },
+        { label: "量産の仕組みで作る", col: 1.5, row: 1.5, w: 2.55, h: 1.55, tone: "ok" },
       ],
       edges: [
         { from: "c", to: "scan" },
@@ -4858,7 +4871,7 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
             labelAt: 0,
           },
           {
-            label: "利益 x＋y＝45",
+            label: "利益＝45",
             dashed: true,
             points: [
               [0, 45],
@@ -5164,7 +5177,7 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
           id: "no",
           label: "不正競争に当たらない\n（ア：偶然の取得、\nエ：正当な目的）",
           col: 0,
-          row: 2.95,
+          row: 3.15,
         },
       ],
       edges: [
@@ -5220,8 +5233,8 @@ export const AP_R06_HARU_AM: [Question, ...Question[]] = [
         },
       ],
       groups: [
-        { label: "個人情報（生存する個人の情報）", col: -0.05, row: -0.45, w: 3.4, h: 2.9 },
-        { label: "要配慮個人情報", col: 1.9, row: 0.1, w: 1.3, h: 1.7, tone: "ok" },
+        { label: "個人情報（生存する個人の情報）", col: -0.05, row: -0.45, w: 3.4, h: 3 },
+        { label: "要配慮個人情報", col: 1.9, row: 0.15, w: 1.3, h: 1.75, tone: "ok" },
       ],
     },
   },
