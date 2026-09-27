@@ -57,16 +57,36 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "int(x/2)は2進数を1桁右シフトした値、つまり上位ビット x₁そのもの。",
       "具体値で検算すると速い。x₁x₂＝10（x＝2）なら x₂x₁＝01＝1で、2×2－3×1＝1と合う。",
     ],
-    figure: {
-      type: "calc",
-      caption: "式の組立て",
-      lines: [
-        { expr: "x ＝ 2x₁ ＋ x₂", note: "2進数 x₁x₂ の値" },
-        { expr: "int(x/2) ＝ x₁", note: "1桁右シフト＝上位ビット" },
-        { expr: "x₂ ＝ x － 2x₁", note: "下位ビットを x で表す" },
-        { expr: "2x₂ ＋ x₁ ＝ 2x － 3x₁", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "array",
+        caption:
+          "桁の位置で見る。2x は左へ 1 桁、int(x/2) は右へ 1 桁ずらした値で、int(x/2) は上位ビット x₁ そのもの",
+        cellWidth: 3.6,
+        headers: ["2² の位", "2¹ の位", "2⁰ の位"],
+        rows: [
+          { label: "x（x₁x₂）", cells: ["0", "x₁", "x₂"], note: "x ＝ 2x₁ ＋ x₂" },
+          { label: "2x", cells: ["x₁", "x₂", "0"], note: "左へ 1 桁 ＝ 4x₁ ＋ 2x₂" },
+          { label: "int(x/2)", cells: ["0", "0", "x₁"], marked: [2], note: "右へ 1 桁 ＝ x₁" },
+          {
+            label: "求める x₂x₁",
+            cells: ["0", "x₂", "x₁"],
+            marked: [1, 2],
+            note: "2x₂ ＋ x₁ ＝ (4x₁ ＋ 2x₂) － 3x₁ ＝ 2x － 3 int(x/2)",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "式の組立て",
+        lines: [
+          { expr: "x ＝ 2x₁ ＋ x₂", note: "2進数 x₁x₂ の値" },
+          { expr: "int(x/2) ＝ x₁", note: "1桁右シフト＝上位ビット" },
+          { expr: "x₂ ＝ x － 2x₁", note: "下位ビットを x で表す" },
+          { expr: "2x₂ ＋ x₁ ＝ 2x － 3x₁", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(2),
@@ -478,16 +498,55 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "設問の“二つの構造”という言い回しがそのまま JSON の仕様の説明になっている。",
       "XML より記述量が少なく、Web API のデータ交換形式として広く使われる。",
     ],
-    figure: {
-      type: "table",
-      caption: "JSON が持つ二つの構造",
-      headers: ["構造", "表記", "対応する言い回し"],
-      rows: [
-        ["オブジェクト", '{ "name": "値", … }', "名前と値との組みの集まり"],
-        ["配列", "[ 値, 値, … ]", "値の順序付きリスト"],
-        ["値として置けるもの", "文字列・数値・真偽値・null・オブジェクト・配列", "入れ子にできる"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "JSON の例を二つの構造に分けたところ。{ } は名前と値との組みの集まり、[ ] は値の順序付きリストで、値として入れ子にできる",
+        nodes: [
+          {
+            id: "src",
+            label: '{ "name": "鈴木", "age": 25,\n  "skills": ["Java", "SQL", "Python"] }',
+            col: 2.2,
+            row: 0.45,
+            shape: "text",
+            align: "left",
+          },
+          {
+            id: "obj",
+            label: "オブジェクト { }：名前と値との組みの集まり",
+            fields: ['"name": "鈴木"', '"age": 25', '"skills": [ … ]'],
+            col: 1.4,
+            row: 1.3,
+            tone: "accent",
+          },
+          {
+            id: "arr",
+            label: "配列 [ ]：値の順序付きリスト",
+            fields: ['"Java"', '"SQL"', '"Python"'],
+            col: 3.7,
+            row: 1.3,
+            tone: "ok",
+            note: "先頭から順番に並ぶ",
+          },
+        ],
+        edges: [{ from: "obj", to: "arr", fromField: 2, label: "値に配列" }],
+      },
+      {
+        type: "table",
+        caption: "JSON が持つ二つの構造",
+        headers: ["構造", "表記", "対応する言い回し"],
+        rows: [
+          ["オブジェクト", '{ "name": "値", … }', "名前と値との組みの集まり"],
+          ["配列", "[ 値, 値, … ]", "値の順序付きリスト"],
+          [
+            "値として置けるもの",
+            "文字列・数値・真偽値・null・オブジェクト・配列",
+            "入れ子にできる",
+          ],
+        ],
+      },
+    ],
   },
   {
     source: at(8),
@@ -1154,15 +1213,40 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "2種類の値の加重平均の問題。割合を x と置いて1次方程式にすれば確実に解ける。",
       "平均30は20と60の間で20寄り。距離の比は10：30＝1：3なので、割合は3：1で0.75と暗算もできる。",
     ],
-    figure: {
-      type: "calc",
-      caption: "平均処理時間から割合を出す",
-      lines: [
-        { expr: "20x ＋ 60(1 － x) ＝ 30", note: "x はページインだけの割合" },
-        { expr: "60 － 40x ＝ 30", note: "式を整理" },
-        { expr: "x ＝ 30 ÷ 40 ＝ 0.75", note: "選択肢 エ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "平均処理時間は、ページインだけの割合 x が増えるほど 60 ミリ秒から 20 ミリ秒へ直線で下がる。30 ミリ秒になるのは x＝0.75",
+        x: {
+          label: "ページアウトを伴わない（ページインだけの）割合 x",
+          min: 0,
+          max: 1,
+          ticks: [0, 0.25, 0.5, 0.75, 1],
+        },
+        y: { label: "平均処理時間（ミリ秒）", min: 0, max: 70, ticks: [0, 20, 30, 60] },
+        series: [
+          {
+            label: "20x＋60(1－x)",
+            points: [
+              [0, 60],
+              [1, 20],
+            ],
+          },
+        ],
+        guides: [{ y: 30, label: "実測の平均 30" }],
+        marks: [{ x: 0.75, y: 30, label: "x＝0.75", place: "below" }],
+      },
+      {
+        type: "calc",
+        caption: "平均処理時間から割合を出す",
+        lines: [
+          { expr: "20x ＋ 60(1 － x) ＝ 30", note: "x はページインだけの割合" },
+          { expr: "60 － 40x ＝ 30", note: "式を整理" },
+          { expr: "x ＝ 30 ÷ 40 ＝ 0.75", note: "選択肢 エ" },
+        ],
+      },
+    ],
   },
   {
     source: at(17, "選択肢の表を1行ずつの記述に変更"),
@@ -1451,6 +1535,38 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "名前の Field Programmable が「現場で書き換えられる」を表している。",
       "回路を固定して量産する ASIC と対で覚える。FPGA は柔軟、ASIC は量産時に有利。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "FPGA は基板に実装した後でも論理回路を書き換えられる（Field Programmable）。ASIC は製造した時点で回路が固まる",
+      nodes: [
+        { id: "d", label: "回路を設計", col: 0, row: 0, shape: "round" },
+        { id: "m", label: "チップを製造", col: 1.25, row: 0, shape: "round" },
+        { id: "b", label: "基板に実装", col: 2.5, row: 0, shape: "round" },
+        { id: "u", label: "現場で使う", col: 3.75, row: 0, shape: "round" },
+        {
+          id: "asic",
+          label: "ASIC はここで\n回路が固定される",
+          col: 1.25,
+          row: 1,
+          shape: "text",
+          tone: "muted",
+        },
+      ],
+      edges: [
+        { from: "d", to: "m" },
+        { from: "m", to: "b" },
+        { from: "b", to: "u" },
+        {
+          from: "u",
+          to: "b",
+          bend: 0.8,
+          label: "FPGA：実装後も\n回路を書き換え",
+          tone: "ok",
+        },
+        { from: "asic", to: "m", dashed: true, arrow: "none" },
+      ],
+    },
   },
   {
     source: at(21),
@@ -1689,16 +1805,56 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "設問の“理解された後に”という条件が習得性の目印。理解の前後どちらの話かで切り分ける。",
       "アイコンの評価軸は複数ある。何を測る指標かを言葉の意味から推測する。",
     ],
-    figure: {
-      type: "table",
-      caption: "アイコンの評価軸は「いつの話か」で切り分ける",
-      headers: ["観点", "問うこと", "目印になる言い回し"],
-      rows: [
-        ["習得性", "一度理解した意味を、次に見たとき思い出せるか", "理解された後に"],
-        ["識別性", "周囲のアイコンと見分けられるか", "ほかと区別できるか"],
-        ["明瞭性", "図柄の細部まで見て取れるか", "形がはっきりしているか"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "選択肢の観点を時間の流れに置く。意味を理解した“後に”思い出せるかを問うのが習得性",
+        nodes: [
+          {
+            id: "exp",
+            label: "以前の経験",
+            col: 0,
+            row: 0,
+            shape: "round",
+            tone: "muted",
+            note: "似たアイコンの経験から\n識別できるか",
+          },
+          {
+            id: "see",
+            label: "アイコンを見る",
+            col: 1.4,
+            row: 0,
+            shape: "round",
+            note: "図柄の細部を見分けられるか\n近くのアイコンと区別できるか",
+          },
+          { id: "und", label: "意味を理解する", col: 2.8, row: 0, shape: "round" },
+          {
+            id: "again",
+            label: "後で再び見る",
+            col: 4.2,
+            row: 0,
+            shape: "round",
+            tone: "ok",
+            note: "理解した意味を\n思い出せるか＝習得性",
+          },
+        ],
+        edges: [
+          { from: "exp", to: "see" },
+          { from: "see", to: "und" },
+          { from: "und", to: "again", tone: "ok" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "アイコンの評価軸は「いつの話か」で切り分ける",
+        headers: ["観点", "問うこと", "目印になる言い回し"],
+        rows: [
+          ["習得性", "一度理解した意味を、次に見たとき思い出せるか", "理解された後に"],
+          ["識別性", "周囲のアイコンと見分けられるか", "ほかと区別できるか"],
+          ["明瞭性", "図柄の細部まで見て取れるか", "形がはっきりしているか"],
+        ],
+      },
+    ],
   },
   {
     source: at(25),
@@ -2139,7 +2295,10 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
     answer: 2,
     text: "100Mビット／秒の LAN を使用し、1件のレコード長が1,000バイトの電文を1,000件連続して伝送するとき、伝送時間は何秒か。ここで、LAN の伝送効率は50％とする。",
     choices: [
-      { text: "0.02", note: "伝送効率を考えず、さらにビットとバイトの換算を落とした値。" },
+      {
+        text: "0.02",
+        note: "バイトをビットに直す（×8）のを忘れた値。1,000,000÷50,000,000＝0.02。",
+      },
       { text: "0.08", note: "伝送効率50％を掛け忘れた値。" },
       {
         text: "0.16",
@@ -2153,16 +2312,51 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "回線速度はビット毎秒、データ量はバイトで与えられることが多い。必ず8倍して揃える。",
       "伝送効率は実効速度を下げる係数。速度側に掛けても時間側に割っても結果は同じ。",
     ],
-    figure: {
-      type: "calc",
-      caption: "伝送時間の求め方",
-      lines: [
-        { expr: "1,000 × 1,000 ＝ 1,000,000 バイト", note: "伝送するデータ量" },
-        { expr: "× 8 ＝ 8,000,000 ビット", note: "ビットに換算" },
-        { expr: "100M × 0.5 ＝ 50M ビット／秒", note: "伝送効率を反映した実効速度" },
-        { expr: "8,000,000 ÷ 50,000,000 ＝ 0.16 秒", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "1,000 バイトの電文 1,000 件（8,000,000 ビット）を、実際には半分の 50M ビット／秒しか出ない LAN で送る",
+        nodes: [
+          {
+            id: "msgs",
+            label: "電文 1,000 件（1 件 1,000 バイト）",
+            fields: ["1,000 バイト", "1,000 バイト", "…", "1,000 バイト"],
+            col: 1.8,
+            row: 0,
+            tone: "accent",
+            note: "合計 1,000,000 バイト ＝ 8,000,000 ビット",
+          },
+          { id: "snd", label: "送信側", col: -0.2, row: 1.15 },
+          { id: "rcv", label: "受信側", col: 3.8, row: 1.15 },
+          {
+            id: "res",
+            label: "8,000,000 ÷ 50,000,000 ＝ 0.16 秒",
+            col: 1.8,
+            row: 1.8,
+            shape: "text",
+            tone: "ok",
+          },
+        ],
+        edges: [
+          {
+            from: "snd",
+            to: "rcv",
+            label: "100M ビット／秒 × 伝送効率 50％ ＝ 実効 50M ビット／秒",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "伝送時間の求め方",
+        lines: [
+          { expr: "1,000 × 1,000 ＝ 1,000,000 バイト", note: "伝送するデータ量" },
+          { expr: "× 8 ＝ 8,000,000 ビット", note: "ビットに換算" },
+          { expr: "100M × 0.5 ＝ 50M ビット／秒", note: "伝送効率を反映した実効速度" },
+          { expr: "8,000,000 ÷ 50,000,000 ＝ 0.16 秒", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(32, "選択肢の表を1行ずつの記述に変更"),
@@ -2464,21 +2658,54 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       },
     ],
     explain:
-      "楕円曲線暗号（ECC）は楕円曲線上の離散対数問題を安全性の根拠とする公開鍵暗号方式。RSA が2,048ビット程度を要する強度を、256ビット程度の鍵で実現できるため、鍵長・計算量・消費電力の面で有利で、IoT 機器や TLS で広く使われる。",
+      "楕円曲線暗号（ECC）は楕円曲線上の離散対数問題を安全性の根拠とする公開鍵暗号方式。RSA が2,048ビットの鍵で得る強度を、224ビット程度の鍵で実現できるため、鍵長・計算量・消費電力の面で有利で、IoT 機器や TLS で広く使われる。",
     points: [
       "公開鍵暗号は RSA（素因数分解）、ECC（楕円曲線上の離散対数）と根拠となる問題で整理する。",
       "鍵長が短いと通信量や処理負荷が小さくなる。リソースの限られた機器で採用される理由。",
     ],
-    figure: {
-      type: "table",
-      caption: "公開鍵暗号は「根拠にする問題」で整理する",
-      headers: ["方式", "安全性の根拠", "同等の強度に必要な鍵長"],
-      rows: [
-        ["RSA", "素因数分解の難しさ", "2,048 ビット程度"],
-        ["楕円曲線暗号（ECC）", "楕円曲線上の離散対数問題", "256 ビット程度"],
-        ["短いことの利点", "—", "通信量・計算量・消費電力が小さく、IoT 機器に向く"],
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "同じくらいの安全性を得るのに必要な鍵長の目安。楕円曲線暗号は RSA よりずっと短い鍵で済む",
+        x: {
+          label: "公開鍵暗号の方式",
+          min: 0.4,
+          max: 2.6,
+          ticks: [1, 2],
+          tickLabels: ["RSA", "楕円曲線暗号"],
+        },
+        y: { label: "鍵長（ビット）", min: 0, max: 2400, ticks: [0, 224, 1024, 2048] },
+        series: [
+          {
+            label: "鍵長の目安",
+            kind: "bar",
+            points: [
+              [1, 2048],
+              [2, 224],
+            ],
+          },
+        ],
+        marks: [
+          { x: 1, y: 2048, label: "2,048 ビット", place: "above" },
+          { x: 2, y: 224, label: "224 ビット程度", place: "above" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "公開鍵暗号は「根拠にする問題」で整理する",
+        headers: ["方式", "安全性の根拠", "同等の強度に必要な鍵長"],
+        rows: [
+          ["RSA", "素因数分解の難しさ", "2,048 ビット"],
+          [
+            "楕円曲線暗号（ECC）",
+            "楕円曲線上の離散対数問題",
+            "224 ビット程度（RSA 3,072 ビット相当なら 256 ビット）",
+          ],
+          ["短いことの利点", "—", "通信量・計算量・消費電力が小さく、IoT 機器に向く"],
+        ],
+      },
+    ],
   },
   {
     source: at(38, "選択肢の表を1行ずつの記述に変更"),
@@ -2652,6 +2879,40 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "完全性は「正確さと完全さを保つ」、可用性は「必要なときに使える」。定義文で区別する。",
       "真正性・責任追跡性・否認防止・信頼性は、3要素に加えて挙げられることのある特性。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "機密性は、認可された者だけが情報を使え、認可されていない者には使わせず開示もしない特性",
+      nodes: [
+        {
+          id: "okUser",
+          label: "認可された\n利用者",
+          col: 0,
+          row: 0,
+          shape: "actor",
+          tone: "ok",
+        },
+        {
+          id: "ngUser",
+          label: "認可されていない\n個人・プロセス",
+          col: 0,
+          row: 1.8,
+          shape: "actor",
+          tone: "ng",
+        },
+        { id: "info", label: "情報", col: 2.4, row: 0.9, shape: "db", tone: "accent" },
+      ],
+      edges: [
+        { from: "okUser", to: "info", label: "使える", tone: "ok" },
+        {
+          from: "ngUser",
+          to: "info",
+          label: "使わせない・開示しない",
+          tone: "ng",
+          blocked: true,
+        },
+      ],
+    },
   },
   {
     source: at(41),
@@ -3013,19 +3274,53 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "「大量の異常入力を投げて挙動を見る」がファジングの特徴。網羅性より量で攻める。",
       "限界値分析は仕様に基づく少数の代表値を選ぶ技法で、狙いも作り方も対照的。",
     ],
-    figure: {
-      type: "table",
-      caption: "入力の選び方が対照的な2つ",
-      headers: ["手法", "入力の選び方", "見るもの"],
-      rows: [
-        [
-          "ファジング",
-          "想定外のデータを大量に投げる（量で攻める）",
-          "クラッシュやハングアップなどの異常な挙動",
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "ファジングは、想定外のデータ（ファズ）を大量に送り込み、異常な挙動から脆弱性を見つける",
+        nodes: [
+          {
+            id: "tool",
+            label: "ファジングツール",
+            col: 0,
+            row: 0,
+            note: "極端に長い文字列や\n不正な形式のデータを作る",
+          },
+          {
+            id: "target",
+            label: "テスト対象の\nソフトウェア",
+            col: 2.2,
+            row: 0,
+            tone: "accent",
+          },
+          {
+            id: "bug",
+            label: "クラッシュ・ハングアップ\n＝脆弱性の手掛かり",
+            col: 4.4,
+            row: 0,
+            tone: "ng",
+          },
         ],
-        ["限界値分析", "仕様の境界から少数の代表値を選ぶ", "期待した結果と一致するか"],
-      ],
-    },
+        edges: [
+          { from: "tool", to: "target", label: "大量に入力" },
+          { from: "target", to: "bug", label: "挙動を監視", tone: "ng" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "入力の選び方が対照的な2つ",
+        headers: ["手法", "入力の選び方", "見るもの"],
+        rows: [
+          [
+            "ファジング",
+            "想定外のデータを大量に投げる（量で攻める）",
+            "クラッシュやハングアップなどの異常な挙動",
+          ],
+          ["限界値分析", "仕様の境界から少数の代表値を選ぶ", "期待した結果と一致するか"],
+        ],
+      },
+    ],
   },
   {
     source: at(47),
@@ -3053,6 +3348,32 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "設問の“必要に応じて一部の処理のソースコードを記述”が、ノーコードとの決定的な違い。",
       "どちらも開発者不足への対応として広まった。利用部門自身が作れる点が利点。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "作り方の中身を並べる。ローコードは GUI で部品を組み合わせ、足りない処理だけコードで補う。ノーコードはコードを書かない",
+      nodes: [
+        {
+          id: "no",
+          label: "ノーコード開発",
+          fields: ["GUI で部品・テンプレートを組み合わせる"],
+          col: 1,
+          row: 0,
+          note: "コードは書かない",
+          notePlace: "right",
+        },
+        {
+          id: "low",
+          label: "ローコード開発",
+          fields: ["GUI で部品・テンプレートを組み合わせる", "一部の処理をコードで書く"],
+          col: 1.59,
+          row: 1,
+          tone: "ok",
+          note: "設問の手法",
+          notePlace: "right",
+        },
+      ],
+    },
   },
   {
     source: at(48),
@@ -3126,6 +3447,32 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "左側（プロセスやツールなど）も価値があると認めている点が宣言の趣旨。否定はしていない。",
       "4組を対で覚える。どちらが右側かを1組でも取り違えると選択肢を誤る。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "宣言の 4 つの対。左のことがらにも価値を認めながら、右のことがらにより価値をおく（右の 4 つが“別のことがら”）",
+      cell: { w: 150, h: 64 },
+      nodes: [
+        { id: "l1", label: "プロセスやツール", col: 0, row: 0, tone: "muted" },
+        { id: "l2", label: "包括的なドキュメント", col: 0, row: 1, tone: "muted" },
+        { id: "l3", label: "契約交渉", col: 0, row: 2, tone: "muted" },
+        { id: "l4", label: "計画に従うこと", col: 0, row: 3, tone: "muted" },
+        { id: "r1", label: "個人と対話", col: 2.1, row: 0, tone: "ok" },
+        { id: "r2", label: "動くソフトウェア", col: 2.1, row: 1, tone: "ok" },
+        { id: "r3", label: "顧客との協調", col: 2.1, row: 2, tone: "ok" },
+        { id: "r4", label: "変化への対応", col: 2.1, row: 3, tone: "ok" },
+      ],
+      groups: [
+        { label: "価値があると認める", col: -0.2, row: -0.5, w: 1.4, h: 4.5 },
+        { label: "より価値をおく", col: 1.75, row: -0.5, w: 1.4, h: 4.5, tone: "ok" },
+      ],
+      edges: [
+        { from: "l1", to: "r1" },
+        { from: "l2", to: "r2" },
+        { from: "l3", to: "r3" },
+        { from: "l4", to: "r4" },
+      ],
+    },
   },
   {
     source: at(50),
@@ -3488,16 +3835,49 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "是正処置＝起きたことの原因除去、予防処置＝起きていないことの発生防止。時間軸が違う。",
       "「原因を除去する」という言い回しが是正処置の目印になる。",
     ],
-    figure: {
-      type: "table",
-      caption: "時間軸で区別する",
-      headers: ["処置", "対象", "目的"],
-      rows: [
-        ["是正処置", "すでに起きた不適合", "原因を取り除き、再発を防ぐ"],
-        ["予防処置", "まだ起きていない潜在的な不適合", "発生そのものを防ぐ"],
-        ["継続的改善", "不適合の有無によらない", "有効性や効率を段階的に高める"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "是正処置は、すでに起きた不適合の原因を取り除いて再発を防ぐ。起きる前に手を打つのは予防処置",
+        nodes: [
+          {
+            id: "pot",
+            label: "潜在的な不適合\n（まだ起きていない）",
+            col: 0,
+            row: 0,
+            note: "発生そのものを防ぐ",
+          },
+          { id: "occ", label: "不適合が起きた", col: 1.9, row: 0, tone: "ng" },
+          {
+            id: "fix",
+            label: "原因を取り除く",
+            col: 3.3,
+            row: 0,
+            tone: "ok",
+            note: "再発の起こりやすさを\n下げる",
+          },
+        ],
+        groups: [
+          { label: "起きる前：予防処置", col: -0.1, row: -0.6, w: 1.2, h: 1.9 },
+          { label: "起きた後：是正処置", col: 1.4, row: -0.6, w: 3, h: 1.9, tone: "ok" },
+        ],
+        edges: [
+          { from: "pot", to: "occ", dashed: true },
+          { from: "occ", to: "fix", label: "是正処置", tone: "ok" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "時間軸で区別する",
+        headers: ["処置", "対象", "目的"],
+        rows: [
+          ["是正処置", "すでに起きた不適合", "原因を取り除き、再発を防ぐ"],
+          ["予防処置", "まだ起きていない潜在的な不適合", "発生そのものを防ぐ"],
+          ["継続的改善", "不適合の有無によらない", "有効性や効率を段階的に高める"],
+        ],
+      },
+    ],
   },
   {
     source: at(56),
@@ -3529,16 +3909,56 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "計画停止は可用性の計算から除く。分母を720時間のままにすると答えがずれる。",
       "切上げにすると6.96時間を超えてしまい条件を満たせない。設問の丸め方の指定に従う。",
     ],
-    figure: {
-      type: "calc",
-      caption: "許容停止時間の求め方",
-      lines: [
-        { expr: "30 × 24 ＝ 720 時間", note: "その月の総時間" },
-        { expr: "6 × 4 ＝ 24 時間", note: "計画停止（毎週月曜 0〜6 時）" },
-        { expr: "720 － 24 ＝ 696 時間", note: "サービス提供時間" },
-        { expr: "696 × 0.01 ＝ 6.96 → 6 時間", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "計画停止を除いた 696 時間が可用性の分母。その 1％ の 6.96 時間までが停止してよい時間",
+        nodes: [
+          { id: "total", label: "その月の総時間\n30 日 × 24 ＝ 720 時間", col: 1.5, row: 0 },
+          {
+            id: "plan",
+            label: "計画停止\n6 時間 × 4 回 ＝ 24 時間",
+            col: 0.4,
+            row: 1.4,
+            tone: "muted",
+            note: "可用性の計算から除く",
+          },
+          {
+            id: "svc",
+            label: "サービス提供時間\n720 － 24 ＝ 696 時間",
+            col: 2.6,
+            row: 1.4,
+            tone: "accent",
+          },
+          { id: "up", label: "稼働\n99％ 以上", col: 1.9, row: 2.8 },
+          {
+            id: "down",
+            label: "停止 1％ 以下\n696 × 0.01 ＝ 6.96 時間",
+            col: 3.3,
+            row: 2.8,
+            tone: "ok",
+            note: "小数第 1 位を切り捨てて 6 時間",
+          },
+        ],
+        edges: [
+          { from: "total", to: "plan" },
+          { from: "total", to: "svc" },
+          { from: "svc", to: "up" },
+          { from: "svc", to: "down" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "許容停止時間の求め方",
+        lines: [
+          { expr: "30 × 24 ＝ 720 時間", note: "その月の総時間" },
+          { expr: "6 × 4 ＝ 24 時間", note: "計画停止（毎週月曜 0〜6 時）" },
+          { expr: "720 － 24 ＝ 696 時間", note: "サービス提供時間" },
+          { expr: "696 × 0.01 ＝ 6.96 → 6 時間", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(57),
@@ -4086,17 +4506,60 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "4つの手法は「動かすかどうか」で大きく二分できる。インスペクションだけが静的な検査。",
       "テストは測定して合否を判定、デモンストレーションは実演して示す。目的の違いを押さえる。",
     ],
-    figure: {
-      type: "table",
-      caption: "動かすかどうかで二分できる",
-      headers: ["検証手法", "やること", "動作する成果物"],
-      rows: [
-        ["インスペクション", "文書やソースコードを目視で精査する", "不要（静的）"],
-        ["テスト", "実行して測定し、合否を判定する", "必要"],
-        ["デモンストレーション", "実際に動かして示す", "必要"],
-        ["解析", "モデルや計算で妥当性を示す", "不要"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "4 つの検証手法を、成果物を動かすかどうかで分ける。文書そのものを目視で精査するのがインスペクション",
+        nodes: [
+          { id: "root", label: "要求事項を満たすことの検証", col: 1.5, row: 0 },
+          { id: "st", label: "成果物を動かさない", col: 0.5, row: 1.2, shape: "round" },
+          { id: "dy", label: "成果物を動かす", col: 2.5, row: 1.2, shape: "round" },
+          {
+            id: "insp",
+            label: "インスペクション",
+            col: 0,
+            row: 2.4,
+            tone: "ok",
+            note: "文書を目視で精査",
+          },
+          {
+            id: "ana",
+            label: "分析又は\nシミュレーション",
+            col: 1,
+            row: 2.4,
+            note: "モデルや計算で評価",
+          },
+          { id: "test", label: "テスト", col: 2, row: 2.4, note: "実行して測定" },
+          {
+            id: "demo",
+            label: "デモンストレーション",
+            col: 3.05,
+            row: 2.4,
+            note: "動かして見せる",
+          },
+        ],
+        edges: [
+          { from: "root", to: "st" },
+          { from: "root", to: "dy" },
+          { from: "st", to: "insp", tone: "ok" },
+          { from: "st", to: "ana" },
+          { from: "dy", to: "test" },
+          { from: "dy", to: "demo" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "動かすかどうかで二分できる",
+        headers: ["検証手法", "やること", "動作する成果物"],
+        rows: [
+          ["インスペクション", "文書やソースコードを目視で精査する", "不要（静的）"],
+          ["テスト", "実行して測定し、合否を判定する", "必要"],
+          ["デモンストレーション", "実際に動かして示す", "必要"],
+          ["分析又はシミュレーション", "モデルや計算で妥当性を示す", "不要"],
+        ],
+      },
+    ],
   },
   {
     source: at(66),
@@ -4194,18 +4657,38 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "2軸の名前で判別できる。製品×市場ならアンゾフ、成長率×シェアなら PPM。",
       "既存製品×既存市場＝市場浸透、新製品×新市場＝多角化。4象限の名称も押さえておく。",
     ],
-    figure: {
-      type: "quadrant",
-      caption: "アンゾフの成長マトリクスは 製品 × 市場 の既存・新規で 4 つの成長戦略に分ける",
-      x: { label: "市場", low: "既存市場", high: "新市場" },
-      y: { label: "製品", low: "既存製品", high: "新製品" },
-      cells: [
-        { title: "新製品開発", note: "今の客へ新しい製品を出す" },
-        { title: "多角化", note: "製品も市場も新しい。最もリスクが高い", tone: "accent" },
-        { title: "市場浸透", note: "今の製品を今の市場でもっと売る" },
-        { title: "新市場開拓", note: "今の製品を別の地域・客層へ売る" },
-      ],
-    },
+    figure: [
+      {
+        type: "quadrant",
+        caption: "アンゾフの成長マトリクスは 製品 × 市場 の既存・新規で 4 つの成長戦略に分ける",
+        x: { label: "市場", low: "既存市場", high: "新市場" },
+        y: { label: "製品", low: "既存製品", high: "新製品" },
+        cells: [
+          { title: "新製品開発", note: "今の客へ新しい製品を出す" },
+          { title: "多角化", note: "製品も市場も新しい。最もリスクが高い", tone: "accent" },
+          { title: "市場浸透", note: "今の製品を今の市場でもっと売る" },
+          { title: "新市場開拓", note: "今の製品を別の地域・客層へ売る" },
+        ],
+      },
+      {
+        type: "sketch",
+        caption: "選択肢に出てくる手法の形。どれも 4 マスだが、軸（区分）の名前が違う",
+        items: [
+          {
+            name: "アンゾフの成長マトリクス",
+            note: "製品（既存・新規）× 市場（既存・新規）で成長戦略を 4 つに分ける。上の図とは縦横を入れ替えて描いた同じもの。これが正解の形。",
+          },
+          {
+            name: "PPM",
+            note: "市場成長率の高低 × 相対的市場シェアの大小で事業を 4 つに分け、資源配分を考える。",
+          },
+          {
+            name: "SWOT分析",
+            note: "内部環境の強み・弱みと、外部環境の機会・脅威を 4 つの枠に書き出す。",
+          },
+        ],
+      },
+    ],
   },
   {
     source: at(68),
@@ -4236,20 +4719,37 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "permission＝許諾。設問の“同意の範囲”という言葉がそのまま手掛かりになる。",
       "バイラル（viral）は「ウイルスのように広がる」。伝わり方に着目した用語。",
     ],
-    figure: {
-      type: "table",
-      caption: "顧客への近づき方の違い",
-      headers: ["手法", "進め方", "語源・目印"],
-      rows: [
-        [
-          "パーミッションマーケティング",
-          "許諾を得てから情報を送り、同意の範囲を段階的に広げる",
-          "permission＝許諾",
+    figure: [
+      {
+        type: "sequence",
+        caption:
+          "パーミッションマーケティングは、顧客の許諾を得てから送り、信頼が深まるにつれて同意の範囲を広げていく",
+        actors: ["企業", "顧客"],
+        steps: [
+          { from: "企業", to: "顧客", label: "情報を送ってよいか尋ねる" },
+          { from: "顧客", to: "企業", label: "許諾（同意）", dashed: true },
+          { from: "企業", to: "顧客", label: "同意した範囲で情報を送る" },
+          { divider: "信頼関係が深まる" },
+          { from: "企業", to: "顧客", label: "より広い範囲の同意を求める" },
+          { from: "顧客", to: "企業", label: "同意の範囲を広げる", dashed: true, tone: "ok" },
+          { from: "企業", to: "顧客", label: "広げた範囲でプロモーション", tone: "ok" },
         ],
-        ["バイラルマーケティング", "利用者の口コミで広がることを狙う", "viral＝ウイルスのように"],
-        ["マスマーケティング", "不特定多数へ一斉に働きかける", "許諾を前提にしない"],
-      ],
-    },
+      },
+      {
+        type: "table",
+        caption: "顧客への近づき方の違い",
+        headers: ["手法", "進め方", "語源・目印"],
+        rows: [
+          [
+            "パーミッションマーケティング",
+            "許諾を得てから情報を送り、同意の範囲を段階的に広げる",
+            "permission＝許諾",
+          ],
+          ["バイラルマーケティング", "利用者の口コミで広がることを狙う", "viral＝ウイルスのように"],
+          ["マスマーケティング", "不特定多数へ一斉に働きかける", "許諾を前提にしない"],
+        ],
+      },
+    ],
   },
   {
     source: at(69),
@@ -4423,6 +4923,37 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "gig＝一度限りの仕事。語源を知っていれば意味を取り違えない。",
       "クラウドソーシングや配車・配達のプラットフォームが代表例。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "ギグエコノミーは、インターネット上に提示された単発の仕事を、個人が 1 件ずつ受託して働く形",
+      nodes: [
+        { id: "req", label: "仕事の依頼者\n（企業・個人）", col: 0, row: 0 },
+        {
+          id: "pf",
+          label: "インターネット上の\nプラットフォーム",
+          col: 1.9,
+          row: 0,
+          shape: "cloud",
+        },
+        { id: "worker", label: "個人", col: 3.8, row: 0, shape: "actor", tone: "ok" },
+      ],
+      edges: [
+        { from: "req", to: "pf", label: "単発の仕事を提示" },
+        { from: "pf", to: "worker", label: "選んで受託", tone: "ok" },
+        {
+          from: "worker",
+          to: "req",
+          via: [
+            [3.8, 1.2],
+            [0, 1.2],
+          ],
+          label: "作業を提供し、1 件ごとに報酬を受け取る",
+          arrow: "both",
+          dashed: true,
+        },
+      ],
+    },
   },
   {
     source: at(73),
@@ -4453,6 +4984,38 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "vision＝視覚。画像を機械が見て判断する用途かどうかで選択肢を絞れる。",
       "人が見るための表示（VR/AR）とは方向が逆。機械の目という位置づけを押さえる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "マシンビジョンは機械の目。カメラの画像を AI が解析して良否を判定し、人の目視検査を自動化する",
+      nodes: [
+        { id: "prod", label: "ラインを流れる製品", col: 0, row: 0.5 },
+        { id: "cam", label: "カメラで撮影", col: 1.45, row: 0.5 },
+        {
+          id: "ai",
+          label: "AI が画像を解析\n良否を判定",
+          col: 2.9,
+          row: 0.5,
+          tone: "accent",
+        },
+        { id: "good", label: "良品", col: 4.3, row: 0, tone: "ok" },
+        { id: "bad", label: "不良品をはじく", col: 4.3, row: 1, tone: "ng" },
+        {
+          id: "human",
+          label: "従来は人が目視で検査",
+          col: 1.45,
+          row: 1.8,
+          tone: "muted",
+        },
+      ],
+      edges: [
+        { from: "prod", to: "cam" },
+        { from: "cam", to: "ai", label: "画像" },
+        { from: "ai", to: "good", tone: "ok" },
+        { from: "ai", to: "bad", tone: "ng" },
+        { from: "human", to: "ai", dashed: true, label: "自動化" },
+      ],
+    },
   },
   {
     source: at(74),
@@ -4771,6 +5334,44 @@ export const AP_R05_AKI_AM: [Question, ...Question[]] = [
       "所有者が自分で使うための複製・改変は適法。ただし他人に配ったり貸したりすると別問題になる。",
       "職務著作は法人が著作者。作成した従業者個人が権利を持つわけではない。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "適法なのは、複製物の所有者が自ら使うために必要な範囲の改変。複製して各部門に配る・他社に貸す、海賊版と知って使うのは侵害",
+      nodes: [
+        { id: "pirate", label: "海賊版", col: 0, row: 1, tone: "ng" },
+        {
+          id: "owner",
+          label: "自社",
+          col: 1.9,
+          row: 1,
+          tone: "accent",
+          note: "購入したプログラムの\n複製物の所有者",
+        },
+        { id: "depts", label: "社内の各部門", col: 3.8, row: 1 },
+        {
+          id: "staff",
+          label: "作成した担当者",
+          col: 0.6,
+          row: 2.5,
+          shape: "actor",
+          note: "職務著作の著作者は法人",
+        },
+        { id: "other", label: "他社", col: 2.8, row: 2.5 },
+      ],
+      edges: [
+        { from: "owner", to: "owner", label: "処理速度向上のため改変し、自ら使う", tone: "ok" },
+        {
+          from: "pirate",
+          to: "owner",
+          label: "知りながら入手・使用",
+          tone: "ng",
+          blocked: true,
+        },
+        { from: "owner", to: "depts", label: "複製して配布", tone: "ng", blocked: true },
+        { from: "staff", to: "other", label: "独断で複製・貸与", tone: "ng", blocked: true },
+      ],
+    },
   },
   {
     source: at(79),

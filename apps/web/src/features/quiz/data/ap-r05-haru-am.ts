@@ -616,15 +616,45 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "CPI＝動作周波数÷1秒あたりの命令実行数。MIPSと逆数の関係にあると覚えると迷わない。",
       "この例では1秒あたり10億命令＝1,000MIPS。CPI×MIPS×10⁶＝動作周波数 が成り立つ。",
     ],
-    figure: {
-      type: "calc",
-      caption: "CPI の求め方",
-      lines: [
-        { expr: "1.25 GHz ＝ 1.25 × 10⁹ サイクル／秒", note: "1秒あたりのクロック数" },
-        { expr: "10億命令 ＝ 1 × 10⁹ 命令／秒", note: "1秒あたりの命令数" },
-        { expr: "1.25 × 10⁹ ÷ 1 × 10⁹ ＝ 1.25", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "timeline",
+        caption:
+          "4 ナノ秒を切り出すと、クロックは 5 回（1 回 0.8 ナノ秒）、命令は平均 4 つ（1 命令 1 ナノ秒）。1 命令あたり 5 ÷ 4 ＝ 1.25 クロック",
+        span: 20,
+        unit: "0.2 ナノ秒",
+        tracks: [
+          {
+            label: "クロック",
+            bars: [
+              { start: 0, length: 4, label: "1 回目", tone: 1 },
+              { start: 4, length: 4, label: "2 回目", tone: 1 },
+              { start: 8, length: 4, label: "3 回目", tone: 1 },
+              { start: 12, length: 4, label: "4 回目", tone: 1 },
+              { start: 16, length: 4, label: "5 回目", tone: 1 },
+            ],
+          },
+          {
+            label: "命令（平均）",
+            bars: [
+              { start: 0, length: 5, label: "命令 1", tone: 3 },
+              { start: 5, length: 5, label: "命令 2", tone: 3 },
+              { start: 10, length: 5, label: "命令 3", tone: 3 },
+              { start: 15, length: 5, label: "命令 4", tone: 3 },
+            ],
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "CPI の求め方",
+        lines: [
+          { expr: "1.25 GHz ＝ 1.25 × 10⁹ サイクル／秒", note: "1秒あたりのクロック数" },
+          { expr: "10億命令 ＝ 1 × 10⁹ 命令／秒", note: "1秒あたりの命令数" },
+          { expr: "1.25 × 10⁹ ÷ 1 × 10⁹ ＝ 1.25", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(9),
@@ -1376,6 +1406,29 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "LRUは直近の参照履歴を使う。FIFOは読み込まれた順だけを使う。判断材料の違いで区別する。",
       "ページング方式はページ長が固定なので、区画方式のような外部フラグメンテーションは生じない。",
     ],
+    figure: {
+      type: "array",
+      caption:
+        "LRU の例（ページ枠 3 つ）。ページ 4 を入れるとき、最後に使ってから最も時間がたったページ 2 を追い出す",
+      headers: ["枠 1", "枠 2", "枠 3"],
+      rows: [
+        { label: "1 を参照", cells: ["1", "", ""], note: "空き枠に読み込む" },
+        { label: "2 を参照", cells: ["1", "2", ""] },
+        { label: "3 を参照", cells: ["1", "2", "3"], note: "枠がいっぱい" },
+        {
+          label: "1 を参照",
+          cells: ["1", "2", "3"],
+          marked: [0],
+          note: "主記憶にある。1 が最近使われた側へ",
+        },
+        {
+          label: "4 を参照",
+          cells: ["1", "4", "3"],
+          marked: [1],
+          note: "使ってから最も長い 2 を置き換える（FIFO なら最初に読んだ 1）",
+        },
+      ],
+    },
   },
   {
     source: at(19),
@@ -1786,16 +1839,35 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "何を飛ばすかで区別する。LiDAR＝レーザー光、レーダー＝電波（ミリ波）、ソナー＝超音波。",
       "LiDARは形状まで得られる反面、霧や豪雨では減衰しやすい。ミリ波レーダーと組み合わせて補う。",
     ],
-    figure: {
-      type: "table",
-      caption: "何を飛ばして測るか",
-      headers: ["センサー", "飛ばすもの", "分かること", "弱いところ"],
-      rows: [
-        ["LiDAR", "レーザー光", "方向・距離・形状（点群）", "霧や豪雨で減衰する"],
-        ["ミリ波レーダー", "電波", "距離と相対速度", "形状は分からない"],
-        ["ソナー", "超音波", "近距離の障害物", "遠くは測れない"],
-      ],
-    },
+    figure: [
+      {
+        type: "sequence",
+        caption:
+          "LiDAR はレーザー光をパルスで照射し、反射光が戻るまでの時間から距離を測る。向きを変えて繰り返すと形状まで分かる",
+        actors: ["LiDAR（車）", "対象物"],
+        steps: [
+          { from: "LiDAR（車）", to: "対象物", label: "レーザー光をパルスで照射" },
+          { from: "対象物", to: "LiDAR（車）", label: "反射光", dashed: true },
+          { from: "LiDAR（車）", to: "LiDAR（車）", label: "戻るまでの時間から距離を出す" },
+          { divider: "照射する向きを変えて繰り返す" },
+          {
+            over: ["LiDAR（車）", "対象物"],
+            note: "点の集まり（点群）で方向・距離・形状が分かる",
+            tone: "ok",
+          },
+        ],
+      },
+      {
+        type: "table",
+        caption: "何を飛ばして測るか",
+        headers: ["センサー", "飛ばすもの", "分かること", "弱いところ"],
+        rows: [
+          ["LiDAR", "レーザー光", "方向・距離・形状（点群）", "霧や豪雨で減衰する"],
+          ["ミリ波レーダー", "電波", "距離と相対速度", "形状は分からない"],
+          ["ソナー", "超音波", "近距離の障害物", "遠くは測れない"],
+        ],
+      },
+    ],
   },
   {
     source: at(24),
@@ -2358,12 +2430,15 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
     text: "100Mビット／秒のLANと1Gビット／秒のLANがある。ヘッダーを含めて1,250バイトのパケットをN個送付するときに、100Mビット／秒のLANの送信時間が1Gビット／秒のLANより9ミリ秒多く掛かった。Nは幾らか。ここで、いずれのLANにおいても、パケットの送信間隔（パケットの送信が完了してから次のパケットを送信開始するまでの時間）は1ミリ秒であり、パケット送信間隔も送信時間に含める。",
     choices: [
       { text: "10", note: "1パケットあたりの差を0.9ミリ秒と取り違えた場合の値。" },
-      { text: "80", note: "1,250をビット数に直さずに計算した場合に近い値。" },
+      { text: "80", note: "80個では差が0.09×80＝7.2ミリ秒にしかならず、9ミリ秒に届かない。" },
       {
         text: "100",
         note: "1パケットあたりの差0.09ミリ秒×N＝9ミリ秒より、N＝100。これが正解。",
       },
-      { text: "800", note: "バイトとビットの換算を二重に掛けた場合の値。" },
+      {
+        text: "800",
+        note: "1,250をビット数に直さずに計算した値。1パケットあたりの差が0.01125ミリ秒になり、9÷0.01125＝800。",
+      },
     ],
     explain:
       "1,250バイト＝10,000ビット。100Mビット／秒では10,000÷100,000,000＝0.1ミリ秒、1Gビット／秒では0.01ミリ秒。パケット送信間隔1ミリ秒は両者で同じなので差にならず、1パケットあたりの差は0.09ミリ秒。N×0.09＝9より N＝100。",
@@ -2371,17 +2446,62 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "共通する条件（ここでは送信間隔）は差を取ると消える。差だけに注目すると式が簡単になる。",
       "バイトとビットの換算を最初に済ませる。1,250バイト×8＝10,000ビット。",
     ],
-    figure: {
-      type: "calc",
-      caption: "パケット数の求め方",
-      lines: [
-        { expr: "1,250 バイト × 8 ＝ 10,000 ビット", note: "1パケットのビット数" },
-        { expr: "10,000 ÷ 100M ＝ 0.1 ミリ秒", note: "100Mビット／秒での送信時間" },
-        { expr: "10,000 ÷ 1G ＝ 0.01 ミリ秒", note: "1Gビット／秒での送信時間" },
-        { expr: "(0.1 − 0.01) × N ＝ 9", note: "送信間隔は共通なので相殺される" },
-        { expr: "N ＝ 9 ÷ 0.09 ＝ 100", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "N 個のパケットの送り方（単位はミリ秒）。送信間隔 1 ミリ秒はどちらの LAN でも同じなので、差は 1 パケットあたり 0.1 － 0.01 ＝ 0.09 ミリ秒の N 個分",
+        cell: { w: 150, h: 70 },
+        nodes: [
+          {
+            id: "pkt",
+            label: "1 パケット",
+            fields: ["ヘッダー", "データ"],
+            col: 0.43,
+            row: 0.2,
+            note: "合わせて 1,250 バイト ＝ 10,000 ビット",
+            notePlace: "right",
+          },
+          {
+            id: "slow",
+            label: "100M ビット／秒の LAN（ミリ秒）",
+            fields: ["送信 0.1", "間隔 1", "送信 0.1", "間隔 1", "…", "送信 0.1"],
+            col: 1.15,
+            row: 1.3,
+            note: "送信 0.1 × N 個",
+            notePlace: "right",
+          },
+          {
+            id: "fast",
+            label: "1G ビット／秒の LAN（ミリ秒）",
+            fields: ["送信 0.01", "間隔 1", "送信 0.01", "間隔 1", "…", "送信 0.01"],
+            col: 1.23,
+            row: 2.4,
+            note: "送信 0.01 × N 個",
+            notePlace: "right",
+          },
+          {
+            id: "res",
+            label: "差 ＝ (0.1 － 0.01) × N ＝ 9 ミリ秒 → N ＝ 100",
+            col: 1.4,
+            row: 3.25,
+            shape: "text",
+            tone: "ok",
+          },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "パケット数の求め方",
+        lines: [
+          { expr: "1,250 バイト × 8 ＝ 10,000 ビット", note: "1パケットのビット数" },
+          { expr: "10,000 ÷ 100M ＝ 0.1 ミリ秒", note: "100Mビット／秒での送信時間" },
+          { expr: "10,000 ÷ 1G ＝ 0.01 ミリ秒", note: "1Gビット／秒での送信時間" },
+          { expr: "(0.1 − 0.01) × N ＝ 9", note: "送信間隔は共通なので相殺される" },
+          { expr: "N ＝ 9 ÷ 0.09 ＝ 100", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(33),
@@ -2468,14 +2588,60 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "トランスポート層の識別子がポート番号。ポート番号を扱うプロトコルはTCPとUDPだけ。",
     ],
     figure: {
-      type: "table",
-      caption: "層で整理する",
-      headers: ["層", "プロトコル", "識別子"],
-      rows: [
-        ["アプリケーション層", "HTTP、SMTP、DNS", "—"],
-        ["トランスポート層", "TCP、UDP", "ポート番号"],
-        ["ネットワーク層", "IP、ICMP", "IP アドレス"],
-        ["データリンク層", "イーサネット", "MAC アドレス"],
+      type: "diagram",
+      caption:
+        "層の積み重ねに置くと、UDP は TCP と同じトランスポート層。HTTP・SMTP はその上、ICMP は IP と同じネットワーク層（第 5・6 層と物理層は省略）",
+      cell: { w: 125, h: 60 },
+      nodes: [
+        { id: "l7", label: "アプリケーション層\n（第 7 層）", col: 0.15, row: 0, shape: "text" },
+        { id: "http", label: "HTTP", col: 1.4, row: 0 },
+        { id: "smtp", label: "SMTP", col: 2.2, row: 0 },
+        { id: "dns", label: "DNS", col: 3, row: 0, tone: "muted" },
+        {
+          id: "l4",
+          label: "トランスポート層\n（第 4 層）",
+          col: 0.15,
+          row: 1.1,
+          shape: "text",
+          tone: "ok",
+        },
+        { id: "tcp", label: "TCP", col: 1.4, row: 1.1 },
+        { id: "udp", label: "UDP", col: 2.2, row: 1.1, tone: "ok" },
+        {
+          id: "port",
+          label: "識別子：ポート番号",
+          col: 3.3,
+          row: 1.1,
+          shape: "text",
+          tone: "muted",
+        },
+        { id: "l3", label: "ネットワーク層\n（第 3 層）", col: 0.15, row: 2.2, shape: "text" },
+        { id: "ip", label: "IP", col: 1.4, row: 2.2 },
+        { id: "icmp", label: "ICMP", col: 2.2, row: 2.2 },
+        {
+          id: "ipaddr",
+          label: "識別子：IP アドレス",
+          col: 3.3,
+          row: 2.2,
+          shape: "text",
+          tone: "muted",
+        },
+        { id: "l2", label: "データリンク層\n（第 2 層）", col: 0.15, row: 3.3, shape: "text" },
+        { id: "eth", label: "イーサネット", col: 1.6, row: 3.3 },
+        {
+          id: "mac",
+          label: "識別子：MAC アドレス",
+          col: 3.3,
+          row: 3.3,
+          shape: "text",
+          tone: "muted",
+        },
+      ],
+      groups: [
+        { label: "", col: -0.5, row: 0, w: 5, h: 1 },
+        { label: "", col: -0.5, row: 1.1, w: 5, h: 1, tone: "ok" },
+        { label: "", col: -0.5, row: 2.2, w: 5, h: 1 },
+        { label: "", col: -0.5, row: 3.3, w: 5, h: 1 },
       ],
     },
   },
@@ -3322,18 +3488,43 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "条件が同時適用される問題では、成立数を数えれば動作が決まる。個々の条件の内容まで読み込む必要はない。",
     ],
     figure: {
-      type: "table",
-      caption: "列ごとの成立数と値引き率",
-      headers: ["列", "上得意客／高額取引／現金取引", "成立数", "値引き"],
+      type: "array",
+      caption:
+        "列ごとに Y の数を数えると、動作が 1 つに決まる。下の 4 段が正解の動作指定部（X の位置）",
+      headers: ["1", "2", "3", "4", "5", "6", "7", "8"],
       rows: [
-        ["1", "Y／Y／Y", "3", "9％"],
-        ["2", "Y／Y／N", "2", "6％"],
-        ["3", "Y／N／Y", "2", "6％"],
-        ["4", "Y／N／N", "1", "3％"],
-        ["5", "N／Y／Y", "2", "6％"],
-        ["6", "N／Y／N", "1", "3％"],
-        ["7", "N／N／Y", "1", "3％"],
-        ["8", "N／N／N", "0", "値引きしない"],
+        { label: "上得意客", cells: ["Y", "Y", "Y", "Y", "N", "N", "N", "N"] },
+        { label: "高額取引", cells: ["Y", "Y", "N", "N", "Y", "Y", "N", "N"] },
+        { label: "現金取引", cells: ["Y", "N", "Y", "N", "Y", "N", "Y", "N"] },
+        {
+          label: "Y の数",
+          cells: ["3", "2", "2", "1", "2", "1", "1", "0"],
+          note: "Y 1 つにつき 3％ 値引き",
+        },
+        {
+          label: "値引きしない",
+          cells: ["—", "—", "—", "—", "—", "—", "—", "X"],
+          marked: [7],
+          note: "Y が 0 個",
+        },
+        {
+          label: "3％ 値引き",
+          cells: ["—", "—", "—", "X", "—", "X", "X", "—"],
+          marked: [3, 5, 6],
+          note: "Y が 1 個",
+        },
+        {
+          label: "6％ 値引き",
+          cells: ["—", "X", "X", "—", "X", "—", "—", "—"],
+          marked: [1, 2, 4],
+          note: "Y が 2 個",
+        },
+        {
+          label: "9％ 値引き",
+          cells: ["X", "—", "—", "—", "—", "—", "—", "—"],
+          marked: [0],
+          note: "Y が 3 個",
+        },
       ],
     },
   },
@@ -3940,24 +4131,49 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "マネジメントシステム規格では「あらかじめ定めた間隔で」という表現が繰り返し出てくる。定期実施が原則。",
       "問題が起きたときだけ行うのは是正処置。定期レビューとは目的も時期も異なる。",
     ],
-    figure: {
-      type: "table",
-      caption: "定期に行うことと、起きたときに行うこと",
-      headers: ["活動", "いつ行うか", "目的"],
-      rows: [
-        [
-          "パフォーマンスの監視・レビュー・報告",
-          "あらかじめ定めた間隔で（定期）",
-          "傾向をつかみ、改善につなげる",
+    figure: [
+      {
+        type: "timeline",
+        caption:
+          "パフォーマンスのレビューは、何かが起きたかどうかに関係なく、あらかじめ定めた間隔で行う（図は 3 か月ごとの例）。是正処置は不適合が起きたときに行う",
+        span: 12,
+        unit: "月",
+        tracks: [
+          {
+            label: "定期レビュー",
+            bars: [
+              { start: 2, length: 1, label: "●", tone: 1 },
+              { start: 5, length: 1, label: "●", tone: 1 },
+              { start: 8, length: 1, label: "●", tone: 1 },
+              { start: 11, length: 1, label: "●", tone: 1 },
+            ],
+          },
+          {
+            label: "是正処置",
+            bars: [{ start: 3, length: 2, label: "是正", tone: 2 }],
+          },
         ],
-        ["是正処置", "不適合が起きたとき", "原因を除去して再発を防ぐ"],
-        [
-          "マネジメントレビュー",
-          "あらかじめ定めた間隔で",
-          "SMS が適切・妥当・有効かを経営層が評価する",
+        marks: [{ at: 3, label: "不適合" }],
+      },
+      {
+        type: "table",
+        caption: "定期に行うことと、起きたときに行うこと",
+        headers: ["活動", "いつ行うか", "目的"],
+        rows: [
+          [
+            "パフォーマンスの監視・レビュー・報告",
+            "あらかじめ定めた間隔で（定期）",
+            "傾向をつかみ、改善につなげる",
+          ],
+          ["是正処置", "不適合が起きたとき", "原因を除去して再発を防ぐ"],
+          [
+            "マネジメントレビュー",
+            "あらかじめ定めた間隔で",
+            "SMS が適切・妥当・有効かを経営層が評価する",
+          ],
         ],
-      ],
-    },
+      },
+    ],
   },
   {
     source: at(57, "選択肢の表を1行ずつの記述に変更"),
@@ -4145,24 +4361,67 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "監査技法の設問では「必ず」「〜に限る」といった強い限定語が誤りの目印になることが多い。",
       "チェックリストは監査人が作る。監査対象部門に作らせると独立性・客観性が損なわれる。",
     ],
-    figure: {
-      type: "table",
-      caption: "監査技法の設問は、限定語と実施主体を見る",
-      headers: ["技法", "誰が行うか", "注意"],
-      rows: [
-        [
-          "インタビュー法",
-          "監査人が関係者へ直接質問する",
-          "文書では分からない運用の実態を確かめる",
+    figure: [
+      {
+        type: "sequence",
+        caption:
+          "監査技法は「誰が誰に何をするか」で見る。どれもシステム監査人が自ら行い、チェックリストも監査人が作る",
+        actors: ["システム監査人", "監査対象部門\n（関係者）"],
+        steps: [
+          { divider: "インタビュー法" },
+          {
+            from: "システム監査人",
+            to: "監査対象部門\n（関係者）",
+            label: "直接、口頭で問い合わせる",
+            tone: "ok",
+          },
+          {
+            from: "監査対象部門\n（関係者）",
+            to: "システム監査人",
+            label: "回答",
+            dashed: true,
+            tone: "ok",
+          },
+          { divider: "チェックリスト法" },
+          { from: "システム監査人", to: "システム監査人", label: "チェックリストを作る" },
+          {
+            from: "システム監査人",
+            to: "監査対象部門\n（関係者）",
+            label: "チェックリストで回答を求める",
+          },
+          {
+            from: "監査対象部門\n（関係者）",
+            to: "システム監査人",
+            label: "回答",
+            dashed: true,
+          },
+          { divider: "現地調査法" },
+          {
+            from: "システム監査人",
+            to: "監査対象部門\n（関係者）",
+            label: "直接赴き、業務時間中に観察・調査",
+          },
         ],
-        [
-          "チェックリスト法",
-          "監査人がチェックリストを作る",
-          "監査対象部門に作らせると独立性を損なう",
+      },
+      {
+        type: "table",
+        caption: "監査技法の設問は、限定語と実施主体を見る",
+        headers: ["技法", "誰が行うか", "注意"],
+        rows: [
+          [
+            "インタビュー法",
+            "監査人が関係者へ直接質問する",
+            "文書では分からない運用の実態を確かめる",
+          ],
+          [
+            "チェックリスト法",
+            "監査人がチェックリストを作る",
+            "監査対象部門に作らせると独立性を損なう",
+          ],
+          ["よくある誤り", "—", "「必ず」「〜に限る」といった強い限定は誤りの目印"],
         ],
-        ["よくある誤り", "—", "「必ず」「〜に限る」といった強い限定は誤りの目印"],
-      ],
-    },
+      },
+    ],
   },
   {
     source: at(60),
@@ -4254,6 +4513,33 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "ROI＝利益÷投資額。比率なので規模の違う案件を比較できるが、金額の大きさは分からない。",
       "NPVやIRRは時間価値（割引）を考慮する指標。ROIは単純な比率で、期間の違いは反映されない。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "ROI は、投資で生まれた利益額（売上増やコスト削減）を投資額で割った比率。値が大きいほど投資効率が高い",
+      nodes: [
+        { id: "inv", label: "投資額", col: 0, row: 0.7, tone: "accent", note: "分母" },
+        { id: "sys", label: "情報化投資\n（システム導入）", col: 1.4, row: 0.7 },
+        { id: "up", label: "売上増", col: 2.8, row: 0.1 },
+        { id: "down", label: "コスト削減", col: 2.8, row: 1.3 },
+        { id: "profit", label: "創出された利益額", col: 4.2, row: 0.7, tone: "ok", note: "分子" },
+        {
+          id: "roi",
+          label: "ROI ＝ 利益額 ÷ 投資額",
+          col: 2.1,
+          row: 1.95,
+          shape: "text",
+          tone: "ok",
+        },
+      ],
+      edges: [
+        { from: "inv", to: "sys" },
+        { from: "sys", to: "up" },
+        { from: "sys", to: "down" },
+        { from: "up", to: "profit" },
+        { from: "down", to: "profit" },
+      ],
+    },
   },
   {
     source: at(62),
@@ -4284,6 +4570,40 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "CEMは顧客の「体験の質」を扱う。購買履歴などのデータを管理するCRMと目的が異なる。",
       "誤答は主語のすり替えで作られている。あくまで顧客が得るものであって、企業や従業員が得るものではない。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "カスタマーエクスペリエンスは、顧客が購入・使用・利用するときに顧客自身が得る満足や感動。購買履歴のような数値のデータではない",
+      nodes: [
+        { id: "cust", label: "顧客", col: 0, row: 0, shape: "actor" },
+        { id: "buy", label: "購入する", col: 1.4, row: 0, shape: "round" },
+        { id: "use", label: "使用・利用する", col: 2.8, row: 0, shape: "round" },
+        {
+          id: "cx",
+          label: "満足や感動\n（顧客体験価値）",
+          col: 2.1,
+          row: 1.4,
+          tone: "ok",
+          note: "顧客が得るもの",
+        },
+        {
+          id: "data",
+          label: "購買履歴\n（購入数・金額）",
+          col: 1.4,
+          row: -1.3,
+          tone: "muted",
+          note: "企業が持つ数値のデータ。\n体験の質ではない",
+          notePlace: "right",
+        },
+      ],
+      edges: [
+        { from: "cust", to: "buy" },
+        { from: "buy", to: "use" },
+        { from: "buy", to: "cx", dashed: true, tone: "ok" },
+        { from: "use", to: "cx", dashed: true, tone: "ok" },
+        { from: "buy", to: "data", dashed: true, label: "記録" },
+      ],
+    },
   },
   {
     source: at(63),
@@ -4545,15 +4865,45 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "ROASの分子は「売上高」。利益ではない点に注意。利益で測るのはROIやROAS類似のROMI。",
       "100％を超えれば広告費以上の売上が立ったことを意味するが、利益が出ているかは原価しだい。",
     ],
-    figure: {
-      type: "calc",
-      caption: "ROAS の求め方",
-      lines: [
-        { expr: "1,500 円 × 1,000 個 ＝ 1,500,000 円", note: "広告による売上高" },
-        { expr: "1,500,000 ÷ 600,000 ＝ 2.5", note: "広告費1円あたりの売上" },
-        { expr: "2.5 × 100 ＝ 250 ％", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "広告費 60 万円に対して、売上高は 150 万円。売上高が広告費の 2.5 倍なので ROAS は 250％",
+        x: {
+          label: "",
+          min: 0.4,
+          max: 2.6,
+          ticks: [1, 2],
+          tickLabels: ["広告費（分母）", "売上高（分子）"],
+        },
+        y: { label: "金額（万円）", min: 0, max: 180, ticks: [0, 60, 150] },
+        series: [
+          {
+            label: "金額",
+            kind: "bar",
+            points: [
+              [1, 60],
+              [2, 150],
+            ],
+          },
+        ],
+        marks: [
+          { x: 1, y: 60, label: "60 万円", place: "above" },
+          { x: 2, y: 150, label: "150 万円（1,500 円 × 1,000 個）", place: "above" },
+        ],
+        guides: [{ y: 60, label: "ROAS 100％（広告費と同額）" }],
+      },
+      {
+        type: "calc",
+        caption: "ROAS の求め方",
+        lines: [
+          { expr: "1,500 円 × 1,000 個 ＝ 1,500,000 円", note: "広告による売上高" },
+          { expr: "1,500,000 ÷ 600,000 ＝ 2.5", note: "広告費1円あたりの売上" },
+          { expr: "2.5 × 100 ＝ 250 ％", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(68),
@@ -4584,36 +4934,53 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "バランススコアカードの4視点は下から「学習と成長→内部ビジネスプロセス→顧客→財務」の順に影響する。",
       "PPMは「市場成長率×市場占有率」の2軸。選択肢の軸の名前を見れば区別できる。",
     ],
-    figure: {
-      type: "diagram",
-      caption:
-        "戦略マップは 4 つの視点に目標を置き、下の視点の取組が上の視点の成果につながる因果を矢印で描く（目標は一例）",
-      cell: { w: 150, h: 70 },
-      nodes: [
-        { id: "fin", label: "売上高・利益率の向上", col: 2.1, row: 0, tone: "accent" },
-        { id: "cus", label: "顧客満足度の向上", col: 1.4, row: 1.2 },
-        { id: "share", label: "シェア拡大", col: 2.8, row: 1.2 },
-        { id: "proc1", label: "工程の改善", col: 1.4, row: 2.4 },
-        { id: "proc2", label: "納期短縮", col: 2.8, row: 2.4 },
-        { id: "learn1", label: "人材育成", col: 1.4, row: 3.6 },
-        { id: "learn2", label: "技術の習得", col: 2.8, row: 3.6 },
-      ],
-      groups: [
-        { label: "財務の視点", col: 0, row: 0, w: 3.7, h: 1 },
-        { label: "顧客の視点", col: 0, row: 1.2, w: 3.7, h: 1 },
-        { label: "内部ビジネスプロセスの視点", col: 0, row: 2.4, w: 3.7, h: 1 },
-        { label: "学習と成長の視点", col: 0, row: 3.6, w: 3.7, h: 1 },
-      ],
-      edges: [
-        { from: "learn1", to: "proc1" },
-        { from: "learn2", to: "proc2" },
-        { from: "proc1", to: "cus" },
-        { from: "proc2", to: "cus" },
-        { from: "proc2", to: "share" },
-        { from: "cus", to: "fin" },
-        { from: "share", to: "fin" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "戦略マップは 4 つの視点に目標を置き、下の視点の取組が上の視点の成果につながる因果を矢印で描く（目標は一例）",
+        cell: { w: 150, h: 70 },
+        nodes: [
+          { id: "fin", label: "売上高・利益率の向上", col: 2.1, row: 0, tone: "accent" },
+          { id: "cus", label: "顧客満足度の向上", col: 1.4, row: 1.2 },
+          { id: "share", label: "シェア拡大", col: 2.8, row: 1.2 },
+          { id: "proc1", label: "工程の改善", col: 1.4, row: 2.4 },
+          { id: "proc2", label: "納期短縮", col: 2.8, row: 2.4 },
+          { id: "learn1", label: "人材育成", col: 1.4, row: 3.6 },
+          { id: "learn2", label: "技術の習得", col: 2.8, row: 3.6 },
+        ],
+        groups: [
+          { label: "財務の視点", col: 0, row: 0, w: 3.7, h: 1 },
+          { label: "顧客の視点", col: 0, row: 1.2, w: 3.7, h: 1 },
+          { label: "内部ビジネスプロセスの視点", col: 0, row: 2.4, w: 3.7, h: 1 },
+          { label: "学習と成長の視点", col: 0, row: 3.6, w: 3.7, h: 1 },
+        ],
+        edges: [
+          { from: "learn1", to: "proc1" },
+          { from: "learn2", to: "proc2" },
+          { from: "proc1", to: "cus" },
+          { from: "proc2", to: "cus" },
+          { from: "proc2", to: "share" },
+          { from: "cus", to: "fin" },
+          { from: "share", to: "fin" },
+        ],
+      },
+      {
+        type: "sketch",
+        caption:
+          "選択肢の手法を形で比べる。4 つの視点を縦に積んで因果で結ぶのがバランススコアカード",
+        items: [
+          {
+            name: "バランススコアカード",
+            note: "財務・顧客・内部ビジネスプロセス・学習と成長の 4 視点を因果で結ぶ。戦略マップはこの形。これが正解の形。",
+          },
+          {
+            name: "PPM",
+            note: "市場成長率（市場の魅力度）× 市場占有率（自社の優位性）の 4 つのセルに事業を分類する。視点の因果は描かない。",
+          },
+        ],
+      },
+    ],
   },
   {
     source: at(69),
@@ -5411,5 +5778,29 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       "集団思考は「集団だからこそ起きる」点が核心。個人の能力や勇気の問題ではない。",
       "対策は、異論を述べる役割（悪魔の代弁者）を置く、外部の意見を取り入れる、匿名で意見を集めるなど。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "集団思考は、結束の強い集団がまとまりを優先して批判的な検討をやめ、不合理な合意に達すること。個人の弱さではなく集団で起きる",
+      nodes: [
+        { id: "team", label: "結束の強いチーム", col: 0, row: 0 },
+        { id: "prio", label: "まとまりを優先し\n異論を出しにくい", col: 1.5, row: 0 },
+        { id: "nocrit", label: "自らへの批判的な\n検討が働かない", col: 3, row: 0 },
+        { id: "bad", label: "不合理な合意", col: 4.4, row: 0, tone: "ng" },
+        {
+          id: "counter",
+          label: "対策：反対役を置く・外部の意見を聞く・\n匿名で意見を集める",
+          col: 2.25,
+          row: 1.4,
+          tone: "ok",
+        },
+      ],
+      edges: [
+        { from: "team", to: "prio" },
+        { from: "prio", to: "nocrit" },
+        { from: "nocrit", to: "bad", tone: "ng" },
+        { from: "counter", to: "nocrit", dashed: true, tone: "ok", label: "歯止め" },
+      ],
+    },
   },
 ];
