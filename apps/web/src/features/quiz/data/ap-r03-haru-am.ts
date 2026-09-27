@@ -158,7 +158,10 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     answer: 2,
     text: "サンプリング周波数40kHz、量子化ビット数16ビットでA/D変換したモノラル音声の1秒間のデータ量は、何kバイトとなるか。ここで、1kバイトは1,000バイトとする。",
     choices: [
-      { text: "20", note: "量子化ビット数を8ビットとした場合の値。" },
+      {
+        text: "20",
+        note: "正解の80kバイトの4分の1の値。1標本2バイト×40,000個で80,000バイトになる。",
+      },
       { text: "40", note: "サンプリング周波数をそのままバイト数として扱った場合の値。" },
       { text: "80", note: "40,000×16÷8＝80,000バイト＝80kバイト。これが正解。" },
       {
@@ -172,16 +175,40 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       "式は「サンプリング周波数 × 量子化ビット数 ÷ 8 × チャネル数」。ステレオなら2倍。",
       "ビットとバイトの取り違えが一番多い誤答。選択肢に8倍・1/8倍の値が並んでいたら要注意。",
     ],
-    figure: {
-      type: "calc",
-      caption: "データ量の求め方",
-      lines: [
-        { expr: "40 kHz ＝ 1秒あたり 40,000 標本", note: "サンプリング周波数" },
-        { expr: "16 ビット ÷ 8 ＝ 2 バイト／標本", note: "量子化ビット数をバイトへ" },
-        { expr: "40,000 × 2 ＝ 80,000 バイト", note: "1秒間のデータ量" },
-        { expr: "＝ 80 kバイト", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "1 秒間の標本は 40,000 個。1 個 16 ビット（2 バイト）の標本を 40,000 個並べると 80,000 バイト",
+        nodes: [
+          {
+            id: "data",
+            label: "1 秒間に 40,000 個の標本（1 個 16 ビット ＝ 2 バイト）",
+            col: 1.2,
+            row: 0,
+            fields: ["16 ビット", "16 ビット", "16 ビット", "…", "16 ビット"],
+          },
+          {
+            id: "total",
+            label: "40,000 × 2 バイト ＝ 80,000 バイト ＝ 80 kバイト（ウ）",
+            col: 1.2,
+            row: 1.2,
+            tone: "ok",
+          },
+        ],
+        edges: [{ from: "data", to: "total", label: "全部で" }],
+      },
+      {
+        type: "calc",
+        caption: "データ量の求め方",
+        lines: [
+          { expr: "40 kHz ＝ 1秒あたり 40,000 標本", note: "サンプリング周波数" },
+          { expr: "16 ビット ÷ 8 ＝ 2 バイト／標本", note: "量子化ビット数をバイトへ" },
+          { expr: "40,000 × 2 ＝ 80,000 バイト", note: "1秒間のデータ量" },
+          { expr: "＝ 80 kバイト", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(4),
@@ -206,13 +233,36 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       "センサは「何の物理量を何に変換するか」で覚える。サーミスタ＝温度→抵抗、フォトトランジスタ＝光→電流、ポテンショメータ＝変位→抵抗。",
     ],
     figure: {
-      type: "table",
-      caption: "センサは「何を何に変えるか」で覚える",
-      headers: ["センサ", "測る物理量", "取り出し方"],
-      rows: [
-        ["サーミスタ", "温度", "温度で抵抗値が大きく変わる"],
-        ["フォトトランジスタ", "光", "光の強さで電流が変わる"],
-        ["ポテンショメータ", "変位・角度", "つまみの位置で抵抗値が変わる"],
+      type: "diagram",
+      caption:
+        "センサは「何を何に変えるか」で覚える。温度を抵抗値の変化に変えるサーミスタが体温の測定に合う（ア）",
+      cell: { h: 58 },
+      nodes: [
+        { id: "h1", label: "測る量", col: 0, row: -0.8, shape: "text", tone: "muted" },
+        { id: "h2", label: "センサ", col: 1.4, row: -0.8, shape: "text", tone: "muted" },
+        { id: "h3", label: "取り出すもの", col: 2.9, row: -0.8, shape: "text", tone: "muted" },
+        { id: "in0", label: "温度（体温）", col: 0, row: 0, shape: "text" },
+        { id: "s0", label: "サーミスタ", col: 1.4, row: 0, tone: "ok" },
+        { id: "o0", label: "抵抗値が大きく変わる", col: 2.9, row: 0, shape: "text" },
+        { id: "in1", label: "距離", col: 0, row: 1, shape: "text" },
+        { id: "s1", label: "超音波センサ", col: 1.4, row: 1 },
+        { id: "o1", label: "反射が戻るまでの時間", col: 2.9, row: 1, shape: "text" },
+        { id: "in2", label: "光", col: 0, row: 2, shape: "text" },
+        { id: "s2", label: "フォトトランジスタ", col: 1.4, row: 2 },
+        { id: "o2", label: "光の強さで電流が変わる", col: 2.9, row: 2, shape: "text" },
+        { id: "in3", label: "変位・回転角", col: 0, row: 3, shape: "text" },
+        { id: "s3", label: "ポテンショメータ", col: 1.4, row: 3 },
+        { id: "o3", label: "つまみの位置で\n抵抗値が変わる", col: 2.9, row: 3, shape: "text" },
+      ],
+      edges: [
+        { from: "in0", to: "s0", tone: "ok" },
+        { from: "s0", to: "o0", tone: "ok" },
+        { from: "in1", to: "s1" },
+        { from: "s1", to: "o1" },
+        { from: "in2", to: "s2" },
+        { from: "s2", to: "o2" },
+        { from: "in3", to: "s3" },
+        { from: "s3", to: "o3" },
       ],
     },
   },
@@ -430,6 +480,36 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       "動的型付けかどうかで半分に絞れる。選択肢のうち動的型付けは R だけ。",
       "統計・機械学習でよく比較される Python も動的型付けだが、この設問では選択肢に無い。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "静的型付けは変数の型が先に決まっていて、合わない値はコンパイル時に誤りになる。変数に型が無く、入れた値で実行時に型が決まるのは R（ウ）",
+      nodes: [
+        { id: "sv1", label: "10", col: 0, row: 0, shape: "round" },
+        { id: "sv2", label: '"abc"', col: 0, row: 1.2, shape: "round" },
+        { id: "sx", label: "変数 x\n（整数型と宣言）", col: 1.8, row: 0.6 },
+        { id: "dv1", label: "10（数値）", col: 0, row: 2.45, shape: "round" },
+        { id: "dv2", label: '"abc"（文字列）', col: 0, row: 3.65, shape: "round" },
+        { id: "dx", label: "変数 x\n（型を持たない）", col: 1.8, row: 3.05, tone: "ok" },
+      ],
+      groups: [
+        { label: "静的型付け（Go・Kotlin・Scala）", col: -0.1, row: -0.25, w: 2.95, h: 2.25 },
+        { label: "動的型付け（R）", col: -0.1, row: 2.1, w: 2.95, h: 2.35, tone: "ok" },
+      ],
+      edges: [
+        { from: "sv1", to: "sx", label: "代入できる" },
+        {
+          from: "sv2",
+          to: "sx",
+          label: "コンパイル時に誤り",
+          blocked: true,
+          tone: "ng",
+          labelAt: 0.4,
+        },
+        { from: "dv1", to: "dx", label: "代入できる" },
+        { from: "dv2", to: "dx", label: "これも代入できる" },
+      ],
+    },
   },
   {
     source: at(9),
@@ -449,7 +529,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     choices: [
       {
         text: "11",
-        note: "各命令の実行速度を単純平均（(10+40+40)÷3＝30ns）した場合に近い値。出現頻度で重み付けしていない。",
+        note: "出現頻度で重み付けせず、3命令の実行時間を足した90ナノ秒から求めた値（1,000÷90≒11）。",
       },
       { text: "25", note: "平均実行時間25ナノ秒そのもの。MIPS に直していない。" },
       { text: "40", note: "平均実行時間25ナノ秒の逆数。1÷(25×10⁻⁹)＝4×10⁷＝40 MIPS。これが正解。" },
@@ -461,18 +541,49 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       "MIPS ＝ 1 ÷ 平均実行時間（秒）÷ 10⁶。平均実行時間がナノ秒なら 1000 ÷ 平均実行時間(ns) と覚えても同じ。",
       "出現頻度の重み付けを忘れた単純平均が定番の誤答。設問に頻度の列があれば必ず使う。",
     ],
-    figure: {
-      type: "calc",
-      caption: "MIPS の求め方",
-      lines: [
-        {
-          expr: "10 × 0.5 ＋ 40 × 0.3 ＋ 40 × 0.2 ＝ 25 ナノ秒",
-          note: "頻度で重み付けした平均実行時間",
-        },
-        { expr: "1 秒 ÷ 25 × 10⁻⁹ 秒 ＝ 4 × 10⁷ 命令", note: "1秒あたりの命令数" },
-        { expr: "4 × 10⁷ ÷ 10⁶ ＝ 40 MIPS", note: "選択肢 ウ" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "出現頻度どおりに 100 命令を実行したとして時間を足すと 2,500 ナノ秒。1 命令あたり平均 25 ナノ秒なので、1 秒に 4,000 万命令＝40 MIPS",
+        cell: { w: 130 },
+        nodes: [
+          { id: "all", label: "100 命令\n（出現頻度どおり）", col: 0, row: 1 },
+          { id: "i", label: "整数演算 50 命令\n50 × 10 ＝ 500 ns", col: 1.55, row: 0 },
+          { id: "m", label: "移動 30 命令\n30 × 40 ＝ 1,200 ns", col: 1.55, row: 1 },
+          { id: "b", label: "分岐 20 命令\n20 × 40 ＝ 800 ns", col: 1.55, row: 2 },
+          { id: "sum", label: "合計 2,500 ns\n1 命令平均 25 ns", col: 3.05, row: 1 },
+          {
+            id: "mips",
+            label: "1 秒 ÷ 25 ns\n＝ 4,000 万命令\n＝ 40 MIPS（ウ）",
+            col: 4.45,
+            row: 1,
+            tone: "ok",
+          },
+        ],
+        edges: [
+          { from: "all", to: "i" },
+          { from: "all", to: "m" },
+          { from: "all", to: "b" },
+          { from: "i", to: "sum" },
+          { from: "m", to: "sum" },
+          { from: "b", to: "sum" },
+          { from: "sum", to: "mips" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "MIPS の求め方",
+        lines: [
+          {
+            expr: "10 × 0.5 ＋ 40 × 0.3 ＋ 40 × 0.2 ＝ 25 ナノ秒",
+            note: "頻度で重み付けした平均実行時間",
+          },
+          { expr: "1 秒 ÷ 25 × 10⁻⁹ 秒 ＝ 4 × 10⁷ 命令", note: "1秒あたりの命令数" },
+          { expr: "4 × 10⁷ ÷ 10⁶ ＝ 40 MIPS", note: "選択肢 ウ" },
+        ],
+      },
+    ],
   },
   {
     source: at(10),
@@ -1561,15 +1672,36 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     explain:
       "SVG はベクタ画像を XML で表現する形式で、拡大しても劣化しない。テキストなので検索や CSS・JavaScript からの操作もできる。",
     points: ["ベクタ（SVG）とラスタ（PNG・JPEG・TIFF・GIF）の区別で切り分けられる。"],
-    figure: {
-      type: "table",
-      caption: "ベクタ形式とラスタ形式",
-      headers: ["形式", "持ち方", "代表", "拡大したとき"],
-      rows: [
-        ["ベクタ", "図形を座標と属性で記述する", "SVG", "劣化しない"],
-        ["ラスタ", "画素の集まりとして記録する", "PNG、JPEG、GIF、TIFF", "粗くなる"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "SVG は図形を XML の文字で記述するので、拡大しても描き直せて劣化しない（ウ）。PNG・TIFF は画素の並びなので、拡大すると粗くなる",
+        nodes: [
+          { id: "svg", label: 'XML の文字で図形を記述\n<circle r="40"/>', col: 0, row: 0 },
+          { id: "svgBig", label: "拡大しても\n描き直すので滑らか", col: 2, row: 0, tone: "ok" },
+          { id: "png", label: "画素（点）の並びを\n記録する", col: 0, row: 1.6 },
+          { id: "pngBig", label: "拡大すると\n画素が粗く見える", col: 2, row: 1.6, tone: "ng" },
+        ],
+        groups: [
+          { label: "SVG（ベクタ形式・ウ）", col: -0.2, row: -0.35, w: 3.3, h: 1.3, tone: "ok" },
+          { label: "PNG・TIFF（ラスタ形式）", col: -0.2, row: 1.2, w: 3.3, h: 1.3 },
+        ],
+        edges: [
+          { from: "svg", to: "svgBig", label: "拡大" },
+          { from: "png", to: "pngBig", label: "拡大" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "ベクタ形式とラスタ形式",
+        headers: ["形式", "持ち方", "代表", "拡大したとき"],
+        rows: [
+          ["ベクタ", "図形を座標と属性で記述する", "SVG", "劣化しない"],
+          ["ラスタ", "画素の集まりとして記録する", "PNG、JPEG、GIF、TIFF", "粗くなる"],
+        ],
+      },
+    ],
   },
   {
     source: at(28),
@@ -2457,6 +2589,26 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     explain:
       "サイバーセキュリティ経営ガイドラインは、経営者向けに「3原則」と「重要10項目」を示した文書。対策を現場任せにせず、経営課題として扱うことを求めている。",
     points: ["数字で覚える。3原則と重要10項目。ISMS・COBIT・基本法との取り違えが定番。"],
+    figure: {
+      type: "diagram",
+      caption:
+        "経営者は 3 原則を認識し、担当幹部（CISO など）に重要 10 項目を指示する。対策を現場任せにしない（ア）",
+      nodes: [
+        { id: "ceo", label: "経営者", col: 0, row: 0.4, shape: "actor", note: "3 原則を認識する" },
+        {
+          id: "ciso",
+          label: "セキュリティ担当幹部\n（CISO など）",
+          col: 2.2,
+          row: 0.4,
+          shape: "actor",
+        },
+        { id: "work", label: "サイバーセキュリティ\n対策の実施", col: 4, row: 0.4 },
+      ],
+      edges: [
+        { from: "ceo", to: "ciso", label: "重要 10 項目を指示", tone: "accent" },
+        { from: "ciso", to: "work", label: "責任者として\n進める" },
+      ],
+    },
   },
   {
     source: at(42),
@@ -2486,6 +2638,51 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: [
       "紛らわしい組織名が並ぶ設問。JISC（標準化）、CRYPTREC（暗号評価）、NISC（政府の司令塔）と対比して覚える。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "JPCERT/CC は特定の政府機関や企業から独立した組織で、インシデントの報告を受け付けて対応を支援する（ウ）",
+      nodes: [
+        {
+          id: "nisc",
+          label: "NISC",
+          col: 0,
+          row: 0,
+          note: "内閣官房に設置\nサイバー防衛の司令塔（エ）",
+        },
+        {
+          id: "cryp",
+          label: "CRYPTREC",
+          col: 1.7,
+          row: 0,
+          note: "総務省・経済産業省が運営\n暗号の安全性を評価（イ）",
+        },
+        {
+          id: "jisc",
+          label: "JISC",
+          col: 3.4,
+          row: 0,
+          note: "経済産業省に設置\n産業標準化を審議（ア）",
+        },
+        { id: "org", label: "国内の企業・組織", col: 0, row: 2 },
+        {
+          id: "jp",
+          label: "JPCERT/CC",
+          col: 2.6,
+          row: 2,
+          tone: "ok",
+          note: "インシデントの受付・対応支援\n手口の分析・再発防止の助言",
+        },
+      ],
+      groups: [
+        { label: "政府が設置・運営するもの", col: -0.2, row: -0.3, w: 4.65, h: 1.45 },
+        { label: "政府・企業から独立（ウ）", col: 2, row: 1.55, w: 1.75, h: 1.65, tone: "ok" },
+      ],
+      edges: [
+        { from: "org", to: "jp", label: "インシデントを報告", bend: 0.15 },
+        { from: "jp", to: "org", label: "対応の支援・助言", bend: 0.15 },
+      ],
+    },
   },
   {
     source: at(43),
@@ -3471,6 +3668,47 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: [
       "「対策をやっているか」ではなく「基準から外れていないか」で見る。ウだけが逸脱にあたる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "監査人は実態を管理基準に照らし、外れているものを指摘事項にする。スキャンをしていても、未認可ソフトの使用は基準から外れる（ウ）",
+      nodes: [
+        {
+          id: "crit",
+          label: "管理基準\n認可していないソフトウェアを\n使わない",
+          col: 0,
+          row: 0,
+        },
+        {
+          id: "fact",
+          label: "実態（ウ）\nスキャンはしているが、\n未認可のソフトウェアを使用",
+          col: 0,
+          row: 1.7,
+          tone: "ng",
+        },
+        { id: "aud", label: "監査人", col: 1.75, row: 0.85, shape: "actor" },
+        {
+          id: "find",
+          label: "指摘事項として\n監査報告書に記載",
+          col: 3.5,
+          row: 0.85,
+          tone: "accent",
+        },
+        {
+          id: "others",
+          label: "ア・イ・エは基準に沿った対策で\n指摘事項にならない",
+          col: 3.5,
+          row: 1.9,
+          shape: "text",
+          tone: "muted",
+        },
+      ],
+      edges: [
+        { from: "crit", to: "aud", label: "照らす" },
+        { from: "fact", to: "aud", label: "確かめる" },
+        { from: "aud", to: "find", label: "基準から外れている" },
+      ],
+    },
   },
   {
     source: at(59),
@@ -3498,16 +3736,61 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     explain:
       "可用性は「必要なときに使えること」。サーバの二重化は障害時もサービスを継続するための措置なので可用性にあたる。アクセス権の制限は機密性、入力チェックは完全性。",
     points: ["CIA で仕分ける。機密性＝見せない、完全性＝正しさを保つ、可用性＝使える状態を保つ。"],
-    figure: {
-      type: "table",
-      caption: "CIA で監査項目を仕分ける",
-      headers: ["特性", "守ること", "マスタファイル管理での例"],
-      rows: [
-        ["機密性", "認められた人以外に見せない", "アクセス権を必要な担当者に限る"],
-        ["完全性", "内容の正しさを保つ", "入力時のチェック、更新履歴の記録"],
-        ["可用性", "必要なときに使える状態を保つ", "サーバの二重化、バックアップからの復旧"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "選択肢の対策が、マスタファイルのどこで何を守るか。止まらないためのサーバの二重化が可用性（ア）",
+        nodes: [
+          {
+            id: "admin",
+            label: "特権アカウント\nを持つ者",
+            col: 1.4,
+            row: 0,
+            shape: "actor",
+            note: "機密性（ウ）",
+          },
+          { id: "user", label: "利用者", col: 0, row: 1.3, shape: "actor" },
+          { id: "chk", label: "入力チェック", col: 1.4, row: 1.3, note: "完全性（エ）" },
+          { id: "m1", label: "マスタファイル\n（正）", col: 3.1, row: 0.65, shape: "db" },
+          { id: "m2", label: "マスタファイル\n（副）", col: 3.1, row: 2, shape: "db" },
+          {
+            id: "eff",
+            label: "イ 一括検索・加工の機能は効率性\n（CIA のどれでもない）",
+            col: 1,
+            row: 2.3,
+            shape: "text",
+            tone: "muted",
+          },
+        ],
+        groups: [
+          {
+            label: "可用性（ア）：サーバを二重化",
+            col: 2.75,
+            row: 0.05,
+            w: 1.35,
+            h: 2.9,
+            tone: "ok",
+          },
+        ],
+        edges: [
+          { from: "admin", to: "m1", label: "メンテナンス" },
+          { from: "user", to: "chk", label: "データ入力" },
+          { from: "chk", to: "m1" },
+          { from: "m1", to: "m2", label: "複製", dashed: true },
+        ],
+      },
+      {
+        type: "table",
+        caption: "CIA で監査項目を仕分ける",
+        headers: ["特性", "守ること", "マスタファイル管理での例"],
+        rows: [
+          ["機密性", "認められた人以外に見せない", "アクセス権を必要な担当者に限る"],
+          ["完全性", "内容の正しさを保つ", "入力時のチェック、更新履歴の記録"],
+          ["可用性", "必要なときに使える状態を保つ", "サーバの二重化、バックアップからの復旧"],
+        ],
+      },
+    ],
   },
   {
     source: at(60),
@@ -4020,50 +4303,66 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: [
       "下から 学習と成長 → 内部ビジネスプロセス → 顧客 → 財務 の順に積み上がる関係で覚える。",
     ],
-    figure: {
-      type: "diagram",
-      caption:
-        "4つの視点は下から積み上がって財務成果につながる（学習と成長 → 業務プロセス → 顧客 → 財務）",
-      nodes: [
-        { id: "fin", label: "財務", col: 0, row: 0, w: 1.4 },
-        { id: "cust", label: "顧客", col: 0, row: 1, w: 1.4, tone: "ok" },
-        { id: "proc", label: "内部ビジネスプロセス", col: 0, row: 2, w: 1.4 },
-        { id: "learn", label: "学習と成長", col: 0, row: 3, w: 1.4 },
-        {
-          id: "fn",
-          label: "株主・経営から見た成果\n例：売上高、利益率",
-          col: 1.27,
-          row: 0,
-          shape: "text",
-        },
-        {
-          id: "cn",
-          label: "顧客から見た価値\n例：顧客満足度、シェア",
-          col: 1.27,
-          row: 1,
-          shape: "text",
-        },
-        {
-          id: "pn",
-          label: "優れた業務ができているか\n例：納期遵守率、不良率",
-          col: 1.31,
-          row: 2,
-          shape: "text",
-        },
-        {
-          id: "ln",
-          label: "人材と組織の土台\n例：研修時間、資格取得者数",
-          col: 1.36,
-          row: 3,
-          shape: "text",
-        },
-      ],
-      edges: [
-        { from: "learn", to: "proc" },
-        { from: "proc", to: "cust" },
-        { from: "cust", to: "fin" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "4つの視点は下から積み上がって財務成果につながる（学習と成長 → 業務プロセス → 顧客 → 財務）",
+        nodes: [
+          { id: "fin", label: "財務", col: 0, row: 0, w: 1.4 },
+          { id: "cust", label: "顧客", col: 0, row: 1, w: 1.4, tone: "ok" },
+          { id: "proc", label: "内部ビジネスプロセス", col: 0, row: 2, w: 1.4 },
+          { id: "learn", label: "学習と成長", col: 0, row: 3, w: 1.4 },
+          {
+            id: "fn",
+            label: "株主・経営から見た成果\n例：売上高、利益率",
+            col: 1.27,
+            row: 0,
+            shape: "text",
+          },
+          {
+            id: "cn",
+            label: "顧客から見た価値\n例：顧客満足度、シェア",
+            col: 1.27,
+            row: 1,
+            shape: "text",
+          },
+          {
+            id: "pn",
+            label: "優れた業務ができているか\n例：納期遵守率、不良率",
+            col: 1.31,
+            row: 2,
+            shape: "text",
+          },
+          {
+            id: "ln",
+            label: "人材と組織の土台\n例：研修時間、資格取得者数",
+            col: 1.36,
+            row: 3,
+            shape: "text",
+          },
+        ],
+        edges: [
+          { from: "learn", to: "proc" },
+          { from: "proc", to: "cust" },
+          { from: "cust", to: "fin" },
+        ],
+      },
+      {
+        type: "sketch",
+        caption: "「自社の強み」はバランススコアカードではなく SWOT 分析の言葉",
+        items: [
+          {
+            name: "バランススコアカード",
+            note: "財務・顧客・内部ビジネスプロセス・学習と成長の 4 つの視点。これが正解の形（イ 顧客）",
+          },
+          {
+            name: "SWOT分析",
+            note: "「自社の強み」（ウ）は SWOT の S（内部環境のプラス要因）。BSC の視点ではない",
+          },
+        ],
+      },
+    ],
   },
   {
     source: at(71),
@@ -4156,15 +4455,58 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       "Society 5.0 は、狩猟社会（1.0）、農耕社会（2.0）、工業社会（3.0）、情報社会（4.0）に続く5番目の社会像として、科学技術基本計画で提唱された。サイバー空間と現実空間を高度に融合させた社会を指す。",
     points: ["番号は社会の発展段階。5番目＝超スマート社会と結び付けて覚える。"],
     figure: {
-      type: "table",
-      caption: "Society の番号は社会の発展段階",
-      headers: ["番号", "社会", "特徴"],
-      rows: [
-        ["1.0", "狩猟社会", "自然の中で採集・狩猟する"],
-        ["2.0", "農耕社会", "定住して食料を生産する"],
-        ["3.0", "工業社会", "機械による大量生産"],
-        ["4.0", "情報社会", "情報の共有と流通"],
-        ["5.0", "超スマート社会", "サイバー空間と現実空間の高度な融合"],
+      type: "diagram",
+      caption:
+        "Society の番号は社会の発展段階。5 番目が、サイバー空間と現実空間を高度に融合させた超スマート社会（イ）",
+      cell: { w: 140 },
+      nodes: [
+        {
+          id: "s1",
+          label: "Society 1.0\n狩猟社会",
+          col: 0,
+          row: 0,
+          shape: "round",
+          note: "自然の中で\n採集・狩猟",
+        },
+        {
+          id: "s2",
+          label: "Society 2.0\n農耕社会",
+          col: 1,
+          row: 0,
+          shape: "round",
+          note: "定住して\n食料を生産",
+        },
+        {
+          id: "s3",
+          label: "Society 3.0\n工業社会",
+          col: 2,
+          row: 0,
+          shape: "round",
+          note: "機械による\n大量生産",
+        },
+        {
+          id: "s4",
+          label: "Society 4.0\n情報社会",
+          col: 3,
+          row: 0,
+          shape: "round",
+          note: "情報の\n共有と流通",
+        },
+        {
+          id: "s5",
+          label: "Society 5.0\n超スマート社会",
+          col: 4.1,
+          row: 0,
+          shape: "round",
+          tone: "ok",
+          note: "サイバー空間と\n現実空間の高度な融合",
+        },
+      ],
+      edges: [
+        { from: "s1", to: "s2" },
+        { from: "s2", to: "s3" },
+        { from: "s3", to: "s4" },
+        { from: "s4", to: "s5" },
       ],
     },
   },
@@ -4399,16 +4741,43 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     explain:
       "キャッシュフロー計算書は営業・投資・財務の3区分。営業は本業の商売に伴う出入り、投資は資産の取得や売却、財務は資金の調達と返済。商品の仕入は本業なので営業活動。",
     points: ["資産の売買＝投資、資金の調達・返済＝財務、それ以外の本業＝営業、と切り分ける。"],
-    figure: {
-      type: "table",
-      caption: "キャッシュフロー計算書の3区分",
-      headers: ["区分", "何の出入りか", "例"],
-      rows: [
-        ["営業活動", "本業の商売に伴うもの", "商品の仕入れ、売上の回収、給与の支払"],
-        ["投資活動", "資産の取得と売却", "設備の購入、有価証券の売却"],
-        ["財務活動", "資金の調達と返済", "借入れ、社債の発行、配当の支払"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "矢印はお金の向き。本業の仕入・売上は営業活動（イ）、資産の取得・売却は投資活動（エ）、資金の調達・返済は財務活動（ア・ウ）",
+        nodes: [
+          { id: "co", label: "自社", col: 2, row: 1, tone: "accent" },
+          { id: "sup", label: "仕入先", col: 0, row: 0.1 },
+          { id: "cust", label: "顧客", col: 0, row: 1.9 },
+          { id: "asset", label: "設備・有価証券", col: 4, row: 0.1 },
+          { id: "fin", label: "銀行・株主", col: 4, row: 1.9 },
+        ],
+        groups: [
+          { label: "営業活動", col: -0.05, row: -0.45, w: 0.9, h: 3.1, tone: "ok" },
+          { label: "投資活動", col: 3.9, row: -0.45, w: 1.1, h: 1.35 },
+          { label: "財務活動", col: 3.9, row: 1.45, w: 1.1, h: 1.3 },
+        ],
+        edges: [
+          { from: "co", to: "sup", label: "仕入の支払（イ）", tone: "ok" },
+          { from: "cust", to: "co", label: "売上の回収" },
+          { from: "co", to: "asset", label: "設備の購入", bend: 0.15 },
+          { from: "asset", to: "co", label: "有形固定資産の売却（エ）", bend: 0.15 },
+          { from: "fin", to: "co", label: "株式の発行（ア）・借入れ", bend: 0.15 },
+          { from: "co", to: "fin", label: "借入金の返済（ウ）", bend: 0.15 },
+        ],
+      },
+      {
+        type: "table",
+        caption: "キャッシュフロー計算書の3区分",
+        headers: ["区分", "何の出入りか", "例"],
+        rows: [
+          ["営業活動", "本業の商売に伴うもの", "商品の仕入れ、売上の回収、給与の支払"],
+          ["投資活動", "資産の取得と売却", "設備の購入、有価証券の売却"],
+          ["財務活動", "資金の調達と返済", "借入れ、社債の発行、配当の支払"],
+        ],
+      },
+    ],
   },
   {
     source: at(78),
@@ -4438,6 +4807,46 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     points: [
       "価格の話が出てきたら独占禁止法、表示や営業秘密の話なら不正競争防止法、と当たりを付ける。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "価格の話は独占禁止法、表示や営業秘密の話は不正競争防止法。不正競争防止法が禁じるのは、有名な表示に似せて誤認させるエ",
+      cell: { w: 160 },
+      nodes: [
+        { id: "a", label: "ア 競争相手に対抗して\n安く売る（不当廉売なら）", col: 0, row: 0 },
+        {
+          id: "b",
+          label: "イ 小売業者に販売価格を\n指示する（再販売価格の拘束）",
+          col: 0,
+          row: 1.05,
+        },
+        {
+          id: "d",
+          label: "エ 有名な他社の商品表示に\n似せて誤認させる",
+          col: 2,
+          row: 0,
+          tone: "ok",
+        },
+        {
+          id: "c",
+          label: "ウ 名前や形の違う\n同等機能の商品を売る",
+          col: 2,
+          row: 1.05,
+          note: "表示で誤認させないので\nどちらにも当たらない",
+        },
+      ],
+      groups: [
+        { label: "独占禁止法の問題", col: -0.3, row: -0.35, w: 1.6, h: 2.35 },
+        {
+          label: "不正競争防止法が禁じる行為",
+          col: 1.7,
+          row: -0.35,
+          w: 1.5,
+          h: 1.35,
+          tone: "ok",
+        },
+      ],
+    },
   },
   {
     source: at(79),
@@ -4469,14 +4878,46 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       "日本はオプトイン方式。同意していない相手への送信は原則できない。",
     ],
     figure: {
-      type: "table",
-      caption: "規制の対象かどうかは「営利目的の広告・宣伝か」で決まる",
-      headers: ["送るもの", "対象", "理由"],
-      rows: [
-        ["営利目的の広告・宣伝メール", "対象", "特定電子メールにあたる。同意が要る（オプトイン）"],
-        ["広告を含む SMS", "対象", "電子メールに含めて扱う"],
-        ["海外から国内に届く広告メール", "対象", "国内の受信者に届くものは規制が及ぶ"],
-        ["事務連絡、政治・宗教団体の活動", "対象外", "営利目的の広告・宣伝ではない"],
+      type: "diagram",
+      caption:
+        "規制の対象かどうかは「営利目的の広告・宣伝か」で決まる。広告を含む SMS も対象（イ）",
+      cell: { w: 170 },
+      nodes: [
+        {
+          id: "mail",
+          label: "広告宣伝メール",
+          col: 0,
+          row: 0,
+          note: "送るには事前の同意が要る\n（オプトイン）",
+        },
+        {
+          id: "sms",
+          label: "広告を含む SMS（イ）",
+          col: 1,
+          row: 0,
+          tone: "ok",
+          note: "電子メールに含めて扱う",
+        },
+        {
+          id: "abroad",
+          label: "海外から国内に届く\n広告メール",
+          col: 2,
+          row: 0,
+          note: "国内の受信者に届くので\n対象（アは誤り）",
+        },
+        { id: "pol", label: "政治団体の政策の\n普及・啓発（ウ）", col: 0.5, row: 1.75 },
+        { id: "biz", label: "取引上の事務連絡・\n料金請求の通知（エ）", col: 1.6, row: 1.75 },
+      ],
+      groups: [
+        { label: "規制の対象：営利目的の広告・宣伝", col: -0.15, row: -0.4, w: 3.15, h: 1.65 },
+        {
+          label: "規制の対象外：営利の広告・宣伝ではない",
+          col: -0.15,
+          row: 1.3,
+          w: 3.15,
+          h: 1.35,
+          tone: "muted",
+        },
       ],
     },
   },

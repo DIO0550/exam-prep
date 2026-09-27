@@ -516,16 +516,54 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "ECMAScriptはJavaScriptの言語仕様そのもの。処理系の名前ではない点に注意。",
       "静的型付け＝コンパイル時に型が決まる、動的型付け＝実行時に決まる。誤りを早く見つけられるのは静的型付け。",
     ],
-    figure: {
-      type: "table",
-      caption: "紛らわしい3つの言葉",
-      headers: ["用語", "指すもの", "型付け"],
-      rows: [
-        ["JavaScript", "ブラウザなどで動くスクリプト言語", "動的（実行時に型が決まる）"],
-        ["TypeScript", "JavaScript に静的型付けを足した言語", "静的（コンパイル時に検査）"],
-        ["ECMAScript", "JavaScript の言語仕様そのもの", "仕様なので処理系ではない"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "TypeScript は実行する前のコンパイルで型を検査するので、誤りを先に見つけられる（ウ）",
+        nodes: [
+          { id: "ts", label: "TypeScript\nのソース", col: 0, row: 0, note: "型注釈を書く" },
+          {
+            id: "tsc",
+            label: "コンパイル時に\n型を検査",
+            col: 1.35,
+            row: 0,
+            tone: "ok",
+            note: "変数名の誤りや\n誤った代入を見つける",
+          },
+          { id: "js", label: "JavaScript\nに変換", col: 2.7, row: 0 },
+          { id: "run", label: "ブラウザで\n実行", col: 4, row: 0 },
+          { id: "src", label: "JavaScript\nのソース", col: 0, row: 1.9, note: "型注釈なし" },
+          {
+            id: "late",
+            label: "ブラウザで実行\n（ここで型が決まる）",
+            col: 4,
+            row: 1.9,
+            note: "誤りは動かして\n初めて分かる",
+          },
+        ],
+        groups: [
+          { label: "静的型付け（TypeScript）", col: -0.1, row: -0.3, w: 5.2, h: 1.6 },
+          { label: "動的型付け（JavaScript など）", col: -0.1, row: 1.6, w: 5.2, h: 1.6 },
+        ],
+        edges: [
+          { from: "ts", to: "tsc" },
+          { from: "tsc", to: "js" },
+          { from: "js", to: "run" },
+          { from: "src", to: "late", label: "型の検査なし" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "紛らわしい3つの言葉",
+        headers: ["用語", "指すもの", "型付け"],
+        rows: [
+          ["JavaScript", "ブラウザなどで動くスクリプト言語", "動的（実行時に型が決まる）"],
+          ["TypeScript", "JavaScript に静的型付けを足した言語", "静的（コンパイル時に検査）"],
+          ["ECMAScript", "JavaScript の言語仕様そのもの", "仕様なので処理系ではない"],
+        ],
+      },
+    ],
   },
   {
     source: at(8),
@@ -760,7 +798,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
         text: "15.1",
         note: "10（シーク）＋5（平均回転待ち）＋0.1（転送）＝15.1ミリ秒。これが正解。",
       },
-      { text: "16.0", note: "回転待ちを1回転ぶん（10ミリ秒）とした場合に近い値。平均は半回転。" },
+      { text: "16.0", note: "転送時間を1ミリ秒と1桁大きく見積もった値（10＋5＋1）。" },
       { text: "20.1", note: "回転待ちを1回転ぶんの10ミリ秒として足した値。" },
       { text: "21.0", note: "シーク10＋回転10＋転送1 とした値。転送時間の桁も違う。" },
     ],
@@ -770,16 +808,56 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "平均回転待ち時間は必ず1回転の半分。回転数から1回転の時間を出す手順を先に固定しておく。",
       "1回転の時間（ミリ秒）＝60,000÷回転数(rpm)。6,000rpmなら10ミリ秒。",
     ],
-    figure: {
-      type: "calc",
-      caption: "平均読取り時間の内訳",
-      lines: [
-        { expr: "60,000 ÷ 6,000 ＝ 10 ミリ秒", note: "1回転に要する時間" },
-        { expr: "10 ÷ 2 ＝ 5 ミリ秒", note: "平均回転待ち時間" },
-        { expr: "1,000 ÷ 10,000,000 ＝ 0.1 ミリ秒", note: "1,000バイトの転送時間" },
-        { expr: "10 ＋ 5 ＋ 0.1 ＝ 15.1 ミリ秒", note: "選択肢 ア" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "読取りは シーク → 回転待ち → 転送 の順に進み、時間はその合計。回転待ちの平均は半回転ぶん",
+        nodes: [
+          {
+            id: "seek",
+            label: "シーク",
+            col: 0,
+            row: 0,
+            shape: "round",
+            note: "10 ミリ秒\nヘッドを目的の\nトラックへ動かす",
+          },
+          {
+            id: "rot",
+            label: "回転待ち",
+            col: 1.45,
+            row: 0,
+            shape: "round",
+            tone: "accent",
+            note: "5 ミリ秒\n1 回転 10 ミリ秒の\n半分が平均",
+          },
+          {
+            id: "xfer",
+            label: "データ転送",
+            col: 2.9,
+            row: 0,
+            shape: "round",
+            note: "0.1 ミリ秒\n1,000 バイト ÷\n10M バイト／秒",
+          },
+          { id: "sum", label: "合計\n15.1 ミリ秒（ア）", col: 4.35, row: 0, tone: "ok" },
+        ],
+        edges: [
+          { from: "seek", to: "rot" },
+          { from: "rot", to: "xfer" },
+          { from: "xfer", to: "sum" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "平均読取り時間の内訳",
+        lines: [
+          { expr: "60,000 ÷ 6,000 ＝ 10 ミリ秒", note: "1回転に要する時間" },
+          { expr: "10 ÷ 2 ＝ 5 ミリ秒", note: "平均回転待ち時間" },
+          { expr: "1,000 ÷ 10,000,000 ＝ 0.1 ミリ秒", note: "1,000バイトの転送時間" },
+          { expr: "10 ＋ 5 ＋ 0.1 ＝ 15.1 ミリ秒", note: "選択肢 ア" },
+        ],
+      },
+    ],
   },
   {
     source: at(12),
@@ -1129,16 +1207,42 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "単位を秒にそろえてから計算する。1ミリ秒＝10⁻³秒、1マイクロ秒＝10⁻⁶秒。",
       "「1命令当たり平均2回アクセス」を掛けるのを忘れると、答えが2倍になる。選択肢に2倍の値が並ぶので要注意。",
     ],
-    figure: {
-      type: "calc",
-      caption: "許容できる発生率",
-      lines: [
-        { expr: "遅れ ＝ 2 × f × 40 × 10⁻³ 秒", note: "1命令あたりのオーバヘッド" },
-        { expr: "2 × f × 40 × 10⁻³ ≦ 0.4 × 10⁻⁶", note: "目標は0.4マイクロ秒以下" },
-        { expr: "f ≦ 0.4 × 10⁻⁶ ÷ (8 × 10⁻²)", note: "両辺を整理する" },
-        { expr: "f ≦ 5 × 10⁻⁶", note: "選択肢 ア" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "1 命令で主記憶を平均 2 回使い、1 回ごとに確率 f で 40 ミリ秒の遅れが出る。平均の遅れは 2 × f × 40 ミリ秒",
+        nodes: [
+          { id: "ins", label: "1 命令", col: 0, row: 0.6 },
+          { id: "a1", label: "主記憶アクセス\n1 回目", col: 1.5, row: 0 },
+          { id: "a2", label: "主記憶アクセス\n2 回目", col: 1.5, row: 1.2 },
+          {
+            id: "pf",
+            label: "ページフォールト\n1 回 40 ミリ秒",
+            col: 3.3,
+            row: 0.6,
+            tone: "accent",
+            note: "平均の遅れ ＝ 2 × f × 40 ミリ秒\nこれを 0.4 マイクロ秒以下にする",
+          },
+        ],
+        edges: [
+          { from: "ins", to: "a1" },
+          { from: "ins", to: "a2" },
+          { from: "a1", to: "pf", label: "確率 f", dashed: true },
+          { from: "a2", to: "pf", label: "確率 f", dashed: true },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "許容できる発生率",
+        lines: [
+          { expr: "遅れ ＝ 2 × f × 40 × 10⁻³ 秒", note: "1命令あたりのオーバヘッド" },
+          { expr: "2 × f × 40 × 10⁻³ ≦ 0.4 × 10⁻⁶", note: "目標は0.4マイクロ秒以下" },
+          { expr: "f ≦ 0.4 × 10⁻⁶ ÷ (8 × 10⁻²)", note: "両辺を整理する" },
+          { expr: "f ≦ 5 × 10⁻⁶", note: "選択肢 ア" },
+        ],
+      },
+    ],
   },
   {
     source: at(18),
@@ -1563,17 +1667,38 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "アウトラインフォントの代表がTrueTypeやOpenType。",
     ],
     figure: {
-      type: "table",
-      caption: "2種類のフォントの持ち方",
-      headers: ["フォント", "文字の持ち方", "拡大したとき", "描画の負荷"],
-      rows: [
-        ["ビットマップフォント", "点（画素）の集まり", "ギザギザが目立つ", "軽い"],
-        [
-          "アウトラインフォント",
-          "輪郭を直線・曲線の数式で持つ",
-          "どの倍率でも滑らか",
-          "毎回輪郭を計算する",
-        ],
+      type: "diagram",
+      caption:
+        "アウトラインフォントは表示のたびに輪郭から描き直すので、どの倍率でも滑らか（エ）。点をそのまま送るビットマップは速いが、拡大に弱い",
+      nodes: [
+        { id: "bm", label: "点（画素）の\n集まりで持つ", col: 0, row: 0 },
+        {
+          id: "bmShow",
+          label: "点をそのまま\n画面へ送る",
+          col: 1.6,
+          row: 0,
+          note: "描画が軽く速い",
+        },
+        { id: "bmBig", label: "点が大きくなり\nギザギザが目立つ", col: 3.2, row: 0, tone: "ng" },
+        { id: "ol", label: "輪郭を直線・\n曲線の数式で持つ", col: 0, row: 1.75 },
+        {
+          id: "olShow",
+          label: "指定の大きさで\n輪郭を計算して塗る",
+          col: 1.6,
+          row: 1.75,
+          note: "毎回の計算が要る",
+        },
+        { id: "olBig", label: "どの倍率でも\n滑らか（エ）", col: 3.2, row: 1.75, tone: "ok" },
+      ],
+      groups: [
+        { label: "ビットマップフォント", col: -0.1, row: -0.35, w: 4.35, h: 1.55 },
+        { label: "アウトラインフォント", col: -0.1, row: 1.4, w: 4.35, h: 1.55 },
+      ],
+      edges: [
+        { from: "bm", to: "bmShow", label: "表示" },
+        { from: "bmShow", to: "bmBig", label: "拡大" },
+        { from: "ol", to: "olShow", label: "表示" },
+        { from: "olShow", to: "olBig", label: "拡大" },
       ],
     },
   },
@@ -1606,16 +1731,55 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "選択肢アとエは説明が入れ替わっている。レイトレーシング＝視線を追う、テクスチャマッピング＝模様を貼る。",
       "レイトレーシングは鏡面反射や透過に強く、ラジオシティは拡散反射（間接光）に強い。得意分野が逆。",
     ],
-    figure: {
-      type: "table",
-      caption: "得意な光の扱いで区別する",
-      headers: ["手法", "計算するもの", "得意なこと"],
-      rows: [
-        ["レイトレーシング", "視点から光線を逆にたどる", "鏡面反射・透過（映り込み）"],
-        ["ラジオシティ", "面から面への拡散反射のやり取り", "間接光による柔らかい陰影"],
-        ["テクスチャマッピング", "表面に画像を貼り付ける", "材質感や模様"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "ラジオシティ法は、面と面の間で拡散反射する光のやり取りを計算する（ウ）。視線をたどるのはレイトレーシング、模様を貼るのはテクスチャマッピング",
+        nodes: [
+          { id: "eye", label: "視点", col: 0, row: 0.15, shape: "actor" },
+          { id: "px", label: "画素", col: 1.3, row: 0.15 },
+          { id: "obj", label: "物体（鏡面）", col: 2.6, row: 0.15 },
+          { id: "lamp", label: "光源", col: 3.9, row: 0.15 },
+          { id: "light", label: "光源", col: 0, row: 1.95 },
+          { id: "wall", label: "壁", col: 1.6, row: 1.95 },
+          { id: "floor", label: "床", col: 3.2, row: 1.95 },
+          { id: "tex", label: "模様（画像）", col: 0, row: 3.55 },
+          { id: "surf", label: "物体の表面", col: 1.6, row: 3.55 },
+        ],
+        groups: [
+          { label: "レイトレーシング（ア の説明）", col: -0.3, row: -0.45, w: 5, h: 1.5 },
+          {
+            label: "ラジオシティ法（ウ・正解）",
+            col: -0.3,
+            row: 1.4,
+            w: 5,
+            h: 1.35,
+            tone: "ok",
+          },
+          { label: "テクスチャマッピング（エ の説明）", col: -0.3, row: 3.05, w: 5, h: 1.3 },
+        ],
+        edges: [
+          { from: "eye", to: "px", label: "視線を飛ばす" },
+          { from: "px", to: "obj", label: "交点を計算" },
+          { from: "obj", to: "lamp", label: "反射をたどる" },
+          { from: "light", to: "wall" },
+          { from: "wall", to: "floor", bend: 0.15, label: "拡散反射", tone: "ok" },
+          { from: "floor", to: "wall", bend: 0.15, label: "拡散反射", tone: "ok" },
+          { from: "tex", to: "surf", label: "貼り付ける" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "得意な光の扱いで区別する",
+        headers: ["手法", "計算するもの", "得意なこと"],
+        rows: [
+          ["レイトレーシング", "視点から光線を逆にたどる", "鏡面反射・透過（映り込み）"],
+          ["ラジオシティ", "面から面への拡散反射のやり取り", "間接光による柔らかい陰影"],
+          ["テクスチャマッピング", "表面に画像を貼り付ける", "材質感や模様"],
+        ],
+      },
+    ],
   },
   {
     source: at(26),
@@ -2215,20 +2379,71 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "UDPヘッダの4項目を覚えてしまえば、それ以外はTCPだけの項目と判断できる。",
       "TCPが持つ信頼性（順序保証・再送・フロー制御）は、すべてヘッダの追加項目で実現されている。",
     ],
-    figure: {
-      type: "table",
-      caption: "UDP ヘッダの4項目（8バイト）を覚えれば、残りは TCP だけの項目",
-      headers: ["項目", "UDP", "TCP", "何のため"],
-      rows: [
-        ["送信元・宛先ポート番号", "あり", "あり", "アプリケーションの多重化"],
-        ["データ長", "あり", "なし（ヘッダー長を持つ）", "長さの通知"],
-        ["チェックサム", "あり", "あり", "誤りの検出"],
-        ["シーケンス番号", "なし", "あり", "順序の保証"],
-        ["確認応答番号", "なし", "あり", "到達確認と再送"],
-        ["ウィンドウサイズ", "なし", "あり", "フロー制御"],
-        ["制御フラグ", "なし", "あり", "コネクションの管理"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "UDP ヘッダは 4 項目だけ。シーケンス番号（イ）などの項目は TCP ヘッダにしかない（欄は並び順を示し、幅はバイト数と比例しない）",
+        nodes: [
+          {
+            id: "udp",
+            label: "UDP ヘッダ（8 バイト）：この 4 項目だけ",
+            col: 1.147,
+            row: 0,
+            fields: ["送信元ポート", "宛先ポート", "データ長", "チェックサム"],
+          },
+          {
+            id: "tcp",
+            label: "TCP ヘッダ（20 バイト＋オプション）",
+            col: 2.6,
+            row: 1.05,
+            fields: [
+              "送信元ポート",
+              "宛先ポート",
+              "シーケンス番号",
+              "確認応答番号",
+              "ヘッダ長・フラグ",
+              "ウィンドウ",
+              "チェックサム",
+              "緊急ポインタ",
+            ],
+          },
+          {
+            id: "seq",
+            label: "シーケンス番号（イ）\n順序の保証と再送に使う",
+            col: 1.553,
+            row: 2.2,
+            tone: "ok",
+          },
+          {
+            id: "rest",
+            label: "確認応答番号・フラグ・ウィンドウ\n到達確認・接続の管理・フロー制御",
+            col: 3.3,
+            row: 2.2,
+          },
+        ],
+        edges: [
+          { from: "tcp", to: "seq", fromField: 2, tone: "ok" },
+          { from: "tcp", to: "rest", fromField: 3 },
+          { from: "tcp", to: "rest", fromField: 4 },
+          { from: "tcp", to: "rest", fromField: 5 },
+        ],
+      },
+      {
+        type: "table",
+        caption: "UDP ヘッダの4項目（8バイト）を覚えれば、残りは TCP だけの項目",
+        headers: ["項目", "UDP", "TCP", "何のため"],
+        rows: [
+          ["送信元・宛先ポート番号", "あり", "あり", "アプリケーションの多重化"],
+          ["データ長", "あり", "なし（ヘッダー長を持つ）", "長さの通知"],
+          ["チェックサム", "あり", "あり", "誤りの検出"],
+          ["シーケンス番号", "なし", "あり", "順序の保証"],
+          ["確認応答番号", "なし", "あり", "到達確認と再送"],
+          ["ウィンドウサイズ", "なし", "あり", "フロー制御"],
+          ["制御フラグ", "なし", "あり", "コネクションの管理"],
+        ],
+      },
+    ],
   },
   {
     source: at(35),
@@ -2365,26 +2580,43 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "要点17の名前「出荷・リリース後も安全安心な状態を維持する」に直結するのは、出荷後に見つかった脆弱性をふさぐアップデート。ウの役割の整理も同じ運用・保守の段階だが、要点20の対策例。",
     ],
     figure: {
-      type: "flow",
-      caption: "IoT セキュリティガイドラインの5指針と、選択肢の対策例の位置",
-      steps: [
+      type: "diagram",
+      caption:
+        "IoT セキュリティガイドラインの5指針と、選択肢の対策例の位置。要点17 は運用・保守の段階（イ）",
+      cell: { h: 72 },
+      nodes: [
+        { id: "p1", label: "方針\n経営者の関与と体制", col: 0, row: 0, shape: "round" },
+        { id: "p2", label: "分析\n守るべきもの・リスク", col: 0, row: 1, shape: "round" },
+        { id: "p3", label: "設計\n守るべきものを守る設計", col: 0, row: 2, shape: "round" },
+        { id: "p4", label: "構築・接続\nネットワーク上の対策", col: 0, row: 3, shape: "round" },
         {
-          actor: "方針",
-          text: "経営者が IoT セキュリティにコミットし、体制を作る（エ の PDCA・体制の構築は要点1）",
+          id: "p5",
+          label: "運用・保守\n出荷後の安全と情報共有",
+          col: 0,
+          row: 4.4,
+          shape: "round",
+          tone: "accent",
         },
+        { id: "e", label: "エ PDCA・体制の構築\n（要点1）", col: 1.6, row: 0 },
+        { id: "a", label: "ア 保護すべき\nデータの特定（要点3）", col: 1.6, row: 1 },
         {
-          actor: "分析",
-          text: "守るべきものを特定し、リスクを想定する（ア の保護すべきデータの特定は要点3）",
+          id: "i",
+          label: "イ アップデート機能の\n搭載・実施（要点17）",
+          col: 1.6,
+          row: 3.9,
+          tone: "ok",
         },
-        { actor: "設計", text: "守るべきものを守る設計を考える" },
-        {
-          actor: "構築・接続",
-          text: "ネットワーク上での対策を考える（状態の記録、初期設定、認証など）",
-        },
-        {
-          actor: "運用・保守",
-          text: "出荷後も安全安心な状態を保ち、情報を発信・共有する（イ のアップデートは要点17、ウ の役割の整理は要点20）",
-        },
+        { id: "u", label: "ウ 関係者の役割の\n整理（要点20）", col: 1.6, row: 4.9 },
+      ],
+      edges: [
+        { from: "p1", to: "p2" },
+        { from: "p2", to: "p3" },
+        { from: "p3", to: "p4" },
+        { from: "p4", to: "p5" },
+        { from: "p1", to: "e", dashed: true, arrow: "none" },
+        { from: "p2", to: "a", dashed: true, arrow: "none" },
+        { from: "p5", to: "i", dashed: true, arrow: "none", tone: "ok" },
+        { from: "p5", to: "u", dashed: true, arrow: "none" },
       ],
     },
   },
@@ -2460,6 +2692,24 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "機密性・完全性・可用性の3要素に、真正性・責任追跡性・否認防止・信頼性を加えた7要素で覚える。",
       "責任追跡性は「誰の行為か追える」こと、否認防止は「その事実を否定できない」こと。近いが視点が違う。",
     ],
+    figure: {
+      type: "sequence",
+      caption: "否認防止：利用した事実の証拠が残るので、後から「やっていない」と否定できない（ア）",
+      actors: ["利用者", "システム"],
+      steps: [
+        { from: "利用者", to: "システム", label: "システムを利用する" },
+        { over: ["システム"], note: "利用の記録（ログ・ディジタル署名）を保全" },
+        { divider: "後日" },
+        {
+          from: "利用者",
+          to: "システム",
+          label: "「利用していない」と否認する",
+          tone: "ng",
+          blocked: true,
+        },
+        { over: ["システム"], note: "記録で利用の事実を証明できる", tone: "ok" },
+      ],
+    },
   },
   {
     source: at(40),
@@ -2532,6 +2782,42 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "基本評価基準の値は時間が経っても変わらない。状況で変わるのは現状評価基準と環境評価基準。",
       "脆弱性の識別子はCVE、脆弱性の種類の分類はCWE。CVSSは深刻度の点数。3つをまとめて押さえる。",
     ],
+    figure: {
+      type: "diagram",
+      caption: "CVSS は 3 つの基準で脆弱性の深刻度を 0.0〜10.0 の数値にする（ア）",
+      nodes: [
+        {
+          id: "bn",
+          label: "脆弱性そのものの特性\n時間が経っても変わらない",
+          col: 0,
+          row: 0,
+          shape: "text",
+        },
+        {
+          id: "tn",
+          label: "攻撃コードの出回り\n具合など。状況で変わる",
+          col: 1.4,
+          row: 0,
+          shape: "text",
+        },
+        {
+          id: "en",
+          label: "利用する環境を加味する\n環境ごとに変わる",
+          col: 2.8,
+          row: 0,
+          shape: "text",
+        },
+        { id: "base", label: "基本評価基準", col: 0, row: 0.85 },
+        { id: "temp", label: "現状評価基準", col: 1.4, row: 0.85 },
+        { id: "env", label: "環境評価基準", col: 2.8, row: 0.85 },
+        { id: "score", label: "CVSS の深刻度\n0.0〜10.0", col: 1.4, row: 2.1, tone: "ok" },
+      ],
+      edges: [
+        { from: "base", to: "score" },
+        { from: "temp", to: "score" },
+        { from: "env", to: "score" },
+      ],
+    },
   },
   {
     source: at(42),
@@ -2964,6 +3250,39 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "組合せをクラスにするとm×n個に膨れる。観点を分けて関連でつなぐとm＋n個に収まる。",
       "同じ発想はデザインパターンのBridgeパターンにあたる。抽象と実装を別階層にして独立に拡張できるようにする。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "形状と線種を別の階層に分けて関連でつなぐと（ウ）、円や点線を足すときは 1 クラスずつ足すだけで済む（線は継承、矢印は関連）",
+      cell: { w: 120 },
+      nodes: [
+        { id: "shape", label: "図形", col: 1, row: 0 },
+        { id: "line", label: "線種", col: 4, row: 0 },
+        { id: "tri", label: "三角形", col: 0, row: 1.3 },
+        { id: "sq", label: "四角形", col: 1, row: 1.3 },
+        { id: "circ", label: "円", col: 2, row: 1.3, tone: "ok", note: "足すのは\nこの 1 つ" },
+        { id: "thick", label: "太線", col: 3, row: 1.3 },
+        { id: "thin", label: "細線", col: 4, row: 1.3 },
+        { id: "dot", label: "点線", col: 5, row: 1.3, tone: "ok", note: "足すのは\nこの 1 つ" },
+        {
+          id: "before",
+          label:
+            "分割前の形のままだと、円と点線を足すのに\n円・太線の円・点線の三角形・点線の四角形・点線の円\nの 5 クラスが要る",
+          col: 2.5,
+          row: 2.75,
+          shape: "text",
+        },
+      ],
+      edges: [
+        { from: "shape", to: "line", label: "関連" },
+        { from: "tri", to: "shape", arrow: "none" },
+        { from: "sq", to: "shape", arrow: "none" },
+        { from: "circ", to: "shape", arrow: "none", tone: "ok" },
+        { from: "thick", to: "line", arrow: "none" },
+        { from: "thin", to: "line", arrow: "none" },
+        { from: "dot", to: "line", arrow: "none", tone: "ok" },
+      ],
+    },
   },
   {
     source: at(49),
@@ -3508,16 +3827,57 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "必要な延べ勤務回数を出してから、1人あたりの上限で割るのが定石。人数は必ず切り上げる。",
       "「最少で何人」と問われたら、割り切れない端数を切り上げた値が答えになる。",
     ],
-    figure: {
-      type: "calc",
-      caption: "必要人数の求め方",
-      lines: [
-        { expr: "3 シフト × 2 人 ＝ 6 回／日", note: "1日に必要な延べ勤務" },
-        { expr: "6 × 7 ＝ 42 回／週", note: "7日間の延べ勤務" },
-        { expr: "42 ÷ 5 ＝ 8.4", note: "1人は7日間で5回まで" },
-        { expr: "切り上げて 9 人", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "7 日間に必要な延べ勤務は 42 回。1 人 5 回までなので、8 人（40 回）では足りず、9 人（45 回）で初めて届く",
+        x: {
+          label: "オペレータの人数",
+          min: 6.4,
+          max: 10.6,
+          ticks: [7, 8, 9, 10],
+          tickLabels: ["7 人", "8 人", "9 人", "10 人"],
+        },
+        y: { label: "7 日間に勤務できる延べ回数", min: 0, max: 55, ticks: [0, 10, 20, 30, 40, 50] },
+        series: [
+          {
+            label: "足りない",
+            kind: "bar",
+            points: [
+              [7, 35],
+              [8, 40],
+            ],
+            color: 4,
+            labelAt: 0,
+            labelPlace: "above",
+          },
+          {
+            label: "足りる",
+            kind: "bar",
+            points: [
+              [9, 45],
+              [10, 50],
+            ],
+            color: 1,
+            labelAt: 1,
+            labelPlace: "above",
+          },
+        ],
+        guides: [{ y: 42, label: "必要な延べ勤務 42 回" }],
+        marks: [{ x: 9, y: 45, label: "最少は 9 人（イ）", place: "above" }],
+      },
+      {
+        type: "calc",
+        caption: "必要人数の求め方",
+        lines: [
+          { expr: "3 シフト × 2 人 ＝ 6 回／日", note: "1日に必要な延べ勤務" },
+          { expr: "6 × 7 ＝ 42 回／週", note: "7日間の延べ勤務" },
+          { expr: "42 ÷ 5 ＝ 8.4", note: "1人は7日間で5回まで" },
+          { expr: "切り上げて 9 人", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(57),
@@ -3991,7 +4351,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
     choices: [
       {
         text: "610",
-        note: "中途採用費用の削減を1名分だけ数えた場合などの値。5年間で5名分になる。",
+        note: "中途採用費用の削減（5年間で5名分、250万円）を数えなかった場合の値。",
       },
       {
         text: "860",
@@ -4006,18 +4366,73 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "初期費用（台数・人数に1回だけ）と運用費用（年・人に毎年）を取り違えないこと。",
       "離職は毎年1名なので、5年間で5名分の中途採用費用が浮く。1名分だけ数える誤りに注意。",
     ],
-    figure: {
-      type: "calc",
-      caption: "5年間の効果",
-      lines: [
-        { expr: "10 × 10 × 5 ＝ 500 万円", note: "通勤費の削減" },
-        { expr: "12 × 10 × 5 ＝ 600 万円", note: "オフィススペース・光熱費の削減" },
-        { expr: "50 × 5 ＝ 250 万円", note: "中途採用費用の削減（5年で5名）" },
-        { expr: "8 × 10 ＋ 1 × 10 ＝ 90 万円", note: "PC購入とツールの初期費用" },
-        { expr: "(2 ＋ 6) × 10 × 5 ＝ 400 万円", note: "ツールと回線の運用費用" },
-        { expr: "1,350 − 490 ＝ 860 万円", note: "選択肢 イ" },
-      ],
-    },
+    figure: [
+      {
+        type: "chart",
+        caption:
+          "初期費用 90 万円は導入時の 1 回だけ。その後は毎年、削減 270 万円から運用費 80 万円を引いた 190 万円ずつ積み上がり、5 年で 860 万円（イ）",
+        x: {
+          label: "導入後の年数",
+          min: 0,
+          max: 5,
+          ticks: [0, 1, 2, 3, 4, 5],
+          tickLabels: ["導入時", "1 年", "2 年", "3 年", "4 年", "5 年"],
+        },
+        y: {
+          label: "効果の累計（万円）",
+          min: -200,
+          max: 1000,
+          ticks: [-90, 0, 250, 500, 750, 1000],
+          tickLabels: ["初期費用 −90", "0", "250", "500", "750", "1,000"],
+        },
+        plot: { h: 280 },
+        series: [
+          {
+            label: "効果の累計 860（イ）",
+            points: [
+              [0, -90],
+              [1, 100],
+              [2, 290],
+              [3, 480],
+              [4, 670],
+              [5, 860],
+            ],
+            color: 1,
+          },
+          {
+            label: "初期費用を数え落とすと 950（ウ）",
+            points: [
+              [0, 0],
+              [1, 190],
+              [2, 380],
+              [3, 570],
+              [4, 760],
+              [5, 950],
+            ],
+            color: 2,
+            dashed: true,
+          },
+        ],
+        guides: [{ y: 0 }],
+        marks: [
+          { x: 0, y: -90, label: "" },
+          { x: 5, y: 860, label: "" },
+          { x: 5, y: 950, label: "" },
+        ],
+      },
+      {
+        type: "calc",
+        caption: "5年間の効果",
+        lines: [
+          { expr: "10 × 10 × 5 ＝ 500 万円", note: "通勤費の削減" },
+          { expr: "12 × 10 × 5 ＝ 600 万円", note: "オフィススペース・光熱費の削減" },
+          { expr: "50 × 5 ＝ 250 万円", note: "中途採用費用の削減（5年で5名）" },
+          { expr: "8 × 10 ＋ 1 × 10 ＝ 90 万円", note: "PC購入とツールの初期費用" },
+          { expr: "(2 ＋ 6) × 10 × 5 ＝ 400 万円", note: "ツールと回線の運用費用" },
+          { expr: "1,350 − 490 ＝ 860 万円", note: "選択肢 イ" },
+        ],
+      },
+    ],
   },
   {
     source: at(65),
@@ -4161,40 +4576,60 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "主活動5つと支援活動4つ、という数字を覚えておくと選択肢を即座に特定できる。",
       "視点の数で区別する。SWOTは2軸4象限、BSCは4つの視点、バリューチェーンは5＋4の活動。",
     ],
-    figure: {
-      type: "diagram",
-      caption: "主活動 5 つと、それを支える支援活動 4 つに分け、どこで価値が生まれるかを見る",
-      cell: { w: 125, h: 44 },
-      nodes: [
-        { id: "s1", label: "全般管理（インフラストラクチャ）", col: 2, row: 0, w: 4.8 },
-        { id: "s2", label: "人事・労務管理", col: 2, row: 1, w: 4.8 },
-        { id: "s3", label: "技術開発", col: 2, row: 2, w: 4.8 },
-        { id: "s4", label: "調達活動", col: 2, row: 3, w: 4.8 },
-        { id: "p1", label: "購買物流", col: 0, row: 4.8, tone: "accent" },
-        { id: "p2", label: "製造", col: 1, row: 4.8, tone: "accent" },
-        { id: "p3", label: "出荷物流", col: 2, row: 4.8, tone: "accent" },
-        { id: "p4", label: "販売・\nマーケティング", col: 3, row: 4.8, tone: "accent" },
-        { id: "p5", label: "サービス", col: 4, row: 4.8, tone: "accent" },
-        {
-          id: "margin",
-          label: "マージン\n（利益）",
-          col: 5.3,
-          row: 2.4,
-          shape: "round",
-          tone: "ok",
-        },
-      ],
-      groups: [
-        { label: "支援活動（4 つ）", col: 0, row: -0.45, w: 4.9, h: 4.5 },
-        { label: "主活動（5 つ）", col: 0, row: 4.15, w: 4.9, h: 1.8, tone: "accent" },
-      ],
-      edges: [
-        { from: "p1", to: "p2" },
-        { from: "p2", to: "p3" },
-        { from: "p3", to: "p4" },
-        { from: "p4", to: "p5" },
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption: "主活動 5 つと、それを支える支援活動 4 つに分け、どこで価値が生まれるかを見る",
+        cell: { w: 125, h: 44 },
+        nodes: [
+          { id: "s1", label: "全般管理（インフラストラクチャ）", col: 2, row: 0, w: 4.8 },
+          { id: "s2", label: "人事・労務管理", col: 2, row: 1, w: 4.8 },
+          { id: "s3", label: "技術開発", col: 2, row: 2, w: 4.8 },
+          { id: "s4", label: "調達活動", col: 2, row: 3, w: 4.8 },
+          { id: "p1", label: "購買物流", col: 0, row: 4.8, tone: "accent" },
+          { id: "p2", label: "製造", col: 1, row: 4.8, tone: "accent" },
+          { id: "p3", label: "出荷物流", col: 2, row: 4.8, tone: "accent" },
+          { id: "p4", label: "販売・\nマーケティング", col: 3, row: 4.8, tone: "accent" },
+          { id: "p5", label: "サービス", col: 4, row: 4.8, tone: "accent" },
+          {
+            id: "margin",
+            label: "マージン\n（利益）",
+            col: 5.3,
+            row: 2.4,
+            shape: "round",
+            tone: "ok",
+          },
+        ],
+        groups: [
+          { label: "支援活動（4 つ）", col: 0, row: -0.45, w: 4.9, h: 4.5 },
+          { label: "主活動（5 つ）", col: 0, row: 4.15, w: 4.9, h: 1.8, tone: "accent" },
+        ],
+        edges: [
+          { from: "p1", to: "p2" },
+          { from: "p2", to: "p3" },
+          { from: "p3", to: "p4" },
+          { from: "p4", to: "p5" },
+        ],
+      },
+      {
+        type: "sketch",
+        caption: "選択肢に出てくる手法の形を見比べる",
+        items: [
+          {
+            name: "バリューチェーン",
+            note: "主活動 5 つと支援活動 4 つに分け、どこで価値が生まれるかを見る。これが正解の形（ア）",
+          },
+          {
+            name: "SWOT分析",
+            note: "内部環境の強み・弱みと、外部環境の機会・脅威の 4 つに整理する（イ）",
+          },
+          {
+            name: "バランススコアカード",
+            note: "財務・顧客・内部ビジネスプロセス・学習と成長の 4 つの視点で戦略マップを作る（ウ）",
+          },
+        ],
+      },
+    ],
   },
   {
     source: at(68),
@@ -4399,17 +4834,43 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "頭文字で対象を押さえる。SFA＝営業、CRM＝顧客関係全体、ERP＝経営資源全体、SCM＝供給連鎖。",
       "SFAはCRMの一部として位置付けられることも多い。営業活動に焦点を当てたものと覚えるとよい。",
     ],
-    figure: {
-      type: "table",
-      caption: "頭文字で対象の広さを押さえる",
-      headers: ["略語", "対象", "何をするか"],
-      rows: [
-        ["SFA", "営業活動", "商談の進捗や接触履歴を共有し、営業を効率化する"],
-        ["CRM", "顧客との関係全体", "問合せや購買履歴まで含めて、関係を維持・強化する"],
-        ["ERP", "経営資源全体", "会計・人事・生産などを統合して管理する"],
-        ["SCM", "供給連鎖", "調達から販売までの流れ全体を最適化する"],
-      ],
-    },
+    figure: [
+      {
+        type: "diagram",
+        caption:
+          "SFA は、商談の進捗や顧客との接触履歴を担当者の間で共有し、営業を個人技から組織の活動にする（ア）",
+        nodes: [
+          { id: "cust", label: "顧客", col: 0, row: 0.7, shape: "actor" },
+          { id: "r1", label: "営業担当 A", col: 1.7, row: 0, shape: "actor" },
+          { id: "r2", label: "営業担当 B", col: 1.7, row: 1.4, shape: "actor" },
+          {
+            id: "sfa",
+            label: "SFA\n商談の進捗・\n接触履歴",
+            col: 3.5,
+            row: 0.7,
+            shape: "db",
+            tone: "ok",
+          },
+        ],
+        edges: [
+          { from: "cust", to: "r1", label: "商談", arrow: "both" },
+          { from: "cust", to: "r2", label: "商談", arrow: "both" },
+          { from: "r1", to: "sfa", label: "記録・参照", arrow: "both" },
+          { from: "r2", to: "sfa", label: "記録・参照", arrow: "both" },
+        ],
+      },
+      {
+        type: "table",
+        caption: "頭文字で対象の広さを押さえる",
+        headers: ["略語", "対象", "何をするか"],
+        rows: [
+          ["SFA", "営業活動", "商談の進捗や接触履歴を共有し、営業を効率化する"],
+          ["CRM", "顧客との関係全体", "問合せや購買履歴まで含めて、関係を維持・強化する"],
+          ["ERP", "経営資源全体", "会計・人事・生産などを統合して管理する"],
+          ["SCM", "供給連鎖", "調達から販売までの流れ全体を最適化する"],
+        ],
+      },
+    ],
   },
   {
     source: at(71),
@@ -4488,6 +4949,28 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "「ギグ」はもともと音楽家の単発の演奏を指す言葉。単発・短期という意味が語源からつながる。",
       "似た語のクラウドソーシングは仕事の発注方法を指し、ギグエコノミーは働き方・経済形態を指す。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "ギグエコノミー：個人がインターネットのプラットフォームを通じて、単発の仕事を 1 件ずつ請け負う（イ）",
+      nodes: [
+        { id: "req", label: "仕事の依頼者\n（企業・個人）", col: 0, row: 0.6 },
+        {
+          id: "pf",
+          label: "インターネットの\nプラットフォーム",
+          col: 1.8,
+          row: 0.6,
+          tone: "accent",
+        },
+        { id: "w1", label: "個人 A", col: 3.6, row: 0, shape: "actor" },
+        { id: "w2", label: "個人 B", col: 3.6, row: 1.2, shape: "actor" },
+      ],
+      edges: [
+        { from: "req", to: "pf", label: "単発の仕事を\n出す" },
+        { from: "pf", to: "w1", label: "配達を 1 件受託" },
+        { from: "pf", to: "w2", label: "翻訳を 1 件受託" },
+      ],
+    },
   },
   {
     source: at(73),
@@ -4887,6 +5370,49 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "不正アクセス禁止法はネットワーク経由の不正ログインが対象。媒体を直接挿す行為は対象外。",
       "マルウェア関連は刑法（不正指令電磁的記録に関する罪）で扱う。法律名の切り分けが問われる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "記憶媒体でマルウェアを持ち込み、データを消すのは刑法で処罰される（ア）。不正アクセス禁止法はネットワーク経由の不正ログインが対象",
+      nodes: [
+        { id: "atk", label: "攻撃者", col: 0, row: 0.1, shape: "actor" },
+        { id: "usb", label: "記憶媒体\n（マルウェア入り）", col: 1.5, row: 0.1 },
+        { id: "pc", label: "業務の PC", col: 3, row: 0.1, tone: "ng", note: "データが消される" },
+        { id: "atk2", label: "攻撃者", col: 0, row: 2.1, shape: "actor" },
+        { id: "net", label: "ネットワーク", col: 1.5, row: 2.1, shape: "cloud" },
+        {
+          id: "srv",
+          label: "サーバ",
+          col: 3,
+          row: 2.1,
+          tone: "ng",
+          note: "他人の ID で\n不正にログイン",
+        },
+      ],
+      groups: [
+        {
+          label: "刑法の対象（ア）：電子計算機損壊等業務妨害罪など",
+          col: 0.2,
+          row: -0.45,
+          w: 3.7,
+          h: 1.6,
+          tone: "ok",
+        },
+        {
+          label: "不正アクセス禁止法の対象（ウ）：ネットワーク経由の不正ログイン",
+          col: 0.2,
+          row: 1.55,
+          w: 3.7,
+          h: 1.75,
+        },
+      ],
+      edges: [
+        { from: "atk", to: "usb", label: "仕込む" },
+        { from: "usb", to: "pc", label: "挿し込む" },
+        { from: "atk2", to: "net" },
+        { from: "net", to: "srv", label: "他人の ID・\nパスワード" },
+      ],
+    },
   },
   {
     source: at(79),
@@ -4917,15 +5443,36 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "オプトイン＝同意を得てから送る、オプトアウト＝拒否されるまで送ってよい。日本の原則はオプトイン。",
       "同意の記録の保存や、受信拒否の通知先の表示も義務付けられている。",
     ],
-    figure: {
-      type: "table",
-      caption: "日本の原則はオプトイン",
-      headers: ["方式", "送ってよい相手", "日本の特定電子メール法"],
-      rows: [
-        ["オプトイン", "あらかじめ同意を得た相手だけ", "こちらが原則（一部に例外あり）"],
-        ["オプトアウト", "拒否されるまでは誰にでも", "原則として認められない"],
-      ],
-    },
+    figure: [
+      {
+        type: "sequence",
+        caption: "オプトインは同意を得てから送る。特定電子メール法の原則はこちら（エ）",
+        actors: ["送信する企業", "受信者"],
+        steps: [
+          { divider: "オプトイン方式（日本の原則・エ）" },
+          { from: "受信者", to: "送信する企業", label: "あらかじめ送信に同意する" },
+          {
+            from: "送信する企業",
+            to: "受信者",
+            label: "広告宣伝メール（SMS も同じ）",
+            tone: "ok",
+          },
+          { divider: "オプトアウト方式（原則として認められない・ウ）" },
+          { from: "送信する企業", to: "受信者", label: "同意なしに広告宣伝メール", tone: "ng" },
+          { over: ["送信する企業"], note: "拒否されるまでは送り続けられる" },
+          { from: "受信者", to: "送信する企業", label: "受信を拒否する", dashed: true },
+        ],
+      },
+      {
+        type: "table",
+        caption: "日本の原則はオプトイン",
+        headers: ["方式", "送ってよい相手", "日本の特定電子メール法"],
+        rows: [
+          ["オプトイン", "あらかじめ同意を得た相手だけ", "こちらが原則（一部に例外あり）"],
+          ["オプトアウト", "拒否されるまでは誰にでも", "原則として認められない"],
+        ],
+      },
+    ],
   },
   {
     source: at(80),
@@ -4956,5 +5503,50 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
       "判断の軸は2つ。事情が臨時的かどうかと、期間・人数・時間が具体的に定められているか。",
       "慢性的な人手不足や、期限を定めない適用は認められない。選択肢ウとエはこの点で外れる。",
     ],
+    figure: {
+      type: "diagram",
+      caption:
+        "特別条項は、臨時的な事情があり、期間・人数・時間を具体的に定めた場合に限って使える（ア）",
+      nodes: [
+        { id: "d1", label: "臨時的な\n事情か", col: 0, row: 0, shape: "diamond" },
+        {
+          id: "d2",
+          label: "期間・人数・時間を\n具体的に定めたか",
+          col: 2.1,
+          row: 0,
+          shape: "diamond",
+        },
+        {
+          id: "ok",
+          label: "ア 適用できる",
+          col: 4,
+          row: 0,
+          tone: "ok",
+          note: "売上増で一時的に作業量が増えた\n期間・人数・時間を定めている",
+        },
+        {
+          id: "ng1",
+          label: "ウ・エ 認められない",
+          col: 0,
+          row: 1.75,
+          tone: "ng",
+          note: "ウ 期限を定めない\nエ 慢性的な人手不足",
+        },
+        {
+          id: "ng2",
+          label: "イ 認められない",
+          col: 2.1,
+          row: 1.75,
+          tone: "ng",
+          note: "人数や所要時間の\n定めがない",
+        },
+      ],
+      edges: [
+        { from: "d1", to: "d2", label: "はい" },
+        { from: "d2", to: "ok", label: "はい" },
+        { from: "d1", to: "ng1", label: "いいえ" },
+        { from: "d2", to: "ng2", label: "いいえ" },
+      ],
+    },
   },
 ];
