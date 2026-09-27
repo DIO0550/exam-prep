@@ -460,10 +460,10 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
         ],
         edges: [
           { from: "n50", to: "n20", arrow: "none" },
-          { from: "n50", to: "n80", tone: "accent", label: "55 より小さい→右" },
+          { from: "n50", to: "n80", tone: "accent", label: "50＜55 なので右へ" },
           { from: "n20", to: "n10", arrow: "none" },
           { from: "n20", to: "n30", arrow: "none" },
-          { from: "n80", to: "n60", tone: "accent", label: "候補。左へ" },
+          { from: "n80", to: "n60", tone: "accent", label: "80≧55 は候補。左へ" },
           { from: "n80", to: "n120", arrow: "none" },
         ],
       },
@@ -882,7 +882,7 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
         nodes: [
           { id: "bl", label: "バックライト\n（常に光る）", col: 0, row: 0.6 },
           { id: "lc", label: "液晶\n（通す光の量を調整）", col: 1.5, row: 0.6 },
-          { id: "eye1", label: "見る人", col: 3, row: 0.6, shape: "actor" },
+          { id: "eye1", label: "見る人", col: 3.4, row: 0.6, shape: "actor" },
           {
             id: "none",
             label: "（バックライト\nが要らない）",
@@ -898,16 +898,16 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
             row: 2.5,
             tone: "ok",
           },
-          { id: "eye2", label: "見る人", col: 3, row: 2.5, shape: "actor" },
+          { id: "eye2", label: "見る人", col: 3.4, row: 2.5, shape: "actor" },
         ],
         groups: [
-          { label: "液晶：光を変調する（ウ）", col: -0.4, row: -0.2, w: 4.2, h: 1.9 },
+          { label: "液晶：光を変調する（ウ）", col: -0.4, row: -0.2, w: 4.6, h: 1.8 },
           {
             label: "有機 EL：自発光（ア）",
             col: -0.4,
-            row: 1.7,
-            w: 4.2,
-            h: 1.9,
+            row: 1.8,
+            w: 4.6,
+            h: 1.8,
             tone: "ok",
           },
         ],
@@ -1280,13 +1280,19 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       ),
     },
     choices: [
-      { text: "1, 3, 4", note: "追い出す対象を4と取り違えた場合の並び。" },
+      {
+        text: "1, 3, 4",
+        note: "FIFOでは1が追い出されるので1は残らない。LRUでも3は追い出した2の枠に入るので、並びは1, 4, 3になる。",
+      },
       { text: "1, 4, 3", note: "最も古いページを1ではなく2と考えた場合の並び。" },
       {
         text: "3, 4, 2",
         note: "最初に入った1が追い出され、その枠に3が入る。これが正解。",
       },
-      { text: "4, 1, 3", note: "枠の並びを詰め直した場合の並び。FIFOでは枠の位置は変わらない。" },
+      {
+        text: "4, 1, 3",
+        note: "最後に使われた順（4→1→3）に並べた形で、枠の状態ではない。FIFOでは1が追い出されるので1は残らない。",
+      },
     ],
     explain:
       "ステップ3の時点で実記憶は1, 4, 2。ステップ4の参照4とステップ5の参照1はどちらもヒットするので状態は変わらない。ステップ6で3を参照するとページフォールトが起き、FIFOなので最も早く読み込まれた1が追い出され、その枠に3が入る。結果は3, 4, 2。",
@@ -1428,13 +1434,12 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
           kind: "curve",
           points: [
             [0, 0],
-            [0.5, 0.8],
-            [1, 1.3],
-            [2, 2],
-            [4, 2.7],
-            [6, 3.1],
-            [8, 3.4],
-            [10, 3.6],
+            [1, 0.8],
+            [2, 1.4],
+            [4, 2.1],
+            [6, 2.6],
+            [8, 2.9],
+            [10, 3.1],
           ],
         },
         {
@@ -1521,7 +1526,7 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       {
         text: "",
         image: fig("q21-choice-e", 75, 53, "X＋Yの上に否定を表す線を引いた式"),
-        note: "否定論理和。1段目の否定を数えていない。",
+        note: "否定論理和。X̅・Ȳ と等しく、2段目のNANDの否定を数えていない場合の値。",
       },
     ],
     explain:
@@ -2121,12 +2126,12 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
           "同じ操作を 2 回続けたときの残高。「設定」は何回やっても 1 回目と同じ結果（べき等）、「加算」は回数だけ積み上がる",
         cell: { w: 150, h: 64 },
         nodes: [
-          { id: "s0", label: "3,000 円", col: 0, row: 0.6, shape: "round" },
+          { id: "s0", label: "2,000 円", col: 0, row: 0.6, shape: "round" },
           { id: "s1", label: "5,000 円", col: 1.5, row: 0.6, shape: "round" },
           { id: "s2", label: "5,000 円", col: 3, row: 0.6, shape: "round", tone: "ok" },
-          { id: "t0", label: "3,000 円", col: 0, row: 2.4, shape: "round" },
-          { id: "t1", label: "4,000 円", col: 1.5, row: 2.4, shape: "round" },
-          { id: "t2", label: "5,000 円", col: 3, row: 2.4, shape: "round", tone: "ng" },
+          { id: "t0", label: "2,000 円", col: 0, row: 2.4, shape: "round" },
+          { id: "t1", label: "3,000 円", col: 1.5, row: 2.4, shape: "round" },
+          { id: "t2", label: "4,000 円", col: 3, row: 2.4, shape: "round", tone: "ng" },
         ],
         groups: [
           { label: "残高を 5,000 円に設定する：べき等", col: -0.4, row: -0.1, w: 4.3, h: 1.6 },
@@ -2225,16 +2230,6 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
         edges: [
           { from: "dept", to: "hist", arrow: "none" },
           { from: "hist", to: "emp", arrow: "none" },
-        ],
-      },
-      {
-        type: "table",
-        caption: "条件を多重度に直す",
-        headers: ["条件", "意味", "多重度"],
-        rows: [
-          ["1つの部門に1人以上の社員が所属する", "部門から見た所属履歴は1件以上", "a ＝ 1..*"],
-          ["社員は必ずいずれか一つの部門に所属する", "社員から見た所属履歴も1件以上", "b ＝ 1..*"],
-          ["読み方", "—", "多重度は相手側の端に書く。「以上」は最小値1"],
         ],
       },
     ],
@@ -3029,7 +3024,7 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
         { from: "ap", to: "net", arrow: "both" },
         { from: "u1", to: "ap", arrow: "both", tone: "ok" },
         { from: "u2", to: "ap", arrow: "both", tone: "ok" },
-        { from: "u1", to: "u2", blocked: true, tone: "ng", label: "A から B へは届かない" },
+        { from: "u1", to: "u2", blocked: true, tone: "ng", label: "A→B は AP で遮断" },
       ],
     },
   },
@@ -3559,8 +3554,8 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
           { id: "wbs", label: "WBS", col: 3, row: 2.4 },
         ],
         groups: [
-          { label: "立上げ", col: -0.4, row: -0.2, w: 4.3, h: 2.1, tone: "ok" },
-          { label: "計画", col: -0.4, row: 1.85, w: 4.3, h: 1.45 },
+          { label: "立上げ", col: -0.4, row: -0.2, w: 4.3, h: 1.9, tone: "ok" },
+          { label: "計画", col: -0.4, row: 1.8, w: 4.3, h: 1.45 },
         ],
         edges: [
           { from: "sponsor", to: "charter", label: "承認" },
@@ -4028,7 +4023,7 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
           { id: "t2", label: "④ パッチ適用：PaaS で不要", col: 2.9, row: 2, shape: "text" },
           {
             id: "t4",
-            label: "② 起動・停止、③ 保守ランプ\n：IaaS で不要",
+            label: "② 起動・停止、③ 保守ランプ\nの目視：IaaS で不要",
             col: 2.9,
             row: 4,
             shape: "text",
@@ -4037,20 +4032,6 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
         groups: [
           { label: "事業者が運用", col: -0.1, row: 3.8, w: 1.2, h: 2.05, tone: "ok" },
           { label: "事業者が運用", col: 1.3, row: 1.8, w: 1.2, h: 4.05, tone: "ok" },
-        ],
-      },
-      {
-        type: "table",
-        caption: "移行段階と不要になる作業",
-        headers: ["段階", "事業者が持つ範囲", "不要になる作業"],
-        rows: [
-          [
-            "IaaSへ移行",
-            "ネットワーク、サーバ（物理層）",
-            "② 物理サーバの起動・停止、③ 保守ランプの目視監視",
-          ],
-          ["PaaSへ移行", "上記＋OS、ミドルウェア", "④ ミドルウェアへのパッチ適用"],
-          ["移行後も残る", "—", "① 業務システムのジョブ監視"],
         ],
       },
     ],
