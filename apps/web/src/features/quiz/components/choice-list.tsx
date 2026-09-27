@@ -55,18 +55,22 @@ export const ChoiceList = ({ item, order, onPick, onToggleExclude }: ChoiceListP
         const dimmed = crossedOut && !attempt.revealed;
         // ラベルは並べた順に振る。原本での記号は解説側（ChoiceNotes）で併記する。
         const key = choiceKey(position);
+        // 除外した選択肢は、除外を外すまで選べない。
+        const cursor = attempt.revealed
+          ? "cursor-default"
+          : dimmed
+            ? "cursor-not-allowed"
+            : "cursor-pointer hover:brightness-[0.98]";
 
         return (
           <div key={index} className="flex items-stretch gap-2">
             <button
               type="button"
-              disabled={attempt.revealed}
+              disabled={attempt.revealed || crossedOut}
               onClick={() => onPick(index)}
               className={`flex min-h-14 flex-1 items-start gap-3.5 rounded-[11px] border-[1.5px] px-[18px] py-4 text-left transition-colors ${
                 style.box
-              } ${attempt.revealed ? "cursor-default" : "cursor-pointer hover:brightness-[0.98]"} ${
-                dimmed ? "opacity-50" : ""
-              }`}
+              } ${cursor} ${dimmed ? "opacity-50" : ""}`}
             >
               <span
                 className={`flex size-[26px] flex-none items-center justify-center rounded-full font-bold text-[12px] ${style.key}`}
