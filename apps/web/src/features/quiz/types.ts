@@ -285,6 +285,16 @@ export const SKETCH_NAMES = [
   "信頼度成長曲線",
   "B⁺木インデックス",
   "ハッシュインデックス",
+  "SWOT分析",
+  "3C分析",
+  "PEST分析",
+  "ファイブフォース分析",
+  "バリューチェーン",
+  "バランススコアカード",
+  "PPM",
+  "アンゾフの成長マトリクス",
+  "VRIO分析",
+  "ビジネスモデルキャンバス",
 ] as const;
 
 export type SketchName = (typeof SKETCH_NAMES)[number];
@@ -566,6 +576,12 @@ export type QuadrantFigure = {
   y: { label: string; low: string; high: string };
   /** 左上・右上・左下・右下の順。 */
   cells: [QuadrantCell, QuadrantCell, QuadrantCell, QuadrantCell];
+  /**
+   * 軸の高低ではなく、区分の名前で 4 つに分けるとき（SWOT の「内部／外部 × プラス／マイナス」など）。
+   * x.low・x.high を列の見出し（左・右）、y.high・y.low を行の見出し（上・下）としてマスの外に出し、
+   * 矢印は付けない。x.label・y.label は区分の名前（空にすると出さない）。
+   */
+  categorical?: boolean;
 };
 
 /**

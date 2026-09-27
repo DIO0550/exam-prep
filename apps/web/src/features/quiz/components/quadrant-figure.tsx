@@ -15,7 +15,48 @@ const CELL_TONE: Record<FigureTone | "plain", { box: string; title: string }> = 
   muted: { box: "border-line bg-panel", title: "text-muted-soft" },
 };
 
-export const QuadrantFigureBlock = ({ figure }: { figure: QuadrantFigure }) => (
+/**
+ * 区分で分ける 4 マス（SWOT など）。上に列の見出し、左に行の見出しを置く。
+ * 高低の軸ではないので矢印は付けず、見出しは区分の名前として帯に入れる。
+ */
+const CategoricalGrid = ({ figure }: { figure: QuadrantFigure }) => (
+  <div className="overflow-x-auto">
+    <div className="grid min-w-[420px] max-w-[680px] grid-cols-[auto_1fr_1fr] gap-2 text-read-sm">
+      {figure.x.label !== "" && (
+        <>
+          <span />
+          <span className="col-span-2 text-center font-bold text-muted text-read-xs">
+            {figure.x.label}
+          </span>
+        </>
+      )}
+      <span className="flex items-end font-bold text-muted text-read-xs">{figure.y.label}</span>
+      {[figure.x.low, figure.x.high].map((header) => (
+        <span
+          key={header}
+          className="rounded-md bg-chip px-2 py-1 text-center font-bold text-muted text-read-xs"
+        >
+          {header}
+        </span>
+      ))}
+      {[figure.y.high, figure.y.low].map((header, row) => (
+        <div key={header} className="contents">
+          <span className="flex items-center rounded-md bg-chip px-2 py-1 font-bold text-muted text-read-xs [writing-mode:vertical-rl]">
+            {header}
+          </span>
+          {figure.cells.slice(row * 2, row * 2 + 2).map((cell) => (
+            <Cell key={cell.title} {...cell} />
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+export const QuadrantFigureBlock = ({ figure }: { figure: QuadrantFigure }) =>
+  figure.categorical ? <CategoricalGrid figure={figure} /> : <AxisGrid figure={figure} />;
+
+const AxisGrid = ({ figure }: { figure: QuadrantFigure }) => (
   // 4 マスを潰すと 1 行が数文字になって読めないので、狭い画面では横へ流す。
   <div className="overflow-x-auto">
     <div className="grid min-w-[420px] max-w-[680px] grid-cols-[auto_auto_1fr_1fr] grid-rows-[auto_1fr_1fr_auto_auto] gap-2 text-read-sm">

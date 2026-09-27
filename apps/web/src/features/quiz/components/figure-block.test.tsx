@@ -228,6 +228,22 @@ describe("FigureBlock（ベン図と 4 象限）", () => {
     expect(screen.getByText("金のなる木")).toBeInTheDocument();
   });
 
+  it("区分で分けるときは、列と行の見出しを出し、矢印を付けない", () => {
+    const figure: QuadrantFigure = {
+      type: "quadrant",
+      caption: "SWOT",
+      categorical: true,
+      x: { label: "", low: "プラス要因", high: "マイナス要因" },
+      y: { label: "", high: "内部環境", low: "外部環境" },
+      cells: [{ title: "S 強み" }, { title: "W 弱み" }, { title: "O 機会" }, { title: "T 脅威" }],
+    };
+    const { container } = render(<FigureBlock figure={figure} variant="page" />);
+    for (const text of ["プラス要因", "マイナス要因", "内部環境", "外部環境", "T 脅威"]) {
+      expect(screen.getByText(text)).toBeInTheDocument();
+    }
+    expect(container.textContent).not.toMatch(/[→←↑]/);
+  });
+
   it("横軸を逆にすると、左端に高い側を出し、矢印を左へ向ける", () => {
     const figure: QuadrantFigure = {
       type: "quadrant",
