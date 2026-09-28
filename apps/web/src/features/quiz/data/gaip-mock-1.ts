@@ -954,7 +954,7 @@ export const GAIP_MOCK_1: [Question, ...Question[]] = [
     source: at(36),
     field: CH4,
     answer: 1,
-    text: "個人情報に関する用語についての次の記述のうち、誤っているものはどれか。",
+    text: "個人情報保護法上の用語についての次の記述のうち、誤っているものはどれか。",
     choices: [
       {
         text: "個人情報は生存する個人に関する情報に限られ、死者に関する情報は含まれない。",
@@ -1110,7 +1110,7 @@ export const GAIP_MOCK_1: [Question, ...Question[]] = [
     source: at(42),
     field: CH5,
     answer: 0,
-    text: "日本の主要文書に関する次の記述のうち、誤っているものはどれか。",
+    text: "AI に関する日本の主要文書についての次の記述のうち、誤っているものはどれか。",
     choices: [
       {
         text: "人間中心の AI 社会原則は、経済産業省・総務省が2019年に公表した。",
@@ -1136,7 +1136,7 @@ export const GAIP_MOCK_1: [Question, ...Question[]] = [
     source: at(43),
     field: CH5,
     answer: 3,
-    text: "3 つの基本理念に関する次の記述のうち、誤っているものはどれか。",
+    text: "「人間中心の AI 社会原則」が掲げる 3 つの基本理念に関する次の記述のうち、誤っているものはどれか。",
     choices: [
       {
         text: "Dignity は、人間が AI を道具として使いこなし、人間の様々な能力をさらに発揮できる社会を指す。",
@@ -1188,7 +1188,7 @@ export const GAIP_MOCK_1: [Question, ...Question[]] = [
     source: at(45),
     field: CH5,
     answer: 2,
-    text: "AI ガバナンスに関する次の記述のうち、誤っているものはどれか。",
+    text: "AI 事業者ガイドラインが示す AI ガバナンスに関する次の記述のうち、誤っているものはどれか。",
     choices: [
       {
         text: "AI の利活用にともなうリスクを、組織として継続的に管理し、望ましい状態へ導く仕組みである。",
@@ -1214,7 +1214,7 @@ export const GAIP_MOCK_1: [Question, ...Question[]] = [
     source: at(46),
     field: CH5,
     answer: 0,
-    text: "共通の指針に関する次の記述のうち、誤っているものはどれか。",
+    text: "AI 事業者ガイドラインの「共通の指針」に関する次の記述のうち、誤っているものはどれか。",
     choices: [
       {
         text: "共通の指針は 7 項目からなり、①は安全性である。",
@@ -1240,7 +1240,7 @@ export const GAIP_MOCK_1: [Question, ...Question[]] = [
     source: at(47),
     field: CH5,
     answer: 3,
-    text: "人間中心の指針に関する次の記述のうち、誤っているものはどれか。",
+    text: "AI 事業者ガイドラインの「人間中心」の指針に関する次の記述のうち、誤っているものはどれか。",
     choices: [
       {
         text: "中核にあるのは人間の尊厳及び個人の自律で、AI が人間の意思決定や尊厳を損なわないようにする。",
@@ -1266,7 +1266,7 @@ export const GAIP_MOCK_1: [Question, ...Question[]] = [
     source: at(48),
     field: CH5,
     answer: 1,
-    text: "安全性と公平性の指針に関する次の記述のうち、誤っているものはどれか。",
+    text: "AI 事業者ガイドラインの「安全性」と「公平性」の指針に関する次の記述のうち、誤っているものはどれか。",
     choices: [
       {
         text: "安全性は、生命・身体・財産に加えて、精神および環境にも危害を及ぼさないようにすることを求める。",
@@ -1292,7 +1292,7 @@ export const GAIP_MOCK_1: [Question, ...Question[]] = [
     source: at(49),
     field: CH5,
     answer: 2,
-    text: "透明性とアカウンタビリティに関する次の記述のうち、誤っているものはどれか。",
+    text: "AI 事業者ガイドラインの「透明性」と「アカウンタビリティ」の指針に関する次の記述のうち、誤っているものはどれか。",
     choices: [
       {
         text: "透明性は、検証可能性を確保しつつ、必要かつ技術的に可能な範囲で、ステークホルダーに情報を提供することである。",
@@ -1318,7 +1318,7 @@ export const GAIP_MOCK_1: [Question, ...Question[]] = [
     source: at(50),
     field: CH5,
     answer: 0,
-    text: "高度な AI システムに関する事業者共通の指針と AI 新法に関する次の記述のうち、誤っているものはどれか。",
+    text: "AI 事業者ガイドラインの「高度な AI システムに関する事業者共通の指針」と、AI 新法に関する次の記述のうち、誤っているものはどれか。",
     choices: [
       {
         text: "AI 新法は罰則規定を設けており、活用事業者が違反した場合は直ちに罰金が科される。",
