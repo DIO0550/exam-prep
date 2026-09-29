@@ -44,6 +44,22 @@ describe("問題データ", () => {
     }
   });
 
+  it("JSTQB の模擬試験は 40 問で、章の配分が本試験と同じ", () => {
+    // 本試験（Foundation Level・40 問）の章配分に合わせてある。書き足したときに
+    // 1 章だけ増えて、本番と違う配分の模擬試験にならないよう数えて押さえておく。
+    const expected = [8, 6, 4, 11, 9, 2];
+    const mocks = QUESTION_SETS.filter(
+      (set) => set.exam === "CTFL" && set.id.startsWith("ctfl-mock-"),
+    );
+    for (const set of mocks) {
+      const counts = expected.map(
+        (_, index) =>
+          set.questions.filter((question) => question.field.startsWith(`第${index + 1}章`)).length,
+      );
+      expect(counts, set.id).toEqual(expected);
+    }
+  });
+
   it("書き下ろした問題は、典拠を持つ", () => {
     // 出どころの分からない問題を混ぜないための検査。出典表記にもこの値が出る。
     for (const question of ALL) {

@@ -29,6 +29,14 @@ export const EXAMS: [Exam, ...Exam[]] = [
     group: "生成AI活用普及協会（GUGA）",
     // 合格ラインは非公開なので持たない。
   },
+  {
+    code: "CTFL",
+    name: "JSTQB Foundation Level",
+    sub: "章別 ・ 模擬3回 ・ 計235問",
+    group: "JSTQB テスト技術者資格",
+    // Foundation Level の合格基準（40 問中 26 問 = 正答率 65%）に合わせる。
+    passLine: 65,
+  },
 ];
 
 /** 見出しの並び順。EXAMS の group と対応する。 */
@@ -36,4 +44,5 @@ export const EXAM_GROUPS = [
   "IPA 情報処理技術者試験",
   "Google Cloud 認定資格",
   "生成AI活用普及協会（GUGA）",
+  "JSTQB テスト技術者資格",
 ];

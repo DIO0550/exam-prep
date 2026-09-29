@@ -12,6 +12,15 @@ import { AP_R06_AKI_AM } from "./ap-r06-aki-am";
 import { AP_R06_HARU_AM } from "./ap-r06-haru-am";
 import { AP_R07_AKI_AM } from "./ap-r07-aki-am";
 import { AP_R07_HARU_AM } from "./ap-r07-haru-am";
+import { CTFL_CH1 } from "./ctfl-ch1";
+import { CTFL_CH2 } from "./ctfl-ch2";
+import { CTFL_CH3 } from "./ctfl-ch3";
+import { CTFL_CH4 } from "./ctfl-ch4";
+import { CTFL_CH5 } from "./ctfl-ch5";
+import { CTFL_CH6 } from "./ctfl-ch6";
+import { CTFL_MOCK_1 } from "./ctfl-mock-1";
+import { CTFL_MOCK_2 } from "./ctfl-mock-2";
+import { CTFL_MOCK_3 } from "./ctfl-mock-3";
 import { GAIP_CH1 } from "./gaip-ch1";
 import { GAIP_CH2 } from "./gaip-ch2";
 import { GAIP_CH2_GPT } from "./gaip-ch2-gpt";
@@ -39,7 +48,8 @@ import { GCP_CDL_SERVICE_4 } from "./gcp-cdl-service-4";
  * IPA の回（exam: "AP"）は、問題文・選択肢・図・正解が IPA の著作物で、MIT License の
  * 対象外。条件は docs/ipa-kakomon-usage-notes.md と public/questions/LICENSE.md を参照。
  * Google Cloud 向けの問題集（exam: "CDL"）は本サイトで書き下ろしたもので、こちらは
- * リポジトリの LICENSE（MIT）に含まれる。
+ * リポジトリの LICENSE（MIT）に含まれる。JSTQB Foundation Level 向け（exam: "CTFL"）も同じく
+ * 書き下ろしで MIT。典拠のシラバス（原著 ISTQB、日本語版 JSTQB の著作物）はリポジトリに含めない。
  */
 export type QuestionSet = {
   /** 出典の ID と同じ形。URL や React のキーに使う。 */
@@ -115,6 +125,16 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "gaip-ch4", exam: "GAIP", label: "第4章 リテラシーと権利", questions: GAIP_CH4 },
   { id: "gaip-ch5", exam: "GAIP", label: "第5章 理念・指針・法律", questions: GAIP_CH5 },
   { id: "gaip-ch6", exam: "GAIP", label: "第6章 プロンプト制作", questions: GAIP_CH6 },
+  // 章別を先に置く。第1章から順に解けばシラバスを一周でき、模擬試験はその仕上げに使う想定。
+  { id: "ctfl-ch1", exam: "CTFL", label: "第1章 テストの基礎", questions: CTFL_CH1 },
+  { id: "ctfl-ch2", exam: "CTFL", label: "第2章 SDLCとテスト", questions: CTFL_CH2 },
+  { id: "ctfl-ch3", exam: "CTFL", label: "第3章 静的テスト", questions: CTFL_CH3 },
+  { id: "ctfl-ch4", exam: "CTFL", label: "第4章 テスト分析と設計", questions: CTFL_CH4 },
+  { id: "ctfl-ch5", exam: "CTFL", label: "第5章 テストのマネジメント", questions: CTFL_CH5 },
+  { id: "ctfl-ch6", exam: "CTFL", label: "第6章 テストツール", questions: CTFL_CH6 },
+  { id: "ctfl-mock-1", exam: "CTFL", label: "模擬試験1", questions: CTFL_MOCK_1 },
+  { id: "ctfl-mock-2", exam: "CTFL", label: "模擬試験2", questions: CTFL_MOCK_2 },
+  { id: "ctfl-mock-3", exam: "CTFL", label: "模擬試験3", questions: CTFL_MOCK_3 },
 ];
 
 /** ある試験に属する問題集だけを取り出す。左の一覧と「出題する回」を連動させるのに使う。 */
@@ -141,4 +161,5 @@ export const COVERAGE = [
   `応用情報技術者試験 午前 ${questionSetsOf("AP").length}回分（令和元年度秋期〜令和7年度秋期、各80問）`,
   `Google Cloud Digital Leader 対策 ${countOf("CDL")}問（本サイト作成。公式の問題ではありません）`,
   `生成AIパスポート 対策 ${countOf("GAIP")}問（本サイト作成。公式の問題ではありません）`,
+  `JSTQB Foundation Level 対策 ${countOf("CTFL")}問（本サイト作成。公式の問題ではありません）`,
 ].join(" ／ ");
