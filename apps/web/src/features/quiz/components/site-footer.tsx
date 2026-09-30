@@ -42,8 +42,18 @@ export const SiteFooter = () => {
           してはいますが、そこからの転載ではありません。認定試験の実際の設問でも、公式の模擬試験
           でもありません。典拠は問題ごとの出典表記に出しています。
         </p>
+        <p>
+          <span className="font-bold text-muted">JSTQB Foundation Level 対策の問題</span>
+          　問題文・選択肢・正解・解説のいずれも本サイトで書き下ろしたもので、JSTQB
+          が公開しているテスト技術者資格制度 Foundation Level シラバス（Version
+          2023V4.0.J02）を典拠にしています。シラバスの著作権は原著が International Software Testing
+          Qualifications Board（ISTQB®）、日本語版が Japan Software Testing Qualifications
+          Board（JSTQB®）にあり、本サイトはシラバスの文を転載して
+          いません。認定試験の実際の設問でも、公式のサンプル問題でもありません。
+        </p>
         <p className="font-bold text-muted">
-          本サイトは IPA とも Google とも無関係の個人制作です。
+          本サイトは IPA とも Google とも生成AI活用普及協会とも JSTQB・ISTQB
+          とも無関係の個人制作です。
         </p>
       </div>
     </footer>
