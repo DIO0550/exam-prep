@@ -1,9 +1,10 @@
+import { matchesAnswer, type Selection } from "./answers";
 import type { Question } from "./types";
 
 /** 1 問ごとの解答状況。 */
 export type Attempt = {
-  /** 選んだ選択肢の添字。未解答なら null。 */
-  picked: number | null;
+  /** 選択した添字。複数選択の確定前の選択も持つ。未選択なら null または空配列。 */
+  picked: Selection;
   /** 正誤と解説を開いたか。解答するとその場で true になる。 */
   revealed: boolean;
   /** 「後で見直す」フラグ。 */
@@ -37,7 +38,7 @@ export type Summary = {
 };
 
 export const isCorrect = ({ question, attempt }: QuizItem): boolean =>
-  attempt.picked === question.answer;
+  attempt.revealed && matchesAnswer(question.answer, attempt.picked);
 
 /** 解答済みの問題だけを母数に、全体と分野別の正答率を出す。 */
 export const summarize = (items: QuizItem[]): Summary => {

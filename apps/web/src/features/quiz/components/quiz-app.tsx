@@ -156,6 +156,11 @@ export const QuizApp = () => {
                     <HomeScreen
                       setLabel={questionSet.label}
                       questionCount={questionSet.questions.length}
+                      multipleCount={
+                        questionSet.questions.filter((question) => Array.isArray(question.answer))
+                          .length
+                      }
+                      secondsPerQuestion={questionSet.exam === "GAIP" ? 60 : 90}
                       answered={session.summary.answered}
                       summary={progress}
                       setSummary={session.summary}
@@ -195,6 +200,7 @@ export const QuizApp = () => {
                       isLast={session.isLast}
                       showFeedback={session.feedback === "inline"}
                       onPick={session.pick}
+                      onSubmit={session.submit}
                       onUndoPick={session.canUndoPick ? session.undoPick : undefined}
                       onToggleExclude={session.toggleExclude}
                       onToggleFlag={session.toggleFlag}

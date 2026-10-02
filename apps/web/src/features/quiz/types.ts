@@ -631,8 +631,8 @@ export type Question = {
   source: Source;
   /** 表示用の分野。IPA の解答例は T/M/S しか示さないので、細分類は本サイトで付けている。 */
   field: string;
-  /** 正解の選択肢の添字。IPA の解答例から取る。 */
-  answer: number;
+  /** 正解の添字。複数選択は2個以上の添字を持ち、全て一致した場合だけ正解。 */
+  answer: number | [number, number, ...number[]];
   /**
    * 問題文。1 つの段落としてそのまま出すので、途中の改行は表示に出ない。
    * 条件を並べて示すものは、文中に「・」で書かずに stem の箇条書きへ持たせる（docs 3.5）。

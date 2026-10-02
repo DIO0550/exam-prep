@@ -10,14 +10,14 @@ import { DEFAULT_TEXT_SCALE, isTextScale } from "../text-scale";
  */
 
 /** 保存形式の版。形を変えたら上げる。読めない版は捨てて作り直す。 */
-export const RECORD_VERSION = 4;
+export const RECORD_VERSION = 5;
 
 /**
  * 読める版。版 1 は選択肢シャッフル、版 2 は文字サイズ、版 3 はメモの幅を
  * 持たないだけなので、既定値を足して読む。ここで捨てると、設定が 1 つ増えただけで
- * 学習記録が消えてしまうため。
+ * 学習記録が消えてしまうため。版4以前の単一選択もそのまま読める。
  */
-const READABLE_VERSIONS: readonly number[] = [1, 2, 3, RECORD_VERSION];
+const READABLE_VERSIONS: readonly number[] = [1, 2, 3, 4, RECORD_VERSION];
 
 /** メモの枠の幅（px）。狭すぎると書けず、広すぎると問題文が読めなくなるので両端を決めておく。 */
 export const NOTE_WIDTH_MIN = 300;
@@ -207,15 +207,18 @@ export const withRestart = (record: ProgressRecord, questionIds: string[]): Prog
   return { ...record, attempts, shuffleSeed: record.shuffleSeed + 1 };
 };
 
+const isChoiceIndex = (value: unknown): value is number =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0;
+
 const isNumberArray = (value: unknown): value is number[] =>
-  Array.isArray(value) && value.every((item) => typeof item === "number");
+  Array.isArray(value) && value.every(isChoiceIndex) && new Set(value).size === value.length;
 
 /** 1 件の解答状況として読めるか。読み込み（parseRecord）と取り込み（backup/）が使う。 */
 export const isAttempt = (value: unknown): value is Attempt => {
   if (typeof value !== "object" || value === null) return false;
   const attempt = value as Record<string, unknown>;
   return (
-    (attempt.picked === null || typeof attempt.picked === "number") &&
+    (attempt.picked === null || isChoiceIndex(attempt.picked) || isNumberArray(attempt.picked)) &&
     typeof attempt.revealed === "boolean" &&
     typeof attempt.flagged === "boolean" &&
     typeof attempt.weak === "boolean" &&

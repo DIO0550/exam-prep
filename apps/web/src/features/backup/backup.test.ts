@@ -248,3 +248,17 @@ describe("表示に出す文字", () => {
     expect(isEmptyBackup(buildAllBackup(records(), NOW))).toBe(false);
   });
 });
+
+it("複数の解答と未確定の選択をJSONバックアップから復元する", () => {
+  const current = records();
+  current.record.attempts.multiple = { ...ANSWERED, picked: [2, 0] };
+  current.record.attempts.draft = { ...ANSWERED, picked: [1], revealed: false };
+  const parsed = parseBackup(JSON.parse(JSON.stringify(buildAllBackup(current, NOW))));
+  expect(parsed.ok).toBe(true);
+  if (!parsed.ok) {
+    return;
+  }
+  const restored = applyBackup(parsed.backup, records());
+  expect(restored.record.attempts.multiple).toEqual(current.record.attempts.multiple);
+  expect(restored.record.attempts.draft).toEqual(current.record.attempts.draft);
+});

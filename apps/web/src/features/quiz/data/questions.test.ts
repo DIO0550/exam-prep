@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-
+import { selectionsOf } from "../answers";
 import {
   chartProblems,
   diagramProblems,
@@ -60,6 +60,33 @@ describe("問題データ", () => {
     }
   });
 
+  it.each([5, 6, 7])("生成AI模試%dは全6章各10問、単一54問・複数6問の新しい設問を持つ", (no) => {
+    const mock = QUESTION_SETS.find((set) => set.id === `gaip-mock-${no}`);
+    expect(mock).toBeDefined();
+    if (!mock) {
+      return;
+    }
+    expect(mock.questions).toHaveLength(60);
+    expect(mock.questions.filter((question) => Array.isArray(question.answer))).toHaveLength(6);
+    for (let chapter = 1; chapter <= 6; chapter += 1) {
+      const questions = mock.questions.filter((question) =>
+        question.field.startsWith(`第${chapter}章`),
+      );
+      expect(questions).toHaveLength(10);
+      expect(questions.filter((question) => Array.isArray(question.answer))).toHaveLength(1);
+    }
+    const texts = ALL.map((question) => question.text);
+    for (const question of mock.questions) {
+      expect(texts.filter((text) => text === question.text)).toHaveLength(1);
+      expect(question.choices).toHaveLength(4);
+      if (Array.isArray(question.answer)) {
+        expect(question.text).toMatch(/2つ選べ|すべて選べ/);
+        continue;
+      }
+      expect(question.text).not.toMatch(/2つ選べ|すべて選べ/);
+    }
+  });
+
   it("書き下ろした問題は、典拠を持つ", () => {
     // 出どころの分からない問題を混ぜないための検査。出典表記にもこの値が出る。
     for (const question of ALL) {
@@ -76,7 +103,7 @@ describe("問題データ", () => {
       const marked = question.choices
         .map((choice, index) => (choice.note?.includes("これが正解") ? index : -1))
         .filter((index) => index >= 0);
-      expect(marked, `${nameOf(question)} の「これが正解」`).toEqual([question.answer]);
+      expect(marked, `${nameOf(question)} の「これが正解」`).toEqual(selectionsOf(question.answer));
     }
   });
 
@@ -93,8 +120,16 @@ describe("問題データ", () => {
 
   it("正解の添字が、選択肢の範囲に収まっている", () => {
     for (const question of ALL) {
-      expect(question.answer, `${nameOf(question)} の正解`).toBeGreaterThanOrEqual(0);
-      expect(question.answer, `${nameOf(question)} の正解`).toBeLessThan(question.choices.length);
+      const answers = selectionsOf(question.answer);
+      expect(new Set(answers).size).toBe(answers.length);
+      if (Array.isArray(question.answer)) {
+        expect(answers.length).toBeGreaterThanOrEqual(2);
+      }
+      for (const answer of answers) {
+        expect(Number.isInteger(answer)).toBe(true);
+        expect(answer, `${nameOf(question)} の正解`).toBeGreaterThanOrEqual(0);
+        expect(answer, `${nameOf(question)} の正解`).toBeLessThan(question.choices.length);
+      }
     }
   });
 

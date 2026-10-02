@@ -32,6 +32,9 @@ import { GAIP_MOCK_1 } from "./gaip-mock-1";
 import { GAIP_MOCK_2 } from "./gaip-mock-2";
 import { GAIP_MOCK_3 } from "./gaip-mock-3";
 import { GAIP_MOCK_4 } from "./gaip-mock-4";
+import { GAIP_MOCK_5 } from "./gaip-mock-5";
+import { GAIP_MOCK_6 } from "./gaip-mock-6";
+import { GAIP_MOCK_7 } from "./gaip-mock-7";
 import { GAIP_TERM_1 } from "./gaip-term-1";
 import { GCP_CDL_SCENARIO_1 } from "./gcp-cdl-scenario-1";
 import { GCP_CDL_SCENARIO_2 } from "./gcp-cdl-scenario-2";
@@ -118,6 +121,9 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "gaip-mock-2", exam: "GAIP", label: "模擬試験2", questions: GAIP_MOCK_2 },
   { id: "gaip-mock-3", exam: "GAIP", label: "模擬試験3", questions: GAIP_MOCK_3 },
   { id: "gaip-mock-4", exam: "GAIP", label: "模擬試験4", questions: GAIP_MOCK_4 },
+  { id: "gaip-mock-5", exam: "GAIP", label: "模擬試験5（複数選択対応）", questions: GAIP_MOCK_5 },
+  { id: "gaip-mock-6", exam: "GAIP", label: "模擬試験6（複数選択対応）", questions: GAIP_MOCK_6 },
+  { id: "gaip-mock-7", exam: "GAIP", label: "模擬試験7（複数選択対応）", questions: GAIP_MOCK_7 },
   { id: "gaip-ch1", exam: "GAIP", label: "第1章 AI（人工知能）", questions: GAIP_CH1 },
   { id: "gaip-ch2", exam: "GAIP", label: "第2章 生成AI", questions: GAIP_CH2 },
   { id: "gaip-ch2-gpt", exam: "GAIP", label: "第2章 GPT特化", questions: GAIP_CH2_GPT },
