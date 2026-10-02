@@ -81,7 +81,12 @@ export const progressStore = {
    * 解答を記録する。累計正答率と連続学習日数もここで伸びる。
    * 返す値を undoAnswer に渡すと、この解答を取り消せる。
    */
-  answer: (questionId: string, choice: number, correct: boolean, now = new Date()): AnswerUndo => {
+  answer: (
+    questionId: string,
+    choice: Attempt["picked"],
+    correct: boolean,
+    now = new Date(),
+  ): AnswerUndo => {
     const record = snapshot();
     const attempt: Attempt = {
       ...attemptOf(record, questionId),

@@ -18,6 +18,8 @@ type HomeScreenProps = {
   setLabel: string;
   /** 出題数。案内文の「全◯問」に使う。 */
   questionCount: number;
+  multipleCount: number;
+  secondsPerQuestion: number;
   /** この回の解答済み数。0 なら「開始」、途中なら「再開」を出す。 */
   answered: number;
   summary: ProgressSummary;
@@ -36,6 +38,8 @@ type HomeScreenProps = {
 export const HomeScreen = ({
   setLabel,
   questionCount,
+  multipleCount,
+  secondsPerQuestion,
   answered,
   summary,
   setSummary,
@@ -63,7 +67,9 @@ export const HomeScreen = ({
           </h2>
           <p className="max-w-[100ch] text-pretty text-[13.5px] text-muted-soft leading-[1.9]">
             {setLabel}・全{questionCount}
-            問・4択単一選択。1問あたりの目安は90秒です。解答すると即座に正誤と解説が表示されます。
+            問・4択{multipleCount > 0 ? `（複数選択${multipleCount}問を含む）` : "単一選択"}。
+            1問あたりの目安は{secondsPerQuestion}秒です。
+            単一選択は選ぶと採点され、複数選択は「解答を確定」で採点されます。
             {answered > 0 && `（${questionCount}問中 ${answered}問 解答済み）`}
           </p>
         </div>

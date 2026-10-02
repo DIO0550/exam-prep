@@ -1,7 +1,8 @@
-import { isShuffled, positionOf, SHUFFLED_NOTE } from "../choice-order";
+import { selectionLabel } from "../answers";
+import { isShuffled, SHUFFLED_NOTE } from "../choice-order";
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
-import { choiceKey, figuresOf, formatSource } from "../types";
+import { figuresOf, formatSource } from "../types";
 import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
 import { KeyPointList } from "./key-point-list";
@@ -46,8 +47,7 @@ export const ExplainScreen = ({
   const correct = isCorrect(item);
   const figures = figuresOf(question);
   const shuffled = isShuffled(order);
-  const pickedLabel =
-    attempt.picked === null ? "未解答" : choiceKey(positionOf(order, attempt.picked));
+  const pickedLabel = selectionLabel(attempt.picked, order);
 
   return (
     <div className="flex animate-rise-in flex-col gap-4">
@@ -65,7 +65,7 @@ export const ExplainScreen = ({
           {onUndoPick && <UndoPickButton onUndo={onUndoPick} />}
         </div>
         <span className="text-read-sm text-ink-soft">
-          あなたの解答：{pickedLabel} ／ 正解：{choiceKey(positionOf(order, question.answer))}
+          あなたの解答：{pickedLabel} ／ 正解：{selectionLabel(question.answer, order)}
         </span>
       </div>
 

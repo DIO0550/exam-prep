@@ -1,5 +1,7 @@
+import { isMultipleChoice, selectionsOf } from "../answers";
 import type { QuizItem } from "../stats";
 import { choiceKey } from "../types";
+import { ChoiceControl } from "./choice-control";
 import { OriginalFigure } from "./question-figure";
 
 type ChoiceListProps = {
@@ -12,8 +14,8 @@ type ChoiceListProps = {
 
 /** 選択肢の色。解答前は「選択中」、解答後は「正解」「あなたの解答」を塗り分ける。 */
 const choiceStyle = ({ question, attempt }: QuizItem, index: number) => {
-  const picked = attempt.picked === index;
-  const answer = index === question.answer;
+  const picked = selectionsOf(attempt.picked).includes(index);
+  const answer = selectionsOf(question.answer).includes(index);
 
   if (attempt.revealed && answer) {
     return {
@@ -64,10 +66,11 @@ export const ChoiceList = ({ item, order, onPick, onToggleExclude }: ChoiceListP
 
         return (
           <div key={index} className="flex items-stretch gap-2">
-            <button
-              type="button"
+            <ChoiceControl
+              multiple={isMultipleChoice(question)}
+              selected={selectionsOf(attempt.picked).includes(index)}
               disabled={attempt.revealed || crossedOut}
-              onClick={() => onPick(index)}
+              onSelect={() => onPick(index)}
               className={`flex min-h-14 flex-1 items-start gap-3.5 rounded-[11px] border-[1.5px] px-[18px] py-4 text-left transition-colors ${
                 style.box
               } ${cursor} ${dimmed ? "opacity-50" : ""}`}
@@ -94,7 +97,7 @@ export const ChoiceList = ({ item, order, onPick, onToggleExclude }: ChoiceListP
                   {style.mark}
                 </span>
               )}
-            </button>
+            </ChoiceControl>
             <button
               type="button"
               aria-pressed={crossedOut}

@@ -1,7 +1,8 @@
-import { isShuffled, positionOf, SHUFFLED_NOTE } from "../choice-order";
+import { isMultipleChoice, selectionLabel, selectionsOf } from "../answers";
+import { isShuffled, SHUFFLED_NOTE } from "../choice-order";
 import type { QuizItem } from "../stats";
 import { isCorrect } from "../stats";
-import { choiceKey, figuresOf, formatSource, shortSource } from "../types";
+import { figuresOf, formatSource, shortSource } from "../types";
 import { ChoiceList } from "./choice-list";
 import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
@@ -24,6 +25,7 @@ type QuizScreenProps = {
   /** 解説を同じ画面に出すか。別画面のときはここには出さない。 */
   showFeedback: boolean;
   onPick: (index: number) => void;
+  onSubmit: () => void;
   /** 解答の取り消し。解答した直後の問題でだけ渡す。 */
   onUndoPick?: () => void;
   onToggleExclude: (index: number) => void;
@@ -47,6 +49,7 @@ export const QuizScreen = ({
   isLast,
   showFeedback,
   onPick,
+  onSubmit,
   onUndoPick,
   onToggleExclude,
   onToggleFlag,
@@ -103,8 +106,26 @@ export const QuizScreen = ({
           )}
         </div>
 
+        {isMultipleChoice(question) && (
+          <p className="px-[26px] pt-4 text-read-sm text-accent">
+            複数選択：当てはまる選択肢をすべて選び、「解答を確定」を押してください。
+            全て一致した場合のみ正解です（この演習の採点ルール）。
+          </p>
+        )}
         <ChoiceList item={item} order={order} onPick={onPick} onToggleExclude={onToggleExclude} />
 
+        {isMultipleChoice(question) && !attempt.revealed && (
+          <div className="px-[26px] pb-6">
+            <button
+              type="button"
+              onClick={onSubmit}
+              disabled={selectionsOf(attempt.picked).length === 0}
+              className="rounded-[9px] bg-accent px-7 py-3.5 font-bold text-surface disabled:cursor-not-allowed disabled:bg-disabled"
+            >
+              解答を確定
+            </button>
+          </div>
+        )}
         {attempt.revealed && showFeedback && (
           <div
             className={`animate-rise-in border-line-soft border-t px-[26px] py-6 ${
@@ -116,7 +137,7 @@ export const QuizScreen = ({
                 {correct ? "正解" : "不正解"}
               </span>
               <span className="text-read-sm text-muted-soft">
-                正解：{choiceKey(positionOf(order, question.answer))}
+                正解：{selectionLabel(question.answer, order)}
               </span>
               {onUndoPick && <UndoPickButton onUndo={onUndoPick} />}
             </div>

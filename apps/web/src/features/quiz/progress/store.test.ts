@@ -141,3 +141,16 @@ describe("progressStore", () => {
     expect(progressStore.snapshot()).toEqual(emptyRecord());
   });
 });
+
+it("複数選択の解き直しは選択を消し、フラグと苦手登録を残す", () => {
+  progressStore.answer(QUESTION, [0, 2], false);
+  progressStore.patchAttempt(QUESTION, { flagged: true, excluded: [3] });
+  progressStore.restart([QUESTION]);
+  expect(progressStore.snapshot().attempts[QUESTION]).toEqual({
+    picked: null,
+    revealed: false,
+    weak: true,
+    flagged: true,
+    excluded: [],
+  });
+});

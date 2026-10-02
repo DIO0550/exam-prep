@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 
+import { isMultipleChoice, matchesAnswer, selectionsOf, toggleSelection } from "../answers";
 import { choiceOrder } from "../choice-order";
 import type { Stroke } from "../notes/note";
 import { EMPTY_NOTE, noteOf } from "../notes/note";
@@ -140,25 +141,51 @@ export const useQuizSession = (questions: Question[]) => {
     setStartedAt(Date.now());
   }, [questions]);
 
-  /**
-   * 選択肢を選ぶ。選んだ時点で正誤が確定し、間違えた問題は苦手登録に入る。
-   * 押し間違えたときは undoPick で取り消せる。除外した選択肢は選べない。
-   */
+  /** 単一選択は即採点。複数選択は確定前の選択として保存する。 */
   const pick = useCallback(
     (choice: number) => {
-      if (!current || current.attempt.revealed) return;
-      if (current.attempt.excluded.includes(choice)) return;
+      if (!current || current.attempt.revealed) {
+        return;
+      }
+      if (current.attempt.excluded.includes(choice)) {
+        return;
+      }
+      if (isMultipleChoice(current.question)) {
+        patchCurrent({ picked: toggleSelection(current.attempt.picked, choice) });
+        return;
+      }
       setLastAnswer(
         progressStore.answer(
           sourceId(current.question.source),
           choice,
-          choice === current.question.answer,
+          matchesAnswer(current.question.answer, choice),
         ),
       );
-      if (feedback === "page") setScreen("explain");
+      if (feedback === "page") {
+        setScreen("explain");
+      }
     },
-    [current, feedback],
+    [current, feedback, patchCurrent],
   );
+
+  const submit = useCallback(() => {
+    if (!current || current.attempt.revealed || !isMultipleChoice(current.question)) {
+      return;
+    }
+    if (selectionsOf(current.attempt.picked).length === 0) {
+      return;
+    }
+    setLastAnswer(
+      progressStore.answer(
+        sourceId(current.question.source),
+        current.attempt.picked,
+        matchesAnswer(current.question.answer, current.attempt.picked),
+      ),
+    );
+    if (feedback === "page") {
+      setScreen("explain");
+    }
+  }, [current, feedback]);
 
   /** 今の問題が、最後に解答した問題で、まだ取り消せるか。 */
   const canUndoPick =
@@ -178,6 +205,14 @@ export const useQuizSession = (questions: Question[]) => {
   const toggleExclude = useCallback(
     (choice: number) => {
       const excluded = current?.attempt.excluded ?? [];
+      const removing = !excluded.includes(choice);
+      if (removing && current && !current.attempt.revealed && isMultipleChoice(current.question)) {
+        patchCurrent({
+          picked: selectionsOf(current.attempt.picked).filter((index) => index !== choice),
+          excluded: [...excluded, choice],
+        });
+        return;
+      }
       patchCurrent({
         excluded: excluded.includes(choice)
           ? excluded.filter((c) => c !== choice)
@@ -263,6 +298,7 @@ export const useQuizSession = (questions: Question[]) => {
     start,
     restart,
     pick,
+    submit,
     canUndoPick,
     undoPick,
     toggleExclude,

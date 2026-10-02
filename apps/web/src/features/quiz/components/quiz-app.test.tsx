@@ -13,7 +13,13 @@ import { QuizApp } from "./quiz-app";
 const FIRST_SET = QUESTION_SETS[0];
 const QUESTIONS = FIRST_SET.questions;
 const FIRST = QUESTIONS[0];
-const ANSWER_TEXT = FIRST.choices[FIRST.answer]?.text ?? "";
+const singleAnswer = (question: (typeof QUESTIONS)[number]): number => {
+  if (Array.isArray(question.answer)) {
+    throw new Error("単一選択のテスト用問題が必要");
+  }
+  return question.answer;
+};
+const ANSWER_TEXT = FIRST.choices[singleAnswer(FIRST)]?.text ?? "";
 
 /** 選択肢ボタンは読み上げ名がキー（ア〜エ）で始まる。除外ボタンは「選択肢〜を除外」。 */
 const choiceButton = (index: number) =>
@@ -88,7 +94,7 @@ describe("QuizApp", () => {
     // 1 問目を解く前は母数が無いので、数字は出さない
     expect(screen.getByText("正答率 —")).toBeInTheDocument();
 
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
     expect(screen.getByText("100%")).toBeInTheDocument();
     expect(screen.getByText("（1/1問）")).toBeInTheDocument();
 
@@ -96,7 +102,7 @@ describe("QuizApp", () => {
     await user.click(screen.getByRole("button", { name: "次の問題へ" }));
     const second = QUESTIONS[1];
     if (!second) throw new Error("2 問目が無い");
-    await user.click(choiceButton((second.answer + 1) % second.choices.length));
+    await user.click(choiceButton((singleAnswer(second) + 1) % second.choices.length));
     expect(screen.getByText("50%")).toBeInTheDocument();
     expect(screen.getByText("（1/2問）")).toBeInTheDocument();
   });
@@ -151,7 +157,7 @@ describe("QuizApp", () => {
     const next = screen.getByRole("button", { name: "次の問題へ" });
     expect(next).toBeDisabled();
 
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
     expect(next).toBeEnabled();
   });
 
@@ -165,7 +171,7 @@ describe("QuizApp", () => {
     content.scrollTop = 400;
     document.documentElement.scrollTop = 400;
 
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
     await user.click(screen.getByRole("button", { name: "次の問題へ" }));
 
     expect(screen.getByRole("heading", { name: "問 02" })).toBeInTheDocument();
@@ -177,7 +183,7 @@ describe("QuizApp", () => {
     const user = userEvent.setup();
     await startQuiz(user);
 
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
 
     expect(screen.getByText(`出典：${formatSource(FIRST.source)}`)).toBeInTheDocument();
     if (FIRST.explain) expect(screen.getByText(FIRST.explain)).toBeInTheDocument();
@@ -186,7 +192,7 @@ describe("QuizApp", () => {
   it("出典は年度・期・試験区分・時間区分・問番号まで出る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
 
     expect(
       screen.getByText(/^出典：令和\d年度 (春|秋)期 応用情報技術者試験 午前 問1/),
@@ -232,7 +238,7 @@ describe("QuizApp", () => {
 
     expect(screen.getByRole("button", { name: "苦手に登録" })).toBeInTheDocument();
 
-    await user.click(choiceButton(FIRST.answer === 0 ? 1 : 0));
+    await user.click(choiceButton(singleAnswer(FIRST) === 0 ? 1 : 0));
 
     expect(screen.getByRole("button", { name: "苦手登録済" })).toBeInTheDocument();
   });
@@ -241,7 +247,7 @@ describe("QuizApp", () => {
     const user = userEvent.setup();
     await startQuiz(user);
 
-    await user.click(choiceButton(FIRST.answer === 0 ? 1 : 0));
+    await user.click(choiceButton(singleAnswer(FIRST) === 0 ? 1 : 0));
     expect(screen.getByText("不正解")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "解答を取り消す" }));
@@ -251,7 +257,7 @@ describe("QuizApp", () => {
     expect(screen.getByRole("button", { name: "苦手に登録" })).toBeInTheDocument();
     expect(readRecord().recent).toEqual([]);
 
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
     expect(screen.getByText(/^正解：/)).toBeInTheDocument();
     expect(screen.queryByText("不正解")).not.toBeInTheDocument();
     expect(readRecord().recent).toEqual([true]);
@@ -261,7 +267,7 @@ describe("QuizApp", () => {
     const user = userEvent.setup();
     await startQuiz(user);
 
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
     await user.click(screen.getByRole("button", { name: "次の問題へ" }));
     await user.click(screen.getByRole("button", { name: "前の問題" }));
 
@@ -270,7 +276,7 @@ describe("QuizApp", () => {
     await user.click(screen.getByRole("button", { name: "次の問題へ" }));
     const second = QUESTIONS[1];
     if (!second) throw new Error("2 問目が無い");
-    await user.click(choiceButton(second.answer));
+    await user.click(choiceButton(singleAnswer(second)));
     await user.click(screen.getByRole("button", { name: "前の問題" }));
 
     expect(screen.queryByRole("button", { name: "解答を取り消す" })).not.toBeInTheDocument();
@@ -281,11 +287,11 @@ describe("QuizApp", () => {
     await startQuiz(user);
     await user.click(screen.getByRole("button", { name: "別画面" }));
 
-    await user.click(choiceButton(FIRST.answer === 0 ? 1 : 0));
+    await user.click(choiceButton(singleAnswer(FIRST) === 0 ? 1 : 0));
     await user.click(screen.getByRole("button", { name: "解答を取り消す" }));
 
     expect(screen.getByRole("heading", { name: "問 01" })).toBeInTheDocument();
-    expect(choiceButton(FIRST.answer)).toBeEnabled();
+    expect(choiceButton(singleAnswer(FIRST))).toBeEnabled();
   });
 
   it("解説表示を「別画面」にすると解答後に解説画面へ移る", async () => {
@@ -293,7 +299,7 @@ describe("QuizApp", () => {
     await startQuiz(user);
     await user.click(screen.getByRole("button", { name: "別画面" }));
 
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
 
     expect(screen.getByRole("heading", { name: "正解" })).toBeInTheDocument();
     expect(screen.getByText(/あなたの解答：/)).toBeInTheDocument();
@@ -359,13 +365,13 @@ describe("QuizApp", () => {
     expect(
       screen.getByText(`出典：${formatSource(FIRST.source, "選択肢の順序を入れ替えて表示")}`),
     ).toBeInTheDocument();
-    expect(screen.getByText(`原本 ${choiceKey(FIRST.answer)}`)).toBeInTheDocument();
+    expect(screen.getByText(`原本 ${choiceKey(singleAnswer(FIRST))}`)).toBeInTheDocument();
   });
 
   it("解答したあとに切り替えても、正解と自分の解答は同じ選択肢に付く", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
 
     await user.click(screen.getByRole("button", { name: "シャッフル" }));
 
@@ -465,7 +471,7 @@ describe("QuizApp", () => {
     await user.type(screen.getByLabelText("メモ（文章）"), "桁落ちに注意");
 
     // 次の問題へ移るとメモも切り替わる（前の問題の書き込みは出てこない）
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
     await user.click(screen.getByRole("button", { name: "次の問題へ" }));
     expect(screen.getByLabelText("メモ（文章）")).toHaveValue("");
 
@@ -514,7 +520,7 @@ describe("QuizApp", () => {
   it("見直し画面の「不正解のみ」で間違えた問題だけが残る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
-    await user.click(choiceButton(FIRST.answer === 0 ? 1 : 0));
+    await user.click(choiceButton(singleAnswer(FIRST) === 0 ? 1 : 0));
 
     await user.click(screen.getByRole("button", { name: "問題一覧・見直し" }));
     expect(screen.getAllByText("未解答")).toHaveLength(QUESTIONS.length - 1);
@@ -531,7 +537,7 @@ describe("QuizApp", () => {
     await startQuiz(user);
 
     for (const question of QUESTIONS) {
-      await user.click(choiceButton(question.answer));
+      await user.click(choiceButton(singleAnswer(question)));
       await user.click(screen.getByRole("button", { name: /次の問題へ|結果を見る/ }));
     }
 
@@ -546,7 +552,7 @@ describe("QuizApp", () => {
   it("出題する回を切り替えると問題が入れ替わり、戻すと解答状況が残る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
     expect(screen.getByRole("button", { name: "次の問題へ" })).toBeEnabled();
 
     const other = QUESTION_SETS[1];
@@ -568,7 +574,7 @@ describe("QuizApp", () => {
   it("解答は保存され、開き直しても続きから解ける", async () => {
     const user = userEvent.setup();
     const view = await startQuiz(user);
-    await user.click(choiceButton(FIRST.answer));
+    await user.click(choiceButton(singleAnswer(FIRST)));
 
     view.unmount();
     render(<QuizApp />);
@@ -617,7 +623,7 @@ describe("QuizApp", () => {
   it("学習記録を消すと、数字も解答状況も戻る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);
-    await user.click(choiceButton(FIRST.answer === 0 ? 1 : 0));
+    await user.click(choiceButton(singleAnswer(FIRST) === 0 ? 1 : 0));
     await user.click(screen.getByRole("button", { name: "学習ホーム" }));
     expect(statCard("苦手登録").getByText("1")).toBeInTheDocument();
 

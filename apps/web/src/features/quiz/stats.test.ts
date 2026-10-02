@@ -30,7 +30,7 @@ describe("isCorrect", () => {
   it("選んだ選択肢が正解と一致したときだけ true", () => {
     const q = question(1, "セキュリティ", 1);
 
-    expect(isCorrect(item(q, { picked: 1 }))).toBe(true);
+    expect(isCorrect(item(q, { picked: 1, revealed: true }))).toBe(true);
     expect(isCorrect(item(q, { picked: 0 }))).toBe(false);
     expect(isCorrect(item(q))).toBe(false);
   });

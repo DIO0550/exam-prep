@@ -1,3 +1,4 @@
+import { type Selection, selectionsOf } from "../answers";
 import { isShuffled } from "../choice-order";
 import { choiceKey, type Question } from "../types";
 import { OriginalFigure } from "./question-figure";
@@ -13,7 +14,7 @@ const SIZES = {
 type ChoiceNotesProps = {
   question: Question;
   /** 利用者が選んだ選択肢。未解答なら null。 */
-  picked: number | null;
+  picked: Selection;
   /** 選択肢を出す順。値は原本での添字。 */
   order: number[];
   variant: Variant;
@@ -34,8 +35,8 @@ export const ChoiceNotes = ({ question, picked, order, variant }: ChoiceNotesPro
       {order.map((index, position) => {
         const choice = question.choices[index];
         if (!choice) return null;
-        const isAnswer = index === question.answer;
-        const isPicked = index === picked;
+        const isAnswer = selectionsOf(question.answer).includes(index);
+        const isPicked = selectionsOf(picked).includes(index);
 
         return (
           <div key={index} className={`flex items-start ${size.gap}`}>
