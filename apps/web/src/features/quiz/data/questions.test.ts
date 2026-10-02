@@ -60,18 +60,20 @@ describe("問題データ", () => {
     }
   });
 
-  it("生成AI模試5は全6章各10問、単一・複数各30問の新しい設問を持つ", () => {
-    const mock = QUESTION_SETS.find((set) => set.id === "gaip-mock-5");
+  it.each([5, 6, 7])("生成AI模試%dは全6章各10問、単一54問・複数6問の新しい設問を持つ", (no) => {
+    const mock = QUESTION_SETS.find((set) => set.id === `gaip-mock-${no}`);
     expect(mock).toBeDefined();
     if (!mock) {
       return;
     }
     expect(mock.questions).toHaveLength(60);
-    expect(mock.questions.filter((question) => Array.isArray(question.answer))).toHaveLength(30);
+    expect(mock.questions.filter((question) => Array.isArray(question.answer))).toHaveLength(6);
     for (let chapter = 1; chapter <= 6; chapter += 1) {
-      expect(
-        mock.questions.filter((question) => question.field.startsWith(`第${chapter}章`)),
-      ).toHaveLength(10);
+      const questions = mock.questions.filter((question) =>
+        question.field.startsWith(`第${chapter}章`),
+      );
+      expect(questions).toHaveLength(10);
+      expect(questions.filter((question) => Array.isArray(question.answer))).toHaveLength(1);
     }
     const texts = ALL.map((question) => question.text);
     for (const question of mock.questions) {
@@ -79,7 +81,9 @@ describe("問題データ", () => {
       expect(question.choices).toHaveLength(4);
       if (Array.isArray(question.answer)) {
         expect(question.text).toMatch(/2つ選べ|すべて選べ/);
+        continue;
       }
+      expect(question.text).not.toMatch(/2つ選べ|すべて選べ/);
     }
   });
 

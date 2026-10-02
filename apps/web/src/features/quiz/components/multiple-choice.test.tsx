@@ -17,7 +17,7 @@ const submit = () => screen.getByRole("button", { name: "解答を確定" });
 const start = async (user: ReturnType<typeof userEvent.setup>) => {
   progressStore.selectSet("gaip-mock-5");
   const view = render(<QuizApp />);
-  expect(screen.getByText(/複数選択30問/)).toBeInTheDocument();
+  expect(screen.getByText(/複数選択6問/)).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "演習を開始" }));
   return view;
 };
@@ -26,13 +26,13 @@ describe("複数選択の演習", () => {
   it("正答が3個の問題も、すべて選んで確定すれば正解になる", async () => {
     const user = userEvent.setup();
     await start(user);
-    await user.click(screen.getByRole("button", { name: "3" }));
+    await user.click(screen.getByRole("button", { name: "13" }));
     const choices = screen.getAllByRole("checkbox");
-    for (const index of [3, 0, 1]) {
+    for (const index of [2, 0, 1]) {
       await user.click(choices[index] as HTMLElement);
     }
     await user.click(submit());
-    expect(screen.getByText("正解：ア・イ・エ")).toBeInTheDocument();
+    expect(screen.getByText("正解：ア・イ・ウ")).toBeInTheDocument();
     expect(screen.getByText("（1/1問）")).toBeInTheDocument();
   });
 
