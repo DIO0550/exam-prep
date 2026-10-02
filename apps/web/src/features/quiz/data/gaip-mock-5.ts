@@ -4,7 +4,6 @@ import type { Question } from "../types";
  * 模擬試験5：全6章各10問、単一選択30問・複数選択30問。
  * 提供された学習ノートをもとに書き下ろしたオリジナル問題。公式問題ではない。
  * 複数選択の割合・章配分・完全一致での採点は本演習独自の設定。
- * 公開資料による確認と、ノートとの差分は docs/gaip-mock-5.md を参照。
  */
 export const GAIP_MOCK_5: [Question, ...Question[]] = [
   {
