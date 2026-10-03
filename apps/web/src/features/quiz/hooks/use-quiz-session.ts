@@ -11,7 +11,7 @@ import type { AnswerUndo } from "../progress/record";
 import { attemptOf } from "../progress/record";
 import { progressStore } from "../progress/store";
 import type { Attempt, QuizItem } from "../stats";
-import { formatElapsed, summarize } from "../stats";
+import { formatElapsed, isCorrect, summarize } from "../stats";
 import type { Question } from "../types";
 import { sourceId } from "../types";
 import { useNotes } from "./use-notes";
@@ -24,6 +24,24 @@ export type FeedbackMode = "inline" | "page";
 
 export const REVIEW_FILTERS = ["すべて", "不正解のみ", "フラグ", "苦手登録"] as const;
 export type ReviewFilter = (typeof REVIEW_FILTERS)[number];
+
+/** 解き直しで絞り込む問題。間違えた問題か、苦手登録した問題。 */
+export const RETRY_KINDS = ["wrong", "weak"] as const;
+export type RetryKind = (typeof RETRY_KINDS)[number];
+
+export const RETRY_LABELS: Record<RetryKind, string> = {
+  wrong: "間違えた問題",
+  weak: "苦手登録した問題",
+};
+
+/** 解き直しの対象。始めた時点の問題 ID で固定する（解くたびに対象が増減しないように）。 */
+type Retry = { kind: RetryKind; ids: string[] };
+
+const isWrong = (item: QuizItem): boolean => item.attempt.revealed && !isCorrect(item);
+
+/** 解き直しの対象になる問題を、並びを保ったまま選ぶ。 */
+const retryTargets = (items: QuizItem[], kind: RetryKind): QuizItem[] =>
+  items.filter((item) => (kind === "wrong" ? isWrong(item) : item.attempt.weak));
 
 /**
  * 演習画面の状態。
@@ -44,8 +62,13 @@ export const useQuizSession = (questions: Question[]) => {
   const [elapsed, setElapsed] = useState("—");
   // 最後にした解答を取り消すための値。取り消せるのはこの 1 件だけ。
   const [lastAnswer, setLastAnswer] = useState<AnswerUndo | null>(null);
+  // 解き直しの最中なら、その対象。null なら回の全問を出す。
+  const [retry, setRetry] = useState<Retry | null>(null);
+  // 解き直しで開いた問題。前回の解答は、開いたときに初めて消す（途中でやめても、
+  // まだ開いていない問題の前回の結果は残しておくため）。
+  const [visited, setVisited] = useState<string[]>([]);
 
-  const items = useMemo<QuizItem[]>(
+  const allItems = useMemo<QuizItem[]>(
     () =>
       questions.map((question) => ({
         question,
@@ -53,6 +76,21 @@ export const useQuizSession = (questions: Question[]) => {
       })),
     [questions, record],
   );
+
+  // 画面に出す問題。解き直しの最中は対象だけに絞る。添字（index）はこの並びでの位置。
+  // まだ開いていない問題は、保存してある前回の解答を残したまま、画面上は未解答として出す
+  // （前回の解答で進み具合や正答率が埋まって見えないように）。書き込むのは開いた問題だけ。
+  const items = useMemo<QuizItem[]>(() => {
+    if (!retry) return allItems;
+    const ids = new Set(retry.ids);
+    return allItems
+      .filter((item) => ids.has(sourceId(item.question.source)))
+      .map((item) =>
+        visited.includes(sourceId(item.question.source))
+          ? item
+          : { ...item, attempt: { ...item.attempt, picked: null, revealed: false, excluded: [] } },
+      );
+  }, [allItems, retry, visited]);
 
   // 収録回を切り替えたら、見ている位置と計測をその回のものに戻して学習ホームへ出す。
   // 解答状況は問題ごとに保存してあるので捨てない（戻ってくればその続きから解ける）。
@@ -65,6 +103,8 @@ export const useQuizSession = (questions: Question[]) => {
     setStartedAt(null);
     setElapsed("—");
     setLastAnswer(null);
+    setRetry(null);
+    setVisited([]);
   }
 
   const current = items[index];
@@ -124,6 +164,67 @@ export const useQuizSession = (questions: Question[]) => {
     [current],
   );
 
+  /**
+   * 問題を開く。解き直しの最中なら、その問題の前回の解答をここで消す。
+   * 一度開いた問題は消さない（戻って見直したときに、今回の解答が消えないように）。
+   */
+  const enter = useCallback(
+    (next: number) => {
+      setIndex(next);
+      setScreen("quiz");
+      if (!retry) return;
+      const item = items[next];
+      if (!item) return;
+      const id = sourceId(item.question.source);
+      if (visited.includes(id)) return;
+      setVisited((prev) => [...prev, id]);
+      progressStore.clearAnswers([id]);
+    },
+    [items, retry, visited],
+  );
+
+  /** 画面を移る。学習ホームへ戻ったら、解き直しをやめて回の全問に戻す。 */
+  const navigate = useCallback((next: Screen) => {
+    if (next === "home") {
+      setRetry(null);
+      setVisited([]);
+      setIndex(0);
+    }
+    setScreen(next);
+  }, []);
+
+  /** 今の範囲で、解き直しの対象になる問題の数。 */
+  const retryCounts = useMemo<Record<RetryKind, number>>(
+    () => ({
+      wrong: retryTargets(items, "wrong").length,
+      weak: retryTargets(items, "weak").length,
+    }),
+    [items],
+  );
+
+  /**
+   * 間違えた問題・苦手登録した問題だけを解き直す。今出している範囲から絞るので、
+   * 解き直しの結果からもう一度「間違えた問題だけ」を選べば、さらに絞り込める。
+   */
+  const startRetry = useCallback(
+    (kind: RetryKind) => {
+      const targets = retryTargets(items, kind);
+      const first = targets[0];
+      if (!first) return;
+      const ids = targets.map((item) => sourceId(item.question.source));
+      const firstId = sourceId(first.question.source);
+      // 1 問目はここで消す。種もここで 1 度だけ進めて、シャッフル中なら前回と違う並びで出す。
+      progressStore.restart([firstId]);
+      setRetry({ kind, ids });
+      setVisited([firstId]);
+      setLastAnswer(null);
+      setIndex(0);
+      setScreen("quiz");
+      setStartedAt(Date.now());
+    },
+    [items],
+  );
+
   /** 未解答の最初の問題から始める。全問解き終わっていれば 1 問目から見直す。 */
   const start = useCallback(() => {
     const next = items.findIndex((item) => !item.attempt.revealed);
@@ -132,14 +233,19 @@ export const useQuizSession = (questions: Question[]) => {
     setStartedAt(Date.now());
   }, [items]);
 
-  /** 解答をすべて捨てて 1 問目から始める。フラグと苦手登録は学習記録なので残す。 */
+  /**
+   * 解答をすべて捨てて 1 問目から始める。フラグと苦手登録は学習記録なので残す。
+   * 解き直しの最中なら、その対象だけをやり直す。
+   */
   const restart = useCallback(() => {
-    progressStore.restart(questions.map((question) => sourceId(question.source)));
+    const ids = items.map((item) => sourceId(item.question.source));
+    progressStore.restart(ids);
+    if (retry) setVisited(ids);
     setLastAnswer(null);
     setIndex(0);
     setScreen("quiz");
     setStartedAt(Date.now());
-  }, [questions]);
+  }, [items, retry]);
 
   /** 単一選択は即採点。複数選択は確定前の選択として保存する。 */
   const pick = useCallback(
@@ -230,15 +336,11 @@ export const useQuizSession = (questions: Question[]) => {
     patchCurrent({ weak: !current?.attempt.weak });
   }, [current, patchCurrent]);
 
-  const goTo = useCallback((next: number) => {
-    setIndex(next);
-    setScreen("quiz");
-  }, []);
+  const goTo = enter;
 
   const goPrev = useCallback(() => {
-    setIndex((prev) => Math.max(0, prev - 1));
-    setScreen("quiz");
-  }, []);
+    enter(Math.max(0, index - 1));
+  }, [enter, index]);
 
   /** 次の問題へ。最後の問題なら結果画面に移り、所要時間を確定する。 */
   const goNext = useCallback(() => {
@@ -247,9 +349,8 @@ export const useQuizSession = (questions: Question[]) => {
       setScreen("result");
       return;
     }
-    setIndex(index + 1);
-    setScreen("quiz");
-  }, [index, items.length, startedAt]);
+    enter(index + 1);
+  }, [enter, index, items.length, startedAt]);
 
   /** 解説の出し方を切り替える。今見ている画面も、切り替え先に合わせて寄せる。 */
   const setFeedback = useCallback(
@@ -269,7 +370,7 @@ export const useQuizSession = (questions: Question[]) => {
 
   return {
     screen,
-    setScreen,
+    setScreen: navigate,
     feedback,
     setFeedback,
     shuffle: record.shuffle,
@@ -295,6 +396,10 @@ export const useQuizSession = (questions: Question[]) => {
     closedGroups,
     toggleGroup,
     isLast: index + 1 >= items.length,
+    /** 解き直しの最中なら、何を解き直しているか。 */
+    retryKind: retry?.kind ?? null,
+    retryCounts,
+    startRetry,
     start,
     restart,
     pick,

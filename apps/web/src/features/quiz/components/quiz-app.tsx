@@ -26,6 +26,7 @@ import { NotePanel } from "./note-panel";
 import { ProgressBar } from "./progress-bar";
 import { QuizScreen } from "./quiz-screen";
 import { ResultScreen } from "./result-screen";
+import { RetryBanner } from "./retry-banner";
 import { ReviewScreen } from "./review-screen";
 import { SelectMenu } from "./select-menu";
 import { SiteFooter } from "./site-footer";
@@ -130,10 +131,18 @@ export const QuizApp = () => {
                     </div>
                   </header>
 
+                  {session.retryKind && session.screen !== "home" && (
+                    <RetryBanner
+                      kind={session.retryKind}
+                      count={session.items.length}
+                      onExit={() => session.setScreen("home")}
+                    />
+                  )}
+
                   {(session.screen === "quiz" || session.screen === "explain") && (
                     <ProgressBar
                       done={session.summary.answered}
-                      total={questionSet.questions.length}
+                      total={session.items.length}
                       index={session.index}
                       unit="問"
                       stat={
@@ -165,6 +174,8 @@ export const QuizApp = () => {
                       summary={progress}
                       setSummary={session.summary}
                       hasNotes={session.hasNotes}
+                      retryCounts={session.retryCounts}
+                      onRetry={session.startRetry}
                       backup={
                         <BackupPanel
                           setLabel={questionSet.label}
@@ -233,10 +244,13 @@ export const QuizApp = () => {
                   {session.screen === "result" && (
                     <ResultScreen
                       summary={session.summary}
-                      total={questionSet.questions.length}
+                      total={session.items.length}
                       elapsed={session.elapsed}
-                      passLine={exam.passLine}
+                      // 絞り込んだ問題だけの正答率は、合格ラインと比べても意味が無いので合否を出さない。
+                      passLine={session.retryKind ? undefined : exam.passLine}
+                      wrongCount={session.retryCounts.wrong}
                       onRestart={session.restart}
+                      onRetryWrong={() => session.startRetry("wrong")}
                       onGoReview={() => session.setScreen("review")}
                     />
                   )}

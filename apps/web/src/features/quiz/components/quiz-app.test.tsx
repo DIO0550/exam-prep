@@ -531,6 +531,106 @@ describe("QuizApp", () => {
     expect(screen.getByText("不正解")).toBeInTheDocument();
   });
 
+  describe("解き直し", () => {
+    const [Q1, Q2, Q3, Q4] = QUESTIONS;
+    if (!Q1 || !Q2 || !Q3 || !Q4) throw new Error("4 問以上必要");
+    const wrongOf = (question: (typeof QUESTIONS)[number]) =>
+      (singleAnswer(question) + 1) % question.choices.length;
+    const attempt = (picked: number | null, weak: boolean) => ({
+      picked,
+      revealed: picked !== null,
+      flagged: false,
+      weak,
+      excluded: [],
+    });
+
+    /** 1・3 問目を間違え、2 問目は正解、4 問目は解かずに苦手登録だけした記録。 */
+    const seed = () =>
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: RECORD_VERSION,
+          setId: FIRST_SET.id,
+          attempts: {
+            [sourceId(Q1.source)]: attempt(wrongOf(Q1), true),
+            [sourceId(Q2.source)]: attempt(singleAnswer(Q2), false),
+            [sourceId(Q3.source)]: attempt(wrongOf(Q3), true),
+            [sourceId(Q4.source)]: attempt(null, true),
+          },
+          recent: [false, true, false],
+          days: [],
+        }),
+      );
+    const attemptIn = (question: (typeof QUESTIONS)[number]) =>
+      readRecord().attempts[sourceId(question.source)];
+
+    it("学習ホームから、間違えた問題だけを順に解き直せる", async () => {
+      seed();
+      const user = userEvent.setup();
+      render(<QuizApp />);
+
+      await user.click(screen.getByRole("button", { name: "間違えた問題だけ（2問）" }));
+
+      expect(screen.getByText("間違えた問題の解き直し")).toBeInTheDocument();
+      expect(screen.getByText(Q1.text)).toBeInTheDocument();
+      // 開いた問題は未解答に戻る。まだ開いていない問題の前回の結果は残す
+      expect(attemptIn(Q1).revealed).toBe(false);
+      expect(attemptIn(Q3).picked).toBe(wrongOf(Q3));
+      // 開いていない問題の前回の解答は、進み具合と正答率に数えない
+      expect(screen.getByText("正答率 —")).toBeInTheDocument();
+
+      await user.click(choiceButton(singleAnswer(Q1)));
+      await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+      expect(screen.getByText(Q3.text)).toBeInTheDocument();
+      expect(attemptIn(Q3).revealed).toBe(false);
+
+      await user.click(choiceButton(wrongOf(Q3)));
+      await user.click(screen.getByRole("button", { name: "結果を見る" }));
+      expect(screen.getByText(/2問中 1問正解/)).toBeInTheDocument();
+
+      // 結果から、まだ間違えている問題だけにさらに絞れる
+      await user.click(screen.getByRole("button", { name: "間違えた問題だけ解き直す（1問）" }));
+      expect(screen.getByText(Q3.text)).toBeInTheDocument();
+      expect(screen.getByText(/・1問/)).toBeInTheDocument();
+    });
+
+    it("苦手登録した問題だけを解き直せる。正解しても苦手登録は外れない", async () => {
+      seed();
+      const user = userEvent.setup();
+      render(<QuizApp />);
+
+      await user.click(screen.getByRole("button", { name: "苦手登録した問題だけ（3問）" }));
+      expect(screen.getByText(Q1.text)).toBeInTheDocument();
+      await user.click(choiceButton(singleAnswer(Q1)));
+
+      expect(attemptIn(Q1).weak).toBe(true);
+      // 2 問目は正解済みで苦手でもないので飛ばし、苦手登録した 3 問目へ進む
+      await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+      expect(screen.getByText(Q3.text)).toBeInTheDocument();
+    });
+
+    it("途中でやめて学習ホームへ戻ると、回の全問に戻る", async () => {
+      seed();
+      const user = userEvent.setup();
+      render(<QuizApp />);
+
+      await user.click(screen.getByRole("button", { name: "間違えた問題だけ（2問）" }));
+      await user.click(screen.getByRole("button", { name: "回の全問に戻る" }));
+
+      expect(screen.queryByText("間違えた問題の解き直し")).not.toBeInTheDocument();
+      // 開いただけの 1 問目は未解答に戻り、開いていない 3 問目は間違えたまま残る
+      expect(screen.getByRole("button", { name: "間違えた問題だけ（1問）" })).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "問題一覧を見る" }));
+      expect(screen.getAllByText("未解答")).toHaveLength(QUESTIONS.length - 2);
+    });
+
+    it("間違えた問題が無ければ、解き直しのボタンは出ない", () => {
+      render(<QuizApp />);
+
+      expect(screen.queryByRole("button", { name: /だけ（\d+問）/ })).not.toBeInTheDocument();
+    });
+  });
+
   it("全問正解すると結果画面が 100% を出す", { timeout: 60_000 }, async () => {
     // 80 問ぶんクリックするので、イベント間の既定の遅延を切る
     const user = userEvent.setup({ delay: null });

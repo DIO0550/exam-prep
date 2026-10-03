@@ -14,6 +14,7 @@ import {
   streakOf,
   withAnswer,
   withAttempt,
+  withClearedAnswers,
   withRestart,
   withShuffle,
   withTextScale,
@@ -150,6 +151,15 @@ describe("withRestart", () => {
 
   it("並びの種を進める（解き直すと選択肢の並びも変わる）", () => {
     expect(withRestart(emptyRecord(), ["q1"]).shuffleSeed).toBe(1);
+  });
+});
+
+describe("withClearedAnswers", () => {
+  it("解答だけを消し、並びの種は進めない（解き直しで 1 問ずつ開くたびに呼ぶため）", () => {
+    const record = withClearedAnswers(withAttempt(emptyRecord(), "q1", ANSWERED), ["q1"]);
+
+    expect(record.attempts.q1).toMatchObject({ picked: null, revealed: false, weak: true });
+    expect(record.shuffleSeed).toBe(0);
   });
 });
 

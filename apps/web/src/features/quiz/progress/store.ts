@@ -7,6 +7,7 @@ import {
   EMPTY_RECORD,
   withAnswer,
   withAttempt,
+  withClearedAnswers,
   withNoteWidth,
   withRestart,
   withSetId,
@@ -107,6 +108,14 @@ export const progressStore = {
     const record = snapshot();
     if (!attemptOf(record, undo.questionId).revealed) return;
     store.set(withUndoAnswer(record, undo));
+  },
+
+  /**
+   * 指定した問題の解答だけを消す。並びの種は進めない。
+   * 解き直しで 1 問ずつ開くたびに呼ぶので、種を進めると解き終えた問題の並びまで変わってしまう。
+   */
+  clearAnswers: (questionIds: string[]): void => {
+    store.set(withClearedAnswers(snapshot(), questionIds));
   },
 
   /** 指定した回の解答を消す。フラグ・苦手登録・累計の記録は残す。 */

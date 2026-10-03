@@ -9,7 +9,10 @@ type ResultScreenProps = {
   elapsed: string;
   /** 合格ライン（%）。非公開の試験は undefined で、合否は出さない。 */
   passLine?: number;
+  /** 間違えた問題の数。0 なら「間違えた問題だけ解き直す」を出さない。 */
+  wrongCount: number;
   onRestart: () => void;
+  onRetryWrong: () => void;
   onGoReview: () => void;
 };
 
@@ -18,7 +21,9 @@ export const ResultScreen = ({
   total,
   elapsed,
   passLine,
+  wrongCount,
   onRestart,
+  onRetryWrong,
   onGoReview,
 }: ResultScreenProps) => {
   // 合格ラインがある試験は合否で、無い試験は分野別バーと同じ基準で色を付ける。
@@ -68,6 +73,15 @@ export const ResultScreen = ({
         >
           もう一度解く
         </button>
+        {wrongCount > 0 && (
+          <button
+            type="button"
+            onClick={onRetryWrong}
+            className="cursor-pointer rounded-[9px] border border-edge-strong bg-surface px-[22px] py-3.5 font-medium text-[14px] text-ink hover:bg-canvas"
+          >
+            間違えた問題だけ解き直す（{wrongCount}問）
+          </button>
+        )}
         <button
           type="button"
           onClick={onGoReview}
