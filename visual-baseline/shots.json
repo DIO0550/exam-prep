@@ -1,0 +1,352 @@
+[
+  {
+    "name": "home-empty__desktop",
+    "label": "学習ホーム（記録なし）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "home-progress__desktop",
+    "label": "学習ホーム（記録あり）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "quiz__desktop",
+    "label": "演習（未解答）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "quiz-answered__desktop",
+    "label": "演習（解答後・同画面に解説）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "quiz-shuffled__desktop",
+    "label": "演習（選択肢シャッフル）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "quiz-note__desktop",
+    "label": "演習（メモを開く）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain__desktop",
+    "label": "解説（別画面）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-xlarge__desktop",
+    "label": "解説（別画面・文字サイズ特大）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-timeline__desktop",
+    "label": "解説（タイムチャート）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-array__desktop",
+    "label": "解説（配列図）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-compare__desktop",
+    "label": "解説（選択肢を並べたタイムチャート）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-starve__desktop",
+    "label": "解説（方式を並べたタイムチャート）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-sketch__desktop",
+    "label": "解説（図の見本）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-tree__desktop",
+    "label": "解説（2 分木）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-diagram__desktop",
+    "label": "解説（構成図・アローダイアグラム）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-sequence__desktop",
+    "label": "解説（シーケンス図）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-venn__desktop",
+    "label": "解説（ベン図を選択肢ごとに並べる）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-quadrant__desktop",
+    "label": "解説（4 象限・横軸を左ほど高く）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-chart__desktop",
+    "label": "解説（グラフ・損益分岐点）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "explain-karnaugh__desktop",
+    "label": "解説（カルノー図）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "result__desktop",
+    "label": "結果",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "quiz-gcp__desktop",
+    "label": "演習（GCP シナリオ・別画面の解説）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "review__desktop",
+    "label": "問題一覧・見直し",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "vocab-setup__desktop",
+    "label": "単語帳（設定）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "vocab-card__desktop",
+    "label": "単語帳（めくる）",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 1600
+  },
+  {
+    "name": "home-empty__mobile",
+    "label": "学習ホーム（記録なし）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2259
+  },
+  {
+    "name": "home-progress__mobile",
+    "label": "学習ホーム（記録あり）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2906
+  },
+  {
+    "name": "quiz__mobile",
+    "label": "演習（未解答）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2347
+  },
+  {
+    "name": "quiz-answered__mobile",
+    "label": "演習（解答後・同画面に解説）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 4192
+  },
+  {
+    "name": "quiz-shuffled__mobile",
+    "label": "演習（選択肢シャッフル）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 4185
+  },
+  {
+    "name": "quiz-note__mobile",
+    "label": "演習（メモを開く）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2347
+  },
+  {
+    "name": "explain__mobile",
+    "label": "解説（別画面）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3499
+  },
+  {
+    "name": "explain-xlarge__mobile",
+    "label": "解説（別画面・文字サイズ特大）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 4129
+  },
+  {
+    "name": "explain-timeline__mobile",
+    "label": "解説（タイムチャート）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2664
+  },
+  {
+    "name": "explain-array__mobile",
+    "label": "解説（配列図）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2963
+  },
+  {
+    "name": "explain-compare__mobile",
+    "label": "解説（選択肢を並べたタイムチャート）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3838
+  },
+  {
+    "name": "explain-starve__mobile",
+    "label": "解説（方式を並べたタイムチャート）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3490
+  },
+  {
+    "name": "explain-sketch__mobile",
+    "label": "解説（図の見本）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3968
+  },
+  {
+    "name": "explain-tree__mobile",
+    "label": "解説（2 分木）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3952
+  },
+  {
+    "name": "explain-diagram__mobile",
+    "label": "解説（構成図・アローダイアグラム）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3592
+  },
+  {
+    "name": "explain-sequence__mobile",
+    "label": "解説（シーケンス図）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 2800
+  },
+  {
+    "name": "explain-venn__mobile",
+    "label": "解説（ベン図を選択肢ごとに並べる）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 4309
+  },
+  {
+    "name": "explain-quadrant__mobile",
+    "label": "解説（4 象限・横軸を左ほど高く）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3105
+  },
+  {
+    "name": "explain-chart__mobile",
+    "label": "解説（グラフ・損益分岐点）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3048
+  },
+  {
+    "name": "explain-karnaugh__mobile",
+    "label": "解説（カルノー図）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3480
+  },
+  {
+    "name": "result__mobile",
+    "label": "結果",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 1943
+  },
+  {
+    "name": "quiz-gcp__mobile",
+    "label": "演習（GCP シナリオ・別画面の解説）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 3499
+  },
+  {
+    "name": "review__mobile",
+    "label": "問題一覧・見直し",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 12848
+  },
+  {
+    "name": "vocab-setup__mobile",
+    "label": "単語帳（設定）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 1562
+  },
+  {
+    "name": "vocab-card__mobile",
+    "label": "単語帳（めくる）",
+    "viewport": "mobile",
+    "width": 430,
+    "height": 1303
+  }
+]
