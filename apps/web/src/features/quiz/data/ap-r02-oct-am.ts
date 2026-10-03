@@ -1604,7 +1604,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
     choices: [
       {
         text: "",
-        image: fig("q22-choice-a", 745, 175, "パルスの幅は一定で、高さが1つずつ変わっていく波形"),
+        image: fig("q22-choice-a", 745, 186, "パルスの幅は一定で、高さが1つずつ変わっていく波形"),
         note: "高さ（振幅）を変えている。これは振幅変調で、PWMではない。",
       },
       {
@@ -1612,14 +1612,14 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
         image: fig(
           "q22-choice-i",
           745,
-          175,
+          187,
           "高さも周期も一定で、パルスの幅だけが1つずつ変わる波形",
         ),
         note: "高さと周期が一定で幅だけが変わる。PWMそのもの。これが正解。",
       },
       {
         text: "",
-        image: fig("q22-choice-u", 745, 175, "階段状に電圧が上下し、なめらかな山を描く波形"),
+        image: fig("q22-choice-u", 745, 182, "階段状に電圧が上下し、なめらかな山を描く波形"),
         note: "アナログ値を階段で近似した波形。低域通過フィルタを通した後の姿にあたる。",
       },
       {
@@ -1721,7 +1721,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
         image: fig(
           "q23-choice-u",
           415,
-          135,
+          143,
           "aとbの論理和を取り、その出力とcの論理積を出力とする回路図",
         ),
         note: "アドレス1（a＝b＝0、c＝1）で0になってしまう。表では1。",
@@ -1731,7 +1731,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
         image: fig(
           "q23-choice-e",
           415,
-          135,
+          140,
           "aとbの論理和を取り、その出力とcの排他的論理和を出力とする回路図",
         ),
         note: "アドレス4（a＝1、b＝c＝0）で1になってしまう。表では0。",
@@ -1958,8 +1958,8 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
     stem: {
       image: fig(
         "q27-stem",
-        645,
-        180,
+        650,
+        187,
         "部品（部品番号・部品名）1対多で納入（納入日・数量）、納入 多対1でメーカ（メーカ番号・メーカ名）と結ぶクラス図",
       ),
     },
@@ -2108,8 +2108,8 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
     stem: {
       image: fig(
         "q29-stem",
-        930,
-        230,
+        936,
+        235,
         "東京在庫（A001:50、B002:25、C003:35）と大阪在庫（B002:15、C003:35、D004:80）の2つの表",
       ),
       list: {
@@ -3203,7 +3203,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
       image: fig(
         "q47-stem",
         820,
-        575,
+        583,
         "①でm←a、n←bとし、②でm:nが等しければ⑥で印字、異なれば③へ進み、m＞nなら④でm←m−n、m＜nなら⑤でn←n−mとして②へ戻る流れ図",
       ),
     },
@@ -3612,7 +3612,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
       image: fig(
         "q53-stem",
         685,
-        490,
+        495,
         "アクティビティA（6日）からB（7日）へ終了－開始関係・リード2日、BからC（5日）へ開始－開始関係・ラグ3日でつながる図",
       ),
     },
@@ -3707,7 +3707,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
         image: fig(
           "q55-choice-a",
           445,
-          330,
+          339,
           "使用量が増えるにつれて課金額が下がっていく右下がりのグラフ",
         ),
         note: "累計の課金額が減っている。使えば使うほど総額が下がることになり、あり得ない。",
@@ -3717,7 +3717,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
         image: fig(
           "q55-choice-i",
           445,
-          330,
+          339,
           "一定の使用量までは比例して増え、その後は水平になるグラフ",
         ),
         note: "上限を超えると課金額が増えない、定額の上限付き（キャップ）方式。",
@@ -4999,7 +4999,7 @@ export const AP_R02_OCT_AM: [Question, ...Question[]] = [
       image: fig(
         "q75-stem",
         635,
-        405,
+        413,
         "発注量を横軸、費用を縦軸に取り、右上がりの直線①、右下がりの曲線②、その和で下に凸の曲線④を描き、④が最小になる発注量を③で示した図",
       ),
     },

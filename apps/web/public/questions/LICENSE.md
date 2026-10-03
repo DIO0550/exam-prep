@@ -32,7 +32,7 @@ MIT License や CC0 などで再配布することはできません。
 |---|---|---|
 | 令和元年度 秋期 | [2019r01a_ap_am_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_ap_am_qs.pdf) | [2019r01a_ap_am_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_ap_am_ans.pdf) |
 | 令和2年度 10月 | [2020r02o_ap_am_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d05l-att/2020r02o_ap_am_qs.pdf) | [2020r02o_ap_am_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d05l-att/2020r02o_ap_am_ans.pdf) |
-| 令和3年度 春期 | [2021r03h_ap_am_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/ps6vr70000010d6y-att/2021r03h_ap_am_qs.pdf) | [2021r03h_ap_am_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/ps6vr70000010d6y-att/2021r03h_ap_am_ans.pdf) |
+| 令和3年度 春期 | [2021r03h_ap_am_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d5ru-att/2021r03h_ap_am_qs.pdf) | [2021r03h_ap_am_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d5ru-att/2021r03h_ap_am_ans.pdf) |
 
 令和3年度 秋期以降の回も同じ形式で、各データファイル
 （`apps/web/src/features/quiz/data/ap-*.ts`）の先頭コメントに出典 PDF の URL を書いてある。

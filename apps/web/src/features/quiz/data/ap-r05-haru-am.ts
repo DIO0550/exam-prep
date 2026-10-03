@@ -131,7 +131,7 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
         text: "",
         image: fig(
           "q02-choice-a",
-          377,
+          383,
           289,
           "60を中心とした左右対称の山で、60から70までの幅を10と示したグラフ",
         ),
@@ -149,12 +149,12 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
       },
       {
         text: "",
-        image: fig("q02-choice-u", 377, 289, "10と60の2か所に頂点がある二つ山のグラフ"),
+        image: fig("q02-choice-u", 383, 289, "10と60の2か所に頂点がある二つ山のグラフ"),
         note: "山が二つある分布で、そもそも正規分布ではない。",
       },
       {
         text: "",
-        image: fig("q02-choice-e", 368, 280, "頂点が60にあり左右非対称な、右に裾を引くグラフ"),
+        image: fig("q02-choice-e", 378, 285, "頂点が60にあり左右非対称な、右に裾を引くグラフ"),
         note: "左右非対称なので正規分布ではない。",
       },
     ],
@@ -3474,7 +3474,7 @@ export const AP_R05_HARU_AM: [Question, ...Question[]] = [
         text: "",
         image: fig(
           "q47-choice-e",
-          505,
+          510,
           226,
           "1行目の4・8列目にX、2行目の2・6列目にX、3行目の3・7列目にX、4行目の1・5列目にXを置いた表",
         ),

@@ -15,8 +15,8 @@ import type { Question, Source } from "../types";
  *   IPA の解答例ではない（docs 3.4）
  *
  * 出典 PDF:
- * - 問題 https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt80000009sgk-att/2022r04a_ap_am_qs.pdf
- * - 解答 https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt80000009sgk-att/2022r04a_ap_am_ans.pdf
+ * - 問題 https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt80000008smf-att/2022r04a_ap_am_qs.pdf
+ * - 解答 https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt80000008smf-att/2022r04a_ap_am_ans.pdf
  */
 
 const at = (no: number, modified?: string): Source => ({
@@ -371,8 +371,8 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
     stem: {
       image: fig(
         "q06-stem",
-        749,
-        870,
+        757,
+        874,
         "外側ループiを1からn−1、内側ループjをnからi+1まで減らし、A[j]とA[j−1]を比較して小さければ交換する流れ図",
       ),
     },
@@ -5089,7 +5089,7 @@ export const AP_R04_AKI_AM: [Question, ...Question[]] = [
       image: fig(
         "q72-stem",
         827,
-        289,
+        294,
         "製品Aが部品aを3個・bを2個、部品aが部品bを1個・cを2個必要とする構成表と、A・a・b・cの在庫量を示す在庫表",
       ),
     },
