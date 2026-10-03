@@ -15,8 +15,8 @@ import type { Question, Source } from "../types";
  *   IPA の解答例ではない（docs 3.4）
  *
  * 出典 PDF:
- * - 問題 https://www.ipa.go.jp/shiken/mondai-kaiotu/ps6vr70000010d6y-att/2021r03h_ap_am_qs.pdf
- * - 解答 https://www.ipa.go.jp/shiken/mondai-kaiotu/ps6vr70000010d6y-att/2021r03h_ap_am_ans.pdf
+ * - 問題 https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d5ru-att/2021r03h_ap_am_qs.pdf
+ * - 解答 https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d5ru-att/2021r03h_ap_am_ans.pdf
  */
 
 const at = (no: number, modified?: string): Source => ({
@@ -45,22 +45,22 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     choices: [
       {
         text: "等価演算",
-        image: fig("q01-choice-a", 88, 59, "二つの円の重なりと、円の外側を塗ったベン図"),
+        image: fig("q01-choice-a", 99, 64, "二つの円の重なりと、円の外側を塗ったベン図"),
         note: "排他的論理和の否定にあたる。両方とも真か、両方とも偽のときに真になる。これが正解。",
       },
       {
         text: "否定論理和",
-        image: fig("q01-choice-i", 90, 55, "円の外側だけを塗ったベン図"),
+        image: fig("q01-choice-i", 101, 63, "円の外側だけを塗ったベン図"),
         note: "どちらも偽のときだけ真。排他的論理和の否定は「両方偽」に加えて「両方真」でも真になるので一致しない。",
       },
       {
         text: "論理積",
-        image: fig("q01-choice-u", 82, 61, "二つの円の重なりだけを塗ったベン図"),
+        image: fig("q01-choice-u", 101, 61, "二つの円の重なりだけを塗ったベン図"),
         note: "両方が真のときだけ真。排他的論理和とは独立した演算で、否定の関係にない。",
       },
       {
         text: "論理和",
-        image: fig("q01-choice-e", 86, 61, "二つの円全体を塗ったベン図"),
+        image: fig("q01-choice-e", 100, 61, "二つの円全体を塗ったベン図"),
         note: "どちらかが真なら真。排他的論理和と重なる範囲は広いが、両方真のときの値が異なる。",
       },
     ],
@@ -861,19 +861,19 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     choices: [
       {
         text: "",
-        image: fig("q14-choice-a", 393, 383, "全区間で y＝x の破線より上にある、上に凸のグラフ"),
+        image: fig("q14-choice-a", 393, 394, "全区間で y＝x の破線より上にある、上に凸のグラフ"),
       },
       {
         text: "",
-        image: fig("q14-choice-i", 392, 384, "全区間で y＝x の破線より下にある、下に凸のグラフ"),
+        image: fig("q14-choice-i", 392, 395, "全区間で y＝x の破線より下にある、下に凸のグラフ"),
       },
       {
         text: "",
-        image: fig("q14-choice-u", 393, 382, "前半は破線より上、後半は破線より下を通るグラフ"),
+        image: fig("q14-choice-u", 393, 395, "前半は破線より上、後半は破線より下を通るグラフ"),
       },
       {
         text: "",
-        image: fig("q14-choice-e", 392, 385, "前半は破線より下、後半は破線より上を通るS字のグラフ"),
+        image: fig("q14-choice-e", 392, 394, "前半は破線より下、後半は破線より上を通るS字のグラフ"),
         note: "f(x)＝2x²−x⁴。x が小さいうちは y＝x を下回り、大きくなると上回る。これが正解。",
       },
     ],
@@ -1381,7 +1381,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
     answer: 2,
     text: "図はDCモータの正転逆転制御の動作原理を示す回路である。A1からA4の四つの制御信号の組合せの中で、モータが逆転するものはどれか。ここで、モータの＋端子から−端子に電流が流れるときモータは正転し、S1からS4のそれぞれのスイッチ素子は、対応するA1からA4の制御信号がそれぞれHighのとき導通するものとする。",
     stem: {
-      image: fig("q23-stem", 621, 442, "S1〜S4のスイッチ素子でモータMを囲むHブリッジ回路の図"),
+      image: fig("q23-stem", 621, 473, "S1〜S4のスイッチ素子でモータMを囲むHブリッジ回路の図"),
     },
     choices: [
       {
@@ -1775,7 +1775,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       image: fig(
         "q29-stem",
         766,
-        67,
+        81,
         "aから順に 1対多、1対多、多対1 で結ばれた4つのクラスを示すUML図",
       ),
     },
@@ -3223,7 +3223,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       image: fig(
         "q52-stem",
         940,
-        392,
+        404,
         "アクティビティ①〜④と要員5人のRACIを示す責任分担マトリックス",
       ),
     },
@@ -3297,7 +3297,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       image: fig(
         "q53-stem",
         1084,
-        674,
+        679,
         "当初の計画（図1）と、作業EをE1・E2・E3に分割した変更後の計画（図2）のアローダイアグラム",
       ),
     },
@@ -4156,7 +4156,7 @@ export const AP_R03_HARU_AM: [Question, ...Question[]] = [
       image: fig(
         "q67-stem",
         421,
-        372,
+        386,
         "縦軸a・横軸bの2軸で、花形・問題児・金のなる木・負け犬の4象限を示すPPMマトリックス",
       ),
     },

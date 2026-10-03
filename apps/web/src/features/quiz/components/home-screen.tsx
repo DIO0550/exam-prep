@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import type { RetryKind } from "../hooks/use-quiz-session";
+import { RETRY_KINDS, RETRY_LABELS } from "../hooks/use-quiz-session";
 import type { ProgressSummary } from "../progress/summary";
 import { statCards } from "../progress/summary";
 import type { Summary } from "../stats";
@@ -29,8 +31,11 @@ type HomeScreenProps = {
   hasNotes: boolean;
   /** 記録の書き出し・読み込みの枠。保存先に触るので、組み立ては呼ぶ側に置く。 */
   backup: ReactNode;
+  /** 今の回で間違えたままの問題と、苦手登録した問題の数。0 なら解き直しのボタンを出さない。 */
+  retryCounts: Record<RetryKind, number>;
   onStart: () => void;
   onRestart: () => void;
+  onRetry: (kind: RetryKind) => void;
   onGoReview: () => void;
   onClearRecord: () => void;
 };
@@ -45,8 +50,10 @@ export const HomeScreen = ({
   setSummary,
   hasNotes,
   backup,
+  retryCounts,
   onStart,
   onRestart,
+  onRetry,
   onGoReview,
   onClearRecord,
 }: HomeScreenProps) => {
@@ -111,6 +118,26 @@ export const HomeScreen = ({
             問題一覧を見る
           </button>
         </div>
+
+        {RETRY_KINDS.some((kind) => retryCounts[kind] > 0) && (
+          <div className="flex flex-col gap-2.5 border-line-soft border-t pt-5">
+            <span className="font-bold text-[11px] text-muted-soft tracking-[0.12em]">
+              解き直す
+            </span>
+            <div className="flex flex-wrap gap-3">
+              {RETRY_KINDS.filter((kind) => retryCounts[kind] > 0).map((kind) => (
+                <button
+                  key={kind}
+                  type="button"
+                  onClick={() => onRetry(kind)}
+                  className={SECONDARY_BUTTON}
+                >
+                  {RETRY_LABELS[kind]}だけ（{retryCounts[kind]}問）
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-line bg-surface">

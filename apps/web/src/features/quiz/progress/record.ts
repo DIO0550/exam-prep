@@ -195,17 +195,26 @@ export const withUndoAnswer = (record: ProgressRecord, undo: AnswerUndo): Progre
 });
 
 /** 指定した問題の解答だけを消す。フラグと苦手登録は学習記録なので残す。 */
-export const withRestart = (record: ProgressRecord, questionIds: string[]): ProgressRecord => {
+export const withClearedAnswers = (
+  record: ProgressRecord,
+  questionIds: string[],
+): ProgressRecord => {
   const attempts = { ...record.attempts };
   for (const id of questionIds) {
     const attempt = attempts[id];
     if (!attempt) continue;
     attempts[id] = { ...attempt, picked: null, revealed: false, excluded: [] };
   }
+  return { ...record, attempts };
+};
+
+/** 指定した問題の解答を消して、解き直しを始める。 */
+export const withRestart = (record: ProgressRecord, questionIds: string[]): ProgressRecord => ({
+  ...withClearedAnswers(record, questionIds),
   // 種を進めて、シャッフル中なら前回と違う並びで出す。種は回をまたいで 1 つなので他の回の
   // 並びも変わるが、解答は原本の添字で持っているので、どれを選んだかは変わらない。
-  return { ...record, attempts, shuffleSeed: record.shuffleSeed + 1 };
-};
+  shuffleSeed: record.shuffleSeed + 1,
+});
 
 const isChoiceIndex = (value: unknown): value is number =>
   typeof value === "number" && Number.isInteger(value) && value >= 0;

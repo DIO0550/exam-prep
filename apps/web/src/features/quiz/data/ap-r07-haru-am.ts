@@ -60,12 +60,12 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       },
       {
         text: "",
-        image: fig("q01-choice-u", 496, 40, "((P→Qの否定)∨(Q→P))→(R→Qの否定) と書かれた論理式"),
+        image: fig("q01-choice-u", 496, 45, "((P→Qの否定)∨(Q→P))→(R→Qの否定) と書かれた論理式"),
         note: "前件は Q→P が真なので真。後件は R→Q̅ で、R が真のとき偽になる。",
       },
       {
         text: "",
-        image: fig("q01-choice-e", 496, 44, "((P→Qの否定)∨(Q→Pの否定))→(Q→R) と書かれた論理式"),
+        image: fig("q01-choice-e", 496, 49, "((P→Qの否定)∨(Q→Pの否定))→(Q→R) と書かれた論理式"),
         note: "P→Q̅ も Q→P̅ も偽なので前件が偽。前件が偽の含意は常に真。これが正解。",
       },
     ],
@@ -915,7 +915,7 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
     choices: [
       {
         text: "",
-        image: fig("q13-choice-a", 406, 382, "全区間で破線より上にある、上に凸のグラフ"),
+        image: fig("q13-choice-a", 406, 387, "全区間で破線より上にある、上に凸のグラフ"),
         note: "並列だけの構成ならこの形になるが、直列の装置があるので稼働率は装置単体を上回らない。",
       },
       {
@@ -1107,7 +1107,7 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
     stem: {
       image: fig(
         "q16-stem",
-        945,
+        950,
         305,
         "修正・静的リンク・動的リンクの3行と、OSSライセンスa〜dの4列で公開義務の有無を示す表",
       ),
@@ -4702,7 +4702,7 @@ export const AP_R07_HARU_AM: [Question, ...Question[]] = [
       image: fig(
         "q69-stem",
         1094,
-        319,
+        323,
         "KP・KA・KR・VP・CR・CH・CS・C$・R$の枠にa〜dの空欄を置いたビジネスモデルキャンバス",
       ),
     },

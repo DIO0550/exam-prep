@@ -15,8 +15,8 @@ import type { Question, Source } from "../types";
  *   IPA の解答例ではない（docs 3.4）
  *
  * 出典 PDF:
- * - 問題 https://www.ipa.go.jp/shiken/mondai-kaiotu/ps6vr70000010d6y-att/2021r03a_ap_am_qs.pdf
- * - 解答 https://www.ipa.go.jp/shiken/mondai-kaiotu/ps6vr70000010d6y-att/2021r03a_ap_am_ans.pdf
+ * - 問題 https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000apad-att/2021r03a_ap_am_qs.pdf
+ * - 解答 https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000apad-att/2021r03a_ap_am_ans.pdf
  */
 
 const at = (no: number, modified?: string): Source => ({
@@ -728,7 +728,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
     choices: [
       {
         text: "",
-        image: fig("q10-choice-a", 265, 98, "長方形で、内側の一辺に端子が4つ並ぶコネクタの断面図"),
+        image: fig("q10-choice-a", 265, 104, "長方形で、内側の一辺に端子が4つ並ぶコネクタの断面図"),
         note: "USB Type-Aの断面。長方形で表裏の向きが決まっている。",
       },
       {
@@ -746,7 +746,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
         image: fig(
           "q10-choice-u",
           266,
-          70,
+          88,
           "上辺の両端が斜めに欠けた台形で、端子が5つ並ぶコネクタの断面図",
         ),
         note: "USB Type-B（ミニ／マイクロ系）の断面。台形で向きが決まっている。",
@@ -3208,7 +3208,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
         image: fig(
           "q48-choice-a",
           826,
-          187,
+          191,
           "図形から細線・太線の三角形と四角形の4クラスが継承するクラス図",
         ),
         note: "形状と線種の組合せをすべてクラスにしている。種類が増えるとクラス数が掛け算で増えてしまう。",
@@ -3218,7 +3218,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
         image: fig(
           "q48-choice-i",
           825,
-          190,
+          194,
           "図形と太線の図形を関連で結び、それぞれに三角形・四角形が継承するクラス図",
         ),
         note: "太線側にも形状の階層を複製している。線種が増えるたびに階層ごと増える。",
@@ -3228,7 +3228,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
         image: fig(
           "q48-choice-u",
           813,
-          188,
+          192,
           "図形が線種を関連で参照し、形状と線種をそれぞれ独立に継承させたクラス図",
         ),
         note: "形状の階層と線種の階層を分け、関連で結んでいる。これが正解。",
@@ -3238,7 +3238,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
         image: fig(
           "q48-choice-e",
           415,
-          356,
+          360,
           "太線の三角形と太線の四角形から太線クラスへ継承をつないだクラス図",
         ),
         note: "継承の向きが不自然で、形状と線種の組合せクラスも残ったまま。",
@@ -3531,7 +3531,7 @@ export const AP_R03_AKI_AM: [Question, ...Question[]] = [
         image: fig(
           "q52-choice-u",
           594,
-          210,
+          215,
           "Aの終点から複数のダミー作業を引いたアローダイアグラム",
         ),
         note: "A→Fのダミーに加えてA→Hのダミーもある。A→HはA→F→Hで既に成り立つので、余計なダミー作業になっている。",

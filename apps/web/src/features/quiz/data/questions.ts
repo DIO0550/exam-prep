@@ -159,13 +159,16 @@ export const QUESTION_BY_ID: ReadonlyMap<string, Question> = new Map(
   ),
 );
 
-/** 画面に出す収録範囲。網羅していると誤解させないため、範囲を明示する（docs 5）。 */
 const countOf = (examCode: string) =>
   questionSetsOf(examCode).reduce((sum, set) => sum + set.questions.length, 0);
 
-export const COVERAGE = [
+/**
+ * 注意事項ページに出す収録範囲。網羅していると誤解させないため、範囲を明示する（docs 5）。
+ * 試験が増えるたびに行が増えるので、1 行ずつの配列で持って箇条書きにする。
+ */
+export const COVERAGE: string[] = [
   `応用情報技術者試験 午前 ${questionSetsOf("AP").length}回分（令和元年度秋期〜令和7年度秋期、各80問）`,
   `Google Cloud Digital Leader 対策 ${countOf("CDL")}問（本サイト作成。公式の問題ではありません）`,
   `生成AIパスポート 対策 ${countOf("GAIP")}問（本サイト作成。公式の問題ではありません）`,
   `JSTQB Foundation Level 対策 ${countOf("CTFL")}問（本サイト作成。公式の問題ではありません）`,
-].join(" ／ ");
+];
