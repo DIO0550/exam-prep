@@ -87,6 +87,42 @@ describe("問題データ", () => {
     }
   });
 
+  it.each([1, 2, 3, 4])(
+    "ACE 模擬試験%dは50問で、セクション配分が試験ガイドに沿い、複数選択を8問持つ",
+    (no) => {
+      // 試験ガイドの配分（セクション1・4 が 20% 以下、2・3 が 30% 以下）に合わせ、
+      // 50 問を 10・15・15・10 に配ってある。複数選択はどのセクションにも 2 問ずつ入れる。
+      const mock = QUESTION_SETS.find((set) => set.id === `ace-mock-${no}`);
+      expect(mock).toBeDefined();
+      if (!mock) {
+        return;
+      }
+      expect(mock.questions).toHaveLength(50);
+      const expected = [10, 15, 15, 10];
+      for (const [index, count] of expected.entries()) {
+        const questions = mock.questions.filter((question) =>
+          question.field.startsWith(`セクション${index + 1} `),
+        );
+        expect(questions, `${mock.id} のセクション${index + 1}`).toHaveLength(count);
+        expect(
+          questions.filter((question) => Array.isArray(question.answer)),
+          `${mock.id} のセクション${index + 1} の複数選択`,
+        ).toHaveLength(2);
+      }
+      const texts = ALL.map((question) => question.text);
+      for (const question of mock.questions) {
+        expect(texts.filter((text) => text === question.text)).toHaveLength(1);
+        expect(question.choices, nameOf(question)).toHaveLength(4);
+        if (Array.isArray(question.answer)) {
+          expect(question.answer, nameOf(question)).toHaveLength(2);
+          expect(question.text, nameOf(question)).toMatch(/2つ選べ。$/);
+          continue;
+        }
+        expect(question.text, nameOf(question)).not.toMatch(/つ選べ/);
+      }
+    },
+  );
+
   it("書き下ろした問題は、典拠を持つ", () => {
     // 出どころの分からない問題を混ぜないための検査。出典表記にもこの値が出る。
     for (const question of ALL) {

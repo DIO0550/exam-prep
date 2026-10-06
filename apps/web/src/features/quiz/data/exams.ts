@@ -23,6 +23,13 @@ export const EXAMS: [Exam, ...Exam[]] = [
     // 合格ラインは非公開なので持たない。
   },
   {
+    code: "ACE",
+    name: "Associate Cloud Engineer",
+    sub: "模擬4回 ・ 各50問 ・ 複数選択あり",
+    group: "Google Cloud 認定資格",
+    // 合格ラインは非公開なので持たない。
+  },
+  {
     code: "GAIP",
     name: "生成AIパスポート",
     sub: "用語 ・ 模擬4回 ・ 章別 ・ 計440問",

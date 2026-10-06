@@ -460,7 +460,7 @@ pnpm visual:compare -- --expected visual-baseline --actual visual-actual --out v
 
 ## 問題データ
 
-収録しているのは次の 4 系統。どれも 1 つの問題集＝1 ファイルで
+収録しているのは次の 5 系統。どれも 1 つの問題集＝1 ファイルで
 `apps/web/src/features/quiz/data/` に置き、
 [`data/questions.ts`](apps/web/src/features/quiz/data/questions.ts) の `QUESTION_SETS` に並べる。
 
@@ -468,6 +468,7 @@ pnpm visual:compare -- --expected visual-baseline --actual visual-actual --out v
 |---|---|---|
 | IPA 過去問題（`exam: "AP"`） | 応用情報技術者試験 午前の12回分（令和元年度 秋期〜令和7年度 秋期、各80問・計960問） | 原本は IPA の公開 PDF |
 | Google Cloud 対策（`exam: "CDL"`） | Cloud Digital Leader 向けのシナリオ問題 4 セットとサービス確認問題 4 セット（各30問・計240問） | **本サイトで書き下ろし** |
+| Google Cloud 対策（`exam: "ACE"`） | Associate Cloud Engineer 向けの模擬試験 4 セット（各50問・計200問。複数選択を各8問含む） | **本サイトで書き下ろし** |
 | 生成AIパスポート 対策（`exam: "GAIP"`） | 用語問題 1 セット（80問）・模擬試験 7 セット（各60問・計420問）・章別 6 セット（各20問・計120問）・GPT特化 1 セット（20問）の計640問 | **本サイトで書き下ろし** |
 | JSTQB Foundation Level 対策（`exam: "CTFL"`） | 章別 6 セット（計115問）・模擬試験 3 セット（各40問・計120問）の計235問 | **本サイトで書き下ろし** |
 
@@ -502,7 +503,7 @@ IPA が公開しているのは令和元年度以降なので、**午前につ�
 
 ### 書き下ろした問題
 
-Google Cloud 対策の 8 つ、生成AIパスポート対策の 15、JSTQB Foundation Level 対策の 9、あわせて 32 の問題集は、
+Google Cloud 対策の 12（Cloud Digital Leader 8・Associate Cloud Engineer 4）、生成AIパスポート対策の 15、JSTQB Foundation Level 対策の 9、あわせて 36 の問題集は、
 **問題文・選択肢・正解・解説のすべてを本リポジトリで書いた**もの。
 どこかの認定試験の実際の設問ではなく、公式の模擬試験でもない。
 
@@ -516,6 +517,7 @@ Google Cloud 対策の 8 つ、生成AIパスポート対策の 15、JSTQB Found
 典拠にしたのは次の公開資料。
 
 - Google Cloud「Cloud Digital Leader 学習ガイド v2.0」（6 分野のモジュール構成・用語集・プロダクト一覧）
+- Google Cloud「Associate Cloud Engineer 認定試験ガイド」（4 セクションの出題範囲。Associate Cloud Engineer 対策の範囲）
 - 生成AIパスポート試験のシラバス（一般社団法人生成AI活用普及協会）
 - 総務省・経済産業省「AI事業者ガイドライン」、内閣府「人間中心のAI社会原則」（第5章の範囲）
 - 個人情報保護委員会・特許庁・文化庁の公開資料（第4章の範囲）
@@ -584,6 +586,29 @@ Google Cloud 対策の 8 つ、生成AIパスポート対策の 15、JSTQB Found
 **どの問題にも、紛らわしい選択肢を 1〜2 つ入れる。** 残りは明確な誤りにして、消去法だけでは
 決まらないようにする。なぜその選択肢が違うのかは、選択肢ごとの `note` に 1 つずつ書く
 （解説を読まないと間違いの理由が分からない状態にしない）。
+
+#### Associate Cloud Engineer 対策（`ace-*.ts`）
+
+試験ガイドの 4 セクションに沿って、本番と同じ「立場と制約のある場面から、構成・コマンド・ロールを選ぶ」形の
+問題を書いた。事実の確認には Google Cloud のトレーニング資料（Essential Cloud Infrastructure、GKE、Terraform、
+Cloud Observability、Cloud Run functions などのコース資料と学習ガイド）を使ったが、**資料に載っている確認問題・
+理解度チェック・オリジナル問題は収録していない**。同じ論点を扱うときも、場面と問い方と選択肢を変えて別の問題にしてある。
+
+| 問題集 | 問う層 |
+|---|---|
+| 模擬試験1 | 各プロダクトの役割と、gcloud・kubectl・Helm の基本操作 |
+| 模擬試験2 | 要件からのプロダクト・構成の選択。隣り合うプロダクト（Cloud Run と GKE、Spanner と Cloud SQL、Cloud VPN と Cloud Interconnect など）の取り違え |
+| 模擬試験3 | 運用中の症状からの原因の切り分けと、直し方・手順の順番 |
+| 模擬試験4 | 最小権限・費用・ガバナンスと、Cloud NGFW・Workforce Identity 連携・Gemini Cloud Assist など試験ガイドに新しく入った項目 |
+
+各セット 50 問を、試験ガイドの配分（セクション1・4 が 20% 以下、セクション2・3 が 30% 以下）に合わせて
+10・15・15・10 に配り、どのセクションにも複数選択（4 つから 2 つ選ぶ）を 2 問ずつ入れてある（計 8 問）。
+この配分と複数選択の数は本演習で決めたもので、本試験の構成を公表値として示すものではない。
+分野（`field`）はセクションの名前。配分は [`questions.test.ts`](apps/web/src/features/quiz/data/questions.test.ts) で検査する。
+
+**資料の文は写さない。** 書いている間は、各問題集の全文（問題文・選択肢・補足・解説・表）をコース資料のテキストと
+突き合わせ、空白を除いて 25 文字以上一致する箇所が無いことを機械で確かめた。資料はリポジトリに置けないので、
+この突き合わせは CI には入れていない。
 
 #### JSTQB Foundation Level 対策（`ctfl-*.ts`）
 
@@ -708,7 +733,7 @@ K3（適用）の学習目的 8 つ（同値分割法・境界値分析・デシ
   （<https://www.ipa.go.jp/shiken/faq.html>）。詳細は
   [`apps/web/public/questions/LICENSE.md`](apps/web/public/questions/LICENSE.md)
 - **分野の細分類・解説**: 本リポジトリで作成したもの（MIT）
-- **Google Cloud 対策の問題（`gcp-cdl-*.ts`）・生成AIパスポート対策の問題（`gaip-*.ts`）**:
+- **Google Cloud 対策の問題（`gcp-cdl-*.ts`・`ace-*.ts`）・生成AIパスポート対策の問題（`gaip-*.ts`）**:
   本リポジトリで書き下ろしたもの（MIT）。公開資料を典拠にしているが、問題文・選択肢・正解・解説は
   いずれも本リポジトリの著作物で、典拠にした資料からの転載ではない
 - **JSTQB Foundation Level 対策の問題（`ctfl-*.ts`）**: 本リポジトリで書き下ろしたもの（MIT）。
