@@ -9,7 +9,7 @@ import type { Question, Source } from "../types";
  * 典拠にした公開資料:
  * - Google Cloud「Associate Cloud Engineer 認定試験ガイド」（4 セクションと各節の出題範囲）
  *
- * このセットが問う層は「各プロダクトの役割と、gcloud・kubectl・Terraform の基本操作」。
+ * このセットが問う層は「各プロダクトの役割と、gcloud・kubectl・Helm・Terraform の基本操作」。
  * 誰が何をしたいかを短い場面で示し、使うプロダクト・設定項目・コマンドとフラグを選ばせる。
  * 配分は本番の比重に合わせて、セクション1 が 10 問、2 が 15 問、3 が 15 問、4 が 10 問。
  *
@@ -72,31 +72,41 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     source: at(2, "1.1"),
     field: S1,
     answer: 0,
-    text: "金融業のB社は、規制対応のため、すべてのリソースを日本国内のリージョン（東京・大阪）にだけ作らせたい。対象は既存の全プロジェクトと、今後作られるプロジェクトである。プラットフォーム チームが行う設定として最も適切なものはどれか。",
+    text: "B社のプラットフォーム チームは、決済チーム用の開発プロジェクトを、組織の下にあるフォルダ payments（フォルダ ID 345678901234）の中に gcloud CLI で作りたい。社内の命名規則では、プロジェクト ID を「部門-環境-連番」の形（例: pay-dev-01）にすると決まっている。作り方と、プロジェクト ID の扱いの説明として最も適切なものはどれか。",
     choices: [
       {
-        text: "組織ノードに組織ポリシーのリソース ロケーション制限（constraints/gcp.resourceLocations）を設定し、許可する値を日本国内のロケーションに絞る。",
-        note: "組織ポリシーは「何を作ってよいか」の制約で、組織に設定すれば配下の既存・新規プロジェクトすべてに継承される。これが正解。",
+        text: "gcloud projects create pay-dev-01 --folder=345678901234 --name=pay-dev を実行する。プロジェクト ID は後から変えられないので、命名規則に沿った値を作成時に決めておく。",
+        note: "--folder で親のフォルダを指定でき、フォルダに付けた IAM ロールや組織ポリシーがそのまま効く。プロジェクト ID は全体で一意で、作成後は変更できない。これが正解。",
       },
       {
-        text: "各プロジェクトの割り当て（quota）で、東京・大阪以外のリージョンの上限を 0 に下げる。",
-        note: "割り当ては消費量の上限であって、場所を統制するための仕組みではない。プロジェクトとリソースの種類ごとに設定が要り、新しいプロジェクトにも自動では効かない。",
+        text: "ID を仮の値にして gcloud projects create を組織の直下に実行し、後から gcloud projects update でプロジェクト ID を命名規則どおりに付け直す。",
+        note: "gcloud projects update で変えられるのは表示用の名前などで、プロジェクト ID は変えられない。組織の直下に作ると、payments フォルダの設定も引き継がれない。",
       },
       {
-        text: "VPC Service Controls のサービス境界で全プロジェクトを囲む。",
-        note: "サービス境界は Google API へのアクセス経路を絞ってデータの持ち出しを防ぐもので、リソースを作る場所を制限するものではない。",
+        text: "gcloud resource-manager folders create --display-name=pay-dev-01 --folder=345678901234 を実行する。",
+        note: "payments の下に子フォルダを作るコマンドで、プロジェクトは作られない。",
       },
       {
-        text: "全員の gcloud CLI で gcloud config set compute/region asia-northeast1 を実行させる。",
-        note: "既定値を変えるだけで、フラグで別のリージョンを指定すれば作れてしまう。強制力が無い。",
+        text: "gcloud config set project pay-dev-01 を実行し、続けて gcloud services enable compute.googleapis.com を実行する。",
+        note: "config set project は手元の既定値を書き換えるだけで、プロジェクトを作りはしない。存在しないプロジェクトでは API も有効にできない。",
       },
     ],
     explain:
-      "「誰が操作できるか」を決めるのが IAM、「どのような構成を許すか」を決めるのが組織ポリシーである。リソースを作る場所の制限は組織ポリシーのリソース ロケーション制限で行い、組織やフォルダに設定すれば配下へ継承される。例外が必要なプロジェクトだけ、下位で上書きすることもできる。",
+      "プロジェクトは gcloud projects create で作り、親を --folder か --organization で指定する。フォルダの下に作れば、フォルダで付与したロールや組織ポリシーが新しいプロジェクトにも継承される。プロジェクトには、作る人が決めて Google Cloud 全体で一意になるプロジェクト ID、自動で振られるプロジェクト番号、表示用のプロジェクト名の 3 つの識別子がある。名前は後から変えられるが、ID は作成後に変更できず、削除したプロジェクトの ID を再び使うこともできない。命名規則は作り始める前に決めておく。",
     points: [
-      "IAM は「誰が」、組織ポリシーは「何を・どのように」を縛る。",
-      "組織ポリシーも IAM と同様にリソース階層を通じて下位へ継承される。",
+      "親の指定は --folder または --organization。フォルダの下に作れば、その設定が継承される。",
+      "プロジェクト ID は全体で一意で、作成後は変えられない。変えられるのはプロジェクト名。",
     ],
+    figure: {
+      type: "table",
+      caption: "プロジェクトを表す 3 つの識別子",
+      headers: ["識別子", "決め方", "後からの変更"],
+      rows: [
+        ["プロジェクト ID", "作成時に利用者が指定する（全体で一意）", "できない"],
+        ["プロジェクト番号", "Google が自動で割り当てる", "できない"],
+        ["プロジェクト名", "利用者が指定する（一意でなくてよい）", "できる"],
+      ],
+    },
   },
   {
     source: at(3, "1.1"),
@@ -132,60 +142,60 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     source: at(4, "1.1"),
     field: S1,
     answer: 1,
-    text: "新しく作ったプロジェクトで、Cloud SQL のインスタンスを作るために gcloud sql instances create を実行したところ、「Cloud SQL Admin API がこのプロジェクトで使われたことがないか、無効になっている」という趣旨のエラーが出た。実行者はプロジェクトのオーナーである。次に行う操作として最も適切なものはどれか。",
+    text: "新しく配属された開発者が、手元の PC で Cloud Storage のクライアント ライブラリを使う Python スクリプトを試している。gcloud auth login でログイン済みで、gcloud storage ls gs://dev-reports は成功する。ところがスクリプトを実行すると、アプリケーションのデフォルト認証情報（ADC）が見つからないという趣旨のエラーで止まる。チームの方針でサービス アカウント キーは使わない。対処として最も適切なものはどれか。",
     choices: [
       {
-        text: "gcloud services list --available を実行する。",
-        note: "有効にできる API の一覧を表示するだけで、有効化はされない。",
+        text: "gcloud auth login をもう一度実行する。",
+        note: "gcloud CLI 自身が使う認証情報を取り直すだけで、クライアント ライブラリが探す ADC の置き場所には何も書かれない。",
       },
       {
-        text: "gcloud services enable sqladmin.googleapis.com を実行する。",
-        note: "プロジェクトで Cloud SQL Admin API を有効にする。API はプロジェクトごとに有効化が必要。これが正解。",
+        text: "gcloud auth application-default login を実行する。",
+        note: "ブラウザでログインすると、ライブラリが自動で読み込む ADC 用の認証情報ファイルが手元に作られる。これが正解。",
       },
       {
-        text: "自分にもう一度オーナー（roles/owner）を付与し直す。",
-        note: "エラーの原因は権限ではなく API が無効なこと。ロールを付け直しても状況は変わらない。",
+        text: "サービス アカウント キーを作って JSON を保存し、環境変数 GOOGLE_APPLICATION_CREDENTIALS にそのパスを設定する。",
+        note: "ADC としては読み込まれるが、長期間有効なキーを手元に置くことになり、キーを使わない方針に反する。",
       },
       {
-        text: "gcloud components update で gcloud CLI を最新版にする。",
-        note: "手元のツールを更新しても、プロジェクト側で API が無効なままでは呼び出せない。",
+        text: "gcloud config set project で、スクリプトが使うプロジェクトを既定にする。",
+        note: "既定のプロジェクトを決めるだけで、認証情報が見つからないというエラーは解消しない。",
       },
     ],
     explain:
-      "Google Cloud の多くのサービスは、プロジェクトごとに API を有効にしてから使う。gcloud services enable にサービス名（例: sqladmin.googleapis.com、container.googleapis.com）を渡すと有効になり、gcloud services list --enabled で有効なものを確認できる。コンソールでは「API とサービス」のライブラリから同じ操作ができる。",
+      "gcloud CLI が使う認証情報（gcloud auth login で取得）と、クライアント ライブラリが使うアプリケーションのデフォルト認証情報（ADC）は別々に管理されている。ADC は、環境変数 GOOGLE_APPLICATION_CREDENTIALS が指すファイル、gcloud auth application-default login で手元に作ったファイル、実行環境に割り当てたサービス アカウント（メタデータ サーバー経由）の順に探される。手元では application-default login を使い、Compute Engine や Cloud Run の上では割り当てたサービス アカウントがそのまま使われるので、どちらでもコードを書き換えずに動かせる。",
     points: [
-      "API の有効化はプロジェクト単位。新しいプロジェクトでは最初に必要な API を有効にする。",
-      "list --available は候補の一覧、list --enabled は有効なものの一覧。",
+      "gcloud auth login は CLI 用、gcloud auth application-default login はライブラリ（ADC）用。",
+      "Google Cloud 上で動かすときは、割り当てたサービス アカウントが ADC として使われる。",
     ],
   },
   {
-    source: at(5, "1.1"),
+    source: at(5, "1.2"),
     field: S1,
     answer: 0,
-    text: "映像制作のD社のレンダリング チームが、asia-northeast1 で N2 マシンタイプの VM を追加で 64 vCPU 分作ろうとしたところ、リージョンの N2_CPUS の割り当てを超えたというエラーで作成に失敗した。チームはこの容量を継続して使う予定である。取るべき対応として最も適切なものはどれか。",
+    text: "D社の財務チームは、請求先アカウントに紐づく全プロジェクトの費用を確認し、部門ごとの予算とアラートを自分たちで作成・変更したい。一方で、支払い方法の変更、プロジェクトのリンクやリンク解除、請求先アカウントへの権限の付与はさせたくない。財務チームのグループに、請求先アカウントで付与するロールとして最も適切なものはどれか。",
     choices: [
       {
-        text: "Cloud Quotas（コンソールの割り当てのページ）から、asia-northeast1 の N2_CPUS の上限引き上げをリクエストする。",
-        note: "割り当ては申請によって引き上げを求められる。継続して使う容量なら上限そのものを上げるのが筋。これが正解。",
+        text: "請求先アカウント費用管理者（roles/billing.costsManager）",
+        note: "予算の作成・管理と費用情報の閲覧ができ、支払い方法やリンク、権限の管理はできない。これが正解。",
       },
       {
-        text: "同じ asia-northeast1 の別のゾーンを指定して作り直す。",
-        note: "N2_CPUS はリージョン単位の割り当てなので、同じリージョンのどのゾーンで作っても同じ上限に当たる。",
+        text: "請求先アカウント管理者（roles/billing.admin）",
+        note: "予算も扱えるが、支払い方法の管理、権限の付与、リンクの管理まですべてできてしまう。要件より広い。",
       },
       {
-        text: "Cloud Billing の予算の金額を引き上げる。",
-        note: "予算は費用の把握と通知のための仕組みで、作れるリソースの量には関係しない。",
+        text: "請求先アカウント ユーザー（roles/billing.user）",
+        note: "プロジェクトをこの請求先アカウントにリンクするためのロールで、予算は作れない。させたくない操作のほうを許すことになる。",
       },
       {
-        text: "プロジェクトを別の請求先アカウントにリンクし直す。",
-        note: "請求先を付け替えても、割り当ての値が自動で増えるわけではない。",
+        text: "請求先アカウント閲覧者（roles/billing.viewer）",
+        note: "費用や取引を見ることはできるが、予算を作ったり変えたりはできない。",
       },
     ],
     explain:
-      "割り当て（quota）は、プロジェクトがリージョンなどの単位で使えるリソース量の上限で、想定外の大量消費を防ぐ役割を持つ。上限に当たったら、コンソールの割り当てのページ（Cloud Quotas）で対象の指標と場所を選び、引き上げをリクエストする。審査があるため、計画的な増設なら事前に申請しておく。予算（budget）とは別物で、予算は使える量を制限しない。",
+      "請求先アカウントのロールは、扱える操作の範囲で分かれている。管理者はすべて、ユーザーはプロジェクトのリンク、閲覧者は費用と取引の閲覧、費用管理者は予算の管理と費用情報の閲覧・エクスポートが中心である。財務部門のように「費用は見て予算も組みたいが、支払いや構成には触れさせない」立場には費用管理者が合う。これらのロールはプロジェクトではなく、請求先アカウントに対して付与する。",
     points: [
-      "vCPU などの割り当てはリージョン単位のものが多く、ゾーンを変えても同じ上限に当たる。",
-      "割り当ては量の上限、予算は費用の通知。役割を混同しない。",
+      "予算の作成と費用の閲覧だけを任せるなら、請求先アカウント費用管理者。",
+      "リンクはユーザー、すべての管理は管理者、見るだけなら閲覧者。",
     ],
   },
   {
@@ -301,74 +311,75 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     source: at(9, "1.2"),
     field: S1,
     answer: 3,
-    text: "研修用のサンドボックス プロジェクトを多数運用しているG社は、受講者が高価なリソースを作りっぱなしにすることを心配している。プロジェクトの費用が予算額に達したら、人の操作を待たずに自動で課金を止めたい。構成として最も適切なものはどれか。",
+    text: "G社のデータ分析プロジェクト ana-prod は、月の予算が 50 万円である。これまでは実際の費用に対して 50%・90%・100% のしきい値で予算アラートを出していた。ところが先月は月の後半に費用が急に伸び、100% の通知が届いたのは月末の 2 日前で、手を打つ時間が無かった。月の途中でも「このままでは月末に予算を超える」と見込まれた時点で知らせてほしい。予算の設定として最も適切なものはどれか。",
     choices: [
       {
-        text: "予算を作り、しきい値 100% のアラートを設定する。到達するとプロジェクトのリソースが自動的に停止する。",
-        note: "予算アラートは通知を送るだけで、費用に上限をかけたりリソースを止めたりはしない。",
+        text: "実際の費用に対するしきい値を、10%・20%・30% のように細かく増やす。",
+        note: "通知の回数は増えるが、どれも「ここまで使った」という実績の知らせで、月末に超えそうかどうかは分からない。",
       },
       {
-        text: "プロジェクトの割り当てをすべて 0 に下げておく。",
-        note: "研修そのものができなくなる。割り当ては量の上限で、費用に連動して動くものでもない。",
+        text: "予算の期間を、月単位から四半期単位に変える。",
+        note: "集計の区切りが長くなるだけで、早く気付くことにはつながらない。月ごとに管理するという目的からも外れる。",
       },
       {
-        text: "予算アラートのメール通知先を、プロジェクトの全メンバーに広げる。",
-        note: "気付く人は増えるが、止める操作は人手のまま。自動で止める要件を満たさない。",
+        text: "Cloud Monitoring で、ana-prod の VM の CPU 使用率にアラートを設定する。",
+        note: "使用率は費用そのものではなく、BigQuery など VM 以外の費用の伸びも捉えられない。",
       },
       {
-        text: "予算にプログラムによる通知を設定して Pub/Sub トピックへ送り、それを受けた Cloud Run functions の関数がプロジェクトの課金を無効にする。",
-        note: "予算の状況を Pub/Sub で受け取れば、関数などで自動の対処を組める。これが正解。",
+        text: "予算の対象を ana-prod に絞ったうえで、基準を予測額（forecasted）にしたしきい値（例: 予測額の 100%）を追加する。",
+        note: "月末の予測額がしきい値を超えると見込まれた時点で通知されるので、月の途中で手を打てる。これが正解。",
       },
     ],
     explain:
-      "Cloud Billing の予算とアラートは、費用の状況を知らせるための仕組みで、それ自体は支出を止めない。自動で何かをさせたいときは、予算に Pub/Sub トピックを結び付ける「プログラムによる通知」を使い、そのメッセージを受けた関数で課金の無効化やリソースの停止を行う。課金を無効にすると、そのプロジェクトの有料リソースは止まり、場合によっては削除されることがあるため、本番環境ではなくサンドボックス向けの手法と考える。",
+      "Cloud Billing の予算では、しきい値ごとに「実際の費用」と「予測額」のどちらを基準にするかを選べる。実際の費用を基準にすると使った額が達したときに、予測額を基準にするとそれまでの使い方から見積もった月末の額が超えそうになったときに通知が届く。予算の対象はプロジェクト、サービス、ラベルなどで絞れるので、見張りたい範囲だけを対象にする。gcloud billing budgets create では、--threshold-rule に basis=forecasted-spend を付けて予測額の基準を指定する。",
     points: [
-      "予算アラートは通知だけ。上限で止めるには Pub/Sub 経由の自動処理を自分で組む。",
-      "課金の無効化は影響が大きいので、対象プロジェクトを限って使う。",
+      "予測額を基準にしたしきい値なら、月末に超える見込みの段階で通知される。",
+      "予算の対象は、プロジェクト・サービス・ラベルなどで絞り込める。",
     ],
-    figure: {
-      type: "table",
-      caption: "予算に結び付けられる通知の違い",
-      headers: ["仕組み", "届く先", "自動で止まるか"],
-      rows: [
-        [
-          "予算アラートのメール",
-          "請求先アカウントの管理者・指定した受信者",
-          "止まらない（人が判断する）",
-        ],
-        ["プログラムによる通知", "Pub/Sub トピック", "受け取った処理を書けば止められる"],
-      ],
-    },
   },
   {
     source: at(10, "1.2"),
     field: S1,
     answer: 1,
-    text: "H社の財務部は、全プロジェクトの費用をプロジェクト別・ラベル（cost-center）別に毎日 SQL で集計し、Looker Studio のダッシュボードにしたいと考えている。設定として最も適切なものはどれか。",
+    text: "H社では、1 つのプロジェクト shared-apps の中に、受注チームと在庫チームの VM が混在している。財務部は来月から、Compute Engine の費用をチーム別に分けて、請求レポートや BigQuery にエクスポートした課金データで確認したい。運用担当者が行う作業として最も適切なものはどれか。",
     choices: [
       {
-        text: "請求先アカウントの請求書 PDF を毎月ダウンロードし、表計算ソフトに転記する。",
-        note: "月単位でしか得られず、ラベル別の明細を SQL で扱える形にもならない。",
+        text: "gcloud compute instances add-tags web-1 --zone=asia-northeast1-b --tags=team-order のように、各 VM にネットワーク タグを付ける。",
+        note: "ネットワーク タグはファイアウォール ルールやルートの適用先を選ぶための目印で、費用の内訳には使われない。",
       },
       {
-        text: "Cloud Billing のデータを BigQuery へエクスポートする設定を有効にし、出力されたテーブルを SQL で集計する。",
-        note: "使用料金の明細がプロジェクト・サービス・ラベルなどの列付きで BigQuery に入り続ける。これが正解。",
+        text: "gcloud compute instances add-labels web-1 --zone=asia-northeast1-b --labels=team=order のように、各 VM にチームを表すラベルを付ける。",
+        note: "ラベルは課金データにキーと値として記録され、レポートやエクスポートでチーム別に集計できる。これが正解。",
       },
       {
-        text: "Cloud Logging のシンクで監査ログを BigQuery にエクスポートする。",
-        note: "監査ログは誰が何をしたかの記録で、費用の金額は含まない。",
+        text: "チームごとに請求先アカウントを作り、各 VM をそれぞれの請求先アカウントにリンクする。",
+        note: "請求先アカウントにリンクできるのはプロジェクトで、VM 単位では紐づけられない。",
       },
       {
-        text: "Cloud Monitoring で各プロジェクトの CPU 使用率のダッシュボードを作る。",
-        note: "使用率は分かっても金額にはならない。財務部の要件とずれている。",
+        text: "Cloud Monitoring で VM ごとの CPU 使用率を集計し、その比率で費用を按分する。",
+        note: "使用率から推し量るだけで実際の金額にはならず、ディスクやネットワークの費用も分けられない。",
       },
     ],
     explain:
-      "Cloud Billing のエクスポートを BigQuery に向けると、請求先アカウントに紐づく全プロジェクトの使用料金データが、指定したデータセットのテーブルに自動で書き込まれ続ける。プロジェクト、サービス、SKU、ラベルなどが列として入るので、GROUP BY で自由に集計でき、Looker Studio からもそのまま参照できる。エクスポートは有効にした時点以降のデータが対象になるため、早めに設定しておくのがよい。",
+      "ラベルはリソースに付けるキーと値の組（例: team=order、env=prod）で、Cloud Billing の請求レポートでの絞り込みや、BigQuery にエクスポートした課金データの集計に使える。ラベルが費用に反映されるのは付けた後の使用分からで、それより前の費用にさかのぼって付くことはないので、早めに付けておく。gcloud では作成時の --labels のほか、add-labels / remove-labels で後から付け外しできる。ファイアウォールの適用先を選ぶネットワーク タグや、IAM・組織ポリシーの条件に使うリソース マネージャのタグとは目的が違う。",
     points: [
-      "費用を SQL で分析したいなら、Cloud Billing の BigQuery エクスポート。",
-      "ラベルを付けておくと、エクスポートされた明細で部署やチーム別に集計できる。",
+      "費用をチームや環境で分けたいなら、リソースにラベルを付ける。",
+      "ラベルは付けた後の費用にだけ反映される。",
     ],
+    figure: {
+      type: "table",
+      caption: "名前の似た 3 つの目印",
+      headers: ["仕組み", "形", "主な用途"],
+      rows: [
+        ["ラベル", "キーと値（team=order など）", "費用の集計、リソースの整理と検索"],
+        ["ネットワーク タグ", "文字列（web など）", "ファイアウォール ルールやルートの適用先"],
+        [
+          "タグ（リソース マネージャ）",
+          "組織などで定義したキーと値",
+          "IAM や組織ポリシーの条件、Cloud NGFW のセキュア タグ",
+        ],
+      ],
+    },
   },
 
   // ───────── セクション2 計画と実装（問11〜問25） ─────────
@@ -436,50 +447,31 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     source: at(13, "2.1"),
     field: S2,
     answer: 3,
-    text: "I社は拡張機能の都合で Cloud SQL に移せない PostgreSQL を、Compute Engine の VM で自前運用している。ゾーン障害が起きたら、同じリージョンの別ゾーンに置いた待機 VM に切り替え、障害の直前までのデータで再開したい。データ ディスクの選び方として最も適切なものはどれか。",
+    text: "I社の Web チームは、検証用の VM を必要なときに作っては消している。VM を作るたびに nginx のインストールと設定ファイルの配置を手作業で行っていたが、これを自動にしたい。手順は手元のシェル スクリプト setup.sh にまとめてあり、カスタム イメージを作って保守するほどの規模ではない。VM を作るときの指定として最も適切なものはどれか。",
     choices: [
       {
-        text: "ゾーン Persistent Disk を使い、1 時間ごとにスナップショットを取る。",
-        note: "スナップショットからの復元になるため、最後のスナップショット以降の最大 1 時間分のデータを失う。",
+        text: "gcloud compute instances create web-test --zone=asia-northeast1-b --metadata-from-file=shutdown-script=setup.sh",
+        note: "shutdown-script は VM が停止・削除されるときに走るスクリプトで、起動時の準備には使えない。",
       },
       {
-        text: "ローカル SSD に置く。",
-        note: "VM に物理的に付いた一時的な領域で、VM の停止やホストの障害で中身が失われる。別ゾーンへの引き継ぎもできない。",
+        text: "gcloud compute instances create web-test --zone=asia-northeast1-b --metadata=enable-guest-attributes=TRUE",
+        note: "ゲスト属性は VM の中から値を書き込み、外から読み取るための仕組みで、スクリプトを実行させる機能ではない。",
       },
       {
-        text: "Hyperdisk Extreme に置き、プロビジョニングする IOPS を高めにする。",
-        note: "性能は高いが、単一ゾーンのディスクなのでゾーン障害には耐えない。",
+        text: "VM を作った後に gcloud compute ssh で接続し、setup.sh を実行する手順書を整える。",
+        note: "手作業が残り、自動にしたいという要件を満たさない。",
       },
       {
-        text: "同じリージョンの 2 つのゾーンへ同期で複製されるリージョン Persistent Disk を使い、障害時は待機 VM に強制アタッチする。",
-        note: "書き込みが 2 ゾーンに同期で複製されるため、もう一方のゾーンで最新のデータから再開できる。これが正解。",
+        text: "gcloud compute instances create web-test --zone=asia-northeast1-b --metadata-from-file=startup-script=setup.sh",
+        note: "スクリプトがメタデータの startup-script に登録され、VM の起動時に自動で実行される。これが正解。",
       },
     ],
     explain:
-      "リージョン Persistent Disk は、同じリージョン内の 2 つのゾーンにデータを同期で複製するブロック ストレージで、1 つのゾーンが使えなくなっても、もう一方のゾーンの VM に強制アタッチして処理を続けられる。ゾーン Persistent Disk や Hyperdisk Extreme は単一ゾーンのディスク、ローカル SSD は VM に付随する一時領域である。Hyperdisk には複数ゾーンへ複製する種類もあるが、選択肢の Hyperdisk Extreme は単一ゾーン向けである。",
+      "起動スクリプトは、インスタンスのメタデータ（Linux なら startup-script）に入れておくと、VM が起動するたびにゲスト環境が実行してくれるスクリプトである。手元のファイルなら --metadata-from-file、Cloud Storage に置いたファイルならメタデータの startup-script-url で指定する。インスタンス テンプレートに入れておけば、MIG で増えた VM にも同じ準備が行われる。起動のたびに走るので、何度実行しても同じ結果になるように書いておく。準備に時間がかかって起動が遅くなる場合は、必要なものを入れたカスタム イメージを使う方法と比べて選ぶ。",
     points: [
-      "ゾーン障害への耐性が要るなら、2 ゾーンに同期複製するディスクを選ぶ。",
-      "スナップショットは復旧の手段だが、取得間隔ぶんのデータは失いうる。",
+      "起動時の準備は startup-script、停止時の後片付けは shutdown-script。",
+      "起動スクリプトは起動のたびに実行されるので、繰り返しても問題ない作りにする。",
     ],
-    figure: {
-      type: "table",
-      caption: "Compute Engine で使う主なブロック ストレージ",
-      headers: ["種類", "置かれる範囲", "向いている用途"],
-      rows: [
-        ["ゾーン Persistent Disk", "1 ゾーン", "一般的なブートディスク・データディスク"],
-        [
-          "リージョン Persistent Disk",
-          "同じリージョンの 2 ゾーン",
-          "ゾーン障害時に別ゾーンで引き継ぐ構成",
-        ],
-        [
-          "Hyperdisk",
-          "種類による（Extreme は 1 ゾーン）",
-          "容量と別に IOPS やスループットを指定したい用途",
-        ],
-        ["ローカル SSD", "VM が載るホスト", "消えてもよい一時データ・キャッシュ"],
-      ],
-    },
   },
   {
     source: at(14, "2.1"),
@@ -790,30 +782,30 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     source: at(23, "2.3"),
     field: S2,
     answer: 1,
-    text: "ある VPC には、すべての送信元からの上りの通信を拒否するルール deny-all-ingress（優先度 500）がある。監視サーバーのために、10.30.0.0/24 からの tcp:9100 を許可するルール allow-monitoring を既定の優先度で追加したが、通信は通らないままである。直し方として最も適切なものはどれか。",
+    text: "データ基盤チームは、asia-northeast1 のサブネット app-subnet（10.20.0.0/24）に、自前で運用するデータベース用の VM db-1 を置く。アプリの設定ファイルやオンプレミス側のファイアウォールに DB の IP アドレスを直接書いているため、db-1 を削除して作り直しても 10.20.0.10 を使い続けたい。作り直しの間に、そのアドレスが他の VM に割り当てられてもならない。手順として最も適切なものはどれか。",
     choices: [
       {
-        text: "allow-monitoring の優先度を 1500 に変更する。",
-        note: "優先度は数値が小さいほど強い。1500 にすると、拒否ルールに対してさらに弱くなる。",
+        text: "gcloud compute addresses create db-ip --region=asia-northeast1 でアドレスを予約し、db-1 の作成時に --address=db-ip を指定する。",
+        note: "--subnet を付けずに予約すると外部 IP アドレスになる。内部 IP アドレスの固定にはならない。",
       },
       {
-        text: "allow-monitoring の優先度を、500 より小さい値（例: 400）に変更する。",
-        note: "許可ルールの方が先に評価されるようになり、監視の通信だけが通る。これが正解。",
+        text: "gcloud compute addresses create db-ip --region=asia-northeast1 --subnet=app-subnet --addresses=10.20.0.10 で静的内部 IP アドレスを予約し、db-1 の作成時に --private-network-ip=10.20.0.10 を指定する。",
+        note: "予約した内部 IP アドレスは VM を削除しても手放されず、他の VM に割り当てられない。これが正解。",
       },
       {
-        text: "allow-monitoring と同じ内容の許可ルールを、優先度 500 でもう 1 つ作る。",
-        note: "同じ優先度で許可と拒否がぶつかると、拒否が優先される。通信は通らない。",
+        text: "予約はせず、db-1 の作成時に --private-network-ip=10.20.0.10 だけを指定する。",
+        note: "VM がある間はそのアドレスを使えるが、VM を削除するとアドレスは解放され、作り直すまでに他の VM に割り当てられることがある。",
       },
       {
-        text: "deny-all-ingress を削除する。",
-        note: "監視の通信は通るようになるが、拒否ルールで守っていた他の通信まで開いてしまう。要件に対して過剰な変更。",
+        text: "Cloud DNS の限定公開ゾーンに db.internal のレコードを作り、アプリからは名前で接続させる。",
+        note: "名前で接続するのはよい習慣だが、オンプレミスのファイアウォールのように IP アドレスそのものを書いている箇所は解決しない。",
       },
     ],
     explain:
-      "VPC ファイアウォール ルールの優先度は 0〜65535 の整数で、数値が小さいほど優先される。作成時に指定しなければ 1000 になる。今回は既定の 1000 の許可ルールが、優先度 500 の拒否ルールに負けている。同じ優先度で許可と拒否が重なった場合は拒否が勝つので、許可ルールを確実に効かせるには拒否ルールより小さい数値を付ける。",
+      "VM の内部 IP アドレスは停止・起動では変わらないが、VM を削除すると解放される。作り直しても同じアドレスを使いたいときは、静的内部 IP アドレスとして予約しておく。gcloud compute addresses create に --subnet（具体的な値を決めたいなら --addresses も）を付けると内部アドレスの予約になり、付けなければ外部アドレスの予約になる。予約したアドレスは、VM を作るときに --private-network-ip で指定する。予約済みのアドレスは、使っていない間も他のリソースには割り当てられない。",
     points: [
-      "優先度は数値が小さいほど強い。既定値は 1000。",
-      "同じ優先度なら拒否が許可より優先される。",
+      "内部 IP は停止・起動では変わらないが、VM の削除で解放される。",
+      "addresses create に --subnet を付けると内部、付けないと外部のアドレスを予約する。",
     ],
   },
   {
@@ -866,41 +858,40 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     source: at(25, "2.4"),
     field: S2,
     answer: 0,
-    text: "P社では、Terraform の構成をリポジトリで管理し、状態は Cloud Storage のバックエンドに置いている。CI ではリポジトリを新しくチェックアウトした環境で動かし、レビューで承認された変更内容と寸分違わぬものだけを適用したい。CI で実行する順序として最も適切なものはどれか。",
+    text: "P社のアプリ チームは、GKE 上の Web アプリを Helm チャート（./chart）で管理している。ステージングと本番ではレプリカ数やリソースの要求量が違うため、環境ごとの値を values-staging.yaml と values-prod.yaml に分けている。CI からは、本番クラスタにリリース web がまだ無ければインストールし、あれば新しい版に更新する処理を 1 つのコマンドで行いたい。更新後に問題が出たときは、チャートが作ったリソース一式を前の状態へまとめて戻したい。方法として最も適切なものはどれか。",
     choices: [
       {
-        text: "terraform init → terraform plan -out=tfplan → （レビューと承認）→ terraform apply tfplan",
-        note: "初期化してから差分を計画ファイルに保存し、承認後にその計画ファイルどおりに適用する。これが正解。",
+        text: "helm upgrade --install web ./chart -f values-prod.yaml --namespace=web で入れるか更新し、問題が出たら helm history web でリビジョンを確かめて、helm rollback web 4 のように前のリビジョンへ戻す。",
+        note: "--install 付きの upgrade は、リリースが無ければ作成し、あれば更新する。Helm はリリースのリビジョンを記録しているので、rollback でリソース一式を前の状態に戻せる。これが正解。",
       },
       {
-        text: "terraform plan → terraform init → terraform apply",
-        note: "新しくチェックアウトした環境ではプロバイダもバックエンドも未初期化なので、init より前の plan は失敗する。",
+        text: "helm template web ./chart -f values-prod.yaml で書き出したマニフェストを kubectl apply -f で適用し、戻すときは前回書き出したファイルを探して適用し直す。",
+        note: "適用はできるが、Helm のリリースとして記録されないので履歴を使った切り戻しができない。前回のファイルの保管や、新しい版で増えたリソースの後片付けも自分で行うことになる。",
       },
       {
-        text: "terraform apply -auto-approve だけを実行する。",
-        note: "初期化も事前のレビューも飛ばしている。承認した内容と同じものが適用される保証も無い。",
+        text: "helm install web ./chart -f values-prod.yaml を毎回実行し、戻すときは kubectl rollout undo deployment/web を実行する。",
+        note: "同じ名前のリリースがあると helm install は失敗する。rollout undo は 1 つの Deployment を戻すだけで、ConfigMap などチャートの他のリソースは戻らず、Helm の記録とも食い違う。",
       },
       {
-        text: "terraform init → terraform apply → terraform plan",
-        note: "適用した後に計画を見ても、事前のレビューにはならない。",
+        text: "Config Connector にチャートと values-prod.yaml を登録し、クラスタへ同期させる。",
+        note: "Config Connector は Cloud SQL や Pub/Sub などの Google Cloud リソースを Kubernetes のリソースとして管理する仕組みで、Helm チャートを展開するものではない。",
       },
     ],
     explain:
-      "Terraform の基本の流れは、init（プロバイダやモジュールの取得、バックエンドの初期化）→ plan（現在の状態と構成を比べた変更内容の提示）→ apply（変更の実行）である。plan に -out を付けて計画ファイルを保存し、apply にそのファイルを渡すと、レビューした計画どおりに適用される。不要になったリソースをまとめて消すときは destroy を使う。",
+      "Helm は、Kubernetes のマニフェストをテンプレートと値（values）に分け、チャートとしてまとめて配布・管理するツールである。環境ごとの違いは -f で渡す値ファイルに寄せ、チャート本体は共通にする。-f を複数渡すと後ろのファイルが優先され、--set の指定はさらに優先される。helm upgrade --install はリリースの有無にかかわらず同じコマンドで使えるので、CI に向く。Helm はリリースのたびにリビジョンを記録しており、helm history で一覧を確かめ、helm rollback で指定したリビジョンの内容に戻せる。",
     points: [
-      "新しい作業ディレクトリでは、まず terraform init。",
-      "plan -out で保存した計画を apply に渡すと、レビューした内容どおりに適用される。",
+      "インストールと更新を 1 つのコマンドで行うなら helm upgrade --install。環境の差は -f の値ファイルで渡す。",
+      "切り戻しは helm history で確かめてから helm rollback。チャートのリソース一式が前のリビジョンに戻る。",
     ],
     figure: {
       type: "table",
-      caption: "Terraform の主なコマンド",
+      caption: "Helm の主なコマンド",
       headers: ["コマンド", "役割"],
       rows: [
-        ["terraform init", "プロバイダとモジュールを取得し、バックエンドを初期化する"],
-        ["terraform fmt / validate", "書式をそろえる / 構成の文法と整合性を確かめる"],
-        ["terraform plan", "実環境との差分から、行う変更を示す"],
-        ["terraform apply", "計画した変更を実環境に反映する"],
-        ["terraform destroy", "構成で管理しているリソースを削除する"],
+        ["helm upgrade --install", "リリースが無ければインストールし、あれば更新する"],
+        ["helm history", "リリースのリビジョンの一覧を表示する"],
+        ["helm rollback", "指定したリビジョンの内容に戻す"],
+        ["helm template", "値を当てたマニフェストを書き出すだけで、クラスタには適用しない"],
       ],
     },
   },
@@ -909,31 +900,31 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
   {
     source: at(26, "3.1"),
     field: S3,
-    answer: [2, 3],
-    text: "Q社では、組織ポリシーにより VM に外部 IP アドレスを付けられない。運用担当者には IAP で保護されたトンネル ユーザーのロールと、OS Login のロールがすでに付与されている。運用担当者が手元の端末から VM app-1（asia-northeast1-b）に SSH 接続するために必要な設定・操作として適切なものはどれか。2つ選べ。",
+    answer: [1, 3],
+    text: "Q社の社内向け帳票サーバー app-1（asia-northeast1-b、e2-standard-2）は、月末の処理で CPU とメモリが足りなくなっている。夜間なら 10 分程度止めてよいことになったので、ディスクや設定はそのままに、マシンタイプを e2-standard-8 に変えたい。必要な操作として適切なものはどれか。2つ選べ。",
     choices: [
       {
-        text: "app-1 にエフェメラル外部 IP アドレスを付ける。",
-        note: "組織ポリシーの制約に反する。IAP を使えば外部 IP なしで接続できる。",
+        text: "VM を動かしたまま、コンソールの VM の編集画面でマシンタイプを e2-standard-8 に変えて保存する。",
+        note: "マシンタイプは VM を停止している間にしか変えられない。動いたままでは変更できない。",
       },
       {
-        text: "サブネットに Cloud NAT を構成する。",
-        note: "Cloud NAT は VM から外へ出る通信のためのもので、外から VM への SSH 接続には使えない。",
+        text: "gcloud compute instances stop app-1 --zone=asia-northeast1-b で VM を停止する。",
+        note: "マシンタイプを変える前に、まず VM を停止しておく必要がある。これが正解。",
       },
       {
-        text: "IAP の転送元の範囲 35.235.240.0/20 から tcp:22 への上りの通信を許可するファイアウォール ルールを作る。",
-        note: "IAP の TCP 転送は、この範囲から VM へ接続してくる。これが正解。",
+        text: "gcloud compute disks resize app-1 --zone=asia-northeast1-b --size=200GB でブートディスクを広げる。",
+        note: "ディスクの容量が増えるだけで、vCPU やメモリは変わらない。",
       },
       {
-        text: "gcloud compute ssh app-1 --zone=asia-northeast1-b --tunnel-through-iap を実行する。",
-        note: "IAP 経由のトンネルで SSH 接続する。これが正解。",
+        text: "gcloud compute instances set-machine-type app-1 --zone=asia-northeast1-b --machine-type=e2-standard-8 を実行し、その後 VM を起動する。",
+        note: "停止した VM のマシンタイプを変える。ディスクのデータや内部 IP アドレスはそのまま引き継がれる。これが正解。",
       },
     ],
     explain:
-      "IAP の TCP 転送を使うと、外部 IP アドレスを持たない VM にも、IAP を経由して SSH や RDP で接続できる。必要なのは、IAP の転送元 35.235.240.0/20 から対象ポートへの上りを許可するファイアウォール ルール、利用者への IAP で保護されたトンネル ユーザーのロール、そして接続時の --tunnel-through-iap である。外部 IP を付けずに済むので、攻撃を受ける面を減らせる。",
+      "既存の VM のマシンタイプは、VM を停止してから gcloud compute instances set-machine-type（コンソールなら編集画面）で変え、起動し直して反映させる。ディスクの中身、メタデータ、内部 IP アドレスは引き継がれる。どのサイズが合うかは、使用状況をもとに出される Compute Engine のマシンタイプの推奨も参考になる。なお、MIG で管理している VM は個別に変えず、新しいインスタンス テンプレートに差し替えて入れ替える。",
     points: [
-      "IAP の TCP 転送の送信元は 35.235.240.0/20。ここからの tcp:22 を許可する。",
-      "Cloud NAT は外向きの通信用で、外から VM に入る経路にはならない。",
+      "マシンタイプの変更は「停止 → set-machine-type → 起動」の順。",
+      "ディスク容量の変更（disks resize）と、vCPU・メモリの変更は別の操作。",
     ],
   },
   {
@@ -1076,11 +1067,11 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
       },
       {
         text: "kubectl autoscale deploy/web --cpu-percent=60 --min=2 --max=10",
-        note: "水平 Pod 自動スケーリング（HPA）を作り、CPU 使用率 60% を目標に Pod 数を 2〜10 で調整させる。これが正解。",
+        note: "水平 Pod 自動スケーリング（HPA）を作り、CPU 使用率 60% を目標に Pod 数を 2〜10 で調整させる。新しい kubectl では同じ指定を --cpu=60% とも書ける。これが正解。",
       },
     ],
     explain:
-      "GKE の自動スケーリングには 3 つの層がある。HPA は Pod の数、VPA は Pod 1 つあたりのリクエスト値、クラスタ オートスケーラはノードの数を調整する。CPU 使用率で HPA を動かす場合、使用率は Pod のリクエストに対する割合で計算されるため、リクエストを設定しておく必要がある。HPA で Pod が増えてノードに載り切らなくなったときに、クラスタ オートスケーラがノードを足す、という組み合わせがよく使われる。",
+      "GKE の自動スケーリングには 3 つの層がある。HPA は Pod の数、VPA は Pod 1 つあたりのリクエスト値、クラスタ オートスケーラはノードの数を調整する。CPU 使用率で HPA を動かす場合、使用率は Pod のリクエストに対する割合で計算されるため、リクエストを設定しておく必要がある。HPA で Pod が増えてノードに載り切らなくなったときに、クラスタ オートスケーラがノードを足す、という組み合わせがよく使われる。なお、新しい kubectl（1.34 以降）では目標を --cpu=60% の形で指定するフラグが加わり、--cpu-percent は非推奨になった（当面は引き続き使える）。",
     points: [
       "Pod の数は HPA、Pod の大きさは VPA、ノードの数はクラスタ オートスケーラ。",
       "CPU 使用率で HPA を使うには、Pod にリクエストを設定しておく。",
@@ -1164,41 +1155,31 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     source: at(34, "3.2"),
     field: S3,
     answer: 2,
-    text: "Cloud SQL for MySQL の orders-db では、毎日 2:00 に自動バックアップを取っている。14:05 にオペレータが誤った DELETE 文を実行し、大量の行が消えた。14:04 時点のデータを取り戻したい。あらかじめ有効にしておく必要があった機能と、その使い方として最も適切なものはどれか。",
+    text: "物流会社の BB社の基幹システムは、Cloud SQL for MySQL のインスタンス erp-db で動いている。監査法人に、データベース orders の月末時点の内容を、SQL のダンプ ファイルとして Cloud Storage のバケット gs://erp-audit-dumps に置いて渡すことになった。インスタンス全体ではなく orders だけを出力したい。方法として最も適切なものはどれか。",
     choices: [
       {
-        text: "自動バックアップだけで足り、2:00 のバックアップから元のインスタンスを復元すればよい。",
-        note: "2:00 の時点に戻るため、それ以降 14:04 までの約 12 時間分の変更を失う。",
+        text: "gcloud sql backups create --instance=erp-db でオンデマンド バックアップを取る。",
+        note: "バックアップは Cloud SQL の中で管理される復元用のもので、ファイルとして取り出して渡すことはできない。対象もインスタンス全体になる。",
       },
       {
-        text: "リードレプリカを作っておき、レプリカを昇格させて使う。",
-        note: "レプリカには誤った DELETE も複製されるため、消える前のデータは残っていない。",
+        text: "gcloud sql instances clone erp-db erp-audit で複製のインスタンスを作り、監査法人に接続させる。",
+        note: "インスタンス全体の複製で、ファイルを渡すという要件に合わない。動かしている間の費用もかかり、orders 以外のデータベースも見えてしまう。",
       },
       {
-        text: "ポイントインタイム リカバリを有効にしておき、gcloud sql instances clone で 14:04 時点を指定（--point-in-time）して新しいインスタンスに復元する。",
-        note: "バックアップとログを使って、指定した時刻の状態を別のインスタンスとして作り出せる。これが正解。",
+        text: "gcloud sql export sql erp-db gs://erp-audit-dumps/orders-202609.sql.gz --database=orders を実行する。インスタンスのサービス アカウントには、このバケットへの書き込み権限を付けておく。",
+        note: "指定したデータベースだけを SQL ダンプとして Cloud Storage に書き出せる。書き込むのはインスタンスのサービス アカウントなので、バケットの権限が要る。これが正解。",
       },
       {
-        text: "毎晩 SQL ダンプを Cloud Storage にエクスポートしておき、それを読み込む。",
-        note: "エクスポートした時点のデータにしか戻れず、日中の変更は失われる。",
+        text: "gcloud storage cp で、erp-db のデータ ディスクから直接バケットへファイルをコピーする。",
+        note: "Cloud SQL のディスクは利用者から直接触れられないので、ファイルとしてコピーすることはできない。",
       },
     ],
     explain:
-      "Cloud SQL の自動バックアップは、取得した時点の状態に戻すためのものである。任意の時刻に戻したいときは、ポイントインタイム リカバリ（PITR）を有効にしておき、変更のログと組み合わせて指定時刻の状態を復元する。PITR による復元は、元のインスタンスを上書きせず、クローンとして新しいインスタンスを作る形で行う。事故が起きてからでは有効にしても間に合わないので、本番環境では最初から有効にしておく。",
+      "Cloud SQL のデータをファイルとして外へ出すときは、エクスポートを使う。gcloud sql export sql は SQL のダンプを、gcloud sql export csv はクエリの結果を CSV で Cloud Storage に書き出し、--database で対象のデータベースを絞れる。ファイル名を .gz で終えると圧縮して書き出される。書き込みは Cloud SQL インスタンスのサービス アカウント（gcloud sql instances describe の serviceAccountEmailAddress で確認できる）が行うので、バケットへの書き込みロールをそのアカウントに付けておく。取り込むときは gcloud sql import sql を使う。自動・オンデマンドのバックアップは Cloud SQL への復元のためのもので、ファイルとして渡す用途には使えない。",
     points: [
-      "バックアップは取得時点に、PITR は任意の時刻に戻せる。",
-      "レプリカは誤操作も複製するので、誤操作からの復旧手段にはならない。",
+      "Cloud SQL からファイルとして取り出すのは export（SQL ダンプまたは CSV）。",
+      "書き込むのはインスタンスのサービス アカウント。バケットの権限を付けておく。",
     ],
-    figure: {
-      type: "table",
-      caption: "Cloud SQL でデータを戻す手段の比較",
-      headers: ["手段", "戻れる時点", "誤操作からの復旧"],
-      rows: [
-        ["自動バックアップ", "バックアップを取った時点", "取得後の変更は失う"],
-        ["ポイントインタイム リカバリ", "保持期間内の任意の時刻", "直前の時点まで戻せる"],
-        ["リードレプリカ", "常に最新（誤操作も含む）", "使えない"],
-      ],
-    },
   },
   {
     source: at(35, "3.2"),
@@ -1231,33 +1212,33 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     ],
   },
   {
-    source: at(36, "3.3"),
+    source: at(36, "3.4"),
     field: S3,
     answer: 3,
-    text: "asia-northeast1 のサブネット app-subnet（10.40.0.0/24）の IP アドレスが残りわずかになった。マネージド インスタンス グループの台数は今後も増える見込みで、動いている VM は止められない。10.40.0.0/22 の範囲は VPC 内でもオンプレミスでも使われていない。取るべき対応として最も適切なものはどれか。",
+    text: "CC社の社内規程で、業務アプリが Cloud Logging に書き出すログを 1 年間、ログ エクスプローラから検索できる状態で残すことになった。ログは既定の構成のまま _Default ログバケットに入っている。新しい仕組みはなるべく増やしたくない。行う操作として最も適切なものはどれか。",
     choices: [
       {
-        text: "gcloud compute networks subnets expand-ip-range app-subnet --region=asia-northeast1 --prefix-length=26 を実行する。",
-        note: "/26 は /24 より狭い範囲で、サブネットの範囲を縮めることはできない。",
+        text: "gcloud logging buckets update _Required --location=global --retention-days=365 を実行する。",
+        note: "_Required バケットは管理アクティビティ監査ログなどのための専用のバケットで、保持期間（400 日）は変えられない。アプリのログもここには入らない。",
       },
       {
-        text: "app-subnet を削除し、10.40.0.0/22 で作り直す。",
-        note: "サブネットを削除するには、そこで動いている VM をすべて先に消す必要がある。止められない要件に反する。",
+        text: "ログ ルーターに Cloud Storage を宛先とするシンクを作り、アプリのログを 1 年間バケットに残す。",
+        note: "保管はできるが、Cloud Storage に出したログはログ エクスプローラで検索できない。シンクとバケットの管理も増える。",
       },
       {
-        text: "app-subnet にセカンダリ IP 範囲を追加する。",
-        note: "セカンダリ範囲はエイリアス IP（GKE の Pod など）に使う範囲で、VM のプライマリ内部 IP の不足は解消しない。",
+        text: "gcloud logging sinks update _Default --retention-days=365 を実行する。",
+        note: "シンクはログの送り先を決めるもので、保持期間を持たない。保持期間はログバケットの設定である。",
       },
       {
-        text: "gcloud compute networks subnets expand-ip-range app-subnet --region=asia-northeast1 --prefix-length=22 を実行する。",
-        note: "動いている VM を止めずに、サブネットのプライマリ範囲を /22 に広げられる。これが正解。",
+        text: "gcloud logging buckets update _Default --location=global --retention-days=365 を実行する。",
+        note: "_Default バケットの保持期間を延ばせば、いまの置き場所のまま 1 年間検索できる。これが正解。",
       },
     ],
     explain:
-      "サブネットのプライマリ IPv4 範囲は、expand-ip-range で後から広げられる。既存の VM には影響しないが、広げる範囲が VPC 内の他のサブネットや、ピアリング先・オンプレミスなどの接続先と重ならないことが条件になる。広げた範囲を元に戻す（狭める）ことはできないので、拡張幅は計画して決める。",
+      "Cloud Logging のログは、ログ ルーターのシンクを通ってログバケットに保存される。プロジェクトには最初から _Required と _Default の 2 つのバケットがあり、_Required は管理アクティビティ監査ログなどを 400 日保持し、その期間は変えられない。それ以外の多くのログが入る _Default の保持期間は既定で 30 日で、gcloud logging buckets update の --retention-days で延ばせる（30 日を超えて保持する分には保管の料金がかかる）。Cloud Storage や BigQuery へのシンクは長期の保管や分析に向くが、ログ エクスプローラでの検索の対象からは外れる。",
     points: [
-      "サブネットの範囲は広げられるが、狭めることはできない。",
-      "広げる先の範囲が他のネットワークと重ならないかを先に確かめる。",
+      "保持期間はシンクではなくログバケットの設定。_Default は既定 30 日で、延ばせる。",
+      "_Required バケットは 400 日固定で、変更できない。",
     ],
   },
   {
@@ -1364,30 +1345,30 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     source: at(40, "3.4"),
     field: S3,
     answer: 3,
-    text: "U社は Compute Engine の VM について、メモリ使用率とディスクの使用率でアラートを出し、あわせて nginx のアクセスログを Cloud Logging に集めたい。いまは VM に何もインストールしておらず、Cloud Monitoring には CPU 使用率などは表示されている。行う対応として最も適切なものはどれか。",
+    text: "U社の決済 API は Cloud Run で動いている。外部の決済代行との通信がタイムアウトすると、アプリは PAYMENT_TIMEOUT という文字列を含むエラーログを出す。この文字列を含むログが 5 分間に 10 件を超えたら、運用チームに通知したい。構成として最も適切なものはどれか。",
     choices: [
       {
-        text: "何もしなくてよい。メモリ使用率とディスク使用率も、エージェントなしで既定で収集されている。",
-        note: "エージェントなしで集まるのはハイパーバイザ側から見える指標で、OS の中のメモリやディスクの使用率は含まれない。",
+        text: "Cloud Run のサービスに Ops エージェントをインストールし、ログを集めさせる。",
+        note: "Cloud Run のログは何も入れなくても Cloud Logging に届く。Ops エージェントは Compute Engine の VM に入れるもので、件数による通知も行わない。",
       },
       {
-        text: "従来の Monitoring エージェントと Logging エージェントを、それぞれ VM にインストールする。",
-        note: "従来の 2 つのエージェントは Ops エージェントに置き換えられた旧方式で、新しく入れる選択肢ではない。",
+        text: "稼働時間チェックで決済 API の URL を 1 分ごとに呼び出し、失敗したら通知する。",
+        note: "外から応答の有無を確かめる仕組みで、アプリの中で起きた決済代行とのタイムアウトの件数は分からない。",
       },
       {
-        text: "サブネットで VPC フローログを有効にする。",
-        note: "フローログは VM が送受信したネットワーク フローの記録で、メモリ使用率や nginx のログは取れない。",
+        text: "ログ ルーターのシンクでエラーログを BigQuery に送り、毎朝クエリで件数を確認する。",
+        note: "後から集計はできるが、5 分ごとの件数ですぐに通知する要件を満たさない。",
       },
       {
-        text: "VM に Ops エージェントをインストールし、nginx のログと指標を集めるよう設定する。",
-        note: "Ops エージェントは OS 内の指標とログをまとめて収集し、nginx などの主要なアプリにも対応する。これが正解。",
+        text: 'gcloud logging metrics create で、フィルタ（例: textPayload:"PAYMENT_TIMEOUT"）に一致するログを数えるログベースの指標を作り、その値が 5 分間で 10 を超えたら通知するアラート ポリシーを設定する。',
+        note: "ログの件数を Cloud Monitoring の指標として扱えるので、しきい値でアラートを出せる。これが正解。",
       },
     ],
     explain:
-      "Compute Engine の VM では、CPU 使用率やディスクの I/O、ネットワークのバイト数などは、エージェントなしでも Cloud Monitoring に入る。一方、OS の中でしか分からないメモリ使用率やファイルシステムの使用率、アプリのログを集めるには、VM に Ops エージェントを入れる。Ops エージェントは指標とログの収集を 1 つにまとめたもので、nginx・Apache・MySQL などの設定済みの収集にも対応している。",
+      "ログベースの指標は、フィルタに一致するログの件数（カウンタ）や、ログに含まれる数値の分布を、Cloud Monitoring の指標にする仕組みである。gcloud logging metrics create に指標の名前と --log-filter を渡して作ると、logging.googleapis.com/user/指標名 という指標になり、アラート ポリシーの条件やダッシュボードで使える。数え始めるのは指標を作った後に届いたログからで、過去のログはさかのぼって数えない。",
     points: [
-      "メモリ使用率やアプリのログは、Ops エージェントを入れて初めて集まる。",
-      "VPC フローログはネットワークの記録で、VM の中の状態は分からない。",
+      "特定のログの出現数でアラートを出すなら、ログベースの指標 ＋ アラート ポリシー。",
+      "ログベースの指標は、作成した後のログから数える。",
     ],
   },
 
@@ -1523,33 +1504,33 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     ],
   },
   {
-    source: at(45, "4.2"),
+    source: at(45, "4.1"),
     field: S4,
     answer: 3,
-    text: "夜間バッチの VM は、Cloud Storage のバケット gs://raw-orders からオブジェクトを読むだけである。いまは Compute Engine のデフォルトのサービス アカウントで動いていて、このプロジェクトではそのアカウントに編集者ロールが付いている。最小権限の考え方に沿った構成として最も適切なものはどれか。",
+    text: "DD社のプロジェクト dd-prod の管理者は、委託先のメンバーに Cloud Storage のオブジェクトの読み取りだけを許したいと考え、Storage オブジェクト閲覧者（roles/storage.objectViewer）を候補にしている。付与する前に、このロールにどの権限（storage.objects.get や storage.objects.list など）が入っているかを gcloud CLI で確かめたい。使うコマンドとして最も適切なものはどれか。",
     choices: [
       {
-        text: "デフォルトのサービス アカウントのまま、VM のアクセス スコープを Cloud Storage の読み取り専用に絞る。",
-        note: "スコープは旧来の補助的な仕組みで、アカウント自体には編集者ロールが残る。同じアカウントを使う他の VM にも影響し、根本的な絞り込みにならない。",
+        text: "gcloud projects get-iam-policy dd-prod",
+        note: "プロジェクトで誰にどのロールが付いているかを表示するもので、ロールに含まれる権限は表示されない。",
       },
       {
-        text: "専用のサービス アカウントを作ってキーを発行し、キー ファイルを VM のディスクに置いて使わせる。",
-        note: "VM にはサービス アカウントを直接割り当てられるので、長期間有効なキーを置く必要は無い。漏えいの危険を増やすだけ。",
+        text: "gcloud iam list-grantable-roles //cloudresourcemanager.googleapis.com/projects/dd-prod",
+        note: "そのリソースで付与できるロールの一覧を表示するもので、個々のロールの中身の権限までは分からない。",
       },
       {
-        text: "デフォルトのサービス アカウントに、プロジェクトの Storage 管理者（roles/storage.admin）を追加で付与する。",
-        note: "権限をさらに広げることになり、最小権限と逆。",
+        text: "gcloud iam roles list --project=dd-prod",
+        note: "このプロジェクトで定義したカスタムロールの一覧で、事前定義ロールの中身は表示されない。",
       },
       {
-        text: "gcloud iam service-accounts create で専用のサービス アカウントを作り、gs://raw-orders に対する Storage オブジェクト閲覧者だけを付与して、VM の作成時に --service-account でそのアカウントを割り当てる。",
-        note: "VM が使う ID を専用にし、必要なバケットの読み取りだけに絞れる。これが正解。",
+        text: "gcloud iam roles describe roles/storage.objectViewer",
+        note: "ロールの説明と、含まれる権限の一覧（includedPermissions）が表示される。これが正解。",
       },
     ],
     explain:
-      "VM などのリソースには、ワークロードごとに専用のユーザー管理サービス アカウントを作って割り当て、必要なロールだけを、できれば対象のリソース（この場合はバケット）に絞って付与するのが基本である。VM に割り当てたサービス アカウントの認証情報はメタデータ サーバーから自動で取得されるので、キー ファイルは不要になる。アクセス スコープは旧来の仕組みで、現在は cloud-platform を指定して IAM ロールで制御するのが推奨される。",
+      "ロールは権限の集まりで、事前定義ロールの中身は Google が更新することもある。付与の前に gcloud iam roles describe で includedPermissions を確かめれば、必要な権限が入っているか、余計な権限が入っていないかを判断できる。カスタムロールなら --project や --organization を付けて同じように確認する。逆に、ある権限を含むロールを探したいときは、コンソールの「ロール」のページで権限名から絞り込める。",
     points: [
-      "ワークロードごとに専用のサービス アカウントを作り、必要なロールだけを付ける。",
-      "VM に割り当てればキーは不要。権限の制御はスコープではなく IAM で行う。",
+      "ロールに含まれる権限は gcloud iam roles describe で確かめる。",
+      "get-iam-policy は「誰に何が付いているか」、roles describe は「ロールに何が入っているか」。",
     ],
   },
   {
@@ -1586,120 +1567,120 @@ export const ACE_MOCK_1: [Question, ...Question[]] = [
     source: at(47, "4.2"),
     field: S4,
     answer: 1,
-    text: "開発者のYさんは、プロジェクトで Compute インスタンス管理者（roles/compute.instanceAdmin.v1）を持っている。VM を --service-account=app-runner@shop-prod.iam.gserviceaccount.com 付きで作成しようとしたところ、iam.serviceAccounts.actAs の権限が無いというエラーで失敗した。最小権限で解決する付与として最も適切なものはどれか。",
+    text: "EE社では、Cloud Run のサービス frontend（サービス アカウント frontend-sa@shop-prod.iam.gserviceaccount.com で実行）から、内部向けの Cloud Run サービス backend（asia-northeast1）を呼び出す。backend は認証を必須にしており、インターネットの利用者には呼び出させたくない。frontend からの呼び出しを許可する設定として最も適切なものはどれか。",
     choices: [
       {
-        text: "Yさんに、app-runner に対するサービス アカウント トークン作成者（roles/iam.serviceAccountTokenCreator）を付与する。",
-        note: "トークンを発行して権限借用するためのロールで、VM への割り当てに必要な actAs の権限は含まない。",
+        text: "プロジェクト全体で、frontend-sa に Cloud Run 起動元（roles/run.invoker）を付与する。",
+        note: "呼び出せるようにはなるが、プロジェクト内のすべての Cloud Run サービスを呼び出せてしまう。backend だけに絞るほうが最小権限に沿う。",
       },
       {
-        text: "Yさんに、app-runner に対するサービス アカウント ユーザー（roles/iam.serviceAccountUser）を付与する。",
-        note: "そのサービス アカウントを VM などに割り当てる actAs の権限を、このアカウントに限って与えられる。これが正解。",
+        text: "gcloud run services add-iam-policy-binding backend --region=asia-northeast1 --member=serviceAccount:frontend-sa@shop-prod.iam.gserviceaccount.com --role=roles/run.invoker を実行し、frontend は ID トークンを付けて呼び出す。",
+        note: "backend のサービスに対してだけ起動元のロールを付けるので、呼び出せる相手を絞れる。これが正解。",
       },
       {
-        text: "Yさんに、プロジェクトのサービス アカウント管理者（roles/iam.serviceAccountAdmin）を付与する。",
-        note: "サービス アカウントの作成・削除・設定変更のためのロールで、要件より広く、しかも actAs の権限は含まない。",
+        text: "backend を --allow-unauthenticated で更新する。",
+        note: "誰でも呼び出せる公開サービスになり、要件に反する。",
       },
       {
-        text: "Yさんに、プロジェクトのオーナー（roles/owner）を付与する。",
-        note: "解決はするが、プロジェクトのすべてを操作できるようになり、最小権限に反する。",
+        text: "backend に対して、frontend-sa に Cloud Run 閲覧者（roles/run.viewer）を付与する。",
+        note: "サービスの設定を見るためのロールで、呼び出しの権限（run.routes.invoke）は含まない。",
       },
     ],
     explain:
-      "リソースにサービス アカウントを割り当てると、そのリソース上の処理はサービス アカウントの権限で動く。そのため、割り当てる人には「そのサービス アカウントとして振る舞ってよい」という actAs の権限が求められ、これはサービス アカウント ユーザーのロールに含まれる。プロジェクト全体ではなく、対象のサービス アカウントに対して付与すれば、使えるアカウントを限定できる。",
+      "認証を必須にした Cloud Run サービスを呼び出すには、呼び出す側のプリンシパルが、そのサービスに対する Cloud Run 起動元のロールを持っている必要がある。サービス間の呼び出しでは、呼び出す側の実行用サービス アカウントにこのロールを付け、呼び出す側はメタデータ サーバーから、呼び出し先の URL を audience にした ID トークンを取得して Authorization ヘッダーに付ける。gcloud run services add-iam-policy-binding で個々のサービスに付ければ、呼び出せる先を必要なサービスだけに限れる。",
     points: [
-      "VM などへの割り当てに必要なのは actAs ＝ サービス アカウント ユーザー。",
-      "付与先をプロジェクトではなく特定のサービス アカウントにすると、範囲を絞れる。",
+      "サービス間の呼び出しは、呼び出し先のサービスで、呼び出し元の SA に roles/run.invoker を付ける。",
+      "呼び出す側は、呼び出し先の URL を audience にした ID トークンを付ける。",
     ],
   },
   {
     source: at(48, "4.2"),
     field: S4,
     answer: 2,
-    text: "Z社では、GitHub Actions のワークフローから Cloud Run へデプロイしている。いまはデプロイ用サービス アカウントの JSON キーを GitHub のシークレットに保存しているが、セキュリティ チームから長期間有効なキーを廃止するよう求められた。代わりの構成として最も適切なものはどれか。",
+    text: "Z社の注文 API は Cloud Run で、専用のサービス アカウント order-sa で動いている。データベースのパスワードは、いまはデプロイ時に --set-env-vars で平文のまま環境変数に入れており、サービスの設定を見られる人なら誰でも値を読めてしまう。パスワードを Secret Manager で管理し、アプリにはこれまでどおり環境変数 DB_PASS として渡したい。手順として最も適切なものはどれか。",
     choices: [
       {
-        text: "JSON キーを毎月作り直し、古いキーを無効にする運用にする。",
-        note: "漏えい時の影響期間は短くなるが、長期間有効なキーを外部に置く構造は変わらない。",
+        text: "パスワードを Dockerfile の ENV に書いてイメージに含め、--set-env-vars をやめる。",
+        note: "イメージを取得できる人なら誰でも値を読める。ソースのリポジトリにも残り、かえって広く漏れる。",
       },
       {
-        text: "API キーを発行し、ワークフローから使わせる。",
-        note: "API キーは一部の API の呼び出し元を識別するもので、サービス アカウントの権限で Cloud Run にデプロイする認証には使えない。",
+        text: "gcloud secrets create db-pass --data-file=pass.txt でシークレットを作り、デプロイする開発者にだけ Secret Manager のシークレット アクセサー（roles/secretmanager.secretAccessor）を付与して、--set-secrets=DB_PASS=db-pass:latest でデプロイする。",
+        note: "シークレットを読み出すのはサービスの実行用サービス アカウントの order-sa である。開発者に付けても、order-sa に権限が無ければサービスは値を読めない。",
       },
       {
-        text: "Workload Identity 連携でワークロード ID プールと GitHub の OIDC プロバイダを作り、対象リポジトリのワークフローにデプロイ用サービス アカウントの権限借用を許可する。",
-        note: "GitHub が発行する ID トークンを短期の Google Cloud の認証情報に交換するので、キーを保存しなくてよくなる。これが正解。",
+        text: "gcloud secrets create db-pass --data-file=pass.txt でシークレットを作り、order-sa に db-pass のシークレット アクセサー（roles/secretmanager.secretAccessor）を付与して、gcloud run deploy に --set-secrets=DB_PASS=db-pass:latest を付けてデプロイする。",
+        note: "値は Secret Manager に置いたまま、実行用のサービス アカウントだけが読み出せる。Cloud Run がその値を環境変数として渡す。これが正解。",
       },
       {
-        text: "Workforce Identity 連携で GitHub を ID プロバイダとして登録する。",
-        note: "Workforce Identity 連携は、外部の ID プロバイダにいる「人」（従業員など）を対象にした仕組みで、CI のようなワークロード向けではない。",
+        text: "パスワードを書いたファイルを Cloud Storage のバケットに置き、allAuthenticatedUsers に読み取りを許可する。",
+        note: "Google アカウントを持つ人なら誰でも読めることになり、平文の環境変数よりも危険。",
       },
     ],
     explain:
-      "Google Cloud の外で動くワークロード（他のクラウド、オンプレミス、GitHub Actions などの CI）が Google Cloud の API を呼ぶときは、Workload Identity 連携を使うと、外部の ID プロバイダが発行したトークンを短期の認証情報に交換でき、サービス アカウント キーが不要になる。プールとプロバイダを作り、属性の条件で受け入れる相手（特定のリポジトリなど）を絞ったうえで、サービス アカウントの権限借用を許可する。人を対象にした Workforce Identity 連携と混同しない。",
+      "Secret Manager は、パスワードや API キーなどの機密の値をバージョン付きで保管し、IAM で読み出しを制御するサービスである。gcloud secrets create で作り（--data-file で最初の値を入れられる）、値を読む主体にシークレット アクセサーのロールを付ける。Cloud Run では --set-secrets でシークレットを環境変数またはファイルとして渡せ、読み出しはサービスの実行用サービス アカウントの権限で行われる。環境変数で渡す latest はインスタンスの起動時点の最新バージョンを指すので、値の切り替えを確実に管理したいときはバージョン番号で固定する。",
     points: [
-      "外部のワークロードはキーではなく Workload Identity 連携で認証する。",
-      "Workload は機械、Workforce は人を対象にした連携。",
+      "シークレットは Secret Manager に置き、読む主体（実行用 SA）にシークレット アクセサーを付ける。",
+      "Cloud Run には --set-secrets で、環境変数またはファイルとして渡す。",
     ],
   },
   {
     source: at(49, "4.2"),
     field: S4,
     answer: 0,
-    text: "GKE クラスタとノードプールで Workload Identity Federation for GKE を有効にした。名前空間 shop の Kubernetes サービス アカウント cart-ksa で動く Pod に、Google サービス アカウント cart-gsa@shop-prod.iam.gserviceaccount.com として Pub/Sub へメッセージを送らせたい。cart-gsa には Pub/Sub パブリッシャーを付与済みである。cart-ksa が cart-gsa の権限を使えるようにする IAM の付与として最も適切なものはどれか。",
+    text: "FF社の棚卸しで、作成者の分からないサービス アカウント legacy-batch@ops-prod.iam.gserviceaccount.com が見つかった。ここ数か月は使われていないように見えるが、月に一度だけ動く処理などで使われている可能性も捨てきれない。誤って本番の処理を止めてしまったときに、すぐ元に戻せる形で使用を止めたい。最初の対応として最も適切なものはどれか。",
     choices: [
       {
-        text: 'gcloud iam service-accounts add-iam-policy-binding cart-gsa@shop-prod.iam.gserviceaccount.com --role=roles/iam.workloadIdentityUser --member="serviceAccount:shop-prod.svc.id.goog[shop/cart-ksa]" を実行し、cart-ksa に iam.gke.io/gcp-service-account のアノテーションを付ける。',
-        note: "Kubernetes サービス アカウントに、Google サービス アカウントとして動く許可を与える組み合わせ。これが正解。",
+        text: "gcloud iam service-accounts disable legacy-batch@ops-prod.iam.gserviceaccount.com で無効にし、問題が出たら gcloud iam service-accounts enable で戻す。",
+        note: "無効にするとこのアカウントでは認証できなくなるが、アカウントもロールの付与も残るので、enable ですぐ元に戻せる。これが正解。",
       },
       {
-        text: "ノードのサービス アカウントに Pub/Sub パブリッシャーを付与する。",
-        note: "そのノードに載るすべての Pod が同じ権限を持つことになり、Pod ごとに権限を分けられない。",
+        text: "gcloud iam service-accounts delete legacy-batch@ops-prod.iam.gserviceaccount.com で削除する。",
+        note: "影響が大きい。同じ名前で作り直しても別のアカウントとして扱われ、元のロールの付与はそのままでは効かない。",
       },
       {
-        text: "cart-gsa のキーを作成し、Kubernetes の Secret に入れて Pod にマウントする。",
-        note: "長期間有効なキーを配ることになり、Workload Identity Federation for GKE を使う意味がなくなる。",
+        text: "このアカウントのユーザー管理のキーを、すべて削除する。",
+        note: "VM などに割り当てて使われている場合はキーを使わないので、使用は止まらない。消したキーも元に戻せない。",
       },
       {
-        text: 'gcloud iam service-accounts add-iam-policy-binding cart-gsa@shop-prod.iam.gserviceaccount.com --role=roles/iam.workloadIdentityUser --member="user:cart-ksa@shop-prod.iam.gserviceaccount.com" を実行する。',
-        note: "Kubernetes サービス アカウントは user: のプリンシパルではない。PROJECT_ID.svc.id.goog[名前空間/名前] の形で指定する。",
+        text: "このアカウントに付いているロールを、すべてのプロジェクトから外す。",
+        note: "止める効果はあるが、どこに何が付いていたかを記録して付け直す手間がかかり、すぐには戻しにくい。付与先の見落としも起きやすい。",
       },
     ],
     explain:
-      "Workload Identity Federation for GKE では、Kubernetes サービス アカウント（KSA）が IAM のプリンシパルとして扱われ、キーなしで Google Cloud の API を呼べる。Google サービス アカウント（GSA）の権限を使わせる方法では、GSA に対して KSA へ Workload Identity ユーザーのロールを付け、KSA に GSA を示すアノテーションを付ける。KSA を表すプリンシパルに直接 IAM ロールを付与する方法もある。どちらの場合も、権限は Pod が使う KSA の単位で分けられる。",
+      "使われていないかもしれないサービス アカウントは、いきなり削除せず、まず無効にして様子を見るのが安全である。無効にしたアカウントは認証に使えなくなるので、依存している処理があればエラーで気付けるが、アカウントもロールの付与も残っているため、enable で元どおりに戻せる。しばらく問題が出ないことを確かめてから削除する。削除したアカウントと同じ名前で作り直しても、内部の ID が違う別のアカウントになる点にも注意する。",
     points: [
-      "KSA は PROJECT_ID.svc.id.goog[名前空間/KSA名] の形で IAM に現れる。",
-      "ノードのサービス アカウントに権限を寄せると、Pod ごとの最小権限にならない。",
+      "使われていないかもしれない SA は、まず disable。戻すときは enable。",
+      "削除した SA は、同じ名前で作り直しても別のアカウントになる。",
     ],
   },
   {
-    source: at(50, "4.2"),
+    source: at(50, "4.1"),
     field: S4,
     answer: 3,
-    text: "AA社のセキュリティ チームは、組織内のすべてのプロジェクト（今後作られるものを含む）で、ユーザー管理のサービス アカウント キーの作成を禁止したい。どうしてもキーが必要な古いシステムのプロジェクト 1 つだけは例外にする。構成として最も適切なものはどれか。",
+    text: "AA社は、顧客の契約書を Cloud Storage のバケット gs://aa-contracts に保管している。以前、別のバケットで担当者が誤って allUsers に閲覧のロールを付け、インターネットに公開してしまう事故があった。このバケットについては、今後だれが IAM や ACL を変更しても、インターネットから読める状態にならないようにしたい。設定として最も適切なものはどれか。",
     choices: [
       {
-        text: "組織全体を VPC Service Controls のサービス境界で囲む。",
-        note: "サービス境界は API 経由のデータの持ち出しを防ぐもので、キーの作成そのものは禁止しない。",
+        text: "いまの IAM ポリシーに allUsers と allAuthenticatedUsers の付与が無いことを確かめ、手順書に「公開しないこと」と書き足す。",
+        note: "現状の確認にはなるが、今後の誤操作を仕組みで防ぐことはできない。",
       },
       {
-        text: "サービス アカウント キーの作成を監査ログで検知し、Cloud Monitoring でアラートを出す。",
-        note: "作られた後に気付く検知の仕組みで、作成を防ぐことはできない。",
+        text: "バケットで均一なバケットレベルのアクセスを有効にする。",
+        note: "ACL を使えなくして IAM に一本化する設定で、IAM で allUsers にロールを付ければ公開できてしまう。",
       },
       {
-        text: "全プロジェクトで、サービス アカウント キー管理者のロールを持つ人から 1 人ずつロールを外す。",
-        note: "オーナーなど他のロールでもキーを作れる場合があり、新しいプロジェクトにも自動では効かない。漏れの出やすい方法。",
+        text: "顧客管理の暗号鍵（CMEK）でバケットを暗号化する。",
+        note: "保存時の暗号化の鍵を自社で管理する仕組みで、権限のある相手には復号して返される。公開の設定を防ぐものではない。",
       },
       {
-        text: "組織ノードで組織ポリシーの制約 iam.disableServiceAccountKeyCreation を適用し、例外のプロジェクトだけでポリシーを上書きして適用を外す。",
-        note: "組織ポリシーは配下のすべてのプロジェクトに継承され、必要な場所だけ下位で上書きできる。これが正解。",
+        text: "gcloud storage buckets update gs://aa-contracts --public-access-prevention を実行し、公開アクセスの防止を強制する。",
+        note: "allUsers や allAuthenticatedUsers を通じた公開ができなくなり、インターネットから読めない状態が保たれる。これが正解。",
       },
     ],
     explain:
-      "サービス アカウント キーは長期間有効で漏えいの危険が大きいため、組織ポリシーでキーの作成を禁止し、権限借用や Workload Identity 連携など、キーを使わない方法へ寄せるのが推奨される。組織ポリシーは組織に設定すると既存・新規のすべてのプロジェクトに継承され、例外が必要なプロジェクトだけ下位で上書きできる。IAM のロールの付け外しで同じことをしようとすると、漏れや新規プロジェクトへの適用忘れが起きやすい。",
+      "公開アクセスの防止（public access prevention）は、IAM や ACL の設定にかかわらず、バケットのデータが allUsers や allAuthenticatedUsers を通じて公開されるのを止める設定である。バケットごとに gcloud storage buckets update の --public-access-prevention で強制でき、組織やフォルダ全体にかけたいときは組織ポリシーの制約 storage.publicAccessPrevention を使う。均一なバケットレベルのアクセスは ACL を無効にして IAM に一本化する設定で、公開そのものを禁止するものではない。両方を組み合わせて使うことが多い。",
     points: [
-      "キーの作成禁止は組織ポリシーで一括してかけ、例外は下位で上書きする。",
-      "監査ログでの検知は、予防の代わりにはならない。",
+      "公開を仕組みで防ぐのは公開アクセスの防止。組織全体なら制約 storage.publicAccessPrevention。",
+      "均一なバケットレベルのアクセスは ACL を無くすだけで、公開は禁止しない。",
     ],
   },
 ];

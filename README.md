@@ -596,7 +596,7 @@ Cloud Observability、Cloud Run functions などのコース資料と学習ガ�
 
 | 問題集 | 問う層 |
 |---|---|
-| 模擬試験1 | 各プロダクトの役割と、gcloud・kubectl・Terraform の基本操作 |
+| 模擬試験1 | 各プロダクトの役割と、gcloud・kubectl・Helm の基本操作 |
 | 模擬試験2 | 要件からのプロダクト・構成の選択。隣り合うプロダクト（Cloud Run と GKE、Spanner と Cloud SQL、Cloud VPN と Cloud Interconnect など）の取り違え |
 | 模擬試験3 | 運用中の症状からの原因の切り分けと、直し方・手順の順番 |
 | 模擬試験4 | 最小権限・費用・ガバナンスと、Cloud NGFW・Workforce Identity 連携・Gemini Cloud Assist など試験ガイドに新しく入った項目 |
