@@ -25,6 +25,7 @@ import { CTFL_CH6 } from "./ctfl-ch6";
 import { CTFL_MOCK_1 } from "./ctfl-mock-1";
 import { CTFL_MOCK_2 } from "./ctfl-mock-2";
 import { CTFL_MOCK_3 } from "./ctfl-mock-3";
+import { CTFL_TERM_1 } from "./ctfl-term-1";
 import { GAIP_CH1 } from "./gaip-ch1";
 import { GAIP_CH2 } from "./gaip-ch2";
 import { GAIP_CH2_GPT } from "./gaip-ch2-gpt";
@@ -139,7 +140,9 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "gaip-ch4", exam: "GAIP", label: "第4章 リテラシーと権利", questions: GAIP_CH4 },
   { id: "gaip-ch5", exam: "GAIP", label: "第5章 理念・指針・法律", questions: GAIP_CH5 },
   { id: "gaip-ch6", exam: "GAIP", label: "第6章 プロンプト制作", questions: GAIP_CH6 },
-  // 章別を先に置く。第1章から順に解けばシラバスを一周でき、模擬試験はその仕上げに使う想定。
+  // 用語問題、章別、模擬試験の順に置く。用語問題でキーワードを引けるようにしてから、
+  // 第1章から順に解いてシラバスを一周し、模擬試験はその仕上げに使う想定。
+  { id: "ctfl-term-1", exam: "CTFL", label: "用語問題1（キーワード）", questions: CTFL_TERM_1 },
   { id: "ctfl-ch1", exam: "CTFL", label: "第1章 テストの基礎", questions: CTFL_CH1 },
   { id: "ctfl-ch2", exam: "CTFL", label: "第2章 SDLCとテスト", questions: CTFL_CH2 },
   { id: "ctfl-ch3", exam: "CTFL", label: "第3章 静的テスト", questions: CTFL_CH3 },
