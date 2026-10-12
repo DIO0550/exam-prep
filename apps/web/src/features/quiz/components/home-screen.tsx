@@ -36,6 +36,8 @@ type HomeScreenProps = {
   onStart: () => void;
   onRestart: () => void;
   onRetry: (kind: RetryKind) => void;
+  /** ランダム出題の条件を決める画面へ。 */
+  onGoDraw: () => void;
   onGoReview: () => void;
   onClearRecord: () => void;
 };
@@ -54,6 +56,7 @@ export const HomeScreen = ({
   onStart,
   onRestart,
   onRetry,
+  onGoDraw,
   onGoReview,
   onClearRecord,
 }: HomeScreenProps) => {
@@ -114,6 +117,9 @@ export const HomeScreen = ({
               {done ? "もう一度解く" : "最初からやり直す"}
             </button>
           )}
+          <button type="button" onClick={onGoDraw} className={SECONDARY_BUTTON}>
+            ランダム出題
+          </button>
           <button type="button" onClick={onGoReview} className={SECONDARY_BUTTON}>
             問題一覧を見る
           </button>
