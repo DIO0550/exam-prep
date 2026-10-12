@@ -8,7 +8,7 @@ import type { Stroke } from "../notes/note";
 import { EMPTY_NOTE, noteOf } from "../notes/note";
 import { noteStore } from "../notes/store";
 import type { AnswerUndo } from "../progress/record";
-import { attemptOf } from "../progress/record";
+import { attemptOf, FRESH_ATTEMPT } from "../progress/record";
 import { progressStore } from "../progress/store";
 import type { Attempt, QuizItem } from "../stats";
 import { formatElapsed, isCorrect, summarize } from "../stats";
@@ -16,6 +16,7 @@ import type { Question } from "../types";
 import { sourceId } from "../types";
 import { useNotes } from "./use-notes";
 import { useProgress } from "./use-progress";
+import { PROGRESS_WRITER, useScratchAttempts } from "./use-scratch-attempts";
 
 export type Screen = "home" | "draw" | "quiz" | "explain" | "result" | "review" | "vocab";
 
@@ -47,8 +48,10 @@ export const FOCUS_LABELS: Record<FocusKind, string> = {
 /**
  * 一部だけを出しているときの対象。始めた時点の問題で固定する（解くたびに対象が増減しないように）。
  * ランダム出題は回をまたぐので、ID ではなく問題そのものを並べた順に持つ。
+ *
+ * detached なら、解答を学習記録と切り離して持つ（ランダム出題と、その中での解き直し）。
  */
-type Focus = { kind: FocusKind; questions: Question[] };
+type Focus = { kind: FocusKind; questions: Question[]; detached: boolean };
 
 const isWrong = (item: QuizItem): boolean => item.attempt.revealed && !isCorrect(item);
 
@@ -80,6 +83,11 @@ export const useQuizSession = (questions: Question[]) => {
   // 解き直し・ランダム出題で開いた問題。前回の解答は、開いたときに初めて消す（途中でやめても、
   // まだ開いていない問題の前回の結果は残しておくため）。
   const [visited, setVisited] = useState<string[]>([]);
+  // ランダム出題の解答。学習記録には書かず、ランダム出題をやめたら捨てる。
+  const scratch = useScratchAttempts();
+  const detached = focus?.detached ?? false;
+  // 解答状況の書き込み先。ランダム出題の最中だけ、学習記録ではなく使い捨ての入れ物へ書く。
+  const writer = detached ? scratch.writer : PROGRESS_WRITER;
 
   const allItems = useMemo<QuizItem[]>(
     () =>
@@ -98,7 +106,7 @@ export const useQuizSession = (questions: Question[]) => {
     if (!focus) return allItems;
     return focus.questions.map((question) => {
       const id = sourceId(question.source);
-      const attempt = attemptOf(record, id);
+      const attempt = detached ? (scratch.attempts[id] ?? FRESH_ATTEMPT) : attemptOf(record, id);
       return {
         question,
         attempt: visited.includes(id)
@@ -106,7 +114,7 @@ export const useQuizSession = (questions: Question[]) => {
           : { ...attempt, picked: null, revealed: false, excluded: [] },
       };
     });
-  }, [allItems, focus, record, visited]);
+  }, [allItems, focus, detached, scratch.attempts, record, visited]);
 
   // 収録回を切り替えたら、見ている位置と計測をその回のものに戻して学習ホームへ出す。
   // 解答状況は問題ごとに保存してあるので捨てない（戻ってくればその続きから解ける）。
@@ -121,6 +129,7 @@ export const useQuizSession = (questions: Question[]) => {
     setLastAnswer(null);
     setFocus(null);
     setVisited([]);
+    scratch.reset();
   }
 
   const current = items[index];
@@ -175,9 +184,9 @@ export const useQuizSession = (questions: Question[]) => {
   const patchCurrent = useCallback(
     (patch: Partial<Attempt>) => {
       if (!current) return;
-      progressStore.patchAttempt(sourceId(current.question.source), patch);
+      writer.patch(sourceId(current.question.source), patch);
     },
-    [current],
+    [current, writer],
   );
 
   /**
@@ -194,20 +203,24 @@ export const useQuizSession = (questions: Question[]) => {
       const id = sourceId(item.question.source);
       if (visited.includes(id)) return;
       setVisited((prev) => [...prev, id]);
-      progressStore.clearAnswers([id]);
+      writer.clear([id]);
     },
-    [items, focus, visited],
+    [items, focus, visited, writer],
   );
 
   /** 画面を移る。学習ホームへ戻ったら、解き直し・ランダム出題をやめて回の全問に戻す。 */
-  const navigate = useCallback((next: Screen) => {
-    if (next === "home") {
-      setFocus(null);
-      setVisited([]);
-      setIndex(0);
-    }
-    setScreen(next);
-  }, []);
+  const navigate = useCallback(
+    (next: Screen) => {
+      if (next === "home") {
+        setFocus(null);
+        setVisited([]);
+        setIndex(0);
+        scratch.reset();
+      }
+      setScreen(next);
+    },
+    [scratch.reset],
+  );
 
   /** 今の範囲で、解き直しの対象になる問題の数。 */
   const retryCounts = useMemo<Record<RetryKind, number>>(
@@ -218,39 +231,51 @@ export const useQuizSession = (questions: Question[]) => {
     [items],
   );
 
-  /** 渡した問題だけを、渡した順で出し始める。 */
-  const focusOn = useCallback((kind: FocusKind, questions: Question[]) => {
-    const first = questions[0];
-    if (!first) return;
-    const firstId = sourceId(first.source);
-    // 1 問目はここで消す。種もここで 1 度だけ進めて、シャッフル中なら前回と違う並びで出す。
-    progressStore.restart([firstId]);
-    setFocus({ kind, questions });
-    setVisited([firstId]);
-    setLastAnswer(null);
-    setIndex(0);
-    setScreen("quiz");
-    setStartedAt(Date.now());
-  }, []);
+  /** 渡した問題だけを、渡した順で出し始める。detached なら解答を学習記録と切り離す。 */
+  const focusOn = useCallback(
+    (kind: FocusKind, questions: Question[], detachedNext: boolean) => {
+      const first = questions[0];
+      if (!first) return;
+      const firstId = sourceId(first.source);
+      // 1 問目はここで消す。学習記録へ書くときは種もここで 1 度だけ進めて、
+      // シャッフル中なら前回と違う並びで出す。
+      (detachedNext ? scratch.writer : PROGRESS_WRITER).restart([firstId]);
+      setFocus({ kind, questions, detached: detachedNext });
+      setVisited([firstId]);
+      setLastAnswer(null);
+      setIndex(0);
+      setScreen("quiz");
+      setStartedAt(Date.now());
+    },
+    [scratch.writer],
+  );
 
   /**
    * 間違えた問題・苦手登録した問題だけを解き直す。今出している範囲から絞るので、
    * 解き直しの結果からもう一度「間違えた問題だけ」を選べば、さらに絞り込める。
+   * ランダム出題の中での解き直しは、そのまま学習記録と切り離して続ける。
    */
   const startRetry = useCallback(
     (kind: RetryKind) =>
       focusOn(
         kind,
         retryTargets(items, kind).map((item) => item.question),
+        detached,
       ),
-    [focusOn, items],
+    [detached, focusOn, items],
   );
 
   /**
    * ランダムに引いた問題を出す。回をまたいでよい。
-   * 前回の解答は、解き直しと同じく開いたときに消す（引いた問題が解答済みに見えないように）。
+   * 解答は学習記録と切り離して持つので、回ごとの正答率・苦手登録・連続学習日数には入らない。
    */
-  const startDraw = useCallback((questions: Question[]) => focusOn("draw", questions), [focusOn]);
+  const startDraw = useCallback(
+    (questions: Question[]) => {
+      scratch.reset();
+      focusOn("draw", questions, true);
+    },
+    [focusOn, scratch.reset],
+  );
 
   /** 未解答の最初の問題から始める。全問解き終わっていれば 1 問目から見直す。 */
   const start = useCallback(() => {
@@ -266,13 +291,13 @@ export const useQuizSession = (questions: Question[]) => {
    */
   const restart = useCallback(() => {
     const ids = items.map((item) => sourceId(item.question.source));
-    progressStore.restart(ids);
+    writer.restart(ids);
     if (focus) setVisited(ids);
     setLastAnswer(null);
     setIndex(0);
     setScreen("quiz");
     setStartedAt(Date.now());
-  }, [items, focus]);
+  }, [items, focus, writer]);
 
   /** 単一選択は即採点。複数選択は確定前の選択として保存する。 */
   const pick = useCallback(
@@ -288,7 +313,7 @@ export const useQuizSession = (questions: Question[]) => {
         return;
       }
       setLastAnswer(
-        progressStore.answer(
+        writer.answer(
           sourceId(current.question.source),
           choice,
           matchesAnswer(current.question.answer, choice),
@@ -298,7 +323,7 @@ export const useQuizSession = (questions: Question[]) => {
         setScreen("explain");
       }
     },
-    [current, feedback, patchCurrent],
+    [current, feedback, patchCurrent, writer],
   );
 
   const submit = useCallback(() => {
@@ -309,7 +334,7 @@ export const useQuizSession = (questions: Question[]) => {
       return;
     }
     setLastAnswer(
-      progressStore.answer(
+      writer.answer(
         sourceId(current.question.source),
         current.attempt.picked,
         matchesAnswer(current.question.answer, current.attempt.picked),
@@ -318,7 +343,7 @@ export const useQuizSession = (questions: Question[]) => {
     if (feedback === "page") {
       setScreen("explain");
     }
-  }, [current, feedback]);
+  }, [current, feedback, writer]);
 
   /** 今の問題が、最後に解答した問題で、まだ取り消せるか。 */
   const canUndoPick =
@@ -329,10 +354,10 @@ export const useQuizSession = (questions: Question[]) => {
   /** 押し間違えた解答を取り消して、選び直せる状態に戻す。 */
   const undoPick = useCallback(() => {
     if (!canUndoPick || !lastAnswer) return;
-    progressStore.undoAnswer(lastAnswer);
+    writer.undo(lastAnswer);
     setLastAnswer(null);
     setScreen("quiz");
-  }, [canUndoPick, lastAnswer]);
+  }, [canUndoPick, lastAnswer, writer]);
 
   /** 明らかに違う選択肢を消し込む。 */
   const toggleExclude = useCallback(

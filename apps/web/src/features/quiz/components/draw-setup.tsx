@@ -81,7 +81,8 @@ export const DrawSetup = ({ sets, settings, onChange, onStart, onCancel }: DrawS
         <h2 className="font-bold text-[22px] leading-[1.4] tracking-[0.01em]">ランダム出題</h2>
         <p className="max-w-[100ch] text-pretty text-[13.5px] text-muted-soft leading-[1.9]">
           選んだ回・分野の問題から、決めた数だけ無作為に選んで出します。
-          解答はそれぞれの回の記録にも残り、前回の解答はその問題を開いたときに消えます。
+          ここで解いた結果は学習記録とは別に扱い、回ごとの正答率・苦手登録・連続学習日数には入りません。
+          学習ホームへ戻ると結果は消えます。
         </p>
       </section>
 

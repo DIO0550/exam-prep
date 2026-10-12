@@ -692,7 +692,7 @@ describe("QuizApp", () => {
       expect(screen.getByText(/出題できる問題がありません/)).toBeInTheDocument();
     });
 
-    it("解答済みの問題も未解答として出し、解いた結果は元の回の記録に残る", async () => {
+    it("解答済みの問題も未解答として出し、解いた結果は学習記録に書かない", async () => {
       fixRandom();
       const first = pool[0];
       if (!first) throw new Error("範囲が空");
@@ -724,13 +724,45 @@ describe("QuizApp", () => {
       expect(screen.getByText(first.text)).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "次の問題へ" })).toBeDisabled();
 
+      const before = window.localStorage.getItem(STORAGE_KEY);
       await user.click(choiceButton(singleAnswer(first)));
-      expect(readRecord().attempts[sourceId(first.source)].picked).toBe(singleAnswer(first));
+      expect(screen.getByText(/正答率/)).toHaveTextContent("100%");
+      // 2 問目は間違える
+      const second = pool[1];
+      if (!second) throw new Error("範囲が 2 問以上必要");
+      await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+      await user.click(choiceButton((singleAnswer(second) + 1) % second.choices.length));
 
-      // 学習ホームへ戻ると回の全問に戻る
+      // ここまで、学習記録には何も書いていない（元の回の間違いも、苦手登録も、学習日もそのまま）
+      expect(window.localStorage.getItem(STORAGE_KEY)).toBe(before);
+      expect(readRecord().attempts[sourceId(first.source)].picked).toBe(wrong);
+      expect(readRecord().days).toEqual([]);
+
+      // 学習ホームへ戻ると回の全問に戻り、元の回では間違えたままになっている
       await user.click(screen.getByRole("button", { name: "回の全問に戻る" }));
-      expect(screen.queryByText("ランダム出題・")).not.toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "演習を再開" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "回の全問に戻る" })).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "間違えた問題だけ（1問）" })).toBeInTheDocument();
+    });
+
+    it("ランダム出題の中で間違えた問題だけを解き直しても、学習記録には書かない", async () => {
+      fixRandom();
+      const user = userEvent.setup();
+      render(<QuizApp />);
+
+      await narrow(user);
+      await user.click(screen.getByRole("button", { name: "10問" }));
+      await user.click(screen.getByRole("button", { name: "出題する" }));
+      for (const question of pool.slice(0, 10)) {
+        await user.click(choiceButton((singleAnswer(question) + 1) % question.choices.length));
+        await user.click(screen.getByRole("button", { name: /次の問題へ|結果を見る/ }));
+      }
+      expect(screen.getByText(/10問中 0問正解/)).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "間違えた問題だけ解き直す（10問）" }));
+      expect(screen.getByText("間違えた問題の解き直し")).toBeInTheDocument();
+      await user.click(choiceButton(singleAnswer(pool[0] as (typeof QUESTIONS)[number])));
+
+      expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
     });
   });
 
