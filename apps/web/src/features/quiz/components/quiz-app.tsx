@@ -13,6 +13,8 @@ import { VocabApp } from "@/features/vocab/components/vocab-app";
 
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
 import { QUESTION_SETS, questionSetsOf } from "../data/questions";
+import { drawPool, drawQuestions } from "../draw";
+import { useDrawSettings } from "../hooks/use-draw-settings";
 import { useProgress } from "../hooks/use-progress";
 import { useQuizSession } from "../hooks/use-quiz-session";
 import { useScrollReset } from "../hooks/use-scroll-reset";
@@ -22,6 +24,7 @@ import { progressStore } from "../progress/store";
 import { streakLabel, summarizeProgress } from "../progress/summary";
 import { TEXT_SCALE_RATIO } from "../text-scale";
 import { sourceId } from "../types";
+import { DrawSetup } from "./draw-setup";
 import { ExamSidebar } from "./exam-sidebar";
 import { ExplainScreen } from "./explain-screen";
 import { HomeScreen } from "./home-screen";
@@ -58,6 +61,10 @@ export const QuizApp = () => {
   const exam = EXAMS[examIndex] ?? EXAMS[0];
   // 「出題する回」には、選んでいる試験の問題集だけを並べる。
   const setOptions = questionSetsOf(exam.code);
+  // ランダム出題は、選んでいる試験の問題集をまたいで引く。
+  const draw = useDrawSettings(exam.code, setOptions);
+  const startDraw = (): void =>
+    session.startDraw(drawQuestions(drawPool(setOptions, draw.settings), draw.settings.count));
   /** 試験を選び直したら、その試験の先頭の問題集に移る。 */
   const selectExam = (index: number): void => {
     const first = questionSetsOf(EXAMS[index]?.code ?? "")[0];
@@ -137,9 +144,9 @@ export const QuizApp = () => {
                     </div>
                   </header>
 
-                  {session.retryKind && session.screen !== "home" && (
+                  {session.focusKind && session.screen !== "home" && (
                     <RetryBanner
-                      kind={session.retryKind}
+                      kind={session.focusKind}
                       count={session.items.length}
                       onExit={() => session.setScreen("home")}
                     />
@@ -182,6 +189,7 @@ export const QuizApp = () => {
                       hasNotes={session.hasNotes}
                       retryCounts={session.retryCounts}
                       onRetry={session.startRetry}
+                      onGoDraw={() => session.setScreen("draw")}
                       backup={
                         <BackupPanel
                           setLabel={questionSet.label}
@@ -205,6 +213,16 @@ export const QuizApp = () => {
                       onRestart={session.restart}
                       onGoReview={() => session.setScreen("review")}
                       onClearRecord={clearEverything}
+                    />
+                  )}
+
+                  {session.screen === "draw" && (
+                    <DrawSetup
+                      sets={setOptions}
+                      settings={draw.settings}
+                      onChange={draw.setSettings}
+                      onStart={startDraw}
+                      onCancel={() => session.setScreen("home")}
                     />
                   )}
 
@@ -252,8 +270,13 @@ export const QuizApp = () => {
                       summary={session.summary}
                       total={session.items.length}
                       elapsed={session.elapsed}
-                      // 絞り込んだ問題だけの正答率は、合格ラインと比べても意味が無いので合否を出さない。
-                      passLine={session.retryKind ? undefined : exam.passLine}
+                      // 間違えた・苦手な問題だけの正答率は、合格ラインと比べても意味が無いので合否を出さない。
+                      // ランダム出題は範囲から無作為に引いたものなので、本番の目安として合否を出す。
+                      passLine={
+                        session.focusKind && session.focusKind !== "draw"
+                          ? undefined
+                          : exam.passLine
+                      }
                       wrongCount={session.retryCounts.wrong}
                       onRestart={session.restart}
                       onRetryWrong={() => session.startRetry("wrong")}

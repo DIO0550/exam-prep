@@ -106,6 +106,12 @@ export const SCENARIOS = [
     steps: [],
   },
   {
+    name: "draw-setup",
+    label: "ランダム出題（回・分野・問題数を選ぶ）",
+    // 引いた後の画面は乱数で毎回変わるので、条件を選ぶ画面だけを撮る。
+    steps: [{ click: "ランダム出題" }],
+  },
+  {
     name: "quiz",
     label: "演習（未解答）",
     steps: [{ click: "演習を開始" }],
