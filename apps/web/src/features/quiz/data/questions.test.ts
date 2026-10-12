@@ -60,6 +60,21 @@ describe("問題データ", () => {
     }
   });
 
+  it("JSTQB の用語問題は、シラバスのキーワード 94 語を 1 語 1 問で問う", () => {
+    // 各章の冒頭のキーワード（章をまたいで重なる 5 語は 1 回だけ）を 1 問ずつにしてある。
+    // 書き足したときに同じ語を 2 回問うたり、語を落としたりしないよう、正解の語で数える。
+    const term = QUESTION_SETS.find((set) => set.id === "ctfl-term-1");
+    expect(term).toBeDefined();
+    if (!term) {
+      return;
+    }
+    const keywords = term.questions.map((question) =>
+      selectionsOf(question.answer).map((index) => question.choices[index]?.text),
+    );
+    expect(new Set(keywords.flat()).size).toBe(94);
+    expect(term.questions).toHaveLength(94);
+  });
+
   it.each([5, 6, 7])("生成AI模試%dは全6章各10問、単一54問・複数6問の新しい設問を持つ", (no) => {
     const mock = QUESTION_SETS.find((set) => set.id === `gaip-mock-${no}`);
     expect(mock).toBeDefined();
