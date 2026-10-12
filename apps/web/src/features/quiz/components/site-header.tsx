@@ -15,6 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "演習", target: "quiz", actives: ["quiz", "explain", "result"] },
   { label: "問題一覧・見直し", target: "review", actives: ["review"] },
   { label: "単語帳", target: "vocab", actives: ["vocab"] },
+  { label: "ACE ハンズオン", target: "hands-on", actives: ["hands-on"] },
 ];
 
 type ToggleOption<T> = { label: string; value: T };
@@ -109,7 +110,7 @@ export const SiteHeader = ({
           </span>
           <span className="font-bold text-[13.5px] tracking-[0.02em]">試験対策ドリル</span>
         </div>
-        <nav className="flex gap-[22px] self-stretch">
+        <nav className="flex flex-wrap gap-x-[22px] self-stretch">
           {NAV_ITEMS.map((item) => {
             const active = item.actives.includes(screen);
             return (
@@ -133,7 +134,7 @@ export const SiteHeader = ({
 
       <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 py-2.5">
         {/* 選択肢と解説の出し方は問題を解くときだけのもの。単語帳では出さない。 */}
-        {screen !== "vocab" && (
+        {screen !== "vocab" && screen !== "hands-on" && (
           <>
             <Toggle
               label="選択肢"

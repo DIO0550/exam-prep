@@ -1,3 +1,6 @@
+import { LABS } from "../hands-on/data/labs";
+import { readRecord } from "../hands-on/progress";
+import type { HandsOnRecord } from "../hands-on/types";
 import type { Note, NoteRecord } from "../quiz/notes/note";
 import { isBlankNote, NOTE_VERSION, parseNote } from "../quiz/notes/note";
 import type { DayKey, ProgressRecord } from "../quiz/progress/record";
@@ -23,7 +26,7 @@ import { WEAK_VERSION } from "../vocab/weak/weak";
  * 出し入れできるようにする。
  *
  * 範囲は 2 つ。
- * - **全体**: 解答・メモ・単語帳の「あやふや」・設定をすべて。別の端末へ丸ごと移すためのもので、
+ * - **全体**: 解答・メモ・単語帳の「あやふや」・設定・ハンズオン。別の端末へ丸ごと移すためのもので、
  *   取り込むと今の記録は置き換わる。
  * - **個別**: 選んでいる回の解答とメモだけ。取り込むとその回の分だけが上書きされ、
  *   他の回の記録はそのまま残る。連続学習日数や直近の正答率のような積み上げの数字は、
@@ -70,18 +73,21 @@ export type Backup = {
   settings?: BackupSettings;
   /** 単語帳で「あやふや」を付けた札の ID。 */
   vocabWeak?: string[];
+  /** ACEハンズオンの入力・進捗。旧ファイルには含まれない。 */
+  handsOn?: HandsOnRecord;
 };
 
-/** 記録のまとまり。書き出す元も、取り込んだ先も同じ 3 つ。 */
+/** 記録のまとまり。旧ファイルとの互換性のためハンズオンは省略可能。 */
 export type RecordSet = {
   record: ProgressRecord;
   notes: NoteRecord;
   weak: WeakRecord;
+  handsOn?: HandsOnRecord;
 };
 
 /** 全体の書き出し。設定と積み上げ、単語帳まで含める。 */
 export const buildAllBackup = (
-  { record, notes, weak }: RecordSet,
+  { record, notes, weak, handsOn }: RecordSet,
   now: Date = new Date(),
 ): Backup => ({
   kind: BACKUP_KIND,
@@ -99,6 +105,7 @@ export const buildAllBackup = (
     noteWidth: record.noteWidth,
   },
   vocabWeak: [...weak.ids],
+  ...(handsOn ? { handsOn } : {}),
 });
 
 /** 個別の書き出し。渡した問題 ID の解答とメモだけを入れる。 */
@@ -138,7 +145,12 @@ export const backupCounts = (backup: Backup): BackupCounts => ({
 /** 何も入っていないファイルか。取り込んでも何も起きないので、押す前に伝える。 */
 export const isEmptyBackup = (backup: Backup): boolean => {
   const counts = backupCounts(backup);
-  return counts.attempts === 0 && counts.notes === 0 && counts.weak === 0;
+  const hasHandsOn = Object.values(backup.handsOn?.labs ?? {}).some(
+    (progress) =>
+      progress.completed.length > 0 ||
+      Object.values(progress.drafts).some((draft) => draft.length > 0),
+  );
+  return counts.attempts === 0 && counts.notes === 0 && counts.weak === 0 && !hasHandsOn;
 };
 
 /** 範囲の表記。「全体」か「個別（令和7年 秋期）」。 */
@@ -266,6 +278,14 @@ export const parseBackup = (raw: unknown): BackupParse => {
     backup.vocabWeak = Array.isArray(value.vocabWeak)
       ? value.vocabWeak.filter((id): id is string => typeof id === "string")
       : [];
+    if (value.handsOn !== undefined) {
+      const handsOn = value.handsOn as Record<string, unknown> | null;
+      if (handsOn?.version !== 1 || typeof handsOn.labs !== "object" || handsOn.labs === null) {
+        return fail("ハンズオンの記録が壊れています。");
+      }
+
+      backup.handsOn = readRecord(JSON.stringify(handsOn), LABS);
+    }
   }
 
   return { ok: true, backup };
@@ -299,6 +319,7 @@ export const applyBackup = (backup: Backup, current: RecordSet): RecordSet => {
       },
       notes: mergeNotes(current.notes.notes, backup.notes),
       weak: current.weak,
+      ...(current.handsOn ? { handsOn: current.handsOn } : {}),
     };
   }
 
@@ -318,5 +339,7 @@ export const applyBackup = (backup: Backup, current: RecordSet): RecordSet => {
     },
     notes: mergeNotes({}, backup.notes),
     weak: { version: WEAK_VERSION, ids: backup.vocabWeak ?? [] },
+    // 旧形式にはハンズオンがないため、その場合は既存のハンズオン記録を保持する。
+    ...(backup.handsOn ? { handsOn: backup.handsOn } : { handsOn: current.handsOn }),
   };
 };

@@ -1,3 +1,4 @@
+import { handsOnStore } from "../hands-on/store";
 import { noteStore } from "../quiz/notes/store";
 import { progressStore } from "../quiz/progress/store";
 import { weakStore } from "../vocab/weak/store";
@@ -7,7 +8,7 @@ import { applyBackup, buildAllBackup, buildSetBackup } from "./backup";
 /**
  * 保存先（localStorage）と、書き出し・取り込みのつなぎ。
  *
- * 3 つの入れ物（解答・メモ・単語帳）をまたぐので、画面から直に触らずここに集める。
+ * 解答・メモ・単語帳・ハンズオンをまたぐので、画面から直に触らずここに集める。
  */
 
 /** 今このブラウザに入っている記録。 */
@@ -15,6 +16,7 @@ export const currentRecords = (): RecordSet => ({
   record: progressStore.snapshot(),
   notes: noteStore.snapshot(),
   weak: weakStore.snapshot(),
+  handsOn: handsOnStore.snapshot().record,
 });
 
 /** 全体を書き出す形にする。 */
@@ -35,4 +37,7 @@ export const importBackup = (backup: Backup): void => {
   noteStore.replace(next.notes);
   // 個別の取り込みでは単語帳に触らない（applyBackup が同じ値をそのまま返す）。
   if (next.weak !== current.weak) weakStore.replace(next.weak);
+  if (next.handsOn && next.handsOn !== current.handsOn) {
+    handsOnStore.set(next.handsOn);
+  }
 };

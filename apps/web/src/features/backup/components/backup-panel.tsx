@@ -34,6 +34,13 @@ const describe = (backup: Backup): string => {
   const counts = backupCounts(backup);
   const parts = [`解答 ${counts.attempts}問`, `メモ ${counts.notes}問`];
   if (backup.scope.type === "all") parts.push(`あやふや ${counts.weak}語`);
+  if (backup.handsOn) {
+    const steps = Object.values(backup.handsOn.labs).reduce(
+      (sum, progress) => sum + progress.completed.length,
+      0,
+    );
+    parts.push(`ハンズオン ${steps}手順`);
+  }
   return `${scopeLabel(backup.scope)}・${parts.join(" / ")}`;
 };
 
@@ -93,7 +100,7 @@ export const BackupPanel = ({
           記録はこのブラウザにしか残りません。JSON ファイルにして持ち出せば、別の端末で続けたり、
           サイトデータを消す前に取っておいたりできます。
           <strong className="font-bold text-ink">全体</strong>
-          は解答・メモ・単語帳の「あやふや」・設定をまとめて出し、読み込むと今の記録を置き換えます。
+          は解答・メモ・単語帳の「あやふや」・設定・ハンズオンをまとめて出し、読み込むと今の記録を置き換えます。ハンズオンを含まない旧ファイルでは、その進捗を保持します。
           <strong className="font-bold text-ink">この回だけ</strong>
           は選んでいる回の解答とメモだけを出し、読み込んでもその回の分しか上書きしません
           （連続学習日数のような累計は回ごとに切り分けられないので、全体にだけ入ります）。

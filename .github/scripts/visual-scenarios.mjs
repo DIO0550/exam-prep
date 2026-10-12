@@ -76,6 +76,25 @@ const NOTES_KEY = "exam-prep:notes:v1";
  */
 export const SCENARIOS = [
   {
+    name: "ace-hands-on-catalog",
+    label: "ACEハンズオン（カテゴリと演習一覧）",
+    steps: [{ click: "ACE ハンズオン" }],
+  },
+  {
+    name: "ace-hands-on-command",
+    label: "ACEハンズオン（コマンド入力）",
+    steps: [{ click: "ACE ハンズオン" }, { click: "演習を始める：プロジェクト・Cloud Shell・API" }],
+  },
+  {
+    name: "ace-hands-on-hcl",
+    label: "ACEハンズオン（HCL入力）",
+    steps: [
+      { click: "ACE ハンズオン" },
+      { click: "Terraform" },
+      { click: "演習を始める：Terraformの基本操作" },
+    ],
+  },
+  {
     name: "home-empty",
     label: "学習ホーム（記録なし）",
     steps: [],

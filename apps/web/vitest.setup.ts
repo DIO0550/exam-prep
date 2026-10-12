@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/vitest";
 
 import { cleanup } from "@testing-library/react";
 import { afterEach } from "vitest";
+import { HANDS_ON_KEY, handsOnStore } from "./src/features/hands-on/store";
 
 import { noteStore } from "./src/features/quiz/notes/store";
 import { progressStore } from "./src/features/quiz/progress/store";
@@ -18,4 +19,6 @@ afterEach(() => {
   cleanup();
   progressStore.clear();
   noteStore.clear();
+  window.localStorage.removeItem(HANDS_ON_KEY);
+  handsOnStore.reset();
 });

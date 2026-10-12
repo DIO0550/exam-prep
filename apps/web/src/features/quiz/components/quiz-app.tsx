@@ -6,6 +6,9 @@ import { useMemo, useRef } from "react";
 import { BackupPanel } from "@/features/backup/components/backup-panel";
 import { exportAll, exportSet, importBackup } from "@/features/backup/restore";
 import { downloadBackup, readBackupFile } from "@/features/backup/transfer";
+import { HandsOnApp } from "@/features/hands-on/components/hands-on-app";
+import { EMPTY_RECORD as EMPTY_HANDS_ON } from "@/features/hands-on/progress";
+import { handsOnStore } from "@/features/hands-on/store";
 import { VocabApp } from "@/features/vocab/components/vocab-app";
 
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
@@ -36,6 +39,7 @@ import { SiteHeader } from "./site-header";
 const clearEverything = (): void => {
   progressStore.clear();
   noteStore.clear();
+  handsOnStore.set(EMPTY_HANDS_ON);
 };
 
 export const QuizApp = () => {
@@ -61,7 +65,9 @@ export const QuizApp = () => {
   };
   // メモの枠は、問題が出ている画面でだけ開く（学習ホームや結果には書く相手がいない）。
   const notesVisible =
-    session.notesOpen && session.current !== undefined && session.screen !== "review";
+    session.notesOpen &&
+    session.current !== undefined &&
+    ["quiz", "explain"].includes(session.screen);
 
   // 問題や画面が替わったら、右側を上まで戻してから見せる。
   const contentRef = useRef<HTMLDivElement>(null);
@@ -91,9 +97,9 @@ export const QuizApp = () => {
 
       <div className="flex flex-1 flex-col md:min-h-0 md:flex-row">
         {/* 単語帳は「どの回を解くか」と関係しないので、左右ともまるごと VocabApp に渡す。 */}
-        {session.screen === "vocab" ? (
-          <VocabApp />
-        ) : (
+        {session.screen === "vocab" && <VocabApp />}
+        {session.screen === "hands-on" && <HandsOnApp />}
+        {session.screen !== "vocab" && session.screen !== "hands-on" && (
           <>
             <ExamSidebar
               exams={EXAMS}
