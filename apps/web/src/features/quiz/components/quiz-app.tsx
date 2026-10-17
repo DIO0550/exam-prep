@@ -45,7 +45,6 @@ export const QuizApp = () => {
   // 選んでいる回も学習記録の一部として保存する（次に開いたとき同じ回から始められる）。
   const record = useProgress();
   const questionSet = QUESTION_SETS.find((set) => set.id === record.setId) ?? QUESTION_SETS[0];
-  const session = useQuizSession(questionSet.questions);
   const progress = useMemo(() => summarizeProgress(record), [record]);
 
   // 左で選んでいる試験は、出題中の問題集から引く。別の state にすると、記録から読み直した
@@ -57,6 +56,12 @@ export const QuizApp = () => {
   const exam = EXAMS[examIndex] ?? EXAMS[0];
   // 「出題する回」には、選んでいる試験の問題集だけを並べる。
   const setOptions = questionSetsOf(exam.code);
+  // 全回をまたいだ解き直しに使う、選んでいる試験のすべての問題。
+  const examQuestions = useMemo(
+    () => questionSetsOf(exam.code).flatMap((set) => set.questions),
+    [exam.code],
+  );
+  const session = useQuizSession(questionSet.questions, examQuestions);
   // ランダム出題は、選んでいる試験の問題集をまたいで引く。
   const draw = useDrawSettings(exam.code, setOptions);
   const startDraw = (): void =>
@@ -182,7 +187,12 @@ export const QuizApp = () => {
                       setSummary={session.summary}
                       hasNotes={session.hasNotes}
                       retryCounts={session.retryCounts}
-                      onRetry={session.startRetry}
+                      setCount={setOptions.length}
+                      allRetryCounts={session.allRetryCounts}
+                      retryRandom={session.retryRandom}
+                      onRetryRandomChange={session.setRetryRandom}
+                      onRetry={(kind) => session.startRetry(kind, session.retryRandom)}
+                      onRetryAll={(kind) => session.startRetryAll(kind, session.retryRandom)}
                       onGoDraw={() => session.setScreen("draw")}
                       backup={
                         <BackupPanel

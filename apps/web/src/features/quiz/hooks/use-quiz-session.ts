@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { isMultipleChoice, matchesAnswer, selectionsOf, toggleSelection } from "../answers";
 import { choiceOrder } from "../choice-order";
+import { drawQuestions } from "../draw";
 import type { Stroke } from "../notes/note";
 import { EMPTY_NOTE, noteOf } from "../notes/note";
 import { noteStore } from "../notes/store";
@@ -35,13 +36,20 @@ export const RETRY_LABELS: Record<RetryKind, string> = {
   weak: "苦手登録した問題",
 };
 
-/** 回の全問ではなく一部だけを出す理由。解き直しか、ランダム出題か。 */
-export type FocusKind = RetryKind | "draw";
+/** 全回をまたいだ解き直し。選んでいる試験のすべての回から、間違えた・苦手登録した問題を集める。 */
+export type AllRetryKind = `${RetryKind}-all`;
+
+const allRetryKind = (kind: RetryKind): AllRetryKind => `${kind}-all`;
+
+/** 回の全問ではなく一部だけを出す理由。解き直し（今の回か全回か）か、ランダム出題か。 */
+export type FocusKind = RetryKind | AllRetryKind | "draw";
 
 /** 一部だけを出しているときに、帯へ出す名前。 */
 export const FOCUS_LABELS: Record<FocusKind, string> = {
   wrong: "間違えた問題の解き直し",
   weak: "苦手登録した問題の解き直し",
+  "wrong-all": "全回の間違えた問題の解き直し",
+  "weak-all": "全回の苦手登録した問題の解き直し",
   draw: "ランダム出題",
 };
 
@@ -59,13 +67,19 @@ const isWrong = (item: QuizItem): boolean => item.attempt.revealed && !isCorrect
 const retryTargets = (items: QuizItem[], kind: RetryKind): QuizItem[] =>
   items.filter((item) => (kind === "wrong" ? isWrong(item) : item.attempt.weak));
 
+/** 解き直しの対象を、ランダム順なら混ぜて出す。混ぜないときは回・問番号の順のまま。 */
+const ordered = (questions: Question[], random: boolean): Question[] =>
+  random ? drawQuestions(questions, "すべて") : questions;
+
 /**
  * 演習画面の状態。
  *
  * 解答状況（選んだ選択肢・フラグ・苦手登録）は progressStore が持ち、リロードしても残る。
  * ここが持つのは、その回を今どう見ているか（画面・何問目・計測）だけ。
+ *
+ * examQuestions は選んでいる試験のすべての回の問題。全回をまたいだ解き直しに使う。
  */
-export const useQuizSession = (questions: Question[]) => {
+export const useQuizSession = (questions: Question[], examQuestions: Question[] = questions) => {
   const record = useProgress();
   const notes = useNotes();
   const [screen, setScreen] = useState<Screen>("home");
@@ -83,6 +97,8 @@ export const useQuizSession = (questions: Question[]) => {
   // 解き直し・ランダム出題で開いた問題。前回の解答は、開いたときに初めて消す（途中でやめても、
   // まだ開いていない問題の前回の結果は残しておくため）。
   const [visited, setVisited] = useState<string[]>([]);
+  // 学習ホームから解き直すとき、対象をランダム順で出すか。
+  const [retryRandom, setRetryRandom] = useState(false);
   // ランダム出題の解答。学習記録には書かず、ランダム出題をやめたら捨てる。
   const scratch = useScratchAttempts();
   const detached = focus?.detached ?? false;
@@ -231,6 +247,28 @@ export const useQuizSession = (questions: Question[]) => {
     [items],
   );
 
+  /** 選んでいる試験の全回で、解き直しの対象になる問題。学習記録の解答から選ぶ。 */
+  const allRetryTargets = useCallback(
+    (kind: RetryKind): Question[] =>
+      retryTargets(
+        examQuestions.map((question) => ({
+          question,
+          attempt: attemptOf(record, sourceId(question.source)),
+        })),
+        kind,
+      ).map((item) => item.question),
+    [examQuestions, record],
+  );
+
+  /** 全回をまたいだとき、解き直しの対象になる問題の数。 */
+  const allRetryCounts = useMemo<Record<RetryKind, number>>(
+    () => ({
+      wrong: allRetryTargets("wrong").length,
+      weak: allRetryTargets("weak").length,
+    }),
+    [allRetryTargets],
+  );
+
   /** 渡した問題だけを、渡した順で出し始める。detached なら解答を学習記録と切り離す。 */
   const focusOn = useCallback(
     (kind: FocusKind, questions: Question[], detachedNext: boolean) => {
@@ -254,15 +292,29 @@ export const useQuizSession = (questions: Question[]) => {
    * 間違えた問題・苦手登録した問題だけを解き直す。今出している範囲から絞るので、
    * 解き直しの結果からもう一度「間違えた問題だけ」を選べば、さらに絞り込める。
    * ランダム出題の中での解き直しは、そのまま学習記録と切り離して続ける。
+   * random なら対象を混ぜた順で出す。
    */
   const startRetry = useCallback(
-    (kind: RetryKind) =>
+    (kind: RetryKind, random = false) =>
       focusOn(
         kind,
-        retryTargets(items, kind).map((item) => item.question),
+        ordered(
+          retryTargets(items, kind).map((item) => item.question),
+          random,
+        ),
         detached,
       ),
     [detached, focusOn, items],
+  );
+
+  /**
+   * 選んでいる試験の全回から、間違えた問題・苦手登録した問題を集めて解き直す。
+   * 回ごとの解き直しと同じく学習記録へ書くので、正解すれば各回の「間違えた問題」から外れる。
+   */
+  const startRetryAll = useCallback(
+    (kind: RetryKind, random = false) =>
+      focusOn(allRetryKind(kind), ordered(allRetryTargets(kind), random), false),
+    [allRetryTargets, focusOn],
   );
 
   /**
@@ -451,7 +503,11 @@ export const useQuizSession = (questions: Question[]) => {
     /** 解き直し・ランダム出題の最中なら、どちらで何を出しているか。 */
     focusKind: focus?.kind ?? null,
     retryCounts,
+    allRetryCounts,
+    retryRandom,
+    setRetryRandom,
     startRetry,
+    startRetryAll,
     startDraw,
     start,
     restart,
