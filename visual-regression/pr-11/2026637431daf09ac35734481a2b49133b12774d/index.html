@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>見た目の差分 — PR #11</title>
+<style>
+  :root { color-scheme: light; --line: #e3e6ec; --muted: #59606e; --ink: #16181d; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f5f7; color: var(--ink);
+    font: 14px/1.7 system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; }
+  header { position: sticky; top: 0; z-index: 2; background: #fff; border-bottom: 1px solid var(--line); padding: 18px 24px; }
+  h1 { margin: 0 0 6px; font-size: 17px; letter-spacing: .02em; }
+  .meta { color: var(--muted); font-size: 12px; }
+  .counts { display: flex; gap: 14px; margin: 12px 0 0; font-size: 12.5px; font-weight: 700; }
+  .counts span { color: var(--muted); font-weight: 500; }
+  .tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 12px; }
+  input[type=search] { border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 12.5px; min-width: 220px; }
+  label { font-size: 12.5px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+  main { padding: 20px 24px 60px; display: flex; flex-direction: column; gap: 18px; }
+  section { background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .head { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; padding: 14px 18px; border-bottom: 1px solid #edeff3; }
+  .name { font-weight: 700; }
+  .viewport { font-size: 11.5px; color: var(--muted); }
+  .badge { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+  .changed { background: #fdf0ef; color: #b3392f; }
+  .new { background: #eef3fb; color: #2f5fa8; }
+  .deleted { background: #eef0f4; color: #4a515e; }
+  .passed { background: #eef7f2; color: #1f6b52; }
+  .ratio { margin-left: auto; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .modes { display: flex; gap: 6px; padding: 12px 18px 0; }
+  .modes button { cursor: pointer; border: 1px solid var(--line); background: #fff; border-radius: 7px; padding: 5px 11px; font: inherit; font-size: 11.5px; color: var(--muted); }
+  .modes button[aria-pressed=true] { border-color: #2f5fa8; background: #eef3fb; color: #2f5fa8; font-weight: 700; }
+  .view { padding: 12px 18px 18px; }
+  .view img { max-width: 100%; border: 1px solid var(--line); border-radius: 8px; display: block; background: #fff; }
+  .side { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .side figure { margin: 0; }
+  figcaption { font-size: 11.5px; color: var(--muted); margin-bottom: 5px; }
+  .wipe { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; }
+  .wipe img { border: 0; border-radius: 0; }
+  .wipe .after { position: absolute; inset: 0; overflow: hidden; }
+  .wipe .after img { max-width: none; }
+  .wipe input { width: 100%; margin-top: 10px; }
+  .empty { padding: 18px; color: var(--muted); font-size: 12.5px; }
+</style>
+<header>
+  <h1>見た目の差分</h1>
+  <p class="meta">PR #11 / コミット 2026637431daf09ac35734481a2b49133b12774d / 38 枚</p>
+  <p class="counts">
+    🔴 24 <span>変わった</span>
+    ⚪ 12 <span>新規</span>
+    ⚫ 2 <span>消えた</span>
+    🔵 0 <span>同じ</span>
+  </p>
+  <div class="tools">
+    <input id="filter" type="search" placeholder="画面名でしぼる">
+    <label><input id="only-changed" type="checkbox" checked> 変わったものだけ出す</label>
+  </div>
+</header>
+<main id="list"></main>
+<script>
+const DATA = {"reportVersion":"2026637431daf09ac35734481a2b49133b12774d","pr":"11","changed":24,"new":12,"deleted":2,"passed":0,"maxImages":10,"maxDiffRatio":0.0001,"tolerance":8,"results":[{"name":"explain-array__desktop","label":"解説（配列図）","viewport":"desktop","status":"changed","ratio":0.11297,"changedPixels":260282,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":true},{"name":"explain-array__mobile","label":"解説（配列図）","viewport":"mobile","status":"changed","ratio":0.199968,"changedPixels":223564,"beforeSize":{"width":430,"height":2600},"afterSize":{"width":430,"height":2600},"published":true},{"name":"explain-compare__desktop","label":"解説（選択肢を並べたタイムチャート）","viewport":"desktop","status":"new","published":true},{"name":"explain-compare__mobile","label":"解説（選択肢を並べたタイムチャート）","viewport":"mobile","status":"new","published":true},{"name":"explain-sketch__desktop","label":"解説（図の見本）","viewport":"desktop","status":"new","published":true},{"name":"explain-sketch__mobile","label":"解説（図の見本）","viewport":"mobile","status":"new","published":true},{"name":"explain-starve__desktop","label":"解説（方式を並べたタイムチャート）","viewport":"desktop","status":"new","published":true},{"name":"explain-starve__mobile","label":"解説（方式を並べたタイムチャート）","viewport":"mobile","status":"new","published":true},{"name":"explain-timeline__desktop","label":"解説（タイムチャート）","viewport":"desktop","status":"changed","ratio":0.145522,"changedPixels":335282,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":true},{"name":"explain-timeline__mobile","label":"解説（タイムチャート）","viewport":"mobile","status":"changed","ratio":0.243982,"changedPixels":265323,"beforeSize":{"width":430,"height":2457},"afterSize":{"width":430,"height":2529},"published":true},{"name":"explain-tree__desktop","label":"解説（2 分木）","viewport":"desktop","status":"new","published":true},{"name":"explain-tree__mobile","label":"解説（2 分木）","viewport":"mobile","status":"new","published":true},{"name":"explain-xlarge__desktop","label":"解説（別画面・文字サイズ特大）","viewport":"desktop","status":"changed","ratio":0.082609,"changedPixels":190331,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":false},{"name":"explain-xlarge__mobile","label":"解説（別画面・文字サイズ特大）","viewport":"mobile","status":"changed","ratio":0.124302,"changedPixels":138970,"beforeSize":{"width":430,"height":2600},"afterSize":{"width":430,"height":2600},"published":true},{"name":"explain__desktop","label":"解説（別画面）","viewport":"desktop","status":"changed","ratio":0.075857,"changedPixels":174774,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":false},{"name":"explain__mobile","label":"解説（別画面）","viewport":"mobile","status":"changed","ratio":0.158419,"changedPixels":177113,"beforeSize":{"width":430,"height":2600},"afterSize":{"width":430,"height":2600},"published":true},{"name":"home-empty__desktop","label":"学習ホーム（記録なし）","viewport":"desktop","status":"changed","ratio":0.002116,"changedPixels":4876,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":false},{"name":"home-empty__mobile","label":"学習ホーム（記録なし）","viewport":"mobile","status":"changed","ratio":0.006817,"changedPixels":4860,"beforeSize":{"width":430,"height":1658},"afterSize":{"width":430,"height":1658},"published":false},{"name":"home-progress__desktop","label":"学習ホーム（記録あり）","viewport":"desktop","status":"changed","ratio":0.008339,"changedPixels":19212,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":false},{"name":"home-progress__mobile","label":"学習ホーム（記録あり）","viewport":"mobile","status":"changed","ratio":0.009988,"changedPixels":8959,"beforeSize":{"width":430,"height":2086},"afterSize":{"width":430,"height":2086},"published":false},{"name":"quiz-answered__desktop","label":"演習（解答後・同画面に解説）","viewport":"desktop","status":"changed","ratio":0.086627,"changedPixels":199588,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":false},{"name":"quiz-answered__mobile","label":"演習（解答後・同画面に解説）","viewport":"mobile","status":"changed","ratio":0.122742,"changedPixels":137225,"beforeSize":{"width":430,"height":2600},"afterSize":{"width":430,"height":2600},"published":true},{"name":"quiz-note__desktop","label":"演習（メモを開く）","viewport":"desktop","status":"changed","ratio":0.084735,"changedPixels":195229,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":false},{"name":"quiz-note__mobile","label":"演習（メモを開く）","viewport":"mobile","status":"changed","ratio":0.121201,"changedPixels":115282,"beforeSize":{"width":430,"height":2205},"afterSize":{"width":430,"height":2212},"published":true},{"name":"quiz-shuffled__desktop","label":"演習（選択肢シャッフル）","viewport":"desktop","status":"changed","ratio":0.08053,"changedPixels":185542,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":false},{"name":"quiz-shuffled__mobile","label":"演習（選択肢シャッフル）","viewport":"mobile","status":"changed","ratio":0.11905,"changedPixels":133098,"beforeSize":{"width":430,"height":2600},"afterSize":{"width":430,"height":2600},"published":true},{"name":"quiz__desktop","label":"演習（未解答）","viewport":"desktop","status":"changed","ratio":0.07404,"changedPixels":170589,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":false},{"name":"quiz__mobile","label":"演習（未解答）","viewport":"mobile","status":"changed","ratio":0.167258,"changedPixels":159089,"beforeSize":{"width":430,"height":2205},"afterSize":{"width":430,"height":2212},"published":true},{"name":"result__desktop","label":"結果","viewport":"desktop","status":"changed","ratio":0.000247,"changedPixels":568,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":false},{"name":"result__mobile","label":"結果","viewport":"mobile","status":"changed","ratio":0.000769,"changedPixels":558,"beforeSize":{"width":430,"height":1688},"afterSize":{"width":430,"height":1688},"published":false},{"name":"review__desktop","label":"問題一覧・見直し","viewport":"desktop","status":"changed","ratio":0.000247,"changedPixels":568,"beforeSize":{"width":1440,"height":1600},"afterSize":{"width":1440,"height":1600},"published":false},{"name":"review__mobile","label":"問題一覧・見直し","viewport":"mobile","status":"changed","ratio":0.000499,"changedPixels":558,"beforeSize":{"width":430,"height":2600},"afterSize":{"width":430,"height":2600},"published":false},{"name":"vocab-card__desktop","label":"単語帳（めくる）","viewport":"desktop","status":"new","published":true},{"name":"vocab-card__mobile","label":"単語帳（めくる）","viewport":"mobile","status":"new","published":true},{"name":"vocab-setup__desktop","label":"単語帳（設定）","viewport":"desktop","status":"new","published":true},{"name":"vocab-setup__mobile","label":"単語帳（設定）","viewport":"mobile","status":"new","published":true},{"name":"vocab__desktop","label":"略語単語帳","viewport":"desktop","status":"deleted"},{"name":"vocab__mobile","label":"略語単語帳","viewport":"mobile","status":"deleted"}]};
+
+  const STATUS = { changed: "変わった", new: "新規", deleted: "消えた", passed: "同じ" };
+  const list = document.getElementById("list");
+  const filter = document.getElementById("filter");
+  const onlyChanged = document.getElementById("only-changed");
+
+  const image = (kind, name) => `<img loading="lazy" src="${kind}/${name}.png" alt="${kind}">`;
+
+  const view = (result, mode) => {
+    const { name, status } = result;
+    if (status === "passed") return '<p class="empty">差分はありません。</p>';
+    if (!result.published) {
+      return '<p class="empty">画像は差分の大きいものから ' + DATA.maxImages +
+        ' 件までしか残していないので、この画面の絵はありません。</p>';
+    }
+    if (status === "new") return image("after", name);
+    if (status === "deleted") return image("before", name);
+    if (mode === "diff") return image("diff", name);
+    if (mode === "side") {
+      return '<div class="side">' +
+        '<figure><figcaption>前（main）</figcaption>' + image("before", name) + '</figure>' +
+        '<figure><figcaption>後（この PR）</figcaption>' + image("after", name) + '</figure></div>';
+    }
+    return '<div class="wipe" data-wipe><div class="base">' + image("before", name) + '</div>' +
+      '<div class="after" style="width:50%">' + image("after", name) + '</div></div>' +
+      '<input type="range" min="0" max="100" value="50" aria-label="境目を動かす">';
+  };
+
+  const card = (result) => {
+    const section = document.createElement("section");
+    section.dataset.name = result.name + " " + result.label;
+    section.dataset.status = result.status;
+    const ratio = result.ratio === undefined ? "" :
+      `<span class="ratio">${(result.ratio * 100).toFixed(3)}% / ${(result.changedPixels ?? 0).toLocaleString("ja-JP")}px</span>`;
+    const modes = result.status === "changed" && result.published
+      ? '<div class="modes"><button aria-pressed="true" data-mode="diff">差分</button>' +
+        '<button aria-pressed="false" data-mode="side">並べて</button>' +
+        '<button aria-pressed="false" data-mode="wipe">重ねて</button></div>'
+      : "";
+    section.innerHTML =
+      `<div class="head"><span class="name">${result.label}</span>` +
+      `<span class="viewport">${result.viewport}</span>` +
+      `<span class="badge ${result.status}">${STATUS[result.status]}</span>${ratio}</div>` +
+      modes + '<div class="view"></div>';
+    const body = section.querySelector(".view");
+    const draw = (mode) => {
+      body.innerHTML = view(result, mode);
+      const wipe = body.querySelector("[data-wipe]");
+      const range = body.querySelector("input[type=range]");
+      if (wipe && range) {
+        const apply = () => { wipe.querySelector(".after").style.width = range.value + "%"; };
+        range.addEventListener("input", apply);
+        apply();
+      }
+    };
+    for (const button of section.querySelectorAll(".modes button")) {
+      button.addEventListener("click", () => {
+        for (const other of section.querySelectorAll(".modes button")) {
+          other.setAttribute("aria-pressed", String(other === button));
+        }
+        draw(button.dataset.mode);
+      });
+    }
+    draw("diff");
+    return section;
+  };
+
+  const order = { changed: 0, new: 1, deleted: 2, passed: 3 };
+  const sorted = [...DATA.results].sort((a, b) =>
+    order[a.status] - order[b.status] || (b.ratio ?? 0) - (a.ratio ?? 0) || a.name.localeCompare(b.name));
+  const cards = sorted.map((result) => [result, card(result)]);
+  for (const [, node] of cards) list.append(node);
+
+  const apply = () => {
+    const word = filter.value.trim();
+    for (const [result, node] of cards) {
+      const hitWord = word === "" || node.dataset.name.includes(word);
+      const hitStatus = !onlyChanged.checked || result.status !== "passed";
+      node.hidden = !(hitWord && hitStatus);
+    }
+  };
+  filter.addEventListener("input", apply);
+  onlyChanged.addEventListener("change", apply);
+  apply();
+
+</script>
+</html>
