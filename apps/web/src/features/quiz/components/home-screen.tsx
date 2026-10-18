@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { Segmented } from "@/features/vocab/components/segmented";
+
 import type { RetryKind } from "../hooks/use-quiz-session";
 import { RETRY_KINDS, RETRY_LABELS } from "../hooks/use-quiz-session";
 import type { ProgressSummary } from "../progress/summary";
@@ -33,9 +35,18 @@ type HomeScreenProps = {
   backup: ReactNode;
   /** 今の回で間違えたままの問題と、苦手登録した問題の数。0 なら解き直しのボタンを出さない。 */
   retryCounts: Record<RetryKind, number>;
+  /** 選んでいる試験の回の数。2 回以上あるときだけ、全回をまたいだ解き直しを出す。 */
+  setCount: number;
+  /** 選んでいる試験の全回で、間違えたままの問題と苦手登録した問題の数。 */
+  allRetryCounts: Record<RetryKind, number>;
+  /** 解き直しをランダム順で出すか。 */
+  retryRandom: boolean;
+  onRetryRandomChange: (random: boolean) => void;
   onStart: () => void;
   onRestart: () => void;
   onRetry: (kind: RetryKind) => void;
+  /** 全回をまたいで解き直す。 */
+  onRetryAll: (kind: RetryKind) => void;
   /** ランダム出題の条件を決める画面へ。 */
   onGoDraw: () => void;
   onGoReview: () => void;
@@ -53,15 +64,22 @@ export const HomeScreen = ({
   hasNotes,
   backup,
   retryCounts,
+  setCount,
+  allRetryCounts,
+  retryRandom,
+  onRetryRandomChange,
   onStart,
   onRestart,
   onRetry,
+  onRetryAll,
   onGoDraw,
   onGoReview,
   onClearRecord,
 }: HomeScreenProps) => {
   const done = answered >= questionCount;
   const inProgress = answered > 0 && !done;
+  const hasRetry = RETRY_KINDS.some((kind) => retryCounts[kind] > 0);
+  const hasAllRetry = setCount > 1 && RETRY_KINDS.some((kind) => allRetryCounts[kind] > 0);
 
   return (
     <div className="flex animate-rise-in flex-col gap-5">
@@ -125,23 +143,55 @@ export const HomeScreen = ({
           </button>
         </div>
 
-        {RETRY_KINDS.some((kind) => retryCounts[kind] > 0) && (
-          <div className="flex flex-col gap-2.5 border-line-soft border-t pt-5">
-            <span className="font-bold text-[11px] text-muted-soft tracking-[0.12em]">
-              解き直す
-            </span>
-            <div className="flex flex-wrap gap-3">
-              {RETRY_KINDS.filter((kind) => retryCounts[kind] > 0).map((kind) => (
-                <button
-                  key={kind}
-                  type="button"
-                  onClick={() => onRetry(kind)}
-                  className={SECONDARY_BUTTON}
-                >
-                  {RETRY_LABELS[kind]}だけ（{retryCounts[kind]}問）
-                </button>
-              ))}
+        {(hasRetry || hasAllRetry) && (
+          <div className="flex flex-col gap-3.5 border-line-soft border-t pt-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="font-bold text-[11px] text-muted-soft tracking-[0.12em]">
+                解き直す
+              </span>
+              <Segmented
+                label="出す順"
+                options={[
+                  { label: "回・問番号の順", value: false },
+                  { label: "ランダム", value: true },
+                ]}
+                value={retryRandom}
+                onChange={onRetryRandomChange}
+              />
             </div>
+            {hasRetry && (
+              <div className="flex flex-wrap gap-3">
+                {RETRY_KINDS.filter((kind) => retryCounts[kind] > 0).map((kind) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => onRetry(kind)}
+                    className={SECONDARY_BUTTON}
+                  >
+                    {RETRY_LABELS[kind]}だけ（{retryCounts[kind]}問）
+                  </button>
+                ))}
+              </div>
+            )}
+            {hasAllRetry && (
+              <div className="flex flex-col gap-2">
+                <span className="text-[12px] text-muted-soft">
+                  全{setCount}回をまとめて（解いた結果は各回の学習記録に入ります）
+                </span>
+                <div className="flex flex-wrap gap-3">
+                  {RETRY_KINDS.filter((kind) => allRetryCounts[kind] > 0).map((kind) => (
+                    <button
+                      key={kind}
+                      type="button"
+                      onClick={() => onRetryAll(kind)}
+                      className={SECONDARY_BUTTON}
+                    >
+                      全回の{RETRY_LABELS[kind]}（{allRetryCounts[kind]}問）
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </section>

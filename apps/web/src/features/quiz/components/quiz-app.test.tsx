@@ -628,6 +628,75 @@ describe("QuizApp", () => {
       render(<QuizApp />);
 
       expect(screen.queryByRole("button", { name: /だけ（\d+問）/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /^全回の/ })).not.toBeInTheDocument();
+    });
+
+    describe("全回をまとめて", () => {
+      const SECOND_SET = QUESTION_SETS[1];
+      if (!SECOND_SET || SECOND_SET.exam !== FIRST_SET.exam)
+        throw new Error("同じ試験の回が 2 つ必要");
+      const [S1, S2] = SECOND_SET.questions;
+      if (!S1 || !S2) throw new Error("2 問以上必要");
+
+      /** 1 回目の 1 問目と 2 回目の 1 問目を間違え、2 回目の 2 問目は苦手登録だけした記録。 */
+      const seedAcross = () =>
+        window.localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            version: RECORD_VERSION,
+            setId: FIRST_SET.id,
+            attempts: {
+              [sourceId(Q1.source)]: attempt(wrongOf(Q1), false),
+              [sourceId(S1.source)]: attempt(wrongOf(S1), false),
+              [sourceId(S2.source)]: attempt(null, true),
+            },
+            recent: [false, false],
+            days: [],
+          }),
+        );
+
+      it("選んでいる回の外で間違えた問題も、回・問番号の順で解き直せて、学習記録に入る", async () => {
+        seedAcross();
+        const user = userEvent.setup();
+        render(<QuizApp />);
+
+        // 今の回だけなら 1 問、全回なら 2 問
+        expect(screen.getByRole("button", { name: "間違えた問題だけ（1問）" })).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: "全回の間違えた問題（2問）" }));
+
+        expect(screen.getByText("全回の間違えた問題の解き直し")).toBeInTheDocument();
+        expect(screen.getByText(Q1.text)).toBeInTheDocument();
+        await user.click(choiceButton(singleAnswer(Q1)));
+        await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+        expect(screen.getByText(S1.text)).toBeInTheDocument();
+
+        // 別の回の問題でも、解いた結果はその問題の学習記録に入る
+        await user.click(choiceButton(singleAnswer(S1)));
+        expect(attemptIn(S1)).toMatchObject({ picked: singleAnswer(S1), revealed: true });
+      });
+
+      it("ランダムを選ぶと、混ぜた順で出す", async () => {
+        // 1 問目の位置に、末尾の問題を引いてくる
+        vi.spyOn(Math, "random").mockReturnValue(0.99);
+        seedAcross();
+        const user = userEvent.setup();
+        render(<QuizApp />);
+
+        await user.click(screen.getByRole("button", { name: "ランダム" }));
+        await user.click(screen.getByRole("button", { name: "全回の間違えた問題（2問）" }));
+
+        expect(screen.getByText(S1.text)).toBeInTheDocument();
+      });
+
+      it("苦手登録した問題も全回から集める", async () => {
+        seedAcross();
+        const user = userEvent.setup();
+        render(<QuizApp />);
+
+        await user.click(screen.getByRole("button", { name: "全回の苦手登録した問題（1問）" }));
+        expect(screen.getByText("全回の苦手登録した問題の解き直し")).toBeInTheDocument();
+        expect(screen.getByText(S2.text)).toBeInTheDocument();
+      });
     });
   });
 
