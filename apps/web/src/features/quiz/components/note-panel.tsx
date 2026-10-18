@@ -126,12 +126,14 @@ export const NotePanel = ({
         </button>
       </div>
 
+      {/* 枠は縦に並べて高さが決まっているので、縮んでよい設定のままだと、広げた分が
+          枠に収まる高さまで押し戻される。縮ませず、はみ出した分は枠のスクロールに任せる。 */}
       <textarea
         aria-label="メモ（文章）"
         value={note.text}
         onChange={(event) => onChangeText(event.target.value)}
         placeholder="気づいたこと、間違えた理由、覚え直すことなど"
-        className="min-h-[180px] resize-y rounded-[9px] border border-edge bg-surface px-3 py-2.5 text-[13px] text-ink leading-[1.8] placeholder:text-disabled focus:border-accent focus:outline-none"
+        className="min-h-[180px] shrink-0 resize-y rounded-[9px] border border-edge bg-surface px-3 py-2.5 text-[13px] text-ink leading-[1.8] placeholder:text-disabled focus:border-accent focus:outline-none"
       />
 
       <div className="flex flex-col gap-2">
