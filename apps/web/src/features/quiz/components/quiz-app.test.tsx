@@ -697,6 +697,73 @@ describe("QuizApp", () => {
         expect(screen.getByText("全回の苦手登録した問題の解き直し")).toBeInTheDocument();
         expect(screen.getByText(S2.text)).toBeInTheDocument();
       });
+
+      describe("苦手問題を選んで解く", () => {
+        /** 1 回目の 1 問目、2 回目の 1・2 問目を苦手登録した記録。 */
+        const seedWeak = () =>
+          window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+              version: RECORD_VERSION,
+              setId: FIRST_SET.id,
+              attempts: {
+                [sourceId(Q1.source)]: attempt(null, true),
+                [sourceId(S1.source)]: attempt(null, true),
+                [sourceId(S2.source)]: attempt(null, true),
+              },
+              recent: [],
+              days: [],
+            }),
+          );
+
+        /** 学習ホームから選ぶ画面へ移り、全回の苦手登録が回・問番号の順に並ぶことを確かめる。 */
+        const openPicker = async (user: ReturnType<typeof userEvent.setup>) => {
+          await user.click(screen.getByRole("button", { name: "苦手問題を選んで解く（3問から）" }));
+          const boxes = screen.getAllByRole("checkbox");
+          expect(boxes).toHaveLength(3);
+          return boxes;
+        };
+
+        it("選んだ問題だけを、回・問番号の順で出せる", async () => {
+          seedWeak();
+          const user = userEvent.setup();
+          render(<QuizApp />);
+
+          const [, boxS1, boxS2] = await openPicker(user);
+          const startButton = screen.getByRole("button", { name: "選んだ問題を解く" });
+          expect(startButton).toBeDisabled();
+
+          await user.click(boxS1 as HTMLElement);
+          await user.click(boxS2 as HTMLElement);
+          await user.click(screen.getByRole("button", { name: "回・問番号の順" }));
+          await user.click(startButton);
+
+          expect(screen.getByText("選んだ苦手問題の解き直し")).toBeInTheDocument();
+          expect(screen.getByText(S1.text)).toBeInTheDocument();
+          await user.click(choiceButton(singleAnswer(S1)));
+          await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+          expect(screen.getByText(S2.text)).toBeInTheDocument();
+
+          // 選んだ問題でも、解いた結果は学習記録に入る
+          expect(attemptIn(S1)).toMatchObject({ picked: singleAnswer(S1), revealed: true });
+        });
+
+        it("出す順はランダムから始まり、選んだ問題を混ぜて出す", async () => {
+          // 1 問目の位置に、末尾の問題を引いてくる
+          vi.spyOn(Math, "random").mockReturnValue(0.99);
+          seedWeak();
+          const user = userEvent.setup();
+          render(<QuizApp />);
+
+          const [boxQ1, , boxS2] = await openPicker(user);
+          await user.click(boxQ1 as HTMLElement);
+          await user.click(boxS2 as HTMLElement);
+          expect(screen.getByText("2問をランダムな順で出します。")).toBeInTheDocument();
+          await user.click(screen.getByRole("button", { name: "選んだ問題を解く" }));
+
+          expect(screen.getByText(S2.text)).toBeInTheDocument();
+        });
+      });
     });
   });
 

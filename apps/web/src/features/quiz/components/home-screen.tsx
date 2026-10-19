@@ -47,6 +47,8 @@ type HomeScreenProps = {
   onRetry: (kind: RetryKind) => void;
   /** 全回をまたいで解き直す。 */
   onRetryAll: (kind: RetryKind) => void;
+  /** 全回の苦手登録した問題から、解くものを選ぶ画面へ。 */
+  onGoWeakPick: () => void;
   /** ランダム出題の条件を決める画面へ。 */
   onGoDraw: () => void;
   onGoReview: () => void;
@@ -72,6 +74,7 @@ export const HomeScreen = ({
   onRestart,
   onRetry,
   onRetryAll,
+  onGoWeakPick,
   onGoDraw,
   onGoReview,
   onClearRecord,
@@ -80,6 +83,8 @@ export const HomeScreen = ({
   const inProgress = answered > 0 && !done;
   const hasRetry = RETRY_KINDS.some((kind) => retryCounts[kind] > 0);
   const hasAllRetry = setCount > 1 && RETRY_KINDS.some((kind) => allRetryCounts[kind] > 0);
+  // 苦手登録から選ぶのは、回が 1 つでも使える。
+  const hasWeakPick = allRetryCounts.weak > 0;
 
   return (
     <div className="flex animate-rise-in flex-col gap-5">
@@ -143,7 +148,7 @@ export const HomeScreen = ({
           </button>
         </div>
 
-        {(hasRetry || hasAllRetry) && (
+        {(hasRetry || hasAllRetry || hasWeakPick) && (
           <div className="flex flex-col gap-3.5 border-line-soft border-t pt-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="font-bold text-[11px] text-muted-soft tracking-[0.12em]">
@@ -189,6 +194,18 @@ export const HomeScreen = ({
                       全回の{RETRY_LABELS[kind]}（{allRetryCounts[kind]}問）
                     </button>
                   ))}
+                </div>
+              </div>
+            )}
+            {hasWeakPick && (
+              <div className="flex flex-col gap-2">
+                <span className="text-[12px] text-muted-soft">
+                  苦手登録した問題から、解きたいものだけを選ぶ
+                </span>
+                <div className="flex flex-wrap gap-3">
+                  <button type="button" onClick={onGoWeakPick} className={SECONDARY_BUTTON}>
+                    苦手問題を選んで解く（{allRetryCounts.weak}問から）
+                  </button>
                 </div>
               </div>
             )}

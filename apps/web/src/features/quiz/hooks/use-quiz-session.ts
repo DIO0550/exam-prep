@@ -19,7 +19,15 @@ import { useNotes } from "./use-notes";
 import { useProgress } from "./use-progress";
 import { PROGRESS_WRITER, useScratchAttempts } from "./use-scratch-attempts";
 
-export type Screen = "home" | "draw" | "quiz" | "explain" | "result" | "review" | "vocab";
+export type Screen =
+  | "home"
+  | "draw"
+  | "weak-pick"
+  | "quiz"
+  | "explain"
+  | "result"
+  | "review"
+  | "vocab";
 
 /** 解説を問題と同じ画面に出すか、解答後に解説画面へ移るか。 */
 export type FeedbackMode = "inline" | "page";
@@ -41,8 +49,11 @@ export type AllRetryKind = `${RetryKind}-all`;
 
 const allRetryKind = (kind: RetryKind): AllRetryKind => `${kind}-all`;
 
-/** 回の全問ではなく一部だけを出す理由。解き直し（今の回か全回か）か、ランダム出題か。 */
-export type FocusKind = RetryKind | AllRetryKind | "draw";
+/**
+ * 回の全問ではなく一部だけを出す理由。解き直し（今の回か全回か）か、
+ * 全回の苦手登録から選んだ問題か、ランダム出題か。
+ */
+export type FocusKind = RetryKind | AllRetryKind | "weak-picked" | "draw";
 
 /** 一部だけを出しているときに、帯へ出す名前。 */
 export const FOCUS_LABELS: Record<FocusKind, string> = {
@@ -50,6 +61,7 @@ export const FOCUS_LABELS: Record<FocusKind, string> = {
   weak: "苦手登録した問題の解き直し",
   "wrong-all": "全回の間違えた問題の解き直し",
   "weak-all": "全回の苦手登録した問題の解き直し",
+  "weak-picked": "選んだ苦手問題の解き直し",
   draw: "ランダム出題",
 };
 
@@ -317,6 +329,18 @@ export const useQuizSession = (questions: Question[], examQuestions: Question[] 
     [allRetryTargets, focusOn],
   );
 
+  /** 選んでいる試験の全回で、苦手登録した問題。苦手問題を選んで解く画面に並べる。 */
+  const weakQuestions = useMemo(() => allRetryTargets("weak"), [allRetryTargets]);
+
+  /**
+   * 苦手登録した問題から選んだものだけを解き直す。回をまたいでよい。
+   * 全回の解き直しと同じく学習記録へ書く。random なら選んだ問題を混ぜた順で出す。
+   */
+  const startPicked = useCallback(
+    (picked: Question[], random: boolean) => focusOn("weak-picked", ordered(picked, random), false),
+    [focusOn],
+  );
+
   /**
    * ランダムに引いた問題を出す。回をまたいでよい。
    * 解答は学習記録と切り離して持つので、回ごとの正答率・苦手登録・連続学習日数には入らない。
@@ -508,6 +532,8 @@ export const useQuizSession = (questions: Question[], examQuestions: Question[] 
     setRetryRandom,
     startRetry,
     startRetryAll,
+    weakQuestions,
+    startPicked,
     startDraw,
     start,
     restart,

@@ -34,6 +34,7 @@ import { ReviewScreen } from "./review-screen";
 import { SelectMenu } from "./select-menu";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
+import { WeakPicker } from "./weak-picker";
 
 /** 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。 */
 const clearEverything = (): void => {
@@ -193,6 +194,7 @@ export const QuizApp = () => {
                       onRetryRandomChange={session.setRetryRandom}
                       onRetry={(kind) => session.startRetry(kind, session.retryRandom)}
                       onRetryAll={(kind) => session.startRetryAll(kind, session.retryRandom)}
+                      onGoWeakPick={() => session.setScreen("weak-pick")}
                       onGoDraw={() => session.setScreen("draw")}
                       backup={
                         <BackupPanel
@@ -226,6 +228,14 @@ export const QuizApp = () => {
                       settings={draw.settings}
                       onChange={draw.setSettings}
                       onStart={startDraw}
+                      onCancel={() => session.setScreen("home")}
+                    />
+                  )}
+
+                  {session.screen === "weak-pick" && (
+                    <WeakPicker
+                      questions={session.weakQuestions}
+                      onStart={session.startPicked}
                       onCancel={() => session.setScreen("home")}
                     />
                   )}
