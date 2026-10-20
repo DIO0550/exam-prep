@@ -2,17 +2,21 @@
 
 import { useState } from "react";
 
-type ClearRecordButtonProps = {
+type ConfirmClearButtonProps = {
+  /** 最初に出す文言（「学習記録を消す」など）。 */
+  label: string;
+  /** 押したあとに出す、何が消えるかの説明。 */
+  warning: string;
   onClear: () => void;
 };
 
 /**
- * 学習記録を消すボタン。
+ * 保存したものを消すボタン。
  *
  * 押し間違いで消えないよう 2 段階にしてある。`confirm()` を使わないのは、
  * ブラウザによっては出ない（サードパーティ枠の中など）ためで、画面内で完結させる。
  */
-export const ClearRecordButton = ({ onClear }: ClearRecordButtonProps) => {
+export const ConfirmClearButton = ({ label, warning, onClear }: ConfirmClearButtonProps) => {
   const [armed, setArmed] = useState(false);
 
   if (!armed) {
@@ -22,14 +26,14 @@ export const ClearRecordButton = ({ onClear }: ClearRecordButtonProps) => {
         onClick={() => setArmed(true)}
         className="cursor-pointer text-[11.5px] text-muted-soft underline underline-offset-2 hover:text-ink"
       >
-        学習記録を消す
+        {label}
       </button>
     );
   }
 
   return (
     <span className="flex items-center gap-2.5 text-[11.5px] text-muted-soft">
-      このブラウザに保存した記録とメモをすべて消します。
+      {warning}
       <button
         type="button"
         onClick={() => {

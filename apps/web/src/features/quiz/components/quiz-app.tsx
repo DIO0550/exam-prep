@@ -217,6 +217,7 @@ export const QuizApp = () => {
                       onRestart={session.restart}
                       onGoReview={() => session.setScreen("review")}
                       onClearRecord={clearEverything}
+                      onClearNotes={noteStore.clear}
                     />
                   )}
 

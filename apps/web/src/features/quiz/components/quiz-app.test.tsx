@@ -517,6 +517,27 @@ describe("QuizApp", () => {
     expect(window.localStorage.getItem(NOTES_KEY)).toBeNull();
   });
 
+  it("メモだけ消すと、メモは消えて学習記録は残る", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+    await user.click(choiceButton(singleAnswer(FIRST)));
+    await toggleNotes(user);
+    await user.type(screen.getByLabelText("メモ（文章）"), "あとで見る");
+    const recordBefore = window.localStorage.getItem(STORAGE_KEY);
+
+    await user.click(screen.getByRole("button", { name: "学習ホーム" }));
+    await user.click(screen.getByRole("button", { name: "メモだけ消す" }));
+    // 押し間違いで消えないよう、確かめてから消す
+    expect(window.localStorage.getItem(NOTES_KEY)).not.toBeNull();
+    await user.click(screen.getByRole("button", { name: "消す" }));
+
+    expect(window.localStorage.getItem(NOTES_KEY)).toBeNull();
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBe(recordBefore);
+    // 消すメモが無くなったので、ボタンも引っ込む
+    expect(screen.queryByRole("button", { name: "メモだけ消す" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "学習記録を消す" })).toBeInTheDocument();
+  });
+
   it("見直し画面の「不正解のみ」で間違えた問題だけが残る", async () => {
     const user = userEvent.setup();
     await startQuiz(user);

@@ -8,7 +8,7 @@ import type { ProgressSummary } from "../progress/summary";
 import { statCards } from "../progress/summary";
 import type { Summary } from "../stats";
 import { masteryTone } from "../tone";
-import { ClearRecordButton } from "./clear-record-button";
+import { ConfirmClearButton } from "./confirm-clear-button";
 import { MeterRow } from "./meter-row";
 
 /** 演習を始めるボタン。押してほしいものを塗り、それ以外は枠だけにする。 */
@@ -51,6 +51,8 @@ type HomeScreenProps = {
   onGoDraw: () => void;
   onGoReview: () => void;
   onClearRecord: () => void;
+  /** メモだけを消す。学習記録は残す。 */
+  onClearNotes: () => void;
 };
 
 export const HomeScreen = ({
@@ -75,6 +77,7 @@ export const HomeScreen = ({
   onGoDraw,
   onGoReview,
   onClearRecord,
+  onClearNotes,
 }: HomeScreenProps) => {
   const done = answered >= questionCount;
   const inProgress = answered > 0 && !done;
@@ -223,8 +226,19 @@ export const HomeScreen = ({
       {backup}
 
       {(summary.hasRecord || hasNotes) && (
-        <div className="flex justify-end">
-          <ClearRecordButton onClear={onClearRecord} />
+        <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
+          {hasNotes && (
+            <ConfirmClearButton
+              label="メモだけ消す"
+              warning="このブラウザに保存したメモをすべて消します。学習記録は残ります。"
+              onClear={onClearNotes}
+            />
+          )}
+          <ConfirmClearButton
+            label="学習記録を消す"
+            warning="このブラウザに保存した記録とメモをすべて消します。"
+            onClear={onClearRecord}
+          />
         </div>
       )}
     </div>
