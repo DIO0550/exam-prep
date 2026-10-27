@@ -73,6 +73,13 @@ describe("問題データ", () => {
     );
     expect(new Set(keywords.flat()).size).toBe(94);
     expect(term.questions).toHaveLength(94);
+    // 紛らわしい選択肢もキーワードの中から選び、シラバスのキーワードに無い語は出さない。
+    const allowed = new Set(keywords.flat());
+    for (const question of term.questions) {
+      for (const choice of question.choices) {
+        expect(allowed.has(choice.text), choice.text).toBe(true);
+      }
+    }
   });
 
   it.each([5, 6, 7])("生成AI模試%dは全6章各10問、単一54問・複数6問の新しい設問を持つ", (no) => {
