@@ -5,6 +5,7 @@ import { isCorrect } from "../stats";
 import { figuresOf, formatSource } from "../types";
 import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
+import { KeyHint } from "./key-hint";
 import { KeyPointList } from "./key-point-list";
 import { MarkButtons } from "./mark-buttons";
 import { NoteButton } from "./note-button";
@@ -143,6 +144,8 @@ export const ExplainScreen = ({
           {isLast ? "結果を見る" : "次の問題へ"}
         </button>
       </div>
+
+      <KeyHint choiceCount={0} enterLabel={isLast ? "結果を見る" : "次の問題へ"} />
     </div>
   );
 };

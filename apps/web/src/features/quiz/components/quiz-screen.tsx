@@ -6,6 +6,7 @@ import { figuresOf, formatSource, shortSource } from "../types";
 import { ChoiceList } from "./choice-list";
 import { ChoiceNotes } from "./choice-notes";
 import { FigureBlock } from "./figure-block";
+import { KeyHint } from "./key-hint";
 import { KeyPointList } from "./key-point-list";
 import { MarkButtons } from "./mark-buttons";
 import { NoteButton } from "./note-button";
@@ -67,6 +68,12 @@ export const QuizScreen = ({
   const tone = correct ? "ok" : "ng";
   // 並べ替えたときは、出典にもその旨を併記する（改変は理由を問わず明記する。docs 2.3）。
   const shuffled = isShuffled(order);
+  const nextLabel = isLast ? "結果を見る" : "次の問題へ";
+  const enterLabel = attempt.revealed
+    ? nextLabel
+    : isMultipleChoice(question)
+      ? "解答を確定"
+      : `${nextLabel}（解答後）`;
 
   return (
     <div className="flex animate-rise-in flex-col gap-4">
@@ -200,10 +207,12 @@ export const QuizScreen = ({
                 : "cursor-not-allowed bg-disabled"
             }`}
           >
-            {isLast ? "結果を見る" : "次の問題へ"}
+            {nextLabel}
           </button>
         </div>
       </div>
+
+      <KeyHint choiceCount={order.length} enterLabel={enterLabel} />
 
       <QuestionDots items={items} index={index} onGoTo={onGoTo} />
     </div>

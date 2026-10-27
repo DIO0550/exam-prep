@@ -13,6 +13,7 @@ import { QUESTION_SETS, questionSetsOf } from "../data/questions";
 import { drawPool, drawQuestions } from "../draw";
 import { useDrawSettings } from "../hooks/use-draw-settings";
 import { useProgress } from "../hooks/use-progress";
+import { useQuizKeys } from "../hooks/use-quiz-keys";
 import { useQuizSession } from "../hooks/use-quiz-session";
 import { useScrollReset } from "../hooks/use-scroll-reset";
 import { isEmptyNote } from "../notes/note";
@@ -63,6 +64,8 @@ export const QuizApp = () => {
     [exam.code],
   );
   const session = useQuizSession(questionSet.questions, examQuestions);
+  // 演習中は、選択肢の選択・解答・前後の移動をキーだけでもできるようにする。
+  useQuizKeys(session);
   // ランダム出題は、選んでいる試験の問題集をまたいで引く。
   const draw = useDrawSettings(exam.code, setOptions);
   const startDraw = (): void =>
