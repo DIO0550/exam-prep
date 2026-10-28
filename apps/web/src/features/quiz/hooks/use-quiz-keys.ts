@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { isMultipleChoice } from "../answers";
 import type { QuizSession } from "./use-quiz-session";
@@ -20,16 +20,55 @@ const isTyping = (target: EventTarget | null): boolean => {
 };
 
 /**
+ * 押せるボタンに、キーボードで（Tab などで）フォーカスを当てているか。
+ * マウスや指で押したあとに残っているだけのフォーカスなら false。
+ */
+const isKeyboardFocusedButton = (element: Element | null, byPointer: boolean): boolean =>
+  element instanceof HTMLButtonElement && !element.disabled && !byPointer;
+
+/**
+ * 押された数字（1〜9）。全角の数字や、日本語入力がキーを横取りしたとき（key が Process）も
+ * キーの位置（code）から読む。数字でなければ null。
+ */
+const digitOf = (event: KeyboardEvent): number | null => {
+  const key = event.key.normalize("NFKC");
+  if (/^[1-9]$/.test(key)) return Number(key);
+  if (event.key === "Process") {
+    const match = /^(?:Digit|Numpad)([1-9])$/.exec(event.code);
+    if (match) return Number(match[1]);
+  }
+  return null;
+};
+
+/**
  * 演習中のキー操作。
  *
- * - 1〜9：並んでいる順に選択肢を選ぶ（1 がア、2 がイ…）。単一選択はそのまま解答になる。
+ * - 1〜9：並んでいる順に選択肢を選ぶ（1 がア、2 がイ…）。テンキーや全角の数字でもよい。単一選択はそのまま解答になる。
  * - Enter：複数選択なら解答を確定、解答済みなら次の問題へ。
  * - ← →：前後の問題へ移る。→ は未解答でも進めるが、最後の問題から結果へは出ない。
  *
- * 押せるボタンに当たっている Enter はブラウザが押してくれるので、ここでは拾わない（二重に進むのを避ける）。
+ * Tab で選んだボタンに当たっている Enter はブラウザが押してくれるので、ここでは拾わない（二重に進むのを避ける）。
  */
 export const useQuizKeys = (session: QuizSession): void => {
   const { screen, current, order, index, items } = session;
+  // 最後にフォーカスを動かしたのがマウス・指か。Tab で動かせばキーボードに戻る。
+  // 下の購読は描画のたびに張り直すので、値はそれをまたいで持つ。
+  const byPointer = useRef(false);
+
+  useEffect(() => {
+    const onPointerDown = (): void => {
+      byPointer.current = true;
+    };
+    const onTab = (event: KeyboardEvent): void => {
+      if (event.key === "Tab") byPointer.current = false;
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onTab);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onTab);
+    };
+  }, []);
 
   useEffect(() => {
     if (screen !== "quiz" && screen !== "explain") return;
@@ -44,8 +83,10 @@ export const useQuizKeys = (session: QuizSession): void => {
 
       if (event.key === "Enter") {
         if (event.repeat) return;
-        const active = document.activeElement;
-        if (active instanceof HTMLButtonElement && !active.disabled) return;
+        // Tab で選んだボタンの Enter はブラウザがそのボタンを押すので任せる。
+        // マウスで押した後に残っているだけのフォーカスなら、ショートカットを優先する
+        // （でないと「後で見直す」などを押した直後の Enter で、同じボタンがまた押される）。
+        if (isKeyboardFocusedButton(document.activeElement, byPointer.current)) return;
         if (screen === "explain" || current.attempt.revealed) {
           event.preventDefault();
           session.goNext();
@@ -67,8 +108,9 @@ export const useQuizKeys = (session: QuizSession): void => {
         session.goTo(index + 1);
         return;
       }
-      if (screen === "quiz" && /^[1-9]$/.test(event.key)) {
-        const choice = order[Number(event.key) - 1];
+      const digit = digitOf(event);
+      if (screen === "quiz" && digit !== null) {
+        const choice = order[digit - 1];
         if (choice === undefined) return;
         event.preventDefault();
         session.pick(choice);
