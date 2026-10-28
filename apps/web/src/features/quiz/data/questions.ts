@@ -56,11 +56,12 @@ import { GCP_CDL_SERVICE_1 } from "./gcp-cdl-service-1";
 import { GCP_CDL_SERVICE_2 } from "./gcp-cdl-service-2";
 import { GCP_CDL_SERVICE_3 } from "./gcp-cdl-service-3";
 import { GCP_CDL_SERVICE_4 } from "./gcp-cdl-service-4";
+import { SC_R07_AKI_AM2 } from "./sc-r07-aki-am2";
 
 /**
  * 収録している問題集。
  *
- * IPA の回（exam: "AP"）は、問題文・選択肢・図・正解が IPA の著作物で、MIT License の
+ * IPA の回（exam: "AP" と "SC"）は、問題文・選択肢・図・正解が IPA の著作物で、MIT License の
  * 対象外。条件は docs/ipa-kakomon-usage-notes.md と public/questions/LICENSE.md を参照。
  * Google Cloud 向けの問題集（exam: "CDL"）は本サイトで書き下ろしたもので、こちらは
  * リポジトリの LICENSE（MIT）に含まれる（Associate Cloud Engineer 向けの exam: "ACE" も同じ）。JSTQB Foundation Level 向け（exam: "CTFL"）も同じく
@@ -90,6 +91,7 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "ap-r03-haru-am", exam: "AP", label: "令和3年 春期", questions: AP_R03_HARU_AM },
   { id: "ap-r02-oct-am", exam: "AP", label: "令和2年 10月", questions: AP_R02_OCT_AM },
   { id: "ap-r01-aki-am", exam: "AP", label: "令和元年 秋期", questions: AP_R01_AKI_AM },
+  { id: "sc-r07-aki-am2", exam: "SC", label: "令和7年 秋期", questions: SC_R07_AKI_AM2 },
   { id: "gcp-cdl-scenario-1", exam: "CDL", label: "シナリオ問題1", questions: GCP_CDL_SCENARIO_1 },
   { id: "gcp-cdl-scenario-2", exam: "CDL", label: "シナリオ問題2", questions: GCP_CDL_SCENARIO_2 },
   {
@@ -194,6 +196,7 @@ const countOf = (examCode: string) =>
  */
 export const COVERAGE: string[] = [
   `応用情報技術者試験 午前 ${questionSetsOf("AP").length}回分（令和元年度秋期〜令和7年度秋期、各80問）`,
+  `情報処理安全確保支援士試験 午前Ⅱ ${questionSetsOf("SC").length}回分（令和7年度秋期、各25問）`,
   `Google Cloud Digital Leader 対策 ${countOf("CDL")}問（本サイト作成。公式の問題ではありません）`,
   `Google Cloud Associate Cloud Engineer 対策 ${countOf("ACE")}問（本サイト作成。公式の問題ではありません）`,
   `生成AIパスポート 対策 ${countOf("GAIP")}問（本サイト作成。公式の問題ではありません）`,

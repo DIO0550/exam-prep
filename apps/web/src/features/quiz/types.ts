@@ -4,7 +4,7 @@ export const CHOICE_KEYS = ["ア", "イ", "ウ", "エ"] as const;
 /** 選択肢の表示ラベル。4 つを超えたぶんは番号で振る。 */
 export const choiceKey = (index: number): string => CHOICE_KEYS[index] ?? String(index + 1);
 
-export type ExamCode = "AP" | "FE" | "SG";
+export type ExamCode = "AP" | "FE" | "SG" | "SC";
 export type Era = "令和" | "平成";
 /**
  * 実施時期。春期・秋期のほかに「10月」がある。
@@ -13,7 +13,11 @@ export type Era = "令和" | "平成";
  * 呼んでいる。出典表記は原本に合わせる決まりなので、秋期に寄せずに別の値で持つ。
  */
 export type Term = "haru" | "aki" | "oct";
-export type Section = "am" | "pm";
+/**
+ * 時間区分。応用情報の午前は 1 つだけなので "am"。高度試験と支援士の午前は I と II に分かれ、
+ * 午前 I は応用情報の午前から選んだ共通問題なので、専門分野の午前 II だけを "am2" で持つ。
+ */
+export type Section = "am" | "am2" | "pm";
 
 /**
  * 出典。問題 ID と出典表記の両方をここから機械的に作る。
@@ -63,10 +67,12 @@ const EXAM_NAMES: Record<ExamCode, string> = {
   AP: "応用情報技術者試験",
   FE: "基本情報技術者試験",
   SG: "情報セキュリティマネジメント試験",
+  SC: "情報処理安全確保支援士試験",
 };
 
 const TERM_NAMES: Record<Term, string> = { haru: "春期", aki: "秋期", oct: "10月" };
-const SECTION_NAMES: Record<Section, string> = { am: "午前", pm: "午後" };
+// 午前Ⅱ はローマ数字の Ⅱ（U+2161）。IPA の問題冊子と解答例の表記に合わせる。
+const SECTION_NAMES: Record<Section, string> = { am: "午前", am2: "午前Ⅱ", pm: "午後" };
 
 /**
  * 出典表記に出す年。元年は「1年度」ではなく「元年度」と書く。
