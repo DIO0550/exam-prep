@@ -218,7 +218,7 @@ const countOf = (examCode: string) =>
  */
 export const COVERAGE: string[] = [
   `応用情報技術者試験 午前 ${questionSetsOf("AP").length}回分（令和元年度秋期〜令和7年度秋期、各80問）`,
-  `情報処理安全確保支援士試験 午前Ⅱ ${questionSetsOf("SC").length}回分（令和7年度秋期、各25問）`,
+  `情報処理安全確保支援士試験 午前Ⅱ ${questionSetsOf("SC").length}回分（令和元年度秋期〜令和7年度秋期、各25問）`,
   `Google Cloud Digital Leader 対策 ${countOf("CDL")}問（本サイト作成。公式の問題ではありません）`,
   `Google Cloud Associate Cloud Engineer 対策 ${countOf("ACE")}問（本サイト作成。公式の問題ではありません）`,
   `生成AIパスポート 対策 ${countOf("GAIP")}問（本サイト作成。公式の問題ではありません）`,
