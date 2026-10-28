@@ -26,6 +26,11 @@ import { CTFL_MOCK_1 } from "./ctfl-mock-1";
 import { CTFL_MOCK_2 } from "./ctfl-mock-2";
 import { CTFL_MOCK_3 } from "./ctfl-mock-3";
 import { CTFL_TERM_1 } from "./ctfl-term-1";
+import { E_CH1 } from "./e-ch1";
+import { E_CH2 } from "./e-ch2";
+import { E_CH3 } from "./e-ch3";
+import { E_CH4 } from "./e-ch4";
+import { E_CH5 } from "./e-ch5";
 import { E_MOCK_1 } from "./e-mock-1";
 import { E_TERM_1 } from "./e-term-1";
 import { GAIP_CH1 } from "./gaip-ch1";
@@ -154,8 +159,13 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "ctfl-mock-1", exam: "CTFL", label: "模擬試験1", questions: CTFL_MOCK_1 },
   { id: "ctfl-mock-2", exam: "CTFL", label: "模擬試験2", questions: CTFL_MOCK_2 },
   { id: "ctfl-mock-3", exam: "CTFL", label: "模擬試験3", questions: CTFL_MOCK_3 },
-  // 用語問題でキーワードを引けるようにしてから、模擬試験で仕上げる想定。
+  // CTFL と同じく、用語問題、章別（シラバスの大項目ごと）、模擬試験の順に置く。
   { id: "e-term-1", exam: "E", label: "用語問題1（キーワード）", questions: E_TERM_1 },
+  { id: "e-ch1", exam: "E", label: "第1章 数学的基礎", questions: E_CH1 },
+  { id: "e-ch2", exam: "E", label: "第2章 機械学習", questions: E_CH2 },
+  { id: "e-ch3", exam: "E", label: "第3章 深層学習の基礎", questions: E_CH3 },
+  { id: "e-ch4", exam: "E", label: "第4章 深層学習の応用", questions: E_CH4 },
+  { id: "e-ch5", exam: "E", label: "第5章 開発・運用環境", questions: E_CH5 },
   { id: "e-mock-1", exam: "E", label: "模擬試験1", questions: E_MOCK_1 },
 ];
 
