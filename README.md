@@ -488,7 +488,7 @@ pnpm visual:compare -- --expected visual-baseline --actual visual-actual --out v
 
 ## 問題データ
 
-収録しているのは次の 5 系統。どれも 1 つの問題集＝1 ファイルで
+収録しているのは次の 6 系統。どれも 1 つの問題集＝1 ファイルで
 `apps/web/src/features/quiz/data/` に置き、
 [`data/questions.ts`](apps/web/src/features/quiz/data/questions.ts) の `QUESTION_SETS` に並べる。
 
@@ -499,6 +499,7 @@ pnpm visual:compare -- --expected visual-baseline --actual visual-actual --out v
 | Google Cloud 対策（`exam: "ACE"`） | Associate Cloud Engineer 向けの模擬試験 4 セット（各50問・計200問。複数選択を各8問含む） | **本サイトで書き下ろし** |
 | 生成AIパスポート 対策（`exam: "GAIP"`） | 用語問題 1 セット（80問）・模擬試験 7 セット（各60問・計420問）・章別 6 セット（各20問・計120問）・GPT特化 1 セット（20問）の計640問 | **本サイトで書き下ろし** |
 | JSTQB Foundation Level 対策（`exam: "CTFL"`） | 用語問題 1 セット（94問）・章別 6 セット（計115問）・模擬試験 3 セット（各40問・計120問）の計329問 | **本サイトで書き下ろし** |
+| JDLA E資格 対策（`exam: "E"`） | 用語問題 1 セット（74問）・模擬試験 1 セット（50問）の計124問 | **本サイトで書き下ろし** |
 
 **左の一覧で選んだ試験と「出題する回」は連動する。** `QuestionSet` の `exam` が
 [`data/exams.ts`](apps/web/src/features/quiz/data/exams.ts) の `code` と対応していて、
@@ -531,7 +532,7 @@ IPA が公開しているのは令和元年度以降なので、**午前につ�
 
 ### 書き下ろした問題
 
-Google Cloud 対策の 12（Cloud Digital Leader 8・Associate Cloud Engineer 4）、生成AIパスポート対策の 15、JSTQB Foundation Level 対策の 10、あわせて 37 の問題集は、
+Google Cloud 対策の 12（Cloud Digital Leader 8・Associate Cloud Engineer 4）、生成AIパスポート対策の 15、JSTQB Foundation Level 対策の 10、E資格対策の 2、あわせて 39 の問題集は、
 **問題文・選択肢・正解・解説のすべてを本リポジトリで書いた**もの。
 どこかの認定試験の実際の設問ではなく、公式の模擬試験でもない。
 
@@ -551,6 +552,7 @@ Google Cloud 対策の 12（Cloud Digital Leader 8・Associate Cloud Engineer 4�
 - 個人情報保護委員会・特許庁・文化庁の公開資料（第4章の範囲）
 - JSTQB「テスト技術者資格制度 Foundation Level シラバス」Version 2023V4.0.J02（ISTQB の Foundation Level v4.0 の日本語版。
   JSTQB Foundation Level 対策の範囲）
+- JDLA「E資格 試験出題範囲（シラバス2026）」第1.0版（2025年10月14日、E2026#2 より適用。E資格対策の範囲）
 
 **生成AIパスポート対策（`gaip-*.ts`）は、直接読んだ資料と `reference` に書いた資料が一致しない。**
 問題を書き起こすときに読んだのは、シラバスの章立てに沿って作られた学習ノートであって、
@@ -682,6 +684,24 @@ K3（適用）の学習目的 8 つ（同値分割法・境界値分析・デシ
 
 分野（`field`）は、章別が節（または近い節をまとめたもの）、用語問題と模擬試験が章の名前。
 
+#### JDLA E資格 対策（`e-*.ts`）
+
+JDLA が公開している「E資格 試験出題範囲（シラバス2026）」第1.0版を読み、小項目とキーワードごとに問題を起こした。
+2026年8月の試験（E2026#2）から適用される版で、2024 版から追加されたキーワード（パープレキシティ・Shifted window・
+Next token prediction・RAG・自己回帰・Integrated Gradients）も扱い、削除された CAM などは扱わない。
+
+**出題範囲はグレー網掛け（オプション・出題対象外）でない行に限る。** 線形代数、一般的な確率分布、線形回帰〜クラスタリング
+（機械学習の教師あり学習①〜教師なし学習②）、音声のデータ拡張、音声処理、能動学習、メタ学習、連合学習は、正解にも誤りの選択肢にも出さない。
+用語問題の選択肢に使ってよい語は [`questions.test.ts`](apps/web/src/features/quiz/data/questions.test.ts) に一覧で持ち、外れた語が入ると落ちる。
+
+| 問題集 | 問うこと | 問題数 |
+|---|---|---|
+| 用語問題1（キーワード） | 説明からキーワードを引けるか。誤りの選択肢には同じ小項目の語（KL と JS、AdaGrad と RMSProp、ROI Pooling と ROI Align など）を置く | 74問 |
+| 模擬試験1 | 理解を問う 4 択と、出力サイズ・パラメータ数・評価指標・更新式などの計算 | 50問 |
+
+模擬試験の配分は数学的基礎 6・機械学習 9・深層学習の基礎 17・深層学習の応用 13・開発・運用環境 5 で、本演習独自のもの
+（本試験の問題数・配分を示すものではない）。分野（`field`）は大項目の名前。
+
 図は 2 通りの使い分けがある。原本が線画なら切り出し、表や箇条書きなら HTML で組む。
 線画を自作でなぞると描き間違いで正解が変わるため、なぞらない（docs 3.5）。
 
@@ -771,13 +791,15 @@ K3（適用）の学習目的 8 つ（同値分割法・境界値分析・デシ
 - **Google Cloud 対策の問題（`gcp-cdl-*.ts`・`ace-*.ts`）・生成AIパスポート対策の問題（`gaip-*.ts`）**:
   本リポジトリで書き下ろしたもの（MIT）。公開資料を典拠にしているが、問題文・選択肢・正解・解説は
   いずれも本リポジトリの著作物で、典拠にした資料からの転載ではない
+- **JDLA E資格 対策の問題（`e-*.ts`）**: 本リポジトリで書き下ろしたもの（MIT）。典拠にしたシラバスは JDLA の著作物で、
+  本リポジトリには含めていない
 - **JSTQB Foundation Level 対策の問題（`ctfl-*.ts`）**: 本リポジトリで書き下ろしたもの（MIT）。
   典拠にした Foundation Level シラバスは、原著が International Software Testing Qualifications Board（ISTQB®）、
   日本語版が Japan Software Testing Qualifications Board（JSTQB®）の著作物で、本リポジトリには含めていない。
   問題・解説にもシラバスの文は転載していない
 
-本サイトは IPA とも Google とも 生成AI活用普及協会とも JSTQB・ISTQB とも無関係の個人制作。Google Cloud 対策・
-生成AIパスポート対策・JSTQB Foundation Level 対策の問題は、公式の試験問題でも模擬試験（サンプル問題）でもない。
+本サイトは IPA とも Google とも 生成AI活用普及協会とも JSTQB・ISTQB とも JDLA とも無関係の個人制作。Google Cloud 対策・
+生成AIパスポート対策・JSTQB Foundation Level 対策・E資格対策の問題は、公式の試験問題でも模擬試験（サンプル問題）でもない。
 
 ## これから
 

@@ -26,6 +26,8 @@ import { CTFL_MOCK_1 } from "./ctfl-mock-1";
 import { CTFL_MOCK_2 } from "./ctfl-mock-2";
 import { CTFL_MOCK_3 } from "./ctfl-mock-3";
 import { CTFL_TERM_1 } from "./ctfl-term-1";
+import { E_MOCK_1 } from "./e-mock-1";
+import { E_TERM_1 } from "./e-term-1";
 import { GAIP_CH1 } from "./gaip-ch1";
 import { GAIP_CH2 } from "./gaip-ch2";
 import { GAIP_CH2_GPT } from "./gaip-ch2-gpt";
@@ -152,6 +154,9 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "ctfl-mock-1", exam: "CTFL", label: "模擬試験1", questions: CTFL_MOCK_1 },
   { id: "ctfl-mock-2", exam: "CTFL", label: "模擬試験2", questions: CTFL_MOCK_2 },
   { id: "ctfl-mock-3", exam: "CTFL", label: "模擬試験3", questions: CTFL_MOCK_3 },
+  // 用語問題でキーワードを引けるようにしてから、模擬試験で仕上げる想定。
+  { id: "e-term-1", exam: "E", label: "用語問題1（キーワード）", questions: E_TERM_1 },
+  { id: "e-mock-1", exam: "E", label: "模擬試験1", questions: E_MOCK_1 },
 ];
 
 /** ある試験に属する問題集だけを取り出す。左の一覧と「出題する回」を連動させるのに使う。 */
@@ -183,4 +188,5 @@ export const COVERAGE: string[] = [
   `Google Cloud Associate Cloud Engineer 対策 ${countOf("ACE")}問（本サイト作成。公式の問題ではありません）`,
   `生成AIパスポート 対策 ${countOf("GAIP")}問（本サイト作成。公式の問題ではありません）`,
   `JSTQB Foundation Level 対策 ${countOf("CTFL")}問（本サイト作成。公式の問題ではありません）`,
+  `JDLA E資格 対策 ${countOf("E")}問（本サイト作成。公式の問題ではありません）`,
 ];
