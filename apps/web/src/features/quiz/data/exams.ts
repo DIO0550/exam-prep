@@ -44,6 +44,13 @@ export const EXAMS: [Exam, ...Exam[]] = [
     // Foundation Level の合格基準（40 問中 26 問 = 正答率 65%）に合わせる。
     passLine: 65,
   },
+  {
+    code: "E",
+    name: "E資格（エンジニア資格）",
+    sub: "用語 ・ 章別 ・ 模擬1回 ・ 計264問",
+    group: "日本ディープラーニング協会（JDLA）",
+    // 合格ラインは非公開なので持たない。
+  },
 ];
 
 /** 見出しの並び順。EXAMS の group と対応する。 */
@@ -52,4 +59,5 @@ export const EXAM_GROUPS = [
   "Google Cloud 認定資格",
   "生成AI活用普及協会（GUGA）",
   "JSTQB テスト技術者資格",
+  "日本ディープラーニング協会（JDLA）",
 ];

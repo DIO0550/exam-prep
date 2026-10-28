@@ -54,8 +54,8 @@ export const NoticePage = () => {
 
           <Section title="本サイトについて">
             <p className="font-bold text-ink">
-              本サイトは IPA とも Google とも生成AI活用普及協会とも JSTQB・ISTQB
-              とも無関係の個人制作です。
+              本サイトは IPA とも Google とも生成AI活用普及協会とも JSTQB・ISTQB とも
+              日本ディープラーニング協会（JDLA）とも無関係の個人制作です。
             </p>
             <p>
               学習記録とメモは、このブラウザの中（localStorage）にだけ保存します。サーバーへは送りません。ブラウザのデータを消すと記録も消えるので、残しておきたいときは学習ホームの「学習記録の書き出し・読み込み」から書き出してください。
@@ -119,6 +119,14 @@ export const NoticePage = () => {
               シラバスの著作権は原著が International Software Testing Qualifications
               Board（ISTQB®）、日本語版が Japan Software Testing Qualifications
               Board（JSTQB®）にあり、本サイトはシラバスの文を転載していません。認定試験の実際の設問でも、公式のサンプル問題でもありません。
+            </p>
+          </Section>
+
+          <Section title="JDLA E資格 対策の問題">
+            <p>
+              問題文・選択肢・正解・解説のいずれも本サイトで書き下ろしたもので、一般社団法人日本ディープラーニング協会（JDLA）の
+              E資格 試験出題範囲（シラバス2026、E2026#2
+              より適用）を典拠にし、出題対象外（オプション）の項目は扱っていません。E資格の実際の設問でも、公式のサンプル問題でもありません。
             </p>
           </Section>
         </div>
