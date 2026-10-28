@@ -56,6 +56,7 @@ import { GCP_CDL_SERVICE_1 } from "./gcp-cdl-service-1";
 import { GCP_CDL_SERVICE_2 } from "./gcp-cdl-service-2";
 import { GCP_CDL_SERVICE_3 } from "./gcp-cdl-service-3";
 import { GCP_CDL_SERVICE_4 } from "./gcp-cdl-service-4";
+import { SC_R01_AKI_AM2 } from "./sc-r01-aki-am2";
 import { SC_R02_OCT_AM2 } from "./sc-r02-oct-am2";
 import { SC_R03_AKI_AM2 } from "./sc-r03-aki-am2";
 import { SC_R03_HARU_AM2 } from "./sc-r03-haru-am2";
@@ -112,6 +113,7 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "sc-r03-aki-am2", exam: "SC", label: "令和3年 秋期", questions: SC_R03_AKI_AM2 },
   { id: "sc-r03-haru-am2", exam: "SC", label: "令和3年 春期", questions: SC_R03_HARU_AM2 },
   { id: "sc-r02-oct-am2", exam: "SC", label: "令和2年 10月", questions: SC_R02_OCT_AM2 },
+  { id: "sc-r01-aki-am2", exam: "SC", label: "令和元年 秋期", questions: SC_R01_AKI_AM2 },
   { id: "gcp-cdl-scenario-1", exam: "CDL", label: "シナリオ問題1", questions: GCP_CDL_SCENARIO_1 },
   { id: "gcp-cdl-scenario-2", exam: "CDL", label: "シナリオ問題2", questions: GCP_CDL_SCENARIO_2 },
   {
