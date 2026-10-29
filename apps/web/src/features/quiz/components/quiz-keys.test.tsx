@@ -78,8 +78,6 @@ describe("演習のキー操作", () => {
     const user = userEvent.setup();
     await startQuiz(user);
     await user.click(screen.getByRole("button", { name: "別画面" }));
-    // ボタンに当たったままの Enter はそのボタンを押すので、いったん外す。
-    (document.activeElement as HTMLElement | null)?.blur();
 
     await user.keyboard(String(singleAnswer(FIRST) + 1));
     expect(screen.getByText(/あなたの解答：/)).toBeInTheDocument();
@@ -101,6 +99,36 @@ describe("演習のキー操作", () => {
     await user.keyboard("{Enter}");
     expect(screen.getByText("（1/1問）")).toBeInTheDocument();
     expect(progressStore.snapshot().recent).toEqual([true]);
+  });
+
+  it("マウスでボタンを押した直後でも、Enter で次の問題へ進む", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    await user.keyboard(String(singleAnswer(FIRST) + 1));
+    await user.click(screen.getByRole("button", { name: "後で見直す" }));
+    await user.keyboard("{Enter}");
+    expect(heading(1)).toBeInTheDocument();
+  });
+
+  it("Tab で選んだボタンの Enter は、そのボタンを押す", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    await user.keyboard(String(singleAnswer(FIRST) + 1));
+    await user.keyboard("{Tab}");
+    screen.getByRole("button", { name: "後で見直す" }).focus();
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("button", { name: "フラグ解除" })).toBeInTheDocument();
+    expect(heading(0)).toBeInTheDocument();
+  });
+
+  it("全角の数字でも選べる", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    await user.keyboard(String.fromCharCode(0xff11 + singleAnswer(FIRST)));
+    expect(screen.getByText("（1/1問）")).toBeInTheDocument();
   });
 
   it("使えるキーを画面に出す", async () => {
