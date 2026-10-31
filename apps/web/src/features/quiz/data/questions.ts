@@ -25,6 +25,9 @@ import { CTFL_CH6 } from "./ctfl-ch6";
 import { CTFL_MOCK_1 } from "./ctfl-mock-1";
 import { CTFL_MOCK_2 } from "./ctfl-mock-2";
 import { CTFL_MOCK_3 } from "./ctfl-mock-3";
+import { CTFL_MOCK_4 } from "./ctfl-mock-4";
+import { CTFL_MOCK_5 } from "./ctfl-mock-5";
+import { CTFL_MOCK_6 } from "./ctfl-mock-6";
 import { CTFL_TERM_1 } from "./ctfl-term-1";
 import { E_CH1 } from "./e-ch1";
 import { E_CH2 } from "./e-ch2";
@@ -183,6 +186,9 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "ctfl-mock-1", exam: "CTFL", label: "模擬試験1", questions: CTFL_MOCK_1 },
   { id: "ctfl-mock-2", exam: "CTFL", label: "模擬試験2", questions: CTFL_MOCK_2 },
   { id: "ctfl-mock-3", exam: "CTFL", label: "模擬試験3", questions: CTFL_MOCK_3 },
+  { id: "ctfl-mock-4", exam: "CTFL", label: "模擬試験4（サンプル形式）", questions: CTFL_MOCK_4 },
+  { id: "ctfl-mock-5", exam: "CTFL", label: "模擬試験5（サンプル形式）", questions: CTFL_MOCK_5 },
+  { id: "ctfl-mock-6", exam: "CTFL", label: "模擬試験6（サンプル形式）", questions: CTFL_MOCK_6 },
   // CTFL と同じく、用語問題、章別（シラバスの大項目ごと）、模擬試験の順に置く。
   { id: "e-term-1", exam: "E", label: "用語問題1（キーワード）", questions: E_TERM_1 },
   { id: "e-ch1", exam: "E", label: "第1章 数学的基礎", questions: E_CH1 },

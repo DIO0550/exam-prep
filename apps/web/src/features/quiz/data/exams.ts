@@ -47,7 +47,7 @@ export const EXAMS: [Exam, ...Exam[]] = [
   {
     code: "CTFL",
     name: "JSTQB Foundation Level",
-    sub: "用語 ・ 章別 ・ 模擬3回 ・ 計329問",
+    sub: "用語 ・ 章別 ・ 模擬6回 ・ 計449問",
     group: "JSTQB テスト技術者資格",
     // Foundation Level の合格基準（40 問中 26 問 = 正答率 65%）に合わせる。
     passLine: 65,
