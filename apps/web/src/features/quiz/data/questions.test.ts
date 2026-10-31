@@ -299,10 +299,18 @@ describe("問題データ", () => {
     expect(new Set(ids).size).toBe(ALL.length);
   });
 
-  it("IPA の回は 1 回 80 問ある", () => {
+  it("IPA の回は、応用情報の午前が 1 回 80 問、支援士の午前Ⅱが 1 回 25 問ある", () => {
     // 書き下ろしの問題集は問題数が回ごとに違うので、原本のある回だけを見る。
-    for (const set of QUESTION_SETS.filter((candidate) => candidate.exam === "AP")) {
-      expect(set.questions, set.id).toHaveLength(80);
+    const counts: Record<string, number> = { AP: 80, SC: 25 };
+    for (const set of QUESTION_SETS.filter((candidate) => candidate.exam in counts)) {
+      expect(set.questions, set.id).toHaveLength(counts[set.exam] ?? 0);
+      // 問番号が 1 から順に抜けなく並んでいること（書き起こしで飛ばしたり重ねたりしない）。
+      expect(
+        set.questions.map((question) =>
+          question.source.kind === "original" ? 0 : question.source.no,
+        ),
+        set.id,
+      ).toEqual(set.questions.map((_, index) => index + 1));
     }
   });
 

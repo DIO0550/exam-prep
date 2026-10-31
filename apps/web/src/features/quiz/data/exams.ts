@@ -16,6 +16,14 @@ export const EXAMS: [Exam, ...Exam[]] = [
     passLine: 60,
   },
   {
+    code: "SC",
+    name: "情報処理安全確保支援士試験",
+    sub: "午前Ⅱ ・ 全25問形式",
+    group: "IPA 情報処理技術者試験",
+    // 午前Ⅱ の基準点も 60 点（100 点満点）。
+    passLine: 60,
+  },
+  {
     code: "CDL",
     name: "Cloud Digital Leader",
     sub: "シナリオ ・ サービス確認 ・ 各30問",
