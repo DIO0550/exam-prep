@@ -27,17 +27,18 @@ const isKeyboardFocusedButton = (element: Element | null, byPointer: boolean): b
   element instanceof HTMLButtonElement && !element.disabled && !byPointer;
 
 /**
- * 押された数字（1〜9）。全角の数字や、日本語入力がキーを横取りしたとき（key が Process）も
- * キーの位置（code）から読む。数字でなければ null。
+ * 押された数字（1〜9）。数字でなければ null。
+ *
+ * macOS で日本語入力がオンのままだと、数字キーでも key が Process や Unidentified、
+ * かなの文字（「ぬ」など）になって数字として届かないことがある。そのときはキーの位置（code）で読む。
+ * Shift を押しているときは記号を打っているので、位置では読まない。
  */
 const digitOf = (event: KeyboardEvent): number | null => {
   const key = event.key.normalize("NFKC");
   if (/^[1-9]$/.test(key)) return Number(key);
-  if (event.key === "Process") {
-    const match = /^(?:Digit|Numpad)([1-9])$/.exec(event.code);
-    if (match) return Number(match[1]);
-  }
-  return null;
+  if (event.shiftKey) return null;
+  const match = /^(?:Digit|Numpad)([1-9])$/.exec(event.code);
+  return match ? Number(match[1]) : null;
 };
 
 /**
@@ -75,7 +76,9 @@ export const useQuizKeys = (session: QuizSession): void => {
     if (!current) return;
 
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing) return;
+      // 日本語入力がオンだと、文字を打つ欄の外でも isComposing が立つことがある（macOS）。
+      // 欄の中での変換中は下の isTyping で弾くので、ここでは見ない。
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
       // 開いている一覧（出題する回など）やメモの幅つまみが先に使ったキーは拾わない。
       if (event.defaultPrevented) return;
       if (isTyping(event.target)) return;

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { GAIP_MOCK_5 } from "../data/gaip-mock-5";
@@ -121,6 +121,27 @@ describe("演習のキー操作", () => {
     await user.keyboard("{Enter}");
     expect(screen.getByRole("button", { name: "フラグ解除" })).toBeInTheDocument();
     expect(heading(0)).toBeInTheDocument();
+  });
+
+  it.each([
+    { key: "Process", isComposing: true },
+    { key: "Unidentified", isComposing: false },
+    { key: "ぬ", isComposing: false },
+  ])("日本語入力がオンでも、数字キーの位置で選べる（key: $key）", async ({ key, isComposing }) => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    const position = singleAnswer(FIRST) + 1;
+    fireEvent.keyDown(document.body, { key, code: `Digit${position}`, isComposing });
+    expect(screen.getByText("（1/1問）")).toBeInTheDocument();
+  });
+
+  it("Shift を押した数字キーは拾わない", async () => {
+    const user = userEvent.setup();
+    await startQuiz(user);
+
+    fireEvent.keyDown(document.body, { key: "!", code: "Digit1", shiftKey: true });
+    expect(screen.getByText("正答率 —")).toBeInTheDocument();
   });
 
   it("全角の数字でも選べる", async () => {
