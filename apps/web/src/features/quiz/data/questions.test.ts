@@ -330,6 +330,32 @@ describe("問題データ", () => {
     }
   });
 
+  it.each([4, 5, 6])(
+    "JSTQB の模擬試験%dは、公開サンプル問題の形式（4 択から 1 つ、学習目的とシラバスの参照先つき）にそろっている",
+    (no) => {
+      // サンプル問題に寄せた回は、問題文の結びと、解説の要点に出す学習目的・参照先の形を固定している。
+      // 書き足したときに形がばらけたり、ほかの問題集と同じ問題文が紛れ込んだりしないよう押さえておく。
+      const mock = QUESTION_SETS.find((set) => set.id === `ctfl-mock-${no}`);
+      expect(mock).toBeDefined();
+      if (!mock) {
+        return;
+      }
+      expect(mock.questions).toHaveLength(40);
+      const texts = ALL.map((question) => question.text);
+      for (const question of mock.questions) {
+        expect(question.choices, nameOf(question)).toHaveLength(4);
+        expect(Array.isArray(question.answer), nameOf(question)).toBe(false);
+        expect(question.text, nameOf(question)).toMatch(/次の選択肢の中から１つ選びなさい。$/);
+        expect(question.explain, nameOf(question)).toMatch(/を問う問題です。/);
+        expect(question.points?.[0], nameOf(question)).toMatch(
+          /^学習目的：FL-\d\.\d\.\d（K[123]：/,
+        );
+        expect(question.points?.[1], nameOf(question)).toMatch(/^シラバスの参照先：\d\.\d/);
+        expect(texts.filter((text) => text === question.text)).toHaveLength(1);
+      }
+    },
+  );
+
   it("JSTQB の用語問題は、シラバスのキーワード 94 語を 1 語 1 問で問う", () => {
     // 各章の冒頭のキーワード（章をまたいで重なる 5 語は 1 回だけ）を 1 問ずつにしてある。
     // 書き足したときに同じ語を 2 回問うたり、語を落としたりしないよう、正解の語で数える。
