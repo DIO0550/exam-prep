@@ -5,15 +5,18 @@ type RetryBannerProps = {
   kind: FocusKind;
   /** 出している問題の数。 */
   count: number;
+  /** 解いた結果を学習記録に入れていないか。 */
+  unrecorded?: boolean;
   /** 解き直し・ランダム出題をやめて、回の全問に戻る。 */
   onExit: () => void;
 };
 
 /** 解き直し・ランダム出題の最中であることを示す帯。全問を解いていると思い込ませないために出す。 */
-export const RetryBanner = ({ kind, count, onExit }: RetryBannerProps) => (
+export const RetryBanner = ({ kind, count, unrecorded = false, onExit }: RetryBannerProps) => (
   <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent/25 bg-accent-soft px-5 py-3">
     <span className="text-[13px] text-accent-deep">
       <span className="font-bold">{FOCUS_LABELS[kind]}</span>・{count}問
+      {unrecorded && "・記録しない"}
     </span>
     <button
       type="button"
