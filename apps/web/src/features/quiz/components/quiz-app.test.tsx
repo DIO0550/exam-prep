@@ -630,6 +630,46 @@ describe("QuizApp", () => {
       expect(screen.getByText(Q3.text)).toBeInTheDocument();
     });
 
+    it("「記録しない」で解き直すと、正解しても間違えた問題のまま残る", async () => {
+      seed();
+      const before = window.localStorage.getItem(STORAGE_KEY);
+      const user = userEvent.setup();
+      render(<QuizApp />);
+
+      await user.click(screen.getByRole("button", { name: "記録しない" }));
+      await user.click(screen.getByRole("button", { name: "間違えた問題だけ（2問）" }));
+      expect(screen.getByText(/・記録しない/)).toBeInTheDocument();
+
+      // 開いた問題も、解いた問題も、学習記録はそのまま
+      expect(screen.getByText(Q1.text)).toBeInTheDocument();
+      await user.click(choiceButton(singleAnswer(Q1)));
+      expect(screen.getByText(/正答率/)).toHaveTextContent("100%");
+      await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+      await user.click(choiceButton(singleAnswer(Q3)));
+      expect(window.localStorage.getItem(STORAGE_KEY)).toBe(before);
+
+      // この解き直しの中では正解として数える
+      await user.click(screen.getByRole("button", { name: "結果を見る" }));
+      expect(screen.getByText(/2問中 2問正解/)).toBeInTheDocument();
+
+      // 学習ホームへ戻っても、間違えた問題は 2 問のまま
+      await user.click(screen.getByRole("button", { name: "回の全問に戻る" }));
+      expect(screen.getByRole("button", { name: "間違えた問題だけ（2問）" })).toBeInTheDocument();
+    });
+
+    it("「記録しない」の解き直しでも、苦手登録の付け外しは学習記録に残る", async () => {
+      seed();
+      const user = userEvent.setup();
+      render(<QuizApp />);
+
+      await user.click(screen.getByRole("button", { name: "記録しない" }));
+      await user.click(screen.getByRole("button", { name: "間違えた問題だけ（2問）" }));
+      expect(attemptIn(Q1).weak).toBe(true);
+      await user.click(screen.getByRole("button", { name: "苦手登録済" }));
+
+      expect(attemptIn(Q1)).toMatchObject({ weak: false, picked: wrongOf(Q1), revealed: true });
+    });
+
     it("途中でやめて学習ホームへ戻ると、回の全問に戻る", async () => {
       seed();
       const user = userEvent.setup();

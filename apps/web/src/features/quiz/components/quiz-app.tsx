@@ -151,6 +151,7 @@ export const QuizApp = () => {
                     <RetryBanner
                       kind={session.focusKind}
                       count={session.items.length}
+                      unrecorded={session.focusUnrecorded}
                       onExit={() => session.setScreen("home")}
                     />
                   )}
@@ -195,6 +196,8 @@ export const QuizApp = () => {
                       allRetryCounts={session.allRetryCounts}
                       retryRandom={session.retryRandom}
                       onRetryRandomChange={session.setRetryRandom}
+                      retryRecord={session.retryRecord}
+                      onRetryRecordChange={session.setRetryRecord}
                       onRetry={(kind) => session.startRetry(kind, session.retryRandom)}
                       onRetryAll={(kind) => session.startRetryAll(kind, session.retryRandom)}
                       onGoWeakPick={() => session.setScreen("weak-pick")}

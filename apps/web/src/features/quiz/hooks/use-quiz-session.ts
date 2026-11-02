@@ -17,6 +17,7 @@ import type { Question } from "../types";
 import { sourceId } from "../types";
 import { useNotes } from "./use-notes";
 import { useProgress } from "./use-progress";
+import type { AttemptWriter } from "./use-scratch-attempts";
 import { PROGRESS_WRITER, useScratchAttempts } from "./use-scratch-attempts";
 
 export type Screen =
@@ -70,8 +71,18 @@ export const FOCUS_LABELS: Record<FocusKind, string> = {
  * ランダム出題は回をまたぐので、ID ではなく問題そのものを並べた順に持つ。
  *
  * detached なら、解答を学習記録と切り離して持つ（ランダム出題と、その中での解き直し）。
+ * marksInRecord なら、解答は切り離したまま、フラグと苦手登録だけは学習記録のものを見て書く
+ * （「解いた結果を記録しない」で始めた解き直し。間違えた問題は正解しても間違えたまま残す）。
  */
-type Focus = { kind: FocusKind; questions: Question[]; detached: boolean };
+type Focus = {
+  kind: FocusKind;
+  questions: Question[];
+  detached: boolean;
+  marksInRecord: boolean;
+};
+
+/** フラグと苦手登録。解答とは別に付ける印。 */
+const MARK_KEYS = ["flagged", "weak"] as const;
 
 const isWrong = (item: QuizItem): boolean => item.attempt.revealed && !isCorrect(item);
 
@@ -111,11 +122,34 @@ export const useQuizSession = (questions: Question[], examQuestions: Question[] 
   const [visited, setVisited] = useState<string[]>([]);
   // 学習ホームから解き直すとき、対象をランダム順で出すか。
   const [retryRandom, setRetryRandom] = useState(false);
+  // 学習ホームから解き直すとき、解いた結果を学習記録に入れるか。入れなければ、正解しても
+  // 「間違えた問題」から外れず、正答率・連続学習日数も変わらない。
+  const [retryRecord, setRetryRecord] = useState(true);
   // ランダム出題の解答。学習記録には書かず、ランダム出題をやめたら捨てる。
   const scratch = useScratchAttempts();
   const detached = focus?.detached ?? false;
-  // 解答状況の書き込み先。ランダム出題の最中だけ、学習記録ではなく使い捨ての入れ物へ書く。
-  const writer = detached ? scratch.writer : PROGRESS_WRITER;
+  const marksInRecord = focus?.marksInRecord ?? false;
+  // 解答状況の書き込み先。ランダム出題と記録しない解き直しの最中は、学習記録ではなく
+  // 使い捨ての入れ物へ書く。記録しない解き直しでも、フラグと苦手登録だけは学習記録へ書く。
+  const writer = useMemo<AttemptWriter>(() => {
+    if (!detached) return PROGRESS_WRITER;
+    if (!marksInRecord) return scratch.writer;
+    return {
+      ...scratch.writer,
+      patch: (questionId, patch) => {
+        const marks: Partial<Attempt> = {};
+        const rest: Partial<Attempt> = { ...patch };
+        for (const key of MARK_KEYS) {
+          if (key in patch) {
+            marks[key] = patch[key];
+            delete rest[key];
+          }
+        }
+        if (Object.keys(marks).length > 0) PROGRESS_WRITER.patch(questionId, marks);
+        if (Object.keys(rest).length > 0) scratch.writer.patch(questionId, rest);
+      },
+    };
+  }, [detached, marksInRecord, scratch.writer]);
 
   const allItems = useMemo<QuizItem[]>(
     () =>
@@ -134,7 +168,13 @@ export const useQuizSession = (questions: Question[], examQuestions: Question[] 
     if (!focus) return allItems;
     return focus.questions.map((question) => {
       const id = sourceId(question.source);
-      const attempt = detached ? (scratch.attempts[id] ?? FRESH_ATTEMPT) : attemptOf(record, id);
+      const saved = attemptOf(record, id);
+      const scratched = scratch.attempts[id] ?? FRESH_ATTEMPT;
+      const attempt = !detached
+        ? saved
+        : marksInRecord
+          ? { ...scratched, flagged: saved.flagged, weak: saved.weak }
+          : scratched;
       return {
         question,
         attempt: visited.includes(id)
@@ -142,7 +182,7 @@ export const useQuizSession = (questions: Question[], examQuestions: Question[] 
           : { ...attempt, picked: null, revealed: false, excluded: [] },
       };
     });
-  }, [allItems, focus, detached, scratch.attempts, record, visited]);
+  }, [allItems, focus, detached, marksInRecord, scratch.attempts, record, visited]);
 
   // 収録回を切り替えたら、見ている位置と計測をその回のものに戻して学習ホームへ出す。
   // 解答状況は問題ごとに保存してあるので捨てない（戻ってくればその続きから解ける）。
@@ -281,16 +321,19 @@ export const useQuizSession = (questions: Question[], examQuestions: Question[] 
     [allRetryTargets],
   );
 
-  /** 渡した問題だけを、渡した順で出し始める。detached なら解答を学習記録と切り離す。 */
+  /**
+   * 渡した問題だけを、渡した順で出し始める。detached なら解答を学習記録と切り離す。
+   * marksInRecordNext なら、切り離しても、フラグと苦手登録だけは学習記録のものを使う。
+   */
   const focusOn = useCallback(
-    (kind: FocusKind, questions: Question[], detachedNext: boolean) => {
+    (kind: FocusKind, questions: Question[], detachedNext: boolean, marksInRecordNext = false) => {
       const first = questions[0];
       if (!first) return;
       const firstId = sourceId(first.source);
       // 1 問目はここで消す。学習記録へ書くときは種もここで 1 度だけ進めて、
       // シャッフル中なら前回と違う並びで出す。
       (detachedNext ? scratch.writer : PROGRESS_WRITER).restart([firstId]);
-      setFocus({ kind, questions, detached: detachedNext });
+      setFocus({ kind, questions, detached: detachedNext, marksInRecord: marksInRecordNext });
       setVisited([firstId]);
       setLastAnswer(null);
       setIndex(0);
@@ -303,30 +346,40 @@ export const useQuizSession = (questions: Question[], examQuestions: Question[] 
   /**
    * 間違えた問題・苦手登録した問題だけを解き直す。今出している範囲から絞るので、
    * 解き直しの結果からもう一度「間違えた問題だけ」を選べば、さらに絞り込める。
-   * ランダム出題の中での解き直しは、そのまま学習記録と切り離して続ける。
+   * ランダム出題・記録しない解き直しの中での解き直しは、そのまま学習記録と切り離して続ける。
+   * 回の全問から始めるときは、学習ホームの「解いた結果」の選択に従う。
    * random なら対象を混ぜた順で出す。
    */
   const startRetry = useCallback(
-    (kind: RetryKind, random = false) =>
+    (kind: RetryKind, random = false) => {
+      const keep = focus ? marksInRecord : !retryRecord;
       focusOn(
         kind,
         ordered(
           retryTargets(items, kind).map((item) => item.question),
           random,
         ),
-        detached,
-      ),
-    [detached, focusOn, items],
+        focus ? detached : keep,
+        keep,
+      );
+    },
+    [detached, focus, focusOn, items, marksInRecord, retryRecord],
   );
 
   /**
    * 選んでいる試験の全回から、間違えた問題・苦手登録した問題を集めて解き直す。
    * 回ごとの解き直しと同じく学習記録へ書くので、正解すれば各回の「間違えた問題」から外れる。
+   * 学習ホームで「記録しない」を選んでいれば、解答は切り離して持ち、記録は変えない。
    */
   const startRetryAll = useCallback(
     (kind: RetryKind, random = false) =>
-      focusOn(allRetryKind(kind), ordered(allRetryTargets(kind), random), false),
-    [allRetryTargets, focusOn],
+      focusOn(
+        allRetryKind(kind),
+        ordered(allRetryTargets(kind), random),
+        !retryRecord,
+        !retryRecord,
+      ),
+    [allRetryTargets, focusOn, retryRecord],
   );
 
   /** 選んでいる試験の全回で、苦手登録した問題。苦手問題を選んで解く画面に並べる。 */
@@ -526,10 +579,14 @@ export const useQuizSession = (questions: Question[], examQuestions: Question[] 
     isLast: index + 1 >= items.length,
     /** 解き直し・ランダム出題の最中なら、どちらで何を出しているか。 */
     focusKind: focus?.kind ?? null,
+    /** 記録しない解き直しの最中か。解いた結果が学習記録に入らないことを帯で知らせる。 */
+    focusUnrecorded: marksInRecord,
     retryCounts,
     allRetryCounts,
     retryRandom,
     setRetryRandom,
+    retryRecord,
+    setRetryRecord,
     startRetry,
     startRetryAll,
     weakQuestions,

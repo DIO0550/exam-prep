@@ -42,6 +42,9 @@ type HomeScreenProps = {
   /** 解き直しをランダム順で出すか。 */
   retryRandom: boolean;
   onRetryRandomChange: (random: boolean) => void;
+  /** 解き直しの結果を学習記録に入れるか。入れなければ、正解しても間違えたまま残る。 */
+  retryRecord: boolean;
+  onRetryRecordChange: (record: boolean) => void;
   onStart: () => void;
   onRestart: () => void;
   onRetry: (kind: RetryKind) => void;
@@ -72,6 +75,8 @@ export const HomeScreen = ({
   allRetryCounts,
   retryRandom,
   onRetryRandomChange,
+  retryRecord,
+  onRetryRecordChange,
   onStart,
   onRestart,
   onRetry,
@@ -167,6 +172,25 @@ export const HomeScreen = ({
                 onChange={onRetryRandomChange}
               />
             </div>
+            {(hasRetry || hasAllRetry) && (
+              <div className="flex flex-col gap-2">
+                <Segmented
+                  label="解いた結果"
+                  options={[
+                    { label: "学習記録に入れる", value: true },
+                    { label: "記録しない", value: false },
+                  ]}
+                  value={retryRecord}
+                  onChange={onRetryRecordChange}
+                />
+                {!retryRecord && (
+                  <span className="text-[12px] text-muted-soft">
+                    正解しても「間違えた問題」から外れず、正答率・連続学習日数も変わりません。
+                    フラグと苦手登録の付け外しだけは学習記録に残ります。
+                  </span>
+                )}
+              </div>
+            )}
             {hasRetry && (
               <div className="flex flex-wrap gap-3">
                 {RETRY_KINDS.filter((kind) => retryCounts[kind] > 0).map((kind) => (
@@ -184,7 +208,8 @@ export const HomeScreen = ({
             {hasAllRetry && (
               <div className="flex flex-col gap-2">
                 <span className="text-[12px] text-muted-soft">
-                  全{setCount}回をまとめて（解いた結果は各回の学習記録に入ります）
+                  全{setCount}回をまとめて
+                  {retryRecord && "（解いた結果は各回の学習記録に入ります）"}
                 </span>
                 <div className="flex flex-wrap gap-3">
                   {RETRY_KINDS.filter((kind) => allRetryCounts[kind] > 0).map((kind) => (
