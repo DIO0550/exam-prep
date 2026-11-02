@@ -92,9 +92,14 @@ jobs:
           for attempt in 1 2 3 4 5; do
             git worktree remove --force /tmp/pages 2>/dev/null || true
 
+            # 取ってきた時点の gh-pages を覚えておき、push はそこから動いていないときだけ通す
+            # （下の --force-with-lease）。他の workflow が間に push していたら、その分を
+            # 上書きして消さずに、取り直して載せ直す。
             if git fetch --depth 1 origin "+refs/heads/${PAGES_BRANCH}:refs/remotes/origin/${PAGES_BRANCH}" 2>/dev/null; then
+              base=$(git rev-parse "origin/${PAGES_BRANCH}")
               git worktree add --detach /tmp/pages "origin/${PAGES_BRANCH}"
             else
+              base=""
               git worktree add --detach /tmp/pages
               git -C /tmp/pages rm -rf --quiet . || true
             fi
@@ -115,7 +120,7 @@ jobs:
             git checkout --quiet --orphan pages
             git add -A
             git commit --quiet -m "preview for PR #${PR}" || true
-            if git push --force origin "HEAD:${PAGES_BRANCH}"; then
+            if git push --force-with-lease="refs/heads/${PAGES_BRANCH}:${base}" origin "HEAD:${PAGES_BRANCH}"; then
               published=true
               break
             fi
