@@ -12,6 +12,7 @@ import { MarkButtons } from "./mark-buttons";
 import { NoteButton } from "./note-button";
 import { QuestionDots } from "./question-dots";
 import { StemBlock } from "./question-figure";
+import { ScenarioBlock } from "./scenario-block";
 import { UndoPickButton } from "./undo-pick-button";
 
 type QuizScreenProps = {
@@ -103,6 +104,11 @@ export const QuizScreen = ({
         </div>
 
         <div className="px-[26px] pt-[30px] pb-1.5">
+          {question.scenario && (
+            <div className="mb-6">
+              <ScenarioBlock scenario={question.scenario} variant="inline" />
+            </div>
+          )}
           <p className="max-w-[92ch] text-pretty font-medium text-read-xl leading-[1.9] tracking-[0.01em]">
             {question.text}
           </p>

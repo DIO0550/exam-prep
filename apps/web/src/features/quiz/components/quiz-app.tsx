@@ -37,6 +37,12 @@ import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import { WeakPicker } from "./weak-picker";
 
+/**
+ * 学習ホームに出す 1 問あたりの目安（秒）。載せていない試験は 90 秒。
+ * 応用情報の午後は 150 分で 5 問（1 問 30 分）、1 問に設問が 8〜10 個ほどなので、1 設問 3 分と見る。
+ */
+const SECONDS_PER_QUESTION: Record<string, number> = { GAIP: 60, APPM: 180 };
+
 /** 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。 */
 const clearEverything = (): void => {
   progressStore.clear();
@@ -186,7 +192,7 @@ export const QuizApp = () => {
                         questionSet.questions.filter((question) => Array.isArray(question.answer))
                           .length
                       }
-                      secondsPerQuestion={questionSet.exam === "GAIP" ? 60 : 90}
+                      secondsPerQuestion={SECONDS_PER_QUESTION[questionSet.exam] ?? 90}
                       answered={session.summary.answered}
                       summary={progress}
                       setSummary={session.summary}

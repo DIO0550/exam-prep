@@ -67,9 +67,12 @@ export const ExamSidebar = ({
                         }`}
                       >
                         <span
-                          className={`flex size-7 flex-none items-center justify-center rounded-lg font-bold text-[10px] ${
-                            selected ? "bg-accent text-surface" : "bg-chip text-muted-soft"
-                          }`}
+                          // 4 文字の略号（APPM など）は 10px だと枠からはみ出すので、少し詰める。
+                          className={`flex size-7 flex-none items-center justify-center overflow-hidden rounded-lg font-bold ${
+                            exam.code.length >= 4
+                              ? "text-[8.5px] tracking-[-0.02em]"
+                              : "text-[10px]"
+                          } ${selected ? "bg-accent text-surface" : "bg-chip text-muted-soft"}`}
                         >
                           {exam.code}
                         </span>

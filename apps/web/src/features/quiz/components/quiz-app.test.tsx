@@ -1079,10 +1079,29 @@ describe("QuizApp", () => {
     render(<QuizApp />);
 
     const sidebar = within(screen.getByRole("complementary"));
-    expect(sidebar.getByRole("button", { name: /応用情報技術者試験/ })).toBeInTheDocument();
+    // 応用情報は午前と午後を別の項目にしている
+    expect(sidebar.getAllByRole("button", { name: /応用情報技術者試験/ })).toHaveLength(2);
+    expect(sidebar.getByRole("button", { name: /応用情報技術者試験 午後/ })).toBeInTheDocument();
     // 問題を収録していない区分は載せない（押しても中身が無い項目にしないため）
     expect(sidebar.queryByRole("button", { name: /基本情報技術者試験/ })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("応用情報技術者試験");
+  });
+
+  it("応用情報の午後は、設問の上に事例文を出す", async () => {
+    const user = userEvent.setup();
+    render(<QuizApp />);
+
+    const sidebar = within(screen.getByRole("complementary"));
+    await user.click(sidebar.getByRole("button", { name: /応用情報技術者試験 午後/ }));
+    await user.click(screen.getByRole("button", { name: "演習を開始" }));
+
+    const first = QUESTION_SETS.find((set) => set.exam === "APPM")?.questions[0];
+    const scenario = first?.scenario;
+    expect(scenario).toBeDefined();
+    if (!first || !scenario) return;
+    expect(screen.getByText(`〔${scenario.title}〕`)).toBeInTheDocument();
+    expect(screen.getByText(scenario.body[0] ?? "")).toBeInTheDocument();
+    expect(screen.getByText(first.text)).toBeInTheDocument();
   });
 
   it("試験を選び直すと、その試験の問題集に切り替わる", async () => {
