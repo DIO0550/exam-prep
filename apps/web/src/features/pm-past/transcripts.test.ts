@@ -24,6 +24,7 @@ const allTexts = (t: PmTranscript): string[] => [
   t.lead,
   t.intent,
   t.overview,
+  ...t.approach,
   ...t.body.flatMap(textsOf),
   ...t.parts.flatMap((part) => [
     part.text,
@@ -32,7 +33,18 @@ const allTexts = (t: PmTranscript): string[] => [
       ...(item.choices ?? []).map((c) => c.text),
     ]),
     ...(part.choices ?? []).map((c) => c.text),
-    ...part.slots.flatMap((slot) => [slot.answer, slot.explain, slot.hint]),
+    ...(part.glossary ?? []).map((g) => g.note),
+    ...part.slots.flatMap((slot) => [
+      slot.answer,
+      slot.explain,
+      slot.hint,
+      ...slot.clues,
+      ...slot.steps,
+      ...(slot.choiceNotes ?? []).map((n) => n.note),
+      ...(slot.points ?? []),
+      ...(slot.pitfalls ?? []),
+      ...(slot.knowledge ?? []),
+    ]),
   ]),
 ];
 
@@ -69,6 +81,36 @@ describe.each(Object.values(PM_TRANSCRIPTS))("書き起こし $id", (t) => {
       if (slot.choices) {
         expect(slot.choices.map((c) => c.key)).toContain(slot.answer);
         expect(new Set(slot.choices.map((c) => c.key)).size).toBe(slot.choices.length);
+      }
+    }
+  });
+
+  it("どの欄にも、本文の手がかりと答えまでの考え方がある", () => {
+    expect(t.approach.length).toBeGreaterThan(0);
+    for (const slot of t.parts.flatMap((part) => part.slots)) {
+      expect(slot.clues.length, slot.key).toBeGreaterThan(0);
+      expect(slot.steps.length, slot.key).toBeGreaterThan(1);
+      // 記述の欄は、解答に入れたい要素を書く
+      if (!slot.choices) expect(slot.points?.length, slot.key).toBeGreaterThan(0);
+    }
+  });
+
+  it("本文の手がかりは、本文からそのまま引いている", () => {
+    const plain = (text: string) => text.replace(/\[\[|\]\]/g, "");
+    const body = t.body.flatMap(textsOf).map(plain).join("\n");
+    for (const slot of t.parts.flatMap((part) => part.slots)) {
+      for (const clue of slot.clues) expect(body, slot.key).toContain(plain(clue));
+    }
+  });
+
+  it("選択肢ごとの判定と用語の説明は、解答群の記号に対応している", () => {
+    for (const part of t.parts) {
+      if (part.glossary) {
+        expect(part.glossary.map((g) => g.key)).toEqual(part.choices?.map((c) => c.key));
+      }
+      for (const slot of part.slots) {
+        if (!slot.choiceNotes) continue;
+        expect(slot.choiceNotes.map((n) => n.key)).toEqual(slot.choices?.map((c) => c.key));
       }
     }
   });

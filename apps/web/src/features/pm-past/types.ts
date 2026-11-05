@@ -37,8 +37,20 @@ export type PmAnswerSlot = {
   choices?: PmChoice[];
   /** IPA の解答例（解答の要点）。 */
   answer: string;
-  /** 本サイトで書いた解説。 */
+  /** 本サイトで書いた解説の要点（1〜2 文）。 */
   explain: string;
+  /** 答えの根拠になる本文の箇所。本文からそのまま引く。 */
+  clues: string[];
+  /** 答えまでの考え方。手順の順に並べる。 */
+  steps: string[];
+  /** 解答群の選択肢ごとの判定（選ぶ欄で、紛らわしい選択肢があるとき）。 */
+  choiceNotes?: { key: string; note: string }[];
+  /** 記述で外せない要素（採点で見られると考えられるところ）。 */
+  points?: string[];
+  /** 間違えやすいところ。 */
+  pitfalls?: string[];
+  /** この欄に関わる、押さえておきたい知識。 */
+  knowledge?: string[];
 };
 
 /** 設問 1 つ。設問の文と、それに属する欄を持つ。 */
@@ -51,6 +63,8 @@ export type PmQuestionPart = {
   items?: { label: string; text: string; choices?: PmChoice[] }[];
   /** 設問の文の下に出す解答群。小問ごとの解答群は欄（slot）の choices に持つ。 */
   choices?: PmChoice[];
+  /** 解答群の用語の説明。解答例を見たときに、その設問の欄の後ろに出す。 */
+  glossary?: { key: string; note: string }[];
   slots: PmAnswerSlot[];
 };
 
@@ -66,4 +80,6 @@ export type PmTranscript = {
   intent: string;
   /** 本サイトで書いた、問題全体の解説（読みどころ）。 */
   overview: string;
+  /** 問題全体の解き方（読む順・時間の使い方など）。 */
+  approach: string[];
 };

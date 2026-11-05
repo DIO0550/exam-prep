@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useId, useState } from "react";
 
 import { OriginalFigure } from "@/features/quiz/components/question-figure";
@@ -220,32 +221,148 @@ const Slot = ({ id, slot, value, revealed }: SlotProps) => {
       )}
 
       {revealed && (
-        <div
-          className={`flex flex-col gap-1.5 rounded-lg border px-3.5 py-2.5 ${
-            correct === undefined
-              ? "border-line bg-panel"
-              : correct
-                ? "border-ok-line bg-ok-bg"
-                : "border-ng-line bg-ng-bg"
-          }`}
-        >
-          <div className="flex flex-wrap items-baseline gap-x-2 text-read-sm">
-            {correct !== undefined && (
-              <span className={`font-bold ${correct ? "text-ok" : "text-ng"}`}>
-                {correct ? "○ 正解" : "× 不正解"}
+        <>
+          <div
+            className={`flex flex-col gap-1.5 rounded-lg border px-3.5 py-2.5 ${
+              correct === undefined
+                ? "border-line bg-panel"
+                : correct
+                  ? "border-ok-line bg-ok-bg"
+                  : "border-ng-line bg-ng-bg"
+            }`}
+          >
+            <div className="flex flex-wrap items-baseline gap-x-2 text-read-sm">
+              {correct !== undefined && (
+                <span className={`font-bold ${correct ? "text-ok" : "text-ng"}`}>
+                  {correct ? "○ 正解" : "× 不正解"}
+                </span>
+              )}
+              <span className="text-muted">解答例</span>
+              <span className="font-bold text-ink">
+                {slot.choices ? choiceLabel(slot.choices, slot.answer) : slot.answer}
               </span>
-            )}
-            <span className="text-muted">解答例</span>
-            <span className="font-bold text-ink">
-              {slot.choices ? choiceLabel(slot.choices, slot.answer) : slot.answer}
-            </span>
+            </div>
+            <p className="text-pretty text-read-sm text-ink-soft leading-[1.8]">{slot.explain}</p>
           </div>
-          <p className="text-pretty text-read-sm text-ink-soft leading-[1.8]">{slot.explain}</p>
-        </div>
+          <SlotExplain slot={slot} />
+        </>
       )}
     </div>
   );
 };
+
+const EXPLAIN_TEXT = "text-pretty text-read-sm text-ink-soft leading-[1.8]";
+
+const ExplainSection = ({ title, children }: { title: string; children: ReactNode }) => (
+  <section className="flex flex-col gap-1.5">
+    <h4 className="font-bold text-[12px] text-accent-deep tracking-[0.04em]">{title}</h4>
+    {children}
+  </section>
+);
+
+/** 解答例の下に出す、詳しい解説。根拠の箇所から答えまでの道筋を順に追えるようにする。 */
+const SlotExplain = ({ slot }: { slot: PmAnswerSlot }) => (
+  <div className="flex flex-col gap-3.5 border-accent/30 border-l-2 py-1 pl-3.5">
+    <ExplainSection title="本文の手がかり">
+      <ul className="flex flex-col gap-1.5">
+        {slot.clues.map((clue) => (
+          <li
+            key={clue}
+            className="rounded-md bg-figure px-3 py-1.5 text-pretty text-read-sm text-ink-soft leading-[1.75]"
+          >
+            <PmText text={clue} />
+          </li>
+        ))}
+      </ul>
+    </ExplainSection>
+
+    <ExplainSection title="答えまでの考え方">
+      <ol className="flex flex-col gap-1.5">
+        {slot.steps.map((step, i) => (
+          <li key={step} className="flex gap-2">
+            <span
+              aria-hidden="true"
+              className="mt-[3px] flex size-[18px] flex-none items-center justify-center rounded-full bg-accent-soft font-bold text-[10px] text-accent"
+            >
+              {i + 1}
+            </span>
+            <p className={EXPLAIN_TEXT}>{step}</p>
+          </li>
+        ))}
+      </ol>
+    </ExplainSection>
+
+    {slot.choiceNotes && (
+      <ExplainSection title="選択肢ごとの判定">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1.5">
+          {slot.choiceNotes.map((note) => (
+            <div key={note.key} className="contents">
+              <dt
+                className={`font-bold text-read-sm ${note.key === slot.answer ? "text-accent" : "text-ink"}`}
+              >
+                {note.key}
+              </dt>
+              <dd className={EXPLAIN_TEXT}>{note.note}</dd>
+            </div>
+          ))}
+        </dl>
+      </ExplainSection>
+    )}
+
+    {slot.points && (
+      <ExplainSection title="解答に入れたい要素">
+        <ul className="flex list-disc flex-col gap-1 pl-5">
+          {slot.points.map((point) => (
+            <li key={point} className={EXPLAIN_TEXT}>
+              {point}
+            </li>
+          ))}
+        </ul>
+      </ExplainSection>
+    )}
+
+    {slot.pitfalls && (
+      <ExplainSection title="間違えやすいところ">
+        <ul className="flex flex-col gap-1.5">
+          {slot.pitfalls.map((pitfall) => (
+            <li
+              key={pitfall}
+              className="rounded-md border border-flag/30 bg-flag-soft px-3 py-1.5 text-pretty text-read-sm text-ink-soft leading-[1.75]"
+            >
+              {pitfall}
+            </li>
+          ))}
+        </ul>
+      </ExplainSection>
+    )}
+
+    {slot.knowledge && (
+      <ExplainSection title="押さえておきたい知識">
+        {slot.knowledge.map((item) => (
+          <p key={item} className={EXPLAIN_TEXT}>
+            {item}
+          </p>
+        ))}
+      </ExplainSection>
+    )}
+  </div>
+);
+
+/** 解答群の用語の説明。設問の欄の後ろに出す。 */
+const Glossary = ({ part }: { part: PmQuestionPart }) =>
+  part.glossary && part.choices ? (
+    <div className="mt-1 flex flex-col gap-2 rounded-lg border border-line bg-panel px-3.5 py-3">
+      <h4 className="font-bold text-[12px] text-accent-deep">{part.label} 解答群の用語</h4>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1.5">
+        {part.glossary.map((entry) => (
+          <div key={entry.key} className="contents">
+            <dt className="font-bold text-read-sm text-ink">{entry.key}</dt>
+            <dd className={EXPLAIN_TEXT}>{entry.note}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  ) : null;
 
 /** 解答欄の幅（px）。狭すぎると選ぶ欄が切れ、広すぎると問題文が読みにくくなる。 */
 export const ANSWER_WIDTH_MIN = 320;
@@ -424,6 +541,7 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                   revealed={revealed}
                 />
               ))}
+              {revealed && <Glossary part={part} />}
             </section>
           ))}
 
@@ -440,6 +558,19 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                 <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
                   {transcript.intent}
                 </p>
+              </section>
+              <section className="flex flex-col gap-1.5">
+                <h3 className="font-bold text-[13px] text-ink">この問の解き方</h3>
+                <ol className="flex list-decimal flex-col gap-1.5 pl-5">
+                  {transcript.approach.map((item) => (
+                    <li
+                      key={item}
+                      className="text-pretty text-read-sm text-ink-soft leading-[1.85]"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ol>
               </section>
               <section className="flex flex-col gap-1.5">
                 <h3 className="font-bold text-[13px] text-ink">読みどころ</h3>

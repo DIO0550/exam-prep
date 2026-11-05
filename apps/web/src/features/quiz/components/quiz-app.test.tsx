@@ -1194,7 +1194,12 @@ describe("QuizApp", () => {
     await user.keyboard("{ArrowLeft}");
     expect(handle).toHaveAccessibleName(/今 440px/);
     expect(answers.getByText("出題趣旨（IPA）")).toBeInTheDocument();
-    expect(answers.getByText(/SBOM（ソフトウェア部品表、オ）/)).toBeInTheDocument();
+    // 欄ごとに、本文の手がかり・答えまでの考え方・間違えやすいところを出す
+    expect(answers.getAllByRole("heading", { name: "答えまでの考え方" })).toHaveLength(8);
+    expect(answers.getAllByRole("heading", { name: "本文の手がかり" })).toHaveLength(8);
+    expect(answers.getByRole("heading", { name: "設問1 解答群の用語" })).toBeInTheDocument();
+    expect(answers.getByRole("heading", { name: "この問の解き方" })).toBeInTheDocument();
+    expect(answers.getByText(/ログを分析して不正を検知できるから」だけでは/)).toBeInTheDocument();
     // 解答例を見たら、解いた記録が付く
     const record = JSON.parse(window.localStorage.getItem("exam-prep:pm-past:v1") ?? "{}");
     expect(record.attempts["ap-r07-aki-pm-01"]).toBeDefined();
