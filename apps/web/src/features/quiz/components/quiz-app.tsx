@@ -6,6 +6,9 @@ import { useMemo, useRef } from "react";
 import { BackupPanel } from "@/features/backup/components/backup-panel";
 import { exportAll, exportSet, importBackup } from "@/features/backup/restore";
 import { downloadBackup, readBackupFile } from "@/features/backup/transfer";
+import { pmAnswerStore } from "@/features/pm-past/answers";
+import { PmPastApp } from "@/features/pm-past/components/pm-past-app";
+import { pmRecordStore } from "@/features/pm-past/store";
 import { VocabApp } from "@/features/vocab/components/vocab-app";
 
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
@@ -43,10 +46,15 @@ import { WeakPicker } from "./weak-picker";
  */
 const SECONDS_PER_QUESTION: Record<string, number> = { GAIP: 60, APPM: 180 };
 
-/** 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。 */
+/**
+ * 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。
+ * 午後の過去問題を解いた記録も学習記録の一つなので、ここに含める。
+ */
 const clearEverything = (): void => {
   progressStore.clear();
   noteStore.clear();
+  pmRecordStore.clear();
+  pmAnswerStore.clear();
 };
 
 export const QuizApp = () => {
@@ -115,6 +123,9 @@ export const QuizApp = () => {
         {/* 単語帳は「どの回を解くか」と関係しないので、左右ともまるごと VocabApp に渡す。 */}
         {session.screen === "vocab" ? (
           <VocabApp />
+        ) : session.screen === "pm-past" ? (
+          // 午後の過去問題は IPA の PDF を開いて解くので、演習の画面とは別に組む。
+          <PmPastApp />
         ) : (
           <>
             <ExamSidebar

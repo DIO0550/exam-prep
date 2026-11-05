@@ -1104,6 +1104,80 @@ describe("QuizApp", () => {
     expect(screen.getByText(first.text)).toBeInTheDocument();
   });
 
+  it("午後過去問のタブでは、回ごとに IPA の PDF へのリンクと、解いた記録・自己採点を付けられる", async () => {
+    const user = userEvent.setup();
+    render(<QuizApp />);
+    await user.click(screen.getByRole("button", { name: "午後過去問" }));
+
+    const latest = within(screen.getByRole("region", { name: "令和7年度 秋期" }));
+    expect(latest.getByRole("link", { name: "問題冊子（PDF）" })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/2025r07a_ap_pm_qs\.pdf$/),
+    );
+
+    await user.click(
+      latest.getByRole("button", { name: "令和7年度 秋期 応用情報技術者試験 午後 問1 を解いた" }),
+    );
+    expect(
+      latest.getByRole("button", {
+        name: "令和7年度 秋期 応用情報技術者試験 午後 問1 の記録を消す",
+      }),
+    ).toBeInTheDocument();
+
+    const score = latest.getByRole("spinbutton", {
+      name: "令和7年度 秋期 応用情報技術者試験 午後 問5 の自己採点",
+    });
+    await user.type(score, "72{Enter}");
+    const saved = JSON.parse(window.localStorage.getItem("exam-prep:pm-past:v1") ?? "{}");
+    expect(saved.attempts["ap-r07-aki-pm-01"]).toBeDefined();
+    expect(saved.attempts["ap-r07-aki-pm-05"]?.score).toBe(72);
+
+    // 左で問を選ぶと、その問だけが回をまたいで並ぶ
+    await user.click(screen.getByRole("button", { name: /データベース/ }));
+    expect(latest.queryByText("ネットワーク")).not.toBeInTheDocument();
+    expect(latest.getByText("データベース")).toBeInTheDocument();
+  });
+
+  it("書き起こした午後の問題は、左に問題文・右に解答欄を出し、「解答例を見る」で解答例と解説を出す", async () => {
+    const user = userEvent.setup();
+    render(<QuizApp />);
+    await user.click(screen.getByRole("button", { name: "午後過去問" }));
+    await user.click(
+      screen.getByRole("button", {
+        name: "令和7年度 秋期 応用情報技術者試験 午後 問1 をこのサイトで解く",
+      }),
+    );
+
+    // 左は問題文。空欄は枠、図は原本から切り出したもの
+    expect(screen.getByText(/企業グループのセキュリティ対策に関する次の記述/)).toBeInTheDocument();
+    expect(screen.getAllByRole("img", { name: "空欄a" }).length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("img", { name: /^図1 Z社グループのネットワーク構成/ }),
+    ).toBeInTheDocument();
+
+    // 右は解答欄。書いた答えはこのブラウザに残る
+    const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
+    await user.click(answers.getByRole("button", { name: "設問1 a に ク" }));
+    await user.click(answers.getByRole("button", { name: "設問1 b に ア" }));
+    await user.type(answers.getByRole("textbox", { name: "設問2 c の答え" }), "初期");
+    const saved = JSON.parse(window.localStorage.getItem("exam-prep:pm-past-answers:v1") ?? "{}");
+    expect(saved["ap-r07-aki-pm-01"]).toMatchObject({ "設問1 a": "ク", "設問2 c": "初期" });
+    expect(answers.queryByText("解答例")).not.toBeInTheDocument();
+
+    await user.click(answers.getByRole("button", { name: "解答例を見る" }));
+    expect(answers.getAllByText("○ 正解").length).toBe(1);
+    expect(answers.getAllByText("× 不正解").length).toBe(4);
+    expect(answers.getByText("記号の欄 1/5 正解")).toBeInTheDocument();
+    expect(answers.getByText("出題趣旨（IPA）")).toBeInTheDocument();
+    expect(answers.getByText(/SBOM（ソフトウェア部品表、オ）/)).toBeInTheDocument();
+    // 解答例を見たら、解いた記録が付く
+    const record = JSON.parse(window.localStorage.getItem("exam-prep:pm-past:v1") ?? "{}");
+    expect(record.attempts["ap-r07-aki-pm-01"]).toBeDefined();
+
+    await user.click(screen.getByRole("button", { name: "← 午後過去問の一覧へ" }));
+    expect(screen.getByRole("region", { name: "令和7年度 秋期" })).toBeInTheDocument();
+  });
+
   it("試験を選び直すと、その試験の問題集に切り替わる", async () => {
     const user = userEvent.setup();
     render(<QuizApp />);
