@@ -1157,8 +1157,18 @@ describe("QuizApp", () => {
 
     // 右は解答欄。書いた答えはこのブラウザに残る
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
-    await user.click(answers.getByRole("button", { name: "設問1 a に ク" }));
-    await user.click(answers.getByRole("button", { name: "設問1 b に ア" }));
+    // 解答群から選ぶ欄は、記号に中身を添えた選択肢から選ぶ
+    const slotA = answers.getByRole("combobox", { name: "設問1 a の答え" });
+    expect(within(slotA).getByRole("option", { name: "ク　境界防御" })).toBeInTheDocument();
+    await user.selectOptions(slotA, "ク");
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問1 b の答え" }), "ア");
+    // 長い選択肢は、選んだものの全文を欄の下に出す
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問3 (1) の答え" }), "イ");
+    expect(
+      answers.getByText(/^イ\s+Z 社グループ各社でセキュリティインシデントが発生した場合/, {
+        selector: "p",
+      }),
+    ).toBeInTheDocument();
     await user.type(answers.getByRole("textbox", { name: "設問2 c の答え" }), "初期");
     const saved = JSON.parse(window.localStorage.getItem("exam-prep:pm-past-answers:v1") ?? "{}");
     expect(saved["ap-r07-aki-pm-01"]).toMatchObject({ "設問1 a": "ク", "設問2 c": "初期" });
@@ -1167,7 +1177,14 @@ describe("QuizApp", () => {
     await user.click(answers.getByRole("button", { name: "解答例を見る" }));
     expect(answers.getAllByText("○ 正解").length).toBe(1);
     expect(answers.getAllByText("× 不正解").length).toBe(4);
+    expect(answers.getByText(/^オ\s+SBOM$/, { selector: "span" })).toBeInTheDocument();
     expect(answers.getByText("記号の欄 1/5 正解")).toBeInTheDocument();
+
+    // 境目は ← → でも動かせる
+    const handle = screen.getByRole("button", { name: /^解答欄の幅を変える（今 400px/ });
+    handle.focus();
+    await user.keyboard("{ArrowLeft}");
+    expect(handle).toHaveAccessibleName(/今 440px/);
     expect(answers.getByText("出題趣旨（IPA）")).toBeInTheDocument();
     expect(answers.getByText(/SBOM（ソフトウェア部品表、オ）/)).toBeInTheDocument();
     // 解答例を見たら、解いた記録が付く
