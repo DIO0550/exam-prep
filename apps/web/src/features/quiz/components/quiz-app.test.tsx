@@ -1169,7 +1169,15 @@ describe("QuizApp", () => {
         selector: "p",
       }),
     ).toBeInTheDocument();
-    await user.type(answers.getByRole("textbox", { name: "設問2 c の答え" }), "初期");
+    // 字数制限を超えると、超えた字数と、はみ出した部分を出す
+    const slotC = answers.getByRole("textbox", { name: "設問2 c の答え" });
+    await user.type(slotC, "初期設定のまま");
+    expect(answers.getByText(/7字（2字オーバー）/)).toBeInTheDocument();
+    expect(slotC).toHaveAttribute("aria-invalid", "true");
+    expect(slotC).toHaveAccessibleDescription(/はみ出し：\s*まま/);
+    await user.clear(slotC);
+    await user.type(slotC, "初期");
+    expect(slotC).not.toHaveAttribute("aria-invalid");
     const saved = JSON.parse(window.localStorage.getItem("exam-prep:pm-past-answers:v1") ?? "{}");
     expect(saved["ap-r07-aki-pm-01"]).toMatchObject({ "設問1 a": "ク", "設問2 c": "初期" });
     expect(answers.queryByText("解答例")).not.toBeInTheDocument();

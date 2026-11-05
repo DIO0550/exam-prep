@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 import { OriginalFigure } from "@/features/quiz/components/question-figure";
 
@@ -151,13 +151,21 @@ const choiceLabel = (choices: PmChoice[], key: string): string => {
 const Slot = ({ id, slot, value, revealed }: SlotProps) => {
   const correct = slot.choices ? value === slot.answer : undefined;
   const chosen = slot.choices?.find((choice) => choice.key === value);
+  // 「30字以内」の欄は、書いた字数を数えて、超えたら分かるようにする。
+  const limitMatch = slot.hint.match(/(\d+)字以内/);
+  const limit = limitMatch ? Number(limitMatch[1]) : undefined;
+  const chars = [...value];
+  const over = limit !== undefined && chars.length > limit ? chars.length - limit : 0;
+  // 欄の名前は空白を含む（「設問2 c」）ので、aria-describedby に使える id は別に作る。
+  const overId = useId();
   return (
     <div className="flex flex-col gap-2 border-line-soft border-t py-3.5 first:border-t-0 first:pt-0">
       <div className="flex items-baseline justify-between gap-3">
         <span className="font-bold text-[13px] text-ink">{slot.key}</span>
-        <span className="text-[11px] text-muted-soft">
+        <span className={`text-[11px] ${over > 0 ? "font-bold text-ng" : "text-muted-soft"}`}>
           {slot.hint}
-          {!slot.choices && value !== "" && ` ・ ${[...value].length}字`}
+          {!slot.choices && value !== "" && ` ・ ${chars.length}字`}
+          {over > 0 && `（${over}字オーバー）`}
         </span>
       </div>
 
@@ -185,13 +193,30 @@ const Slot = ({ id, slot, value, revealed }: SlotProps) => {
           )}
         </>
       ) : (
-        <textarea
-          aria-label={`${slot.key} の答え`}
-          value={value}
-          rows={2}
-          onChange={(event) => pmAnswerStore.set(id, slot.key, event.target.value)}
-          className="w-full resize-y rounded-lg border border-edge-strong bg-surface px-3 py-2 text-read-sm text-ink leading-[1.7]"
-        />
+        <>
+          <textarea
+            aria-label={`${slot.key} の答え`}
+            aria-invalid={over > 0 || undefined}
+            aria-describedby={over > 0 ? overId : undefined}
+            value={value}
+            rows={2}
+            onChange={(event) => pmAnswerStore.set(id, slot.key, event.target.value)}
+            className={`w-full resize-y rounded-lg border px-3 py-2 text-read-sm text-ink leading-[1.7] ${
+              over > 0 ? "border-ng bg-ng-bg" : "border-edge-strong bg-surface"
+            }`}
+          />
+          {/* どこからはみ出したかを、収まる部分と分けて見せる。削る場所を探しやすくするため。 */}
+          {over > 0 && limit !== undefined && (
+            <p id={overId} className="text-pretty text-read-xs leading-[1.7]">
+              <span className="text-muted-soft">{limit}字目まで：</span>
+              <span className="text-ink-soft">{chars.slice(0, limit).join("")}</span>
+              <span className="text-muted-soft"> ／ はみ出し：</span>
+              <span className="rounded-sm bg-ng-soft px-0.5 font-bold text-ng">
+                {chars.slice(limit).join("")}
+              </span>
+            </p>
+          )}
+        </>
       )}
 
       {revealed && (
