@@ -6,6 +6,9 @@ import { useMemo, useRef } from "react";
 import { BackupPanel } from "@/features/backup/components/backup-panel";
 import { exportAll, exportSet, importBackup } from "@/features/backup/restore";
 import { downloadBackup, readBackupFile } from "@/features/backup/transfer";
+import { pmAnswerStore } from "@/features/pm-past/answers";
+import { PmPastApp } from "@/features/pm-past/components/pm-past-app";
+import { pmRecordStore } from "@/features/pm-past/store";
 import { VocabApp } from "@/features/vocab/components/vocab-app";
 
 import { EXAM_GROUPS, EXAMS } from "../data/exams";
@@ -37,10 +40,21 @@ import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import { WeakPicker } from "./weak-picker";
 
-/** 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。 */
+/**
+ * 学習ホームに出す 1 問あたりの目安（秒）。載せていない試験は 90 秒。
+ * 応用情報の午後は 150 分で 5 問（1 問 30 分）、1 問に設問が 8〜10 個ほどなので、1 設問 3 分と見る。
+ */
+const SECONDS_PER_QUESTION: Record<string, number> = { GAIP: 60, APPM: 180 };
+
+/**
+ * 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。
+ * 午後の過去問題を解いた記録も学習記録の一つなので、ここに含める。
+ */
 const clearEverything = (): void => {
   progressStore.clear();
   noteStore.clear();
+  pmRecordStore.clear();
+  pmAnswerStore.clear();
 };
 
 export const QuizApp = () => {
@@ -75,6 +89,33 @@ export const QuizApp = () => {
     const first = questionSetsOf(EXAMS[index]?.code ?? "")[0];
     if (first) progressStore.selectSet(first.id);
   };
+  // 応用情報 午後の過去問ページは、試験の一覧の「応用情報技術者試験 午後」の下に置く。
+  // 問題集ではないので、開いている間はどの試験も選択中にしない。
+  const pmPastOpen = session.screen === "pm-past";
+  const sidebar = (
+    <ExamSidebar
+      exams={EXAMS}
+      groups={EXAM_GROUPS}
+      examIndex={pmPastOpen ? -1 : examIndex}
+      closedGroups={session.closedGroups}
+      onSelectExam={(index) => {
+        selectExam(index);
+        if (pmPastOpen) session.setScreen("home");
+      }}
+      onToggleGroup={session.toggleGroup}
+      extras={[
+        {
+          after: "APPM",
+          badge: "過去",
+          name: "応用情報 午後 過去問",
+          sub: "IPA の公開問題 ・ 記述式",
+          selected: pmPastOpen,
+          onSelect: () => session.setScreen("pm-past"),
+        },
+      ]}
+    />
+  );
+
   // メモの枠は、問題が出ている画面でだけ開く（学習ホームや結果には書く相手がいない）。
   const notesVisible =
     session.notesOpen && session.current !== undefined && session.screen !== "review";
@@ -109,16 +150,12 @@ export const QuizApp = () => {
         {/* 単語帳は「どの回を解くか」と関係しないので、左右ともまるごと VocabApp に渡す。 */}
         {session.screen === "vocab" ? (
           <VocabApp />
+        ) : session.screen === "pm-past" ? (
+          // 午後の過去問題は記述式なので、演習の画面とは別に組む。左の試験の一覧はそのまま出す。
+          <PmPastApp sidebar={sidebar} />
         ) : (
           <>
-            <ExamSidebar
-              exams={EXAMS}
-              groups={EXAM_GROUPS}
-              examIndex={examIndex}
-              closedGroups={session.closedGroups}
-              onSelectExam={selectExam}
-              onToggleGroup={session.toggleGroup}
-            />
+            {sidebar}
 
             <div
               ref={contentRef}
@@ -186,7 +223,7 @@ export const QuizApp = () => {
                         questionSet.questions.filter((question) => Array.isArray(question.answer))
                           .length
                       }
-                      secondsPerQuestion={questionSet.exam === "GAIP" ? 60 : 90}
+                      secondsPerQuestion={SECONDS_PER_QUESTION[questionSet.exam] ?? 90}
                       answered={session.summary.answered}
                       summary={progress}
                       setSummary={session.summary}

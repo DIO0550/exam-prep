@@ -10,6 +10,7 @@ import { KeyPointList } from "./key-point-list";
 import { MarkButtons } from "./mark-buttons";
 import { NoteButton } from "./note-button";
 import { StemBlock } from "./question-figure";
+import { ScenarioBlock } from "./scenario-block";
 import { UndoPickButton } from "./undo-pick-button";
 
 type ExplainScreenProps = {
@@ -75,6 +76,11 @@ export const ExplainScreen = ({
           <div className="mb-2.5 font-bold text-[11px] text-muted-soft tracking-[0.14em]">
             問 {String(index + 1).padStart(2, "0")}　{question.field}
           </div>
+          {question.scenario && (
+            <div className="mb-5">
+              <ScenarioBlock scenario={question.scenario} variant="page" defaultOpen={false} />
+            </div>
+          )}
           <p className="max-w-[104ch] text-pretty font-medium text-read-lg leading-[1.9]">
             {question.text}
           </p>

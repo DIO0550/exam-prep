@@ -132,8 +132,8 @@ export const SiteHeader = ({
       </div>
 
       <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 py-2.5">
-        {/* 選択肢と解説の出し方は問題を解くときだけのもの。単語帳では出さない。 */}
-        {screen !== "vocab" && (
+        {/* 選択肢と解説の出し方は問題を解くときだけのもの。単語帳と午後過去問では出さない。 */}
+        {screen !== "vocab" && screen !== "pm-past" && (
           <>
             <Toggle
               label="選択肢"

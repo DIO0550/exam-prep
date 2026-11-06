@@ -4,6 +4,12 @@ import { ACE_MOCK_1 } from "./ace-mock-1";
 import { ACE_MOCK_2 } from "./ace-mock-2";
 import { ACE_MOCK_3 } from "./ace-mock-3";
 import { ACE_MOCK_4 } from "./ace-mock-4";
+import { AP_PM_ARCH_1 } from "./ap-pm-arch-1";
+import { AP_PM_AUDIT_1 } from "./ap-pm-audit-1";
+import { AP_PM_DB_1 } from "./ap-pm-db-1";
+import { AP_PM_NW_1 } from "./ap-pm-nw-1";
+import { AP_PM_SEC_1 } from "./ap-pm-sec-1";
+import { AP_PM_SM_1 } from "./ap-pm-sm-1";
 import { AP_R01_AKI_AM } from "./ap-r01-aki-am";
 import { AP_R02_OCT_AM } from "./ap-r02-oct-am";
 import { AP_R03_AKI_AM } from "./ap-r03-aki-am";
@@ -81,7 +87,7 @@ import { SC_R07_HARU_AM2 } from "./sc-r07-haru-am2";
  * IPA の回（exam: "AP" と "SC"）は、問題文・選択肢・図・正解が IPA の著作物で、MIT License の
  * 対象外。条件は docs/ipa-kakomon-usage-notes.md と public/questions/LICENSE.md を参照。
  * Google Cloud 向けの問題集（exam: "CDL"）は本サイトで書き下ろしたもので、こちらは
- * リポジトリの LICENSE（MIT）に含まれる（Associate Cloud Engineer 向けの exam: "ACE" も同じ）。JSTQB Foundation Level 向け（exam: "CTFL"）も同じく
+ * リポジトリの LICENSE（MIT）に含まれる（Associate Cloud Engineer 向けの exam: "ACE" も同じ）。JSTQB Foundation Level 向け（exam: "CTFL"）と応用情報の午後向け（exam: "APPM"）も同じく
  * 書き下ろしで MIT。典拠のシラバス（原著 ISTQB、日本語版 JSTQB の著作物）はリポジトリに含めない。
  */
 export type QuestionSet = {
@@ -108,6 +114,19 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "ap-r03-haru-am", exam: "AP", label: "令和3年 春期", questions: AP_R03_HARU_AM },
   { id: "ap-r02-oct-am", exam: "AP", label: "令和2年 10月", questions: AP_R02_OCT_AM },
   { id: "ap-r01-aki-am", exam: "AP", label: "令和元年 秋期", questions: AP_R01_AKI_AM },
+  // 応用情報の午後（書き下ろし）。事例文を設問ごとに持たせてあり、事例ごとに 6 問続く。
+  // 並びは本試験の問番号の順（情報セキュリティ → システムアーキテクチャ → … → システム監査）。
+  { id: "ap-pm-sec-1", exam: "APPM", label: "情報セキュリティ1", questions: AP_PM_SEC_1 },
+  {
+    id: "ap-pm-arch-1",
+    exam: "APPM",
+    label: "システムアーキテクチャ1",
+    questions: AP_PM_ARCH_1,
+  },
+  { id: "ap-pm-nw-1", exam: "APPM", label: "ネットワーク1", questions: AP_PM_NW_1 },
+  { id: "ap-pm-db-1", exam: "APPM", label: "データベース1", questions: AP_PM_DB_1 },
+  { id: "ap-pm-sm-1", exam: "APPM", label: "ITサービスマネジメント1", questions: AP_PM_SM_1 },
+  { id: "ap-pm-audit-1", exam: "APPM", label: "システム監査1", questions: AP_PM_AUDIT_1 },
   { id: "sc-r07-aki-am2", exam: "SC", label: "令和7年 秋期", questions: SC_R07_AKI_AM2 },
   { id: "sc-r07-haru-am2", exam: "SC", label: "令和7年 春期", questions: SC_R07_HARU_AM2 },
   { id: "sc-r06-aki-am2", exam: "SC", label: "令和6年 秋期", questions: SC_R06_AKI_AM2 },
@@ -230,6 +249,7 @@ const countOf = (examCode: string) =>
  */
 export const COVERAGE: string[] = [
   `応用情報技術者試験 午前 ${questionSetsOf("AP").length}回分（令和元年度秋期〜令和7年度秋期、各80問）`,
+  `応用情報技術者試験 午後 対策 ${countOf("APPM")}問（情報セキュリティ・システムアーキテクチャ・ネットワーク・データベース・ITサービスマネジメント・システム監査。本サイト作成。公式の問題ではありません）`,
   `情報処理安全確保支援士試験 午前Ⅱ ${questionSetsOf("SC").length}回分（令和元年度秋期〜令和7年度秋期、各25問）`,
   `Google Cloud Digital Leader 対策 ${countOf("CDL")}問（本サイト作成。公式の問題ではありません）`,
   `Google Cloud Associate Cloud Engineer 対策 ${countOf("ACE")}問（本サイト作成。公式の問題ではありません）`,

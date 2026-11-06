@@ -478,6 +478,60 @@ describe("問題データ", () => {
     },
   );
 
+  it("応用情報の午後は、どの設問も事例を持ち、1 つの事例に 6 問ずつ続く", () => {
+    // 事例は設問ごとに同じ値を持たせている。ランダム出題で 1 問だけ引かれても読めるようにするため。
+    // 書き足したときに事例を付け忘れたり、別の事例の設問が途中に紛れ込んだりしないよう押さえておく。
+    const sets = QUESTION_SETS.filter((set) => set.exam === "APPM");
+    expect(sets.length).toBeGreaterThan(0);
+    for (const set of sets) {
+      const titles = set.questions.map((question) => question.scenario?.title);
+      expect(titles, set.id).not.toContain(undefined);
+      const runs = titles.filter((title, index) => title !== titles[index - 1]);
+      expect(new Set(runs).size, `${set.id} の事例の並び`).toBe(runs.length);
+      for (const title of runs) {
+        expect(
+          titles.filter((candidate) => candidate === title),
+          `${set.id} の「${title}」`,
+        ).toHaveLength(6);
+      }
+      for (const question of set.questions) {
+        expect(question.choices, nameOf(question)).toHaveLength(4);
+        expect(question.text, nameOf(question)).toMatch(/^設問\d /);
+      }
+    }
+  });
+
+  it("事例の本文に改行が入っておらず、事例の図も崩れない", () => {
+    for (const question of ALL) {
+      const scenario = question.scenario;
+      if (!scenario) continue;
+      for (const paragraph of scenario.body) {
+        expect(paragraph, `${nameOf(question)} の事例`).not.toContain("\n");
+      }
+      expect(new Set(scenario.body).size, `${nameOf(question)} の事例の段落`).toBe(
+        scenario.body.length,
+      );
+      const figures = scenario.figures ?? [];
+      expect(new Set(figures.map((figure) => figure.caption)).size).toBe(figures.length);
+      for (const figure of figures) {
+        expect(figure.caption, `${nameOf(question)} の事例の図`).not.toMatch(/^(図|表)\s*[：:]/);
+        if (figure.type === "table") {
+          expect(figure.headers.length).toBeLessThanOrEqual(TABLE_COLUMN_LIMIT);
+          for (const row of figure.rows) {
+            expect(row.length, `${nameOf(question)} の事例の表「${row[0]}」`).toBe(
+              figure.headers.length,
+            );
+          }
+        }
+        if (figure.type === "diagram") {
+          expect(diagramProblems(figure), `${nameOf(question)} の「${figure.caption}」`).toEqual(
+            [],
+          );
+        }
+      }
+    }
+  });
+
   it("書き下ろした問題は、典拠を持つ", () => {
     // 出どころの分からない問題を混ぜないための検査。出典表記にもこの値が出る。
     for (const question of ALL) {

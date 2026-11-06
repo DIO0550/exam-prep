@@ -2,7 +2,8 @@
 
 `apps/web/public/questions/` 以下の画像、および
 `apps/web/src/features/quiz/data/ap-*.ts`（応用情報技術者試験 午前）と
-`apps/web/src/features/quiz/data/sc-*.ts`（情報処理安全確保支援士試験 午前Ⅱ）に収録した
+`apps/web/src/features/quiz/data/sc-*.ts`（情報処理安全確保支援士試験 午前Ⅱ）、
+`apps/web/src/features/pm-past/data/*.ts`（応用情報技術者試験 午後）に収録した
 問題文・選択肢・正解は、
 **独立行政法人情報処理推進機構（IPA）の著作物**です。
 
@@ -21,8 +22,8 @@ MIT License や CC0 などで再配布することはできません。
 
 | 種類 | 権利者 |
 |---|---|
-| 問題文・選択肢・図・正解（解答例） | IPA |
-| 分野の細分類、解説（`explain` / `points` / `note`） | 本リポジトリ（MIT） |
+| 問題文・選択肢・図・正解（解答例）・出題趣旨 | IPA |
+| 分野の細分類、解説（`explain` / `points` / `note` / `overview`） | 本リポジトリ（MIT） |
 | 画面・コード | 本リポジトリ（MIT） |
 
 ## 出典
@@ -50,5 +51,11 @@ MIT License や CC0 などで再配布することはできません。
 | 回 | 問題 | 解答 |
 |---|---|---|
 | 令和元年度 秋期 | [2019r01a_sc_am2_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_sc_am2_qs.pdf) | [2019r01a_sc_am2_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_sc_am2_ans.pdf) |
+
+### 応用情報技術者試験 午後
+
+| 回 | 問題 | 解答例 | 収録した問 |
+|---|---|---|---|
+| 令和7年度 秋期 | [2025r07a_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/nl10bi0000009lh8-att/2025r07a_ap_pm_qs.pdf) | [2025r07a_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/nl10bi0000009lh8-att/2025r07a_ap_pm_ans.pdf) | 問1 |
 
 本サイトは IPA とは無関係の個人制作です。
