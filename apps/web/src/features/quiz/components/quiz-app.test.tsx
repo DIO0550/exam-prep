@@ -1185,7 +1185,7 @@ describe("QuizApp", () => {
     await user.click(answers.getByRole("button", { name: "解答例を見る" }));
     expect(answers.getAllByText("○ 正解").length).toBe(1);
     expect(answers.getAllByText("× 不正解").length).toBe(4);
-    expect(answers.getByText(/^オ\s+SBOM$/, { selector: "span" })).toBeInTheDocument();
+    expect(answers.getAllByText(/^オ\s+SBOM$/, { selector: "span" })).toHaveLength(2);
     expect(answers.getByText("記号の欄 1/5 正解")).toBeInTheDocument();
 
     // 境目は ← → でも動かせる
@@ -1194,7 +1194,11 @@ describe("QuizApp", () => {
     await user.keyboard("{ArrowLeft}");
     expect(handle).toHaveAccessibleName(/今 440px/);
     expect(answers.getByText("出題趣旨（IPA）")).toBeInTheDocument();
-    // 欄ごとに、本文の手がかり・答えまでの考え方・間違えやすいところを出す
+    // 解説は解答欄の下の「解説」にまとめ、欄ごとに本文の手がかり・答えまでの考え方などを出す
+    const explain = within(answers.getByRole("region", { name: "解説" }));
+    expect(explain.getByRole("article", { name: "設問3 (2) の解説" })).toHaveTextContent(
+      "答えまでの考え方",
+    );
     expect(answers.getAllByRole("heading", { name: "答えまでの考え方" })).toHaveLength(8);
     expect(answers.getAllByRole("heading", { name: "本文の手がかり" })).toHaveLength(8);
     expect(answers.getByRole("heading", { name: "設問1 解答群の用語" })).toBeInTheDocument();

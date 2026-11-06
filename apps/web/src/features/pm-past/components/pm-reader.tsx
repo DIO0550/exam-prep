@@ -142,6 +142,9 @@ const choiceLabel = (choices: PmChoice[], key: string): string => {
   return choice ? `${choice.key}　${choice.text}` : key;
 };
 
+const answerLabel = (slot: PmAnswerSlot): string =>
+  slot.choices ? choiceLabel(slot.choices, slot.answer) : slot.answer;
+
 /**
  * 答える欄 1 つ。解答群があれば選ぶ欄、無ければ文字を書く欄にする。
  *
@@ -220,32 +223,25 @@ const Slot = ({ id, slot, value, revealed }: SlotProps) => {
         </>
       )}
 
+      {/* 欄の下には答え合わせだけを出す。解説は解答欄の下の「解説」にまとめる。 */}
       {revealed && (
-        <>
-          <div
-            className={`flex flex-col gap-1.5 rounded-lg border px-3.5 py-2.5 ${
-              correct === undefined
-                ? "border-line bg-panel"
-                : correct
-                  ? "border-ok-line bg-ok-bg"
-                  : "border-ng-line bg-ng-bg"
-            }`}
-          >
-            <div className="flex flex-wrap items-baseline gap-x-2 text-read-sm">
-              {correct !== undefined && (
-                <span className={`font-bold ${correct ? "text-ok" : "text-ng"}`}>
-                  {correct ? "○ 正解" : "× 不正解"}
-                </span>
-              )}
-              <span className="text-muted">解答例</span>
-              <span className="font-bold text-ink">
-                {slot.choices ? choiceLabel(slot.choices, slot.answer) : slot.answer}
-              </span>
-            </div>
-            <p className="text-pretty text-read-sm text-ink-soft leading-[1.8]">{slot.explain}</p>
-          </div>
-          <SlotExplain slot={slot} />
-        </>
+        <div
+          className={`flex flex-wrap items-baseline gap-x-2 rounded-lg border px-3.5 py-2 text-read-sm ${
+            correct === undefined
+              ? "border-line bg-panel"
+              : correct
+                ? "border-ok-line bg-ok-bg"
+                : "border-ng-line bg-ng-bg"
+          }`}
+        >
+          {correct !== undefined && (
+            <span className={`font-bold ${correct ? "text-ok" : "text-ng"}`}>
+              {correct ? "○ 正解" : "× 不正解"}
+            </span>
+          )}
+          <span className="text-muted">解答例</span>
+          <span className="font-bold text-ink">{answerLabel(slot)}</span>
+        </div>
       )}
     </div>
   );
@@ -255,7 +251,7 @@ const EXPLAIN_TEXT = "text-pretty text-read-sm text-ink-soft leading-[1.8]";
 
 const ExplainSection = ({ title, children }: { title: string; children: ReactNode }) => (
   <section className="flex flex-col gap-1.5">
-    <h4 className="font-bold text-[12px] text-accent-deep tracking-[0.04em]">{title}</h4>
+    <h5 className="font-bold text-[12px] text-accent-deep tracking-[0.04em]">{title}</h5>
     {children}
   </section>
 );
@@ -541,7 +537,6 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                   revealed={revealed}
                 />
               ))}
-              {revealed && <Glossary part={part} />}
             </section>
           ))}
 
@@ -553,31 +548,6 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                 </span>
                 <ScoreInput id={id} source={source} attempt={attempt} />
               </div>
-              <section className="flex flex-col gap-1.5">
-                <h3 className="font-bold text-[13px] text-ink">出題趣旨（IPA）</h3>
-                <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
-                  {transcript.intent}
-                </p>
-              </section>
-              <section className="flex flex-col gap-1.5">
-                <h3 className="font-bold text-[13px] text-ink">この問の解き方</h3>
-                <ol className="flex list-decimal flex-col gap-1.5 pl-5">
-                  {transcript.approach.map((item) => (
-                    <li
-                      key={item}
-                      className="text-pretty text-read-sm text-ink-soft leading-[1.85]"
-                    >
-                      {item}
-                    </li>
-                  ))}
-                </ol>
-              </section>
-              <section className="flex flex-col gap-1.5">
-                <h3 className="font-bold text-[13px] text-ink">読みどころ</h3>
-                <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
-                  {transcript.overview}
-                </p>
-              </section>
               <p className="text-[11px] text-muted-soft leading-[1.7]">
                 解答例は IPA
                 が示した例で、唯一の正解ではありません。記述の欄は解答例と見比べて自己採点してください。
@@ -601,6 +571,65 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                   答えを消して解き直す
                 </button>
               </div>
+
+              <section
+                aria-label="解説"
+                className="mt-4 flex flex-col gap-5 border-line border-t-2 pt-5"
+              >
+                <h2 className="font-bold text-[15px]">解説</h2>
+                {transcript.parts.map((part) => (
+                  <section key={part.label} className="flex flex-col gap-4">
+                    <h3 className="border-accent border-l-[3px] pl-2.5 font-bold text-[14px] text-ink">
+                      {part.label}
+                    </h3>
+                    {part.slots.map((slot) => (
+                      <article
+                        key={slot.key}
+                        aria-label={`${slot.key} の解説`}
+                        className="flex flex-col gap-3 rounded-xl border border-line px-4 py-3.5"
+                      >
+                        <div className="flex flex-wrap items-baseline gap-x-2.5">
+                          <h4 className="font-bold text-[13.5px] text-ink">{slot.key}</h4>
+                          <span className="text-read-sm text-muted">解答例</span>
+                          <span className="font-bold text-read-sm text-ink">
+                            {answerLabel(slot)}
+                          </span>
+                        </div>
+                        <p className="text-pretty text-read-sm text-ink leading-[1.85]">
+                          {slot.explain}
+                        </p>
+                        <SlotExplain slot={slot} />
+                      </article>
+                    ))}
+                    <Glossary part={part} />
+                  </section>
+                ))}
+                <section className="flex flex-col gap-1.5">
+                  <h3 className="font-bold text-[13px] text-ink">出題趣旨（IPA）</h3>
+                  <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
+                    {transcript.intent}
+                  </p>
+                </section>
+                <section className="flex flex-col gap-1.5">
+                  <h3 className="font-bold text-[13px] text-ink">この問の解き方</h3>
+                  <ol className="flex list-decimal flex-col gap-1.5 pl-5">
+                    {transcript.approach.map((item) => (
+                      <li
+                        key={item}
+                        className="text-pretty text-read-sm text-ink-soft leading-[1.85]"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+                <section className="flex flex-col gap-1.5">
+                  <h3 className="font-bold text-[13px] text-ink">読みどころ</h3>
+                  <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
+                    {transcript.overview}
+                  </p>
+                </section>
+              </section>
             </div>
           ) : (
             <button
