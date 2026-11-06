@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+
 import type { Exam } from "../types";
 
 type ExamSidebarProps = {
@@ -10,7 +12,59 @@ type ExamSidebarProps = {
   closedGroups: string[];
   onSelectExam: (index: number) => void;
   onToggleGroup: (group: string) => void;
+  /**
+   * 試験の行のすぐ後ろに足す、問題集ではない行（応用情報 午後の過去問ページなど）。
+   * after の略号の試験の下に出す。
+   */
+  extras?: SidebarExtra[];
 };
+
+export type SidebarExtra = {
+  /** この略号の試験の行の下に出す。 */
+  after: string;
+  badge: string;
+  name: string;
+  sub: string;
+  selected: boolean;
+  onSelect: () => void;
+};
+
+const badgeClass = (text: string, selected: boolean): string =>
+  // 4 文字の略号（APPM など）は 10px だと枠からはみ出すので、少し詰める。
+  `flex size-7 flex-none items-center justify-center overflow-hidden rounded-lg font-bold ${
+    text.length >= 4 ? "text-[8.5px] tracking-[-0.02em]" : "text-[10px]"
+  } ${selected ? "bg-accent text-surface" : "bg-chip text-muted-soft"}`;
+
+type SidebarRowProps = {
+  badge: string;
+  name: string;
+  sub: string;
+  selected: boolean;
+  onSelect: () => void;
+};
+
+const SidebarRow = ({ badge, name, sub, selected, onSelect }: SidebarRowProps) => (
+  <button
+    type="button"
+    aria-current={selected ? "true" : undefined}
+    onClick={onSelect}
+    className={`flex w-full cursor-pointer items-center gap-2.5 rounded-r-[9px] border-l-[2.5px] py-[9px] pr-2.5 pl-2 text-left hover:bg-hover ${
+      selected ? "border-l-accent bg-accent-soft" : "border-l-transparent"
+    }`}
+  >
+    <span className={badgeClass(badge, selected)}>{badge}</span>
+    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <span
+        className={`text-pretty text-[12.5px] leading-[1.45] ${
+          selected ? "font-bold text-accent-deep" : "font-medium text-ink"
+        }`}
+      >
+        {name}
+      </span>
+      <span className="truncate text-[10.5px] text-muted-soft leading-[1.4]">{sub}</span>
+    </span>
+  </button>
+);
 
 export const ExamSidebar = ({
   exams,
@@ -19,6 +73,7 @@ export const ExamSidebar = ({
   closedGroups,
   onSelectExam,
   onToggleGroup,
+  extras = [],
 }: ExamSidebarProps) => {
   return (
     // 幅があるときは右側と別に動く枠。狭いときは上に積まれ、ページと一緒に動く。
@@ -54,43 +109,22 @@ export const ExamSidebar = ({
 
               {open && (
                 <div className="flex flex-col gap-[3px]">
-                  {items.map(({ exam, index }) => {
-                    const selected = index === examIndex;
-                    return (
-                      <button
-                        key={exam.code}
-                        type="button"
-                        aria-current={selected ? "true" : undefined}
-                        onClick={() => onSelectExam(index)}
-                        className={`flex w-full cursor-pointer items-center gap-2.5 rounded-r-[9px] border-l-[2.5px] py-[9px] pr-2.5 pl-2 text-left hover:bg-hover ${
-                          selected ? "border-l-accent bg-accent-soft" : "border-l-transparent"
-                        }`}
-                      >
-                        <span
-                          // 4 文字の略号（APPM など）は 10px だと枠からはみ出すので、少し詰める。
-                          className={`flex size-7 flex-none items-center justify-center overflow-hidden rounded-lg font-bold ${
-                            exam.code.length >= 4
-                              ? "text-[8.5px] tracking-[-0.02em]"
-                              : "text-[10px]"
-                          } ${selected ? "bg-accent text-surface" : "bg-chip text-muted-soft"}`}
-                        >
-                          {exam.code}
-                        </span>
-                        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                          <span
-                            className={`text-pretty text-[12.5px] leading-[1.45] ${
-                              selected ? "font-bold text-accent-deep" : "font-medium text-ink"
-                            }`}
-                          >
-                            {exam.name}
-                          </span>
-                          <span className="truncate text-[10.5px] text-muted-soft leading-[1.4]">
-                            {exam.sub}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
+                  {items.map(({ exam, index }) => (
+                    <Fragment key={exam.code}>
+                      <SidebarRow
+                        badge={exam.code}
+                        name={exam.name}
+                        sub={exam.sub}
+                        selected={index === examIndex}
+                        onSelect={() => onSelectExam(index)}
+                      />
+                      {extras
+                        .filter((extra) => extra.after === exam.code)
+                        .map((extra) => (
+                          <SidebarRow key={extra.name} {...extra} />
+                        ))}
+                    </Fragment>
+                  ))}
                 </div>
               )}
             </div>

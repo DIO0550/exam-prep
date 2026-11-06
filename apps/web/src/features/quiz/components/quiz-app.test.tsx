@@ -1107,7 +1107,7 @@ describe("QuizApp", () => {
   it("午後過去問のタブでは、回ごとに IPA の PDF へのリンクと、解いた記録・自己採点を付けられる", async () => {
     const user = userEvent.setup();
     render(<QuizApp />);
-    await user.click(screen.getByRole("button", { name: "午後過去問" }));
+    await user.click(screen.getByRole("button", { name: /^過去\s*応用情報 午後 過去問/ }));
 
     const latest = within(screen.getByRole("region", { name: "令和7年度 秋期" }));
     expect(latest.getByRole("link", { name: "問題冊子（PDF）" })).toHaveAttribute(
@@ -1136,12 +1136,21 @@ describe("QuizApp", () => {
     await user.click(screen.getByRole("button", { name: /データベース/ }));
     expect(latest.queryByText("ネットワーク")).not.toBeInTheDocument();
     expect(latest.getByText("データベース")).toBeInTheDocument();
+
+    // 上のメニューには置かず、左の試験の一覧から開く。試験を選び直すと学習ホームに戻る
+    expect(screen.queryByRole("button", { name: "午後過去問" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^過去\s*応用情報 午後 過去問/ })).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
+    await user.click(screen.getByRole("button", { name: /Cloud Digital Leader/ }));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Cloud Digital Leader");
   });
 
   it("書き起こした午後の問題は、左に問題文・右に解答欄を出し、「解答例を見る」で解答例と解説を出す", async () => {
     const user = userEvent.setup();
     render(<QuizApp />);
-    await user.click(screen.getByRole("button", { name: "午後過去問" }));
+    await user.click(screen.getByRole("button", { name: /^過去\s*応用情報 午後 過去問/ }));
     await user.click(
       screen.getByRole("button", {
         name: "令和7年度 秋期 応用情報技術者試験 午後 問1 をこのサイトで解く",

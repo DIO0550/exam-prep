@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { SiteFooter } from "@/features/quiz/components/site-footer";
@@ -19,10 +20,13 @@ const ALL = 0;
 /**
  * 応用情報 午後の過去問題。IPA の公開 PDF へのリンクと、解いた記録・自己採点の点数を並べる。
  *
- * 左で問（分野）を選ぶと、その問だけを回をまたいで並べる。選択問題を決めるときに、
+ * 問（分野）を選ぶと、その問だけを回をまたいで並べる。選択問題を決めるときに、
  * 分野ごとに何回解いて平均何点だったかを見比べられるようにするため。
+ *
+ * 左には演習と同じ試験の一覧（sidebar）を出す。書き起こした問を解いている間は、
+ * 問題文と解答欄に幅を使うため出さない。
  */
-export const PmPastApp = () => {
+export const PmPastApp = ({ sidebar }: { sidebar?: ReactNode }) => {
   const record = usePmRecord();
   const [problemNo, setProblemNo] = useState(ALL);
   // 書き起こした問題を開いているとき、その回と問。
@@ -48,7 +52,7 @@ export const PmPastApp = () => {
 
   return (
     <>
-      <PmSidebar record={record} selected={problemNo} onSelect={setProblemNo} />
+      {sidebar}
 
       <div className="flex min-w-0 flex-1 flex-col md:flex-[999_1_520px] md:overflow-y-auto md:overscroll-contain">
         <main className="flex flex-1 justify-center px-7 pb-16">
@@ -79,6 +83,8 @@ export const PmPastApp = () => {
               </p>
             </section>
 
+            <PmFilter record={record} selected={problemNo} onSelect={setProblemNo} />
+
             <div className="flex flex-col gap-4">
               {PM_EXAMS.map((pmExam) => (
                 <PmExamCard
@@ -99,14 +105,14 @@ export const PmPastApp = () => {
   );
 };
 
-type PmSidebarProps = {
+type PmFilterProps = {
   record: PmRecord;
   selected: number;
   onSelect: (no: number) => void;
 };
 
-/** 問（分野）の一覧。各行に、回をまたいだ解いた数と平均点を出す。 */
-const PmSidebar = ({ record, selected, onSelect }: PmSidebarProps) => {
+/** 問（分野）で絞り込むボタン。各ボタンに、回をまたいだ解いた数と平均点を出す。 */
+const PmFilter = ({ record, selected, onSelect }: PmFilterProps) => {
   const items = [
     { no: ALL, label: "すべての問", badge: "全" },
     ...PM_PROBLEMS.map((problem) => ({
@@ -116,11 +122,9 @@ const PmSidebar = ({ record, selected, onSelect }: PmSidebarProps) => {
     })),
   ];
   return (
-    <aside className="flex flex-col gap-5 self-stretch border-line border-r bg-surface px-4 pt-5 pb-8 md:flex-[1_1_232px] md:overflow-y-auto md:overscroll-contain">
-      <nav className="flex flex-col gap-[3px]" aria-label="問の一覧">
-        <div className="px-2 pt-1 pb-[5px] font-bold text-[10.5px] text-muted tracking-[0.12em]">
-          問（分野）
-        </div>
+    <nav aria-label="問の一覧" className="flex flex-col gap-2">
+      <h2 className="font-bold text-[10.5px] text-muted tracking-[0.12em]">問（分野）で絞り込む</h2>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1.5">
         {items.map((item) => {
           const active = item.no === selected;
           const nos = item.no === ALL ? PM_PROBLEMS.map((p) => p.no) : [item.no];
@@ -132,10 +136,10 @@ const PmSidebar = ({ record, selected, onSelect }: PmSidebarProps) => {
             <button
               key={item.no}
               type="button"
-              aria-current={active ? "true" : undefined}
+              aria-pressed={active}
               onClick={() => onSelect(item.no)}
-              className={`flex w-full cursor-pointer items-center gap-2.5 rounded-r-[9px] border-l-[2.5px] py-[7px] pr-2.5 pl-2 text-left hover:bg-hover ${
-                active ? "border-l-accent bg-accent-soft" : "border-l-transparent"
+              className={`flex cursor-pointer items-center gap-2 rounded-[9px] border px-2.5 py-[7px] text-left hover:bg-hover ${
+                active ? "border-accent bg-accent-soft" : "border-line bg-surface"
               }`}
             >
               <span
@@ -148,7 +152,7 @@ const PmSidebar = ({ record, selected, onSelect }: PmSidebarProps) => {
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span
-                  className={`text-[12.5px] leading-[1.45] ${
+                  className={`truncate text-[12px] leading-[1.4] ${
                     active ? "font-bold text-accent-deep" : "font-medium text-ink"
                   }`}
                 >
@@ -162,8 +166,8 @@ const PmSidebar = ({ record, selected, onSelect }: PmSidebarProps) => {
             </button>
           );
         })}
-      </nav>
-    </aside>
+      </div>
+    </nav>
   );
 };
 

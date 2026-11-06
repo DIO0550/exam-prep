@@ -89,6 +89,33 @@ export const QuizApp = () => {
     const first = questionSetsOf(EXAMS[index]?.code ?? "")[0];
     if (first) progressStore.selectSet(first.id);
   };
+  // 応用情報 午後の過去問ページは、試験の一覧の「応用情報技術者試験 午後」の下に置く。
+  // 問題集ではないので、開いている間はどの試験も選択中にしない。
+  const pmPastOpen = session.screen === "pm-past";
+  const sidebar = (
+    <ExamSidebar
+      exams={EXAMS}
+      groups={EXAM_GROUPS}
+      examIndex={pmPastOpen ? -1 : examIndex}
+      closedGroups={session.closedGroups}
+      onSelectExam={(index) => {
+        selectExam(index);
+        if (pmPastOpen) session.setScreen("home");
+      }}
+      onToggleGroup={session.toggleGroup}
+      extras={[
+        {
+          after: "APPM",
+          badge: "過去",
+          name: "応用情報 午後 過去問",
+          sub: "IPA の公開問題 ・ 記述式",
+          selected: pmPastOpen,
+          onSelect: () => session.setScreen("pm-past"),
+        },
+      ]}
+    />
+  );
+
   // メモの枠は、問題が出ている画面でだけ開く（学習ホームや結果には書く相手がいない）。
   const notesVisible =
     session.notesOpen && session.current !== undefined && session.screen !== "review";
@@ -124,18 +151,11 @@ export const QuizApp = () => {
         {session.screen === "vocab" ? (
           <VocabApp />
         ) : session.screen === "pm-past" ? (
-          // 午後の過去問題は IPA の PDF を開いて解くので、演習の画面とは別に組む。
-          <PmPastApp />
+          // 午後の過去問題は記述式なので、演習の画面とは別に組む。左の試験の一覧はそのまま出す。
+          <PmPastApp sidebar={sidebar} />
         ) : (
           <>
-            <ExamSidebar
-              exams={EXAMS}
-              groups={EXAM_GROUPS}
-              examIndex={examIndex}
-              closedGroups={session.closedGroups}
-              onSelectExam={selectExam}
-              onToggleGroup={session.toggleGroup}
-            />
+            {sidebar}
 
             <div
               ref={contentRef}
