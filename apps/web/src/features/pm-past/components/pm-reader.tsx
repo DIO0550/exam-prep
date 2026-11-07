@@ -48,6 +48,22 @@ export const PmText = ({ text }: { text: string }) => {
   );
 };
 
+/** 代替テキスト用に、空欄を「空欄a」に、下線の印を外した文字列にする。 */
+const plainText = (text: string): string =>
+  text.replace(/\{\{([^}]+)\}\}/g, "空欄$1").replace(/\[\[|\]\]/g, "");
+
+/**
+ * 表の 1 列目で同じ値が続く行を、原本の結合セルとして縦にまとめる。
+ * 各行の値は、まとめた先頭の行なら行数、まとめられて消える行なら 0。
+ */
+export const rowSpansOfFirstColumn = (rows: string[][]): number[] =>
+  rows.map((row, r) => {
+    if (r > 0 && rows[r - 1]?.[0] === row[0]) return 0;
+    let span = 1;
+    while (rows[r + span]?.[0] === row[0]) span += 1;
+    return span;
+  });
+
 const PARAGRAPH = "text-pretty text-read-md text-ink-soft leading-[1.95]";
 
 const Block = ({ block }: { block: PmBlock }) => {
@@ -81,9 +97,72 @@ const Block = ({ block }: { block: PmBlock }) => {
     case "image":
       return (
         <div className="flex justify-center py-2">
-          <OriginalFigure image={block.image} />
+          <OriginalFigure image={{ ...block.image, alt: plainText(block.image.alt) }} />
         </div>
       );
+    case "code":
+      return (
+        <figure className="flex flex-col gap-1.5 py-1">
+          <pre className="overflow-x-auto rounded-md border border-edge bg-panel px-4 py-3 font-mono text-ink-soft text-read-sm leading-[2.1]">
+            {block.lines.map((line, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: 行は静的で並べ替えず、同じ行が並ぶこともある
+              <span key={i} className="block min-h-[1lh] whitespace-pre">
+                <PmText text={line} />
+              </span>
+            ))}
+          </pre>
+          <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>
+        </figure>
+      );
+    case "table": {
+      const firstColumnSpans = block.mergeFirstColumn
+        ? rowSpansOfFirstColumn(block.rows)
+        : block.rows.map(() => 1);
+      return (
+        <figure className="flex flex-col gap-1.5 py-1">
+          <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[480px] border-collapse text-read-sm">
+              <thead>
+                <tr>
+                  {block.headers.map((header) => (
+                    <th
+                      key={header}
+                      scope="col"
+                      className="border border-edge bg-canvas px-3 py-1.5 text-center font-bold text-ink"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {block.rows.map((row, rowIndex) => {
+                  const span = firstColumnSpans[rowIndex] ?? 1;
+                  return (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: 表は静的で並べ替えないため添字で足りる
+                    <tr key={rowIndex}>
+                      {row.map((cell, i) =>
+                        i === 0 && span === 0 ? null : (
+                          <td
+                            // biome-ignore lint/suspicious/noArrayIndexKey: 同じ行に同じ値が並ぶのでセルの値はキーにできない
+                            key={i}
+                            rowSpan={i === 0 && span > 1 ? span : undefined}
+                            className="border border-edge px-3 py-1.5 align-top text-ink-soft leading-[1.7]"
+                          >
+                            <PmText text={cell} />
+                          </td>
+                        ),
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </figure>
+      );
+    }
   }
 };
 
@@ -240,7 +319,9 @@ const Slot = ({ id, slot, value, revealed }: SlotProps) => {
             </span>
           )}
           <span className="text-muted">解答例</span>
-          <span className="font-bold text-ink">{answerLabel(slot)}</span>
+          <span className="font-bold text-ink">
+            <PmText text={answerLabel(slot)} />
+          </span>
         </div>
       )}
     </div>
@@ -346,7 +427,7 @@ const SlotExplain = ({ slot }: { slot: PmAnswerSlot }) => (
 
 /** 解答群の用語の説明。設問の欄の後ろに出す。 */
 const Glossary = ({ part }: { part: PmQuestionPart }) =>
-  part.glossary && part.choices ? (
+  part.glossary ? (
     <div className="mt-1 flex flex-col gap-2 rounded-lg border border-line bg-panel px-3.5 py-3">
       <h4 className="font-bold text-[12px] text-accent-deep">{part.label} 解答群の用語</h4>
       <dl className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1.5">
@@ -592,7 +673,7 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                           <h4 className="font-bold text-[13.5px] text-ink">{slot.key}</h4>
                           <span className="text-read-sm text-muted">解答例</span>
                           <span className="font-bold text-read-sm text-ink">
-                            {answerLabel(slot)}
+                            <PmText text={answerLabel(slot)} />
                           </span>
                         </div>
                         <p className="text-pretty text-read-sm text-ink leading-[1.85]">

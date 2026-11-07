@@ -19,8 +19,29 @@ export type PmBlock =
    * 見出しを左に揃え、本文をその右に折り返す。
    */
   | { kind: "items"; items: { label: string; text: string; sub?: string }[] }
-  /** 原本のページから切り出した図。 */
-  | { kind: "image"; image: QuestionImage };
+  /**
+   * 原本のページから切り出した図。図の中に空欄があるときは、代替テキストにも `{{a}}` と書く
+   * （描画側が「空欄a」に直す）。
+   */
+  | { kind: "image"; image: QuestionImage }
+  /**
+   * SQL 文などのコード。1 行ずつ持ち、等幅で行頭の空白も残して組む。図番号の見出しは下に付ける。
+   * 行の中でも空欄・下線の書き方が使える。
+   */
+  | { kind: "code"; caption: string; lines: string[] }
+  /**
+   * 表。原本の表は HTML で組む（線画ではないので、切り出すより読みやすい）。
+   * セルの中でも空欄・下線の書き方が使える。結合セルは同じ値を繰り返して持つ。
+   * mergeFirstColumn を付けた表は、1 列目で同じ値が続く行を描画側が縦に結合して 1 つのセルにする
+   * （原本で 1 列目が結合セルの表、または 1 つのセルの箇条書きを行に分けた表に付ける）。
+   */
+  | {
+      kind: "table";
+      caption: string;
+      headers: string[];
+      rows: string[][];
+      mergeFirstColumn?: boolean;
+    };
 
 /** 解答群の 1 つ。 */
 export type PmChoice = { key: string; text: string };
@@ -35,7 +56,7 @@ export type PmAnswerSlot = {
   hint: string;
   /** 解答群から選ぶ欄なら、その解答群。 */
   choices?: PmChoice[];
-  /** IPA の解答例（解答の要点）。 */
+  /** IPA の解答例（解答の要点）。解答例に下線があるときは `[[…]]` で書く。 */
   answer: string;
   /** 本サイトで書いた解説の要点（1〜2 文）。 */
   explain: string;

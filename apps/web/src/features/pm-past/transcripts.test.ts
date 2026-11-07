@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { parsePmAnswers, withAnswer, withoutAnswers } from "./answers";
+import { rowSpansOfFirstColumn } from "./components/pm-reader";
 import { PM_EXAMS, PM_PROBLEMS, pmProblemId } from "./data";
 import { PM_TRANSCRIPTS } from "./transcripts";
 import type { PmBlock, PmTranscript } from "./types";
@@ -17,6 +18,10 @@ const textsOf = (block: PmBlock): string[] => {
       return block.items.flatMap((item) => [item.label, item.text, item.sub ?? ""]);
     case "image":
       return [block.image.alt];
+    case "table":
+      return [block.caption, ...block.headers, ...block.rows.flat()];
+    case "code":
+      return [block.caption, ...block.lines];
   }
 };
 
@@ -106,7 +111,17 @@ describe.each(Object.values(PM_TRANSCRIPTS))("書き起こし $id", (t) => {
   it("選択肢ごとの判定と用語の説明は、解答群の記号に対応している", () => {
     for (const part of t.parts) {
       if (part.glossary) {
-        expect(part.glossary.map((g) => g.key)).toEqual(part.choices?.map((c) => c.key));
+        const keys = part.glossary.map((g) => g.key);
+        expect(new Set(keys).size).toBe(keys.length);
+        if (part.choices) {
+          expect(keys).toEqual(part.choices.map((c) => c.key));
+        } else {
+          // 小問ごとの解答群しか無い設問は、どれかの解答群の記号であればよい
+          const all = new Set(
+            (part.items ?? []).flatMap((item) => item.choices ?? []).map((c) => c.key),
+          );
+          for (const key of keys) expect(all).toContain(key);
+        }
       }
       for (const slot of part.slots) {
         if (!slot.choiceNotes) continue;
@@ -136,5 +151,19 @@ describe("書いた答えの保存", () => {
   it("保存された値は、形の合わない項目を捨てて読む", () => {
     expect(parsePmAnswers(null)).toEqual({});
     expect(parsePmAnswers({ p1: { a: "ア", b: 3 }, p2: "x" })).toEqual({ p1: { a: "ア" } });
+  });
+});
+
+describe("表の 1 列目の結合", () => {
+  it("同じ値が続く行を先頭の行にまとめ、離れた同じ値はまとめない", () => {
+    const rows = [
+      ["A", "1"],
+      ["A", "2"],
+      ["B", "3"],
+      ["A", "4"],
+      ["A", "5"],
+      ["A", "6"],
+    ];
+    expect(rowSpansOfFirstColumn(rows)).toEqual([2, 0, 1, 3, 0, 0]);
   });
 });

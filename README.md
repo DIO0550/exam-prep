@@ -742,7 +742,9 @@ Next token prediction・RAG・自己回帰・Integrated Gradients）も扱い、
 解説は欄ごとに、本文の手がかり（`clues`、本文からそのまま引く。テストで本文にあるかを確かめる）・答えまでの考え方（`steps`）・
 選択肢ごとの判定（`choiceNotes`）・記述に入れたい要素（`points`）・間違えやすいところ（`pitfalls`）・関連知識（`knowledge`）に分けて書く。
 解答群の用語（`glossary`）と、問全体の解き方（`approach`）も持つ。構成図などの線画はページ画像から切り出す
-（`public/questions/ap-rXX-*-pm/`）。今あるのは令和7年度秋期 問1。
+（`public/questions/ap-rXX-*-pm/`）。表は HTML で組み（`mergeFirstColumn` を付けると、1 列目で同じ値が続く行を縦に結合して描く）、
+SQL 文は `code` ブロックとして 1 行ずつ等幅で組む。図の中の空欄は、代替テキストにも `{{a}}` と書く。
+今あるのは令和7年度秋期 問1・4・5・6・10・11。
 
 #### 応用情報 午後 対策（`ap-pm-*.ts`）
 
