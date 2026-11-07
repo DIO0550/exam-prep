@@ -1,5 +1,6 @@
 import { AP_H31_HARU_PM_01 } from "./data/ap-h31-haru-pm-01";
 import { AP_H31_HARU_PM_04 } from "./data/ap-h31-haru-pm-04";
+import { AP_H31_HARU_PM_05 } from "./data/ap-h31-haru-pm-05";
 import { AP_R01_AKI_PM_01 } from "./data/ap-r01-aki-pm-01";
 import { AP_R01_AKI_PM_04 } from "./data/ap-r01-aki-pm-04";
 import { AP_R01_AKI_PM_05 } from "./data/ap-r01-aki-pm-05";
@@ -151,5 +152,6 @@ export const PM_TRANSCRIPTS: Readonly<Record<string, PmTranscript>> = Object.fro
     AP_R01_AKI_PM_11,
     AP_H31_HARU_PM_01,
     AP_H31_HARU_PM_04,
+    AP_H31_HARU_PM_05,
   ].map((transcript) => [transcript.id, transcript]),
 );
