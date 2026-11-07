@@ -59,5 +59,6 @@ MIT License や CC0 などで再配布することはできません。
 | 令和7年度 秋期 | [2025r07a_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/nl10bi0000009lh8-att/2025r07a_ap_pm_qs.pdf) | [2025r07a_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/nl10bi0000009lh8-att/2025r07a_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
 | 令和7年度 春期 | [2025r07h_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/nl10bi0000009lh8-att/2025r07h_ap_pm_qs.pdf) | [2025r07h_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/nl10bi0000009lh8-att/2025r07h_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
 | 令和6年度 秋期 | [2024r06a_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/m42obm000000afqx-att/2024r06a_ap_pm_qs.pdf) | [2024r06a_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/m42obm000000afqx-att/2024r06a_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
+| 令和6年度 春期 | [2024r06h_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/m42obm000000afqx-att/2024r06h_ap_pm_qs.pdf) | [2024r06h_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/m42obm000000afqx-att/2024r06h_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
 
 本サイトは IPA とは無関係の個人制作です。
