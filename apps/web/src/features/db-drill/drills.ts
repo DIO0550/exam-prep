@@ -33,9 +33,23 @@ import { DB_DRILL_32 } from "./data/db-drill-32";
 import { DB_DRILL_33 } from "./data/db-drill-33";
 import { DB_DRILL_34 } from "./data/db-drill-34";
 import { DB_DRILL_35 } from "./data/db-drill-35";
+import { DB_DRILL_36 } from "./data/db-drill-36";
+import { DB_DRILL_37 } from "./data/db-drill-37";
+import { DB_DRILL_38 } from "./data/db-drill-38";
+import { DB_DRILL_39 } from "./data/db-drill-39";
+import { DB_DRILL_40 } from "./data/db-drill-40";
+import { DB_DRILL_41 } from "./data/db-drill-41";
+import { DB_DRILL_42 } from "./data/db-drill-42";
+import { DB_DRILL_43 } from "./data/db-drill-43";
+import { DB_DRILL_44 } from "./data/db-drill-44";
+import { DB_DRILL_45 } from "./data/db-drill-45";
+import { DB_DRILL_46 } from "./data/db-drill-46";
 import type { DbDrill, DbTopic } from "./types";
 
-/** 一覧に並べる分野の順。午後 問6 で問われる順（設計 → 問合せ → 更新 → 結果の読取り）。 */
+/**
+ * 一覧に並べる分野の順。午後 問6 で問われる順（設計 → 問合せ → 更新 → 結果の読取り）の後に、
+ * 関係代数・トランザクションと障害回復・DB の方式と応用を置く。
+ */
 export const DB_TOPICS: DbTopic[] = [
   "E-R 図",
   "表の設計",
@@ -43,6 +57,9 @@ export const DB_TOPICS: DbTopic[] = [
   "集約と副問合せ",
   "更新と制約",
   "実行結果",
+  "関係代数",
+  "トランザクションと障害回復",
+  "DB の方式と応用",
 ];
 
 /** 書いた順の全問。ID の番号は書いた順で、一覧の並びとは関係しない。 */
@@ -82,6 +99,17 @@ const ALL_DRILLS: DbDrill[] = [
   DB_DRILL_33,
   DB_DRILL_34,
   DB_DRILL_35,
+  DB_DRILL_36,
+  DB_DRILL_37,
+  DB_DRILL_38,
+  DB_DRILL_39,
+  DB_DRILL_40,
+  DB_DRILL_41,
+  DB_DRILL_42,
+  DB_DRILL_43,
+  DB_DRILL_44,
+  DB_DRILL_45,
+  DB_DRILL_46,
 ];
 
 /**

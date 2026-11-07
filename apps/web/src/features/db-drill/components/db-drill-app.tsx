@@ -64,7 +64,8 @@ export const DbDrillApp = ({ sidebar }: { sidebar?: ReactNode }) => {
             <section className="rounded-xl border border-line bg-panel px-5 py-4 text-read-sm text-ink-soft leading-[1.85]">
               <p>
                 応用情報 午後のデータベースの問で出る、E-R 図・関係スキーマ（主キー・外部キー）・SQL
-                文・表の空欄を埋める練習です。過去問の型に限らず、SQL の基本を広く扱います。SQL
+                文・表の空欄を埋める練習です。過去問の型に限らず、SQL
+                の基本と、関係代数・トランザクション・障害回復・データウェアハウスなどの出題範囲を広く扱います。SQL
                 のキーワードや列名は自分で書き、用語や結果、E-R 図に引く線は選んで答えます。
                 「答え合わせ」で空欄ごとに正誤と解説を出します。
               </p>
