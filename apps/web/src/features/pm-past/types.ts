@@ -36,15 +36,25 @@ export type PmBlock =
    * （原本で 1 列目が結合セルの表、または 1 つのセルの箇条書きを行に分けた表に付ける）。
    * 「項番｜手順｜実施内容」のように左の 2 列以上が結合セルの表は、mergeColumns に結合する列の数を書く
    * （左から数える。2 列目以降は、左の列も同じ値の行どうしだけを結合する）。
+   * 右端の列も結合セルの表（「システム名｜…｜連携先｜…｜システム構成」のように、左の列と右端の列が
+   * 同じ単位でまとまり、間の列だけが行に分かれる表）は、mergeLastColumn を付ける（右端の列は、
+   * mergeColumns の列と右端の列の両方が同じ値の行どうしを結合する）。
    */
   | {
       kind: "table";
       caption: string;
       headers: string[];
-      rows: string[][];
+      rows: PmCell[][];
       mergeFirstColumn?: boolean;
       mergeColumns?: number;
+      mergeLastColumn?: boolean;
     };
+
+/**
+ * 表のセル。1 つのセルの中で改行して並ぶ箇条書き（行に分けると隣の列と揃わないもの）は、
+ * 1 行を 1 要素にした配列で持つ。
+ */
+export type PmCell = string | string[];
 
 /** 解答群の 1 つ。 */
 export type PmChoice = { key: string; text: string };
