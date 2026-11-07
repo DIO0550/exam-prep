@@ -32,6 +32,7 @@ export type PmBlock =
   /**
    * 表。原本の表は HTML で組む（線画ではないので、切り出すより読みやすい）。
    * セルの中でも空欄・下線の書き方が使える。結合セルは同じ値を繰り返して持つ。
+   * 1 列目で同じ値が続くときは、描画側が縦に結合して 1 つのセルにする。
    */
   | { kind: "table"; caption: string; headers: string[]; rows: string[][] };
 

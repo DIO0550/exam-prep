@@ -52,6 +52,18 @@ export const PmText = ({ text }: { text: string }) => {
 const plainText = (text: string): string =>
   text.replace(/\{\{([^}]+)\}\}/g, "空欄$1").replace(/\[\[|\]\]/g, "");
 
+/**
+ * 表の 1 列目で同じ値が続く行を、原本の結合セルとして縦にまとめる。
+ * 各行の値は、まとめた先頭の行なら行数、まとめられて消える行なら 0。
+ */
+export const rowSpansOfFirstColumn = (rows: string[][]): number[] =>
+  rows.map((row, r) => {
+    if (r > 0 && rows[r - 1]?.[0] === row[0]) return 0;
+    let span = 1;
+    while (rows[r + span]?.[0] === row[0]) span += 1;
+    return span;
+  });
+
 const PARAGRAPH = "text-pretty text-read-md text-ink-soft leading-[1.95]";
 
 const Block = ({ block }: { block: PmBlock }) => {
@@ -102,7 +114,8 @@ const Block = ({ block }: { block: PmBlock }) => {
           <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>
         </figure>
       );
-    case "table":
+    case "table": {
+      const firstColumnSpans = rowSpansOfFirstColumn(block.rows);
       return (
         <figure className="flex flex-col gap-1.5 py-1">
           <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>
@@ -122,25 +135,32 @@ const Block = ({ block }: { block: PmBlock }) => {
                 </tr>
               </thead>
               <tbody>
-                {block.rows.map((row, rowIndex) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: 表は静的で並べ替えないため添字で足りる
-                  <tr key={rowIndex}>
-                    {row.map((cell, i) => (
-                      <td
-                        // biome-ignore lint/suspicious/noArrayIndexKey: 同じ行に同じ値が並ぶのでセルの値はキーにできない
-                        key={i}
-                        className="border border-edge px-3 py-1.5 align-top text-ink-soft leading-[1.7]"
-                      >
-                        <PmText text={cell} />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                {block.rows.map((row, rowIndex) => {
+                  const span = firstColumnSpans[rowIndex] ?? 1;
+                  return (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: 表は静的で並べ替えないため添字で足りる
+                    <tr key={rowIndex}>
+                      {row.map((cell, i) =>
+                        i === 0 && span === 0 ? null : (
+                          <td
+                            // biome-ignore lint/suspicious/noArrayIndexKey: 同じ行に同じ値が並ぶのでセルの値はキーにできない
+                            key={i}
+                            rowSpan={i === 0 && span > 1 ? span : undefined}
+                            className="border border-edge px-3 py-1.5 align-top text-ink-soft leading-[1.7]"
+                          >
+                            <PmText text={cell} />
+                          </td>
+                        ),
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </figure>
       );
+    }
   }
 };
 
