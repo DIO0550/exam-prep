@@ -13,6 +13,26 @@ import { DB_DRILL_12 } from "./data/db-drill-12";
 import { DB_DRILL_13 } from "./data/db-drill-13";
 import { DB_DRILL_14 } from "./data/db-drill-14";
 import { DB_DRILL_15 } from "./data/db-drill-15";
+import { DB_DRILL_16 } from "./data/db-drill-16";
+import { DB_DRILL_17 } from "./data/db-drill-17";
+import { DB_DRILL_18 } from "./data/db-drill-18";
+import { DB_DRILL_19 } from "./data/db-drill-19";
+import { DB_DRILL_20 } from "./data/db-drill-20";
+import { DB_DRILL_21 } from "./data/db-drill-21";
+import { DB_DRILL_22 } from "./data/db-drill-22";
+import { DB_DRILL_23 } from "./data/db-drill-23";
+import { DB_DRILL_24 } from "./data/db-drill-24";
+import { DB_DRILL_25 } from "./data/db-drill-25";
+import { DB_DRILL_26 } from "./data/db-drill-26";
+import { DB_DRILL_27 } from "./data/db-drill-27";
+import { DB_DRILL_28 } from "./data/db-drill-28";
+import { DB_DRILL_29 } from "./data/db-drill-29";
+import { DB_DRILL_30 } from "./data/db-drill-30";
+import { DB_DRILL_31 } from "./data/db-drill-31";
+import { DB_DRILL_32 } from "./data/db-drill-32";
+import { DB_DRILL_33 } from "./data/db-drill-33";
+import { DB_DRILL_34 } from "./data/db-drill-34";
+import { DB_DRILL_35 } from "./data/db-drill-35";
 import type { DbDrill, DbTopic } from "./types";
 
 /** 一覧に並べる分野の順。午後 問6 で問われる順（設計 → 問合せ → 更新 → 結果の読取り）。 */
@@ -42,6 +62,26 @@ const ALL_DRILLS: DbDrill[] = [
   DB_DRILL_13,
   DB_DRILL_14,
   DB_DRILL_15,
+  DB_DRILL_16,
+  DB_DRILL_17,
+  DB_DRILL_18,
+  DB_DRILL_19,
+  DB_DRILL_20,
+  DB_DRILL_21,
+  DB_DRILL_22,
+  DB_DRILL_23,
+  DB_DRILL_24,
+  DB_DRILL_25,
+  DB_DRILL_26,
+  DB_DRILL_27,
+  DB_DRILL_28,
+  DB_DRILL_29,
+  DB_DRILL_30,
+  DB_DRILL_31,
+  DB_DRILL_32,
+  DB_DRILL_33,
+  DB_DRILL_34,
+  DB_DRILL_35,
 ];
 
 /**

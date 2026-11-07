@@ -63,9 +63,9 @@ export const DbDrillApp = ({ sidebar }: { sidebar?: ReactNode }) => {
 
             <section className="rounded-xl border border-line bg-panel px-5 py-4 text-read-sm text-ink-soft leading-[1.85]">
               <p>
-                応用情報 午後のデータベースの問で出る、関係スキーマ（主キー・外部キー）・SQL
-                文・表の空欄を埋める練習です。SQL
-                のキーワードや列名は自分で書き、用語や結果は選んで答えます。
+                応用情報 午後のデータベースの問で出る、E-R 図・関係スキーマ（主キー・外部キー）・SQL
+                文・表の空欄を埋める練習です。過去問の型に限らず、SQL の基本を広く扱います。SQL
+                のキーワードや列名は自分で書き、用語や結果、E-R 図に引く線は選んで答えます。
                 「答え合わせ」で空欄ごとに正誤と解説を出します。
               </p>
               <p className="mt-1.5 text-muted-soft">
@@ -80,8 +80,11 @@ export const DbDrillApp = ({ sidebar }: { sidebar?: ReactNode }) => {
                 aria-label={topic}
                 className="overflow-hidden rounded-2xl border border-line bg-surface"
               >
-                <h2 className="border-line-soft border-b px-5 py-3 font-bold text-[14px]">
+                <h2 className="flex items-baseline gap-2 border-line-soft border-b px-5 py-3 font-bold text-[14px]">
                   {topic}
+                  <span className="font-normal text-[11.5px] text-muted-soft">
+                    {DB_DRILLS.filter((drill) => drill.topic === topic).length}問
+                  </span>
                 </h2>
                 <ul className="flex flex-col">
                   {DB_DRILLS.map((drill, index) =>
