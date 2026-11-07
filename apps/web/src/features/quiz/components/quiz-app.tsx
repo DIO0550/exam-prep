@@ -6,6 +6,8 @@ import { useMemo, useRef } from "react";
 import { BackupPanel } from "@/features/backup/components/backup-panel";
 import { exportAll, exportSet, importBackup } from "@/features/backup/restore";
 import { downloadBackup, readBackupFile } from "@/features/backup/transfer";
+import { DbDrillApp } from "@/features/db-drill/components/db-drill-app";
+import { dbDrillStore } from "@/features/db-drill/store";
 import { pmAnswerStore } from "@/features/pm-past/answers";
 import { PmPastApp } from "@/features/pm-past/components/pm-past-app";
 import { pmRecordStore } from "@/features/pm-past/store";
@@ -48,13 +50,14 @@ const SECONDS_PER_QUESTION: Record<string, number> = { GAIP: 60, APPM: 180 };
 
 /**
  * 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。
- * 午後の過去問題を解いた記録も学習記録の一つなので、ここに含める。
+ * 午後の過去問題を解いた記録と、穴埋めドリルの記録も学習記録の一つなので、ここに含める。
  */
 const clearEverything = (): void => {
   progressStore.clear();
   noteStore.clear();
   pmRecordStore.clear();
   pmAnswerStore.clear();
+  dbDrillStore.clear();
 };
 
 export const QuizApp = () => {
@@ -89,18 +92,20 @@ export const QuizApp = () => {
     const first = questionSetsOf(EXAMS[index]?.code ?? "")[0];
     if (first) progressStore.selectSet(first.id);
   };
-  // 応用情報 午後の過去問ページは、試験の一覧の「応用情報技術者試験 午後」の下に置く。
-  // 問題集ではないので、開いている間はどの試験も選択中にしない。
+  // 応用情報 午後の過去問ページと SQL・表の穴埋めドリルは、試験の一覧の「応用情報技術者試験 午後」の
+  // 下に置く。問題集ではないので、開いている間はどの試験も選択中にしない。
   const pmPastOpen = session.screen === "pm-past";
+  const dbDrillOpen = session.screen === "db-drill";
+  const extraOpen = pmPastOpen || dbDrillOpen;
   const sidebar = (
     <ExamSidebar
       exams={EXAMS}
       groups={EXAM_GROUPS}
-      examIndex={pmPastOpen ? -1 : examIndex}
+      examIndex={extraOpen ? -1 : examIndex}
       closedGroups={session.closedGroups}
       onSelectExam={(index) => {
         selectExam(index);
-        if (pmPastOpen) session.setScreen("home");
+        if (extraOpen) session.setScreen("home");
       }}
       onToggleGroup={session.toggleGroup}
       extras={[
@@ -111,6 +116,14 @@ export const QuizApp = () => {
           sub: "IPA の公開問題 ・ 記述式",
           selected: pmPastOpen,
           onSelect: () => session.setScreen("pm-past"),
+        },
+        {
+          after: "APPM",
+          badge: "穴埋",
+          name: "応用情報 SQL・表 穴埋め",
+          sub: "午後 問6 対策 ・ 自動採点",
+          selected: dbDrillOpen,
+          onSelect: () => session.setScreen("db-drill"),
         },
       ]}
     />
@@ -153,6 +166,9 @@ export const QuizApp = () => {
         ) : session.screen === "pm-past" ? (
           // 午後の過去問題は記述式なので、演習の画面とは別に組む。左の試験の一覧はそのまま出す。
           <PmPastApp sidebar={sidebar} />
+        ) : session.screen === "db-drill" ? (
+          // SQL・表の穴埋めドリルも、空欄に書いて答え合わせする形なので演習の画面とは別に組む。
+          <DbDrillApp sidebar={sidebar} />
         ) : (
           <>
             {sidebar}
