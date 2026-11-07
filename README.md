@@ -744,7 +744,7 @@ Next token prediction・RAG・自己回帰・Integrated Gradients）も扱い、
 解答群の用語（`glossary`）と、問全体の解き方（`approach`）も持つ。構成図などの線画はページ画像から切り出す
 （`public/questions/ap-rXX-*-pm/`）。表は HTML で組み（`mergeFirstColumn` を付けると、1 列目で同じ値が続く行を縦に結合して描く）、
 SQL 文は `code` ブロックとして 1 行ずつ等幅で組む。図の中の空欄は、代替テキストにも `{{a}}` と書く。
-今あるのは令和7年度秋期 問1・4・5・6・10・11。
+今あるのは令和7年度秋期・春期の 問1・4・5・6・10・11。
 
 #### 応用情報 午後 対策（`ap-pm-*.ts`）
 
