@@ -183,7 +183,7 @@ const Block = ({ block }: { block: PmBlock }) => {
                       scope="col"
                       className="border border-edge bg-canvas px-3 py-1.5 text-center font-bold text-ink"
                     >
-                      {header}
+                      <PmText text={header} />
                     </th>
                   ))}
                 </tr>
