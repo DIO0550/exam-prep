@@ -19,6 +19,8 @@ const textsOf = (block: PmBlock): string[] => {
       return [block.image.alt];
     case "table":
       return [block.caption, ...block.headers, ...block.rows.flat()];
+    case "code":
+      return [block.caption, ...block.lines];
   }
 };
 

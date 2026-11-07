@@ -48,6 +48,10 @@ export const PmText = ({ text }: { text: string }) => {
   );
 };
 
+/** 代替テキスト用に、空欄を「空欄a」に、下線の印を外した文字列にする。 */
+const plainText = (text: string): string =>
+  text.replace(/\{\{([^}]+)\}\}/g, "空欄$1").replace(/\[\[|\]\]/g, "");
+
 const PARAGRAPH = "text-pretty text-read-md text-ink-soft leading-[1.95]";
 
 const Block = ({ block }: { block: PmBlock }) => {
@@ -81,8 +85,22 @@ const Block = ({ block }: { block: PmBlock }) => {
     case "image":
       return (
         <div className="flex justify-center py-2">
-          <OriginalFigure image={block.image} />
+          <OriginalFigure image={{ ...block.image, alt: plainText(block.image.alt) }} />
         </div>
+      );
+    case "code":
+      return (
+        <figure className="flex flex-col gap-1.5 py-1">
+          <pre className="overflow-x-auto rounded-md border border-edge bg-panel px-4 py-3 font-mono text-ink-soft text-read-sm leading-[2.1]">
+            {block.lines.map((line, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: 行は静的で並べ替えず、同じ行が並ぶこともある
+              <span key={i} className="block min-h-[1lh] whitespace-pre">
+                <PmText text={line} />
+              </span>
+            ))}
+          </pre>
+          <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>
+        </figure>
       );
     case "table":
       return (
@@ -279,7 +297,9 @@ const Slot = ({ id, slot, value, revealed }: SlotProps) => {
             </span>
           )}
           <span className="text-muted">解答例</span>
-          <span className="font-bold text-ink">{answerLabel(slot)}</span>
+          <span className="font-bold text-ink">
+            <PmText text={answerLabel(slot)} />
+          </span>
         </div>
       )}
     </div>
@@ -631,7 +651,7 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                           <h4 className="font-bold text-[13.5px] text-ink">{slot.key}</h4>
                           <span className="text-read-sm text-muted">解答例</span>
                           <span className="font-bold text-read-sm text-ink">
-                            {answerLabel(slot)}
+                            <PmText text={answerLabel(slot)} />
                           </span>
                         </div>
                         <p className="text-pretty text-read-sm text-ink leading-[1.85]">
