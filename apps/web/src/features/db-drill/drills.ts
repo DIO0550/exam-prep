@@ -8,10 +8,16 @@ import { DB_DRILL_07 } from "./data/db-drill-07";
 import { DB_DRILL_08 } from "./data/db-drill-08";
 import { DB_DRILL_09 } from "./data/db-drill-09";
 import { DB_DRILL_10 } from "./data/db-drill-10";
+import { DB_DRILL_11 } from "./data/db-drill-11";
+import { DB_DRILL_12 } from "./data/db-drill-12";
+import { DB_DRILL_13 } from "./data/db-drill-13";
+import { DB_DRILL_14 } from "./data/db-drill-14";
+import { DB_DRILL_15 } from "./data/db-drill-15";
 import type { DbDrill, DbTopic } from "./types";
 
 /** 一覧に並べる分野の順。午後 問6 で問われる順（設計 → 問合せ → 更新 → 結果の読取り）。 */
 export const DB_TOPICS: DbTopic[] = [
+  "E-R 図",
   "表の設計",
   "SELECT と結合",
   "集約と副問合せ",
@@ -19,11 +25,8 @@ export const DB_TOPICS: DbTopic[] = [
   "実行結果",
 ];
 
-/**
- * SQL・表の穴埋めドリル。応用情報 午後 問6（データベース）の空欄補充に慣れるため、
- * 本サイトで書き下ろしたもの（IPA の過去問題ではない）。
- */
-export const DB_DRILLS: DbDrill[] = [
+/** 書いた順の全問。ID の番号は書いた順で、一覧の並びとは関係しない。 */
+const ALL_DRILLS: DbDrill[] = [
   DB_DRILL_01,
   DB_DRILL_02,
   DB_DRILL_03,
@@ -34,4 +37,20 @@ export const DB_DRILLS: DbDrill[] = [
   DB_DRILL_08,
   DB_DRILL_09,
   DB_DRILL_10,
+  DB_DRILL_11,
+  DB_DRILL_12,
+  DB_DRILL_13,
+  DB_DRILL_14,
+  DB_DRILL_15,
 ];
+
+/**
+ * SQL・表の穴埋めドリル。応用情報 午後 問6（データベース）の空欄補充に慣れるため、
+ * 本サイトで書き下ろしたもの（IPA の過去問題ではない）。過去問の型に限らず、SQL と
+ * データベース設計の基本を広く扱う。
+ *
+ * 一覧の分野の順に並べる。画面の「No.」と「次の問題へ」はこの順に従う。
+ */
+export const DB_DRILLS: DbDrill[] = DB_TOPICS.flatMap((topic) =>
+  ALL_DRILLS.filter((drill) => drill.topic === topic),
+);

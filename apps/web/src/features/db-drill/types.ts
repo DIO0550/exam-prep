@@ -19,8 +19,35 @@ export type DbColumn = {
 /** 関係スキーマ 1 つ（「社員（社員番号，氏名，…）」の 1 行）。 */
 export type DbSchema = { name: string; columns: DbColumn[] };
 
+/**
+ * E-R 図のエンティティ 1 つ。格子（列・行）の位置に置き、名前の下に属性を縦に並べる。
+ * 名前や属性を空欄にするときは、文字列全体を `{{a}}` にする（文字と空欄を混ぜては書けない）。
+ */
+export type DbEntity = {
+  /** 関連から指すための名前。 */
+  id: string;
+  name: string;
+  /** 格子の列と行（0 から）。 */
+  col: number;
+  row: number;
+  attrs: DbColumn[];
+};
+
+/**
+ * E-R 図の関連 1 つ（本試験の書き方）。
+ * - "1:1" … 線
+ * - "1:N" … from が 1、to が多。to の側に矢印
+ * - "N:M" … 両端に矢印
+ * blank を付けると線を引かず、2 つのエンティティの間に空欄の枠を置く（線を書き込ませる設問）。
+ */
+export type DbRelation =
+  | { from: string; to: string; kind: "1:1" | "1:N" | "N:M" }
+  | { from: string; to: string; blank: string };
+
 /** 本文の 1 かたまり。 */
 export type DbBlock =
+  /** E-R 図。下に関連の線と下線の凡例を付ける。 */
+  | { kind: "er"; caption: string; entities: DbEntity[]; relations: DbRelation[] }
   /** 段落。 */
   | { kind: "p"; text: string }
   /** 関係スキーマの並び（図の「関係スキーマ」）。下に主キー・外部キーの凡例を付ける。 */
@@ -52,7 +79,13 @@ export type DbBlank = {
 };
 
 /** ドリルの分野。一覧の絞り込みに使う。 */
-export type DbTopic = "表の設計" | "SELECT と結合" | "集約と副問合せ" | "更新と制約" | "実行結果";
+export type DbTopic =
+  | "E-R 図"
+  | "表の設計"
+  | "SELECT と結合"
+  | "集約と副問合せ"
+  | "更新と制約"
+  | "実行結果";
 
 /** ドリル 1 問。 */
 export type DbDrill = {

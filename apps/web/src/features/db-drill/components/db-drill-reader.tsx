@@ -5,12 +5,11 @@ import { useState } from "react";
 import { countCorrect, isCorrect } from "../grade";
 import { dbDrillStore, useDbDrillRecord } from "../store";
 import type { DbBlank, DbBlock, DbColumn, DbDrill } from "../types";
+import type { Marks } from "./er-figure";
+import { ErFigure } from "./er-figure";
 
 /** 本文中の空欄（`{{a}}`）。 */
 const BLANK = /(\{\{[^}]+\}\})/;
-
-/** 答え合わせの後、空欄ごとの正誤。答え合わせ前は undefined。 */
-type Marks = Record<string, boolean> | undefined;
 
 /** 本文の文字列。空欄は枠にし、答え合わせの後は正誤で色を付ける。 */
 const DrillText = ({ text, marks }: { text: string; marks: Marks }) => (
@@ -62,6 +61,15 @@ const Column = ({ column, marks }: { column: DbColumn; marks: Marks }) => (
 
 const Block = ({ block, marks }: { block: DbBlock; marks: Marks }) => {
   switch (block.kind) {
+    case "er":
+      return (
+        <ErFigure
+          caption={block.caption}
+          entities={block.entities}
+          relations={block.relations}
+          marks={marks}
+        />
+      );
     case "p":
       return (
         <p className={`${PARAGRAPH} indent-[1em]`}>
