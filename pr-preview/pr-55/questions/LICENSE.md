@@ -1,0 +1,68 @@
+# このディレクトリと問題データについて
+
+`apps/web/public/questions/` 以下の画像、および
+`apps/web/src/features/quiz/data/ap-*.ts`（応用情報技術者試験 午前）と
+`apps/web/src/features/quiz/data/sc-*.ts`（情報処理安全確保支援士試験 午前Ⅱ）、
+`apps/web/src/features/pm-past/data/*.ts`（応用情報技術者試験 午後）に収録した
+問題文・選択肢・正解は、
+**独立行政法人情報処理推進機構（IPA）の著作物**です。
+
+リポジトリルートの [`LICENSE`](../../../../LICENSE)（MIT License）は**ソースコードにのみ**
+適用され、これらのデータには適用されません。IPA は著作権を放棄していないので、
+MIT License や CC0 などで再配布することはできません。
+
+再利用する場合は IPA の定める条件に従ってください。
+
+<https://www.ipa.go.jp/shiken/faq.html>
+
+条件の整理と、このリポジトリでの取り込み方針は
+[`docs/ipa-kakomon-usage-notes.md`](../../../../docs/ipa-kakomon-usage-notes.md) にあります。
+
+## 内訳
+
+| 種類 | 権利者 |
+|---|---|
+| 問題文・選択肢・図・正解（解答例）・出題趣旨 | IPA |
+| 分野の細分類、解説（`explain` / `points` / `note` / `overview`） | 本リポジトリ（MIT） |
+| 画面・コード | 本リポジトリ（MIT） |
+
+## 出典
+
+収録している回ごとに、IPA が公開している問題冊子と解答例の PDF を典拠にしている。
+一覧は [過去問題](https://www.ipa.go.jp/shiken/mondai-kaiotu/index.html) から年度別のページをたどれる。
+
+### 応用情報技術者試験 午前
+
+| 回 | 問題 | 解答 |
+|---|---|---|
+| 令和元年度 秋期 | [2019r01a_ap_am_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_ap_am_qs.pdf) | [2019r01a_ap_am_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_ap_am_ans.pdf) |
+| 令和2年度 10月 | [2020r02o_ap_am_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d05l-att/2020r02o_ap_am_qs.pdf) | [2020r02o_ap_am_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d05l-att/2020r02o_ap_am_ans.pdf) |
+| 令和3年度 春期 | [2021r03h_ap_am_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d5ru-att/2021r03h_ap_am_qs.pdf) | [2021r03h_ap_am_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d5ru-att/2021r03h_ap_am_ans.pdf) |
+
+令和3年度 秋期以降の回も同じ形式で、各データファイル
+（`apps/web/src/features/quiz/data/ap-*.ts`）の先頭コメントに出典 PDF の URL を書いてある。
+
+### 情報処理安全確保支援士試験 午前Ⅱ
+
+令和元年度 秋期〜令和7年度 秋期の 12 回分。PDF のファイル名は `<年度>_sc_am2_qs.pdf`（問題）と
+`<年度>_sc_am2_ans.pdf`（解答）で、URL は各データファイル
+（`apps/web/src/features/quiz/data/sc-*.ts`）の先頭コメントに書いてある。
+
+| 回 | 問題 | 解答 |
+|---|---|---|
+| 令和元年度 秋期 | [2019r01a_sc_am2_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_sc_am2_qs.pdf) | [2019r01a_sc_am2_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_sc_am2_ans.pdf) |
+
+### 応用情報技術者試験 午後
+
+| 回 | 問題 | 解答例 | 収録した問 |
+|---|---|---|---|
+| 令和7年度 秋期 | [2025r07a_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/nl10bi0000009lh8-att/2025r07a_ap_pm_qs.pdf) | [2025r07a_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/nl10bi0000009lh8-att/2025r07a_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
+| 令和7年度 春期 | [2025r07h_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/nl10bi0000009lh8-att/2025r07h_ap_pm_qs.pdf) | [2025r07h_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/nl10bi0000009lh8-att/2025r07h_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
+| 令和6年度 秋期 | [2024r06a_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/m42obm000000afqx-att/2024r06a_ap_pm_qs.pdf) | [2024r06a_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/m42obm000000afqx-att/2024r06a_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
+| 令和6年度 春期 | [2024r06h_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/m42obm000000afqx-att/2024r06h_ap_pm_qs.pdf) | [2024r06h_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/m42obm000000afqx-att/2024r06h_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
+| 令和5年度 秋期 | [2023r05a_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/ps6vr70000010d6y-att/2023r05a_ap_pm_qs.pdf) | [2023r05a_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/ps6vr70000010d6y-att/2023r05a_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
+| 令和5年度 春期 | [2023r05h_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/ps6vr70000010d6y-att/2023r05h_ap_pm_qs.pdf) | [2023r05h_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/ps6vr70000010d6y-att/2023r05h_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
+| 令和4年度 秋期 | [2022r04a_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt80000008smf-att/2022r04a_ap_pm_qs.pdf) | [2022r04a_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt80000008smf-att/2022r04a_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
+| 令和4年度 春期 | [2022r04h_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt80000009sgk-att/2022r04h_ap_pm_qs.pdf) | [2022r04h_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt80000009sgk-att/2022r04h_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
+
+本サイトは IPA とは無関係の個人制作です。
