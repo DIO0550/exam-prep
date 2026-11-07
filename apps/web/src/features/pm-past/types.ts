@@ -34,6 +34,8 @@ export type PmBlock =
    * セルの中でも空欄・下線の書き方が使える。結合セルは同じ値を繰り返して持つ。
    * mergeFirstColumn を付けた表は、1 列目で同じ値が続く行を描画側が縦に結合して 1 つのセルにする
    * （原本で 1 列目が結合セルの表、または 1 つのセルの箇条書きを行に分けた表に付ける）。
+   * 「項番｜手順｜実施内容」のように左の 2 列以上が結合セルの表は、mergeColumns に結合する列の数を書く
+   * （左から数える。2 列目以降は、左の列も同じ値の行どうしだけを結合する）。
    */
   | {
       kind: "table";
@@ -41,6 +43,7 @@ export type PmBlock =
       headers: string[];
       rows: string[][];
       mergeFirstColumn?: boolean;
+      mergeColumns?: number;
     };
 
 /** 解答群の 1 つ。 */

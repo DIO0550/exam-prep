@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { parsePmAnswers, withAnswer, withoutAnswers } from "./answers";
-import { rowSpansOfFirstColumn } from "./components/pm-reader";
+import { rowSpansOfColumn, rowSpansOfFirstColumn } from "./components/pm-reader";
 import { PM_EXAMS, PM_PROBLEMS, pmProblemId } from "./data";
 import { PM_TRANSCRIPTS } from "./transcripts";
 import type { PmBlock, PmTranscript } from "./types";
@@ -165,5 +165,17 @@ describe("表の 1 列目の結合", () => {
       ["A", "6"],
     ];
     expect(rowSpansOfFirstColumn(rows)).toEqual([2, 0, 1, 3, 0, 0]);
+  });
+
+  it("2 列目は、1 列目も同じ値の行どうしだけをまとめる", () => {
+    const rows = [
+      ["1", "受付", "a"],
+      ["2", "実現", "b"],
+      ["2", "実現", "c"],
+      ["3", "実現", "d"],
+    ];
+    expect(rowSpansOfColumn(rows, 0)).toEqual([1, 2, 0, 1]);
+    // 項番 2 と 3 は 2 列目が同じ「実現」でも、1 列目が違うのでまとめない
+    expect(rowSpansOfColumn(rows, 1)).toEqual([1, 2, 0, 1]);
   });
 });
