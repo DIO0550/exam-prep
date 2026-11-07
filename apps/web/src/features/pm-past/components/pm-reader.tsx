@@ -84,6 +84,45 @@ const Block = ({ block }: { block: PmBlock }) => {
           <OriginalFigure image={block.image} />
         </div>
       );
+    case "table":
+      return (
+        <figure className="flex flex-col gap-1.5 py-1">
+          <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[480px] border-collapse text-read-sm">
+              <thead>
+                <tr>
+                  {block.headers.map((header) => (
+                    <th
+                      key={header}
+                      scope="col"
+                      className="border border-edge bg-canvas px-3 py-1.5 text-center font-bold text-ink"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {block.rows.map((row, rowIndex) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: 表は静的で並べ替えないため添字で足りる
+                  <tr key={rowIndex}>
+                    {row.map((cell, i) => (
+                      <td
+                        // biome-ignore lint/suspicious/noArrayIndexKey: 同じ行に同じ値が並ぶのでセルの値はキーにできない
+                        key={i}
+                        className="border border-edge px-3 py-1.5 align-top text-ink-soft leading-[1.7]"
+                      >
+                        <PmText text={cell} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </figure>
+      );
   }
 };
 
@@ -346,7 +385,7 @@ const SlotExplain = ({ slot }: { slot: PmAnswerSlot }) => (
 
 /** 解答群の用語の説明。設問の欄の後ろに出す。 */
 const Glossary = ({ part }: { part: PmQuestionPart }) =>
-  part.glossary && part.choices ? (
+  part.glossary ? (
     <div className="mt-1 flex flex-col gap-2 rounded-lg border border-line bg-panel px-3.5 py-3">
       <h4 className="font-bold text-[12px] text-accent-deep">{part.label} 解答群の用語</h4>
       <dl className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1.5">

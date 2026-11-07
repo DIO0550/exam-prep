@@ -17,6 +17,8 @@ const textsOf = (block: PmBlock): string[] => {
       return block.items.flatMap((item) => [item.label, item.text, item.sub ?? ""]);
     case "image":
       return [block.image.alt];
+    case "table":
+      return [block.caption, ...block.headers, ...block.rows.flat()];
   }
 };
 
@@ -106,7 +108,17 @@ describe.each(Object.values(PM_TRANSCRIPTS))("書き起こし $id", (t) => {
   it("選択肢ごとの判定と用語の説明は、解答群の記号に対応している", () => {
     for (const part of t.parts) {
       if (part.glossary) {
-        expect(part.glossary.map((g) => g.key)).toEqual(part.choices?.map((c) => c.key));
+        const keys = part.glossary.map((g) => g.key);
+        expect(new Set(keys).size).toBe(keys.length);
+        if (part.choices) {
+          expect(keys).toEqual(part.choices.map((c) => c.key));
+        } else {
+          // 小問ごとの解答群しか無い設問は、どれかの解答群の記号であればよい
+          const all = new Set(
+            (part.items ?? []).flatMap((item) => item.choices ?? []).map((c) => c.key),
+          );
+          for (const key of keys) expect(all).toContain(key);
+        }
       }
       for (const slot of part.slots) {
         if (!slot.choiceNotes) continue;

@@ -20,7 +20,12 @@ export type PmBlock =
    */
   | { kind: "items"; items: { label: string; text: string; sub?: string }[] }
   /** 原本のページから切り出した図。 */
-  | { kind: "image"; image: QuestionImage };
+  | { kind: "image"; image: QuestionImage }
+  /**
+   * 表。原本の表は HTML で組む（線画ではないので、切り出すより読みやすい）。
+   * セルの中でも空欄・下線の書き方が使える。結合セルは同じ値を繰り返して持つ。
+   */
+  | { kind: "table"; caption: string; headers: string[]; rows: string[][] };
 
 /** 解答群の 1 つ。 */
 export type PmChoice = { key: string; text: string };
