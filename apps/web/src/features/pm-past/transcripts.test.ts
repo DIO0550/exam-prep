@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { parsePmAnswers, withAnswer, withoutAnswers } from "./answers";
-import { rowSpansOfColumn, rowSpansOfFirstColumn } from "./components/pm-reader";
+import {
+  rowSpansOfColumn,
+  rowSpansOfFirstColumn,
+  rowSpansOfLastColumn,
+} from "./components/pm-reader";
 import { PM_EXAMS, PM_PROBLEMS, pmProblemId } from "./data";
 import { PM_TRANSCRIPTS } from "./transcripts";
 import type { PmBlock, PmTranscript } from "./types";
@@ -19,7 +23,7 @@ const textsOf = (block: PmBlock): string[] => {
     case "image":
       return [block.image.alt];
     case "table":
-      return [block.caption, ...block.headers, ...block.rows.flat()];
+      return [block.caption, ...block.headers, ...block.rows.flat(2)];
     case "code":
       return [block.caption, ...block.lines];
   }
@@ -177,5 +181,25 @@ describe("表の 1 列目の結合", () => {
     expect(rowSpansOfColumn(rows, 0)).toEqual([1, 2, 0, 1]);
     // 項番 2 と 3 は 2 列目が同じ「実現」でも、1 列目が違うのでまとめない
     expect(rowSpansOfColumn(rows, 1)).toEqual([1, 2, 0, 1]);
+  });
+
+  it("改行して並ぶ箇条書きのセルは、全ての行が同じときだけまとめる", () => {
+    const rows = [
+      ["販売", ["受注", "請求"], "会計"],
+      ["販売", ["受注", "請求"], "生産"],
+      ["販売", ["受注"], "会計"],
+    ];
+    expect(rowSpansOfColumn(rows, 1)).toEqual([2, 0, 1]);
+  });
+
+  it("右端の列は、左の結合する列と右端の列の両方が同じ行どうしだけをまとめる", () => {
+    const rows = [
+      ["販売", "会計", "ホスト系"],
+      ["販売", "生産", "ホスト系"],
+      ["生産", "会計", "ホスト系"],
+      ["生産", "購買", "オープン系"],
+    ];
+    // 3 行目は右端が同じ「ホスト系」でも、1 列目が違うのでまとめない
+    expect(rowSpansOfLastColumn(rows, 1)).toEqual([2, 0, 1, 1]);
   });
 });

@@ -9,7 +9,14 @@ import { pmAnswerStore, usePmAnswers } from "../answers";
 import type { PmExam, PmProblem } from "../data";
 import { pmProblemId, pmSourceLabel } from "../data";
 import { pmRecordStore, usePmRecord } from "../store";
-import type { PmAnswerSlot, PmBlock, PmChoice, PmQuestionPart, PmTranscript } from "../types";
+import type {
+  PmAnswerSlot,
+  PmBlock,
+  PmCell,
+  PmChoice,
+  PmQuestionPart,
+  PmTranscript,
+} from "../types";
 import { ScoreInput } from "./score-input";
 
 /** 本文中の空欄（`{{a}}`）と下線（`[[…]]`）を見つける。 */
@@ -52,23 +59,58 @@ export const PmText = ({ text }: { text: string }) => {
 const plainText = (text: string): string =>
   text.replace(/\{\{([^}]+)\}\}/g, "空欄$1").replace(/\[\[|\]\]/g, "");
 
+/** セルの値を比べるための文字列（改行して並ぶ箇条書きは 1 つにつなぐ）。 */
+const cellKey = (cell: PmCell | undefined): string | undefined =>
+  Array.isArray(cell) ? cell.join("\n") : cell;
+
 /**
- * 表の column 列目で同じ値が続く行を、原本の結合セルとして縦にまとめる。
- * 左の列も同じ値の行どうしだけをまとめる（左の列の結合をまたいではまとめない）。
+ * columns に挙げた列が全て同じ値の行が続くところを、原本の結合セルとして縦にまとめる。
  * 各行の値は、まとめた先頭の行なら行数、まとめられて消える行なら 0。
  */
-export const rowSpansOfColumn = (rows: string[][], column: number): number[] => {
-  const sameUpTo = (a: string[] | undefined, b: string[]) =>
-    a !== undefined && b.slice(0, column + 1).every((cell, i) => a[i] === cell);
+const rowSpansWhereSame = (rows: PmCell[][], columns: number[]): number[] => {
+  const same = (a: PmCell[] | undefined, b: PmCell[]) =>
+    a !== undefined && columns.every((i) => cellKey(a[i]) === cellKey(b[i]));
   return rows.map((row, r) => {
-    if (sameUpTo(rows[r - 1], row)) return 0;
+    if (same(rows[r - 1], row)) return 0;
     let span = 1;
-    while (sameUpTo(rows[r + span], row)) span += 1;
+    while (same(rows[r + span], row)) span += 1;
     return span;
   });
 };
 
-export const rowSpansOfFirstColumn = (rows: string[][]): number[] => rowSpansOfColumn(rows, 0);
+/** 0 列目から column 列目までの添字。 */
+const columnsUpTo = (column: number): number[] => Array.from({ length: column + 1 }, (_, i) => i);
+
+/**
+ * 表の column 列目で同じ値が続く行を、原本の結合セルとして縦にまとめる。
+ * 左の列も同じ値の行どうしだけをまとめる（左の列の結合をまたいではまとめない）。
+ */
+export const rowSpansOfColumn = (rows: PmCell[][], column: number): number[] =>
+  rowSpansWhereSame(rows, columnsUpTo(column));
+
+export const rowSpansOfFirstColumn = (rows: PmCell[][]): number[] => rowSpansOfColumn(rows, 0);
+
+/**
+ * 表の右端の列を、左の merged 列と右端の列の両方が同じ値の行どうしで縦にまとめる
+ * （左の列の結合をまたいではまとめない）。
+ */
+export const rowSpansOfLastColumn = (rows: PmCell[][], merged: number): number[] => {
+  const last = (rows[0]?.length ?? 1) - 1;
+  return rowSpansWhereSame(rows, [...columnsUpTo(merged - 1), last]);
+};
+
+/** 表のセル。改行して並ぶ箇条書きは 1 行ずつ組む。 */
+const CellText = ({ cell }: { cell: PmCell }) =>
+  Array.isArray(cell) ? (
+    cell.map((line, i) => (
+      // biome-ignore lint/suspicious/noArrayIndexKey: セルの行は静的で並べ替えない
+      <span key={i} className="block">
+        <PmText text={line} />
+      </span>
+    ))
+  ) : (
+    <PmText text={cell} />
+  );
 
 const PARAGRAPH = "text-pretty text-read-md text-ink-soft leading-[1.95]";
 
@@ -125,6 +167,9 @@ const Block = ({ block }: { block: PmBlock }) => {
       const spans = Array.from({ length: merged }, (_, column) =>
         rowSpansOfColumn(block.rows, column),
       );
+      // 右端の列を結合しない表では、どの列とも一致しない添字にしておく
+      const lastColumn = block.mergeLastColumn ? block.headers.length - 1 : -1;
+      const lastSpans = block.mergeLastColumn ? rowSpansOfLastColumn(block.rows, merged) : [];
       return (
         <figure className="flex flex-col gap-1.5 py-1">
           <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>
@@ -148,7 +193,8 @@ const Block = ({ block }: { block: PmBlock }) => {
                   // biome-ignore lint/suspicious/noArrayIndexKey: 表は静的で並べ替えないため添字で足りる
                   <tr key={rowIndex}>
                     {row.map((cell, i) => {
-                      const span = spans[i]?.[rowIndex] ?? 1;
+                      const span =
+                        (i === lastColumn ? lastSpans[rowIndex] : spans[i]?.[rowIndex]) ?? 1;
                       return span === 0 ? null : (
                         <td
                           // biome-ignore lint/suspicious/noArrayIndexKey: 同じ行に同じ値が並ぶのでセルの値はキーにできない
@@ -156,7 +202,7 @@ const Block = ({ block }: { block: PmBlock }) => {
                           rowSpan={span > 1 ? span : undefined}
                           className="border border-edge px-3 py-1.5 align-top text-ink-soft leading-[1.7]"
                         >
-                          <PmText text={cell} />
+                          <CellText cell={cell} />
                         </td>
                       );
                     })}
