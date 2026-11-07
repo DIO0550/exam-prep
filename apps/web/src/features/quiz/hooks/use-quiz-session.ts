@@ -29,7 +29,8 @@ export type Screen =
   | "result"
   | "review"
   | "vocab"
-  | "pm-past";
+  | "pm-past"
+  | "db-drill";
 
 /** 解説を問題と同じ画面に出すか、解答後に解説画面へ移るか。 */
 export type FeedbackMode = "inline" | "page";
