@@ -7,7 +7,7 @@ import type { PmTranscript } from "../types";
  * （条件は docs/ipa-kakomon-usage-notes.md と public/questions/LICENSE.md）。
  * 問題冊子と解答例の公開 PDF のページを目視で書き起こした。PDF のテキスト層は使っていない。
  * 図 1・図 2 はページ画像から切り出したもの（図中の IP アドレスの表と注記も含む）。
- * 表 1 の「アクセス経路」は原本で縦に結合したセルを、行ごとに繰り返して持っている。
+ * 表 1 の「アクセス経路」は原本で縦に結合したセルを、行ごとに繰り返して持っている（描画では結合する）。
  * 解説は本サイトで書いたもの。
  */
 
@@ -78,6 +78,7 @@ export const AP_R07_AKI_PM_05: PmTranscript = {
     {
       kind: "table",
       caption: "表 1　FW に設定されている，インターネットと DMZ との間の通信を許可するルール",
+      mergeFirstColumn: true,
       headers: ["アクセス経路", "送信元", "宛先", "プロトコル／宛先ポート番号"],
       rows: [
         ["インターネット→DMZ", "any", "{{a}}", "TCP/443"],

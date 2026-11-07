@@ -32,9 +32,16 @@ export type PmBlock =
   /**
    * 表。原本の表は HTML で組む（線画ではないので、切り出すより読みやすい）。
    * セルの中でも空欄・下線の書き方が使える。結合セルは同じ値を繰り返して持つ。
-   * 1 列目で同じ値が続くときは、描画側が縦に結合して 1 つのセルにする。
+   * mergeFirstColumn を付けた表は、1 列目で同じ値が続く行を描画側が縦に結合して 1 つのセルにする
+   * （原本で 1 列目が結合セルの表、または 1 つのセルの箇条書きを行に分けた表に付ける）。
    */
-  | { kind: "table"; caption: string; headers: string[]; rows: string[][] };
+  | {
+      kind: "table";
+      caption: string;
+      headers: string[];
+      rows: string[][];
+      mergeFirstColumn?: boolean;
+    };
 
 /** 解答群の 1 つ。 */
 export type PmChoice = { key: string; text: string };

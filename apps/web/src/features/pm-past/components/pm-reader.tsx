@@ -115,7 +115,9 @@ const Block = ({ block }: { block: PmBlock }) => {
         </figure>
       );
     case "table": {
-      const firstColumnSpans = rowSpansOfFirstColumn(block.rows);
+      const firstColumnSpans = block.mergeFirstColumn
+        ? rowSpansOfFirstColumn(block.rows)
+        : block.rows.map(() => 1);
       return (
         <figure className="flex flex-col gap-1.5 py-1">
           <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>

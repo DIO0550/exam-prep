@@ -7,7 +7,7 @@ import type { PmTranscript } from "../types";
  * （条件は docs/ipa-kakomon-usage-notes.md と public/questions/LICENSE.md）。
  * 問題冊子と解答例の公開 PDF のページを目視で書き起こした。PDF のテキスト層は使っていない。
  * 表 2・表 4 は、原本で 1 つのセルに箇条書きで並ぶ内容を 1 行ずつに分け、1 列目（機能・手順）は
- * 同じ値を繰り返して持つ（描画側が縦に結合する）。表の注の上付き数字は ¹⁾ ²⁾ で書いた。
+ * 同じ値を繰り返して持つ（mergeFirstColumn で描画側が縦に結合する）。表の注の上付き数字は ¹⁾ ²⁾ で書いた。
  * 設問2 (1) の解答例は「可用性」と「稼働率」の二つが挙がっている。欄には可用性を載せ、解説で稼働率にも触れた。
  * 解説は本サイトで書いたもの。
  */
@@ -61,6 +61,7 @@ export const AP_R07_AKI_PM_10: PmTranscript = {
     {
       kind: "table",
       caption: "表 2　P サービスの概要",
+      mergeFirstColumn: true,
       headers: ["機能", "内容"],
       rows: [
         ["各種申請", "・利用者が各種申請を行うと，その申請は承認ワークフローで処理される。"],
@@ -120,6 +121,7 @@ export const AP_R07_AKI_PM_10: PmTranscript = {
     {
       kind: "table",
       caption: "表 4　SD で行う問合せ対応手順",
+      mergeFirstColumn: true,
       headers: ["手順", "内容"],
       rows: [
         ["記録と分類", "・利用者から問合せを受け付け，問合せ管理 DB に記録する。"],
