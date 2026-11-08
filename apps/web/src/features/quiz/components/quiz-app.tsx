@@ -8,6 +8,8 @@ import { exportAll, exportSet, importBackup } from "@/features/backup/restore";
 import { downloadBackup, readBackupFile } from "@/features/backup/transfer";
 import { DbDrillApp } from "@/features/db-drill/components/db-drill-app";
 import { dbDrillStore } from "@/features/db-drill/store";
+import { NwDrillApp } from "@/features/nw-drill/components/nw-drill-app";
+import { nwDrillStore } from "@/features/nw-drill/store";
 import { pmAnswerStore } from "@/features/pm-past/answers";
 import { PmPastApp } from "@/features/pm-past/components/pm-past-app";
 import { pmRecordStore } from "@/features/pm-past/store";
@@ -50,7 +52,8 @@ const SECONDS_PER_QUESTION: Record<string, number> = { GAIP: 60, APPM: 180 };
 
 /**
  * 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。
- * 午後の過去問題を解いた記録と、穴埋めドリルの記録も学習記録の一つなので、ここに含める。
+ * 午後の過去問題を解いた記録と、穴埋めドリル（SQL・表、ネットワーク）の記録も学習記録の一つなので、
+ * ここに含める。
  */
 const clearEverything = (): void => {
   progressStore.clear();
@@ -58,6 +61,7 @@ const clearEverything = (): void => {
   pmRecordStore.clear();
   pmAnswerStore.clear();
   dbDrillStore.clear();
+  nwDrillStore.clear();
 };
 
 export const QuizApp = () => {
@@ -92,11 +96,12 @@ export const QuizApp = () => {
     const first = questionSetsOf(EXAMS[index]?.code ?? "")[0];
     if (first) progressStore.selectSet(first.id);
   };
-  // 応用情報 午後の過去問ページと SQL・表の穴埋めドリルは、試験の一覧の「応用情報技術者試験 午後」の
-  // 下に置く。問題集ではないので、開いている間はどの試験も選択中にしない。
+  // 応用情報 午後の過去問ページと穴埋めドリル（SQL・表、ネットワーク）は、試験の一覧の
+  // 「応用情報技術者試験 午後」の下に置く。問題集ではないので、開いている間はどの試験も選択中にしない。
   const pmPastOpen = session.screen === "pm-past";
   const dbDrillOpen = session.screen === "db-drill";
-  const extraOpen = pmPastOpen || dbDrillOpen;
+  const nwDrillOpen = session.screen === "nw-drill";
+  const extraOpen = pmPastOpen || dbDrillOpen || nwDrillOpen;
   const sidebar = (
     <ExamSidebar
       exams={EXAMS}
@@ -124,6 +129,14 @@ export const QuizApp = () => {
           sub: "午後 問6 対策 ・ 自動採点",
           selected: dbDrillOpen,
           onSelect: () => session.setScreen("db-drill"),
+        },
+        {
+          after: "APPM",
+          badge: "穴埋",
+          name: "応用情報 ネットワーク 穴埋め",
+          sub: "午後 問5 対策 ・ 自動採点",
+          selected: nwDrillOpen,
+          onSelect: () => session.setScreen("nw-drill"),
         },
       ]}
     />
@@ -169,6 +182,9 @@ export const QuizApp = () => {
         ) : session.screen === "db-drill" ? (
           // SQL・表の穴埋めドリルも、空欄に書いて答え合わせする形なので演習の画面とは別に組む。
           <DbDrillApp sidebar={sidebar} />
+        ) : session.screen === "nw-drill" ? (
+          // ネットワークの穴埋めドリルも同じ形（画面の部品は fill-drill/ で共通）。
+          <NwDrillApp sidebar={sidebar} />
         ) : (
           <>
             {sidebar}
