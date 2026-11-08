@@ -68,5 +68,6 @@ MIT License や CC0 などで再配布することはできません。
 | 令和3年度 春期 | [2021r03h_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d5ru-att/2021r03h_ap_pm_qs.pdf) | [2021r03h_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d5ru-att/2021r03h_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
 | 令和2年度 10月 | [2020r02o_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d05l-att/2020r02o_ap_pm_qs.pdf) | [2020r02o_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000d05l-att/2020r02o_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
 | 令和元年度 秋期 | [2019r01a_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_ap_pm_qs.pdf) | [2019r01a_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
+| 平成31年度 春期 | [2019h31h_ap_pm_qs.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000ddiw-att/2019h31h_ap_pm_qs.pdf) | [2019h31h_ap_pm_ans.pdf](https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000ddiw-att/2019h31h_ap_pm_ans.pdf) | 問1，問4，問5，問6，問10，問11 |
 
 本サイトは IPA とは無関係の個人制作です。
