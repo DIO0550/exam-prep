@@ -218,4 +218,52 @@ describe("欄ごとの自己採点", () => {
     await user.click(answers.getByRole("button", { name: "答えを消して解き直す" }));
     expect(JSON.parse(window.localStorage.getItem(PM_MARKS_KEY) ?? "{}")[ID]).toBeUndefined();
   });
+
+  it("記述の欄には △（部分点）も付けられ、点数の目安では半欄として数える", async () => {
+    if (!pmExam || !problem || !transcript) throw new Error("R7 秋 問1 が見つからない");
+    const user = userEvent.setup();
+    render(
+      <PmReader pmExam={pmExam} problem={problem} transcript={transcript} onBack={() => {}} />,
+    );
+    const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問1 a の答え" }), "ク");
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問1 b の答え" }), "ア");
+    await user.type(answers.getByRole("textbox", { name: "設問2 c の答え" }), "初期設定");
+    await user.click(answers.getByRole("button", { name: "解答例を見る" }));
+
+    // 記号の欄は合っているか違っているかなので、△ は記述の欄にだけ出す
+    const d = within(answers.getByRole("group", { name: "設問1 d の自己採点" }));
+    expect(d.queryByRole("button", { name: "△ 部分点" })).not.toBeInTheDocument();
+    await user.click(d.getByRole("button", { name: "× 不正解" }));
+
+    const marks: [string, string][] = [
+      ["設問1 e", "○ 正解"],
+      ["設問2 c", "△ 部分点"],
+      ["設問3 (1)", "○ 正解"],
+      ["設問3 (2)", "△ 部分点"],
+      ["設問3 (3)", "○ 正解"],
+    ];
+    for (const [key, label] of marks) {
+      const group = within(answers.getByRole("group", { name: `${key} の自己採点` }));
+      await user.click(group.getByRole("button", { name: label }));
+    }
+
+    // ○ 4 ＋ △ 2 × 0.5 ＝ 5 欄分 / 8 欄 → 63 点（1 問 20 点では 12.5 点）
+    const summary = answers.getByRole("region", { name: "自己採点" });
+    expect(summary).toHaveTextContent(/○ 4 ・ △ 2 ・ × 2（全 8 欄）/);
+    expect(summary).toHaveTextContent(/目安 63点（本番の配点では 20点中 12.5点）/);
+    expect(savedScore()).toBe(63);
+    const explain = within(answers.getByRole("region", { name: "解説" }));
+    expect(explain.getByRole("article", { name: "設問2 c の解説" })).toHaveTextContent("△ 部分点");
+
+    // △ の欄も、× の欄といっしょに解き直せる
+    await user.click(answers.getByRole("button", { name: "× と △ の欄を解き直す（4欄）" }));
+    expect(answers.getByRole("combobox", { name: "設問1 a の答え" })).toHaveValue("ク");
+    expect(answers.getByRole("textbox", { name: "設問2 c の答え" })).toHaveValue("");
+    expect(JSON.parse(window.localStorage.getItem(PM_MARKS_KEY) ?? "{}")[ID]).toEqual({
+      "設問1 e": "ok",
+      "設問3 (1)": "ok",
+      "設問3 (3)": "ok",
+    });
+  });
 });

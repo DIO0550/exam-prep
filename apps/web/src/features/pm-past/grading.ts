@@ -7,15 +7,20 @@ import type { PmAnswerSlot, PmQuestionPart, PmTranscript } from "./types";
  *
  * 記号の欄は、選んだ記号を解答例と突き合わせて自動で ○× を決める。属性名の下線も答える欄
  * （keyUnderline）は、選んだ下線が解答例と違えば、属性名を見るまでもなく × にする。
- * それ以外の記述の欄と、何も書いていない・選んでいない（紙で解いた）欄は、本人が付けた印を使う。
+ * それ以外の記述の欄と、何も書いていない・選んでいない（紙で解いた）欄は、本人が付けた印
+ * （○・△・×）を使う。
  *
  * 点数は目安。IPA が公表している配点は問ごと（問1 も問2〜11 も 1 問 20 点、試験要綱の
- * 「問題別配点割合」）までで、設問・解答欄ごとの配点は公表されていない（解答例にも配点の欄は無い）。
- * そのため、どの欄も同じ重さと見て、正解の欄の割合で 1 問の点数を按分する。
+ * 「問題別配点割合」）までで、設問・解答欄ごとの配点や部分点の付け方は公表されていない
+ * （解答例にも配点の欄は無い）。そのため、どの欄も同じ重さと見て、○ を 1 欄、△ を半欄として
+ * 1 問の点数を按分する。
  */
 
 /** IPA の試験要綱にある、午後の 1 問の配点（問1 も、問2〜11 から選ぶ 4 問も各 20 点）。 */
 export const PM_POINTS_PER_PROBLEM = 20;
+
+/** △（部分点）の欄を、○ の何欄分と数えるか。部分点の付け方は非公表なので、半分と置く。 */
+export const PARTIAL_CREDIT = 0.5;
 
 /** 欄 1 つの採点。auto は、選んだ記号・下線から自動で決めたもの（本人は付け直せない）。 */
 export type PmSlotGrade = { mark: PmMark | undefined; auto: boolean };
@@ -28,10 +33,12 @@ export type PmGrading = {
   slots: Record<string, PmSlotGrade>;
   total: number;
   ok: number;
+  /** △（部分点）の欄の数。 */
+  partial: number;
   ng: number;
-  /** まだ ○× の付いていない欄の数。 */
+  /** まだ ○△× の付いていない欄の数。 */
   ungraded: number;
-  /** 全部の欄に ○× が付いたときの、1 問 100 点に換算した点数（正解の欄の割合）。 */
+  /** 全部の欄に印が付いたときの、1 問 100 点に換算した点数（○ を 1、△ を半分と数えた割合）。 */
   score?: number;
   /** 同じく、本番の配点（1 問 20 点）に換算した点数。小数第 1 位まで。 */
   points?: number;
@@ -110,20 +117,23 @@ export const gradeTranscript = (
   }
   const grades = Object.values(slots);
   const total = grades.length;
-  const ok = grades.filter((grade) => grade.mark === "ok").length;
-  const ng = grades.filter((grade) => grade.mark === "ng").length;
-  const ungraded = total - ok - ng;
-  const base = { slots, total, ok, ng, ungraded, choices, lines };
+  const count = (mark: PmMark) => grades.filter((grade) => grade.mark === mark).length;
+  const ok = count("ok");
+  const partial = count("partial");
+  const ng = count("ng");
+  const ungraded = total - ok - partial - ng;
+  const base = { slots, total, ok, partial, ng, ungraded, choices, lines };
   if (total === 0 || ungraded > 0) return base;
+  const earned = ok + PARTIAL_CREDIT * partial;
   return {
     ...base,
-    score: Math.round((100 * ok) / total),
-    points: Math.round((10 * PM_POINTS_PER_PROBLEM * ok) / total) / 10,
+    score: Math.round((100 * earned) / total),
+    points: Math.round((10 * PM_POINTS_PER_PROBLEM * earned) / total) / 10,
   };
 };
 
-/** × の付いた欄の名前。「× の欄だけ解き直す」で消す欄。 */
-export const wrongSlotKeys = (grading: PmGrading): string[] =>
+/** × か △ の付いた欄の名前。「× と △ の欄を解き直す」で消す欄。 */
+export const retrySlotKeys = (grading: PmGrading): string[] =>
   Object.entries(grading.slots)
-    .filter(([, grade]) => grade.mark === "ng")
+    .filter(([, grade]) => grade.mark === "ng" || grade.mark === "partial")
     .map(([key]) => key);
