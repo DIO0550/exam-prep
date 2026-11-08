@@ -769,6 +769,27 @@ E-R 図は `er` ブロックで持ち、SVG で描く（`er-layout.ts`・`compon
 そろっていること、E-R 図の箱や空欄の枠が重ならないことは `drills.test.ts` で確かめている。書いた答えと最後の答え合わせの結果は localStorage
 `exam-prep:db-drill:v1` に残す（「学習記録を消す」で一緒に消える）。
 
+#### 応用情報 ネットワーク 穴埋めドリル（`features/nw-drill/`）
+
+左の試験の一覧で「応用情報技術者試験 午後」の下にある「応用情報 ネットワーク 穴埋め」から開く。午後 問5（ネットワーク）で
+出る、構成図・経路表・FW のルール・NAPT の変換表・ゾーンファイルなどの空欄を埋める練習で、**本サイトで書き下ろした** 30 問
+（構成と経路制御 4・IP アドレスとサブネット 3・LAN と VLAN 3・DHCP と DNS 4・NAT とファイアウォール 2・冗長化と負荷分散 3・
+TCP/IP とアプリケーション 4・無線 LAN と VPN 3・伝送時間と性能 2・IPv6 と新しい技術 2）を収める。経路集約と最長一致、OSPF のコスト、
+tracert と ICMP、サブネットの分割と VLSM、プライベートアドレス、MAC アドレスの学習と ARP、タグ VLAN、STP とリンクアグリゲーション、
+DHCP の手順とリレーエージェント、DNS のレコードと TTL、NAPT、DMZ とステートフルインスペクション、VRRP、負荷分散装置、
+回線の二重化と稼働率、TCP の接続手順とポート番号、メールの配送（MX・OP25B・587）、プロキシ、無線 LAN のチャネルと WPA3、
+IEEE 802.1X、IPsec VPN、転送時間と TCP のウィンドウ、IPv6 の表記と SLAAC、SDN・NFV・CDN・LPWA を扱う。IP アドレス・数値・
+プロトコル名は書いて、用語や仕組みは選んで答える。採点ではスラッシュ・コロン・ピリオドの前後の空白や全角の数字も問わない。
+
+構成図は `figure` ブロックで持ち、解説の図と同じ `diagram` の形（部品を格子に置き、囲みで DMZ などを示す）で描く。
+図の代替テキストには機器・アドレス・つながりを文で入れる（`figure-text.ts`）。構成図には空欄を置かず、空欄は本文・表・等幅の行に置く。
+1 問は `data/nw-drill-NN.ts` に置き、`drills.ts` に登録する。空欄の名前・順と、構成図の部品の重なり・枠をまたぐ部品は
+`drills.test.ts` で確かめる。記録は localStorage `exam-prep:nw-drill:v1`（SQL・表のドリルとは別のキー）。
+
+一覧・解く画面・採点（`grade.ts`）・記録の入れ物は、SQL・表のドリルと共通の `features/fill-drill/` にある。
+ドリルを増やすときは、本文のかたまりの型（共通の段落・表・等幅の行にドリル独自の図を足したもの）と描き分けを用意し、
+`FillDrillApp` に問の並び・分野・記録の入れ物を渡す。
+
 #### 応用情報 午後 対策（`ap-pm-*.ts`）
 
 IPA の午後の過去問題ではなく、**事例文から設問・選択肢・解説まで本サイトで書いた**もの。午後の本試験は記述式
@@ -886,6 +907,7 @@ IPA の午後の過去問題ではなく、**事例文から設問・選択肢�
   解説（`explain`・`overview`）は本リポジトリで書いたもの（MIT）
 - **応用情報 午後 対策の問題（`ap-pm-*.ts`）**: 本リポジトリで書き下ろしたもの（MIT）。IPA の過去問題からの転載ではない
 - **応用情報 SQL・表 穴埋めドリル（`features/db-drill/data/`）**: 本リポジトリで書き下ろしたもの（MIT）。IPA の過去問題からの転載ではない
+- **応用情報 ネットワーク 穴埋めドリル（`features/nw-drill/data/`）**: 本リポジトリで書き下ろしたもの（MIT）。IPA の過去問題からの転載ではない
 - **JSTQB Foundation Level 対策の問題（`ctfl-*.ts`）**: 本リポジトリで書き下ろしたもの（MIT）。
   典拠にした Foundation Level シラバスは、原著が International Software Testing Qualifications Board（ISTQB®）、
   日本語版が Japan Software Testing Qualifications Board（JSTQB®）の著作物で、本リポジトリには含めていない。
