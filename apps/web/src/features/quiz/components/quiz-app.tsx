@@ -10,6 +10,7 @@ import { DbDrillApp } from "@/features/db-drill/components/db-drill-app";
 import { dbDrillStore } from "@/features/db-drill/store";
 import { pmAnswerStore } from "@/features/pm-past/answers";
 import { PmPastApp } from "@/features/pm-past/components/pm-past-app";
+import { pmMarkStore } from "@/features/pm-past/marks";
 import { pmRecordStore } from "@/features/pm-past/store";
 import { VocabApp } from "@/features/vocab/components/vocab-app";
 
@@ -57,6 +58,7 @@ const clearEverything = (): void => {
   noteStore.clear();
   pmRecordStore.clear();
   pmAnswerStore.clear();
+  pmMarkStore.clear();
   dbDrillStore.clear();
 };
 
