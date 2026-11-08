@@ -1,175 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import type { ReactNode } from "react";
+import { Fragment, useState } from "react";
 
 import { countCorrect, isCorrect } from "../grade";
-import { dbDrillStore, useDbDrillRecord } from "../store";
-import type { DbBlank, DbBlock, DbColumn, DbDrill } from "../types";
-import type { Marks } from "./er-figure";
-import { ErFigure } from "./er-figure";
-
-/** 本文中の空欄（`{{a}}`）。 */
-const BLANK = /(\{\{[^}]+\}\})/;
-
-/** 本文の文字列。空欄は枠にし、答え合わせの後は正誤で色を付ける。 */
-const DrillText = ({ text, marks }: { text: string; marks: Marks }) => (
-  <>
-    {text.split(BLANK).map((piece, i) => {
-      const key = `${i}-${piece}`;
-      if (!(piece.startsWith("{{") && piece.endsWith("}}"))) return <span key={key}>{piece}</span>;
-      const name = piece.slice(2, -2);
-      const mark = marks?.[name];
-      return (
-        <span
-          key={key}
-          role="img"
-          aria-label={
-            mark === undefined ? `空欄${name}` : `空欄${name}（${mark ? "正解" : "不正解"}）`
-          }
-          className={`mx-0.5 inline-block min-w-[2.6em] border px-1.5 text-center font-bold font-sans leading-[1.5] ${
-            mark === undefined
-              ? "border-ink"
-              : mark
-                ? "border-ok-line bg-ok-bg text-ok"
-                : "border-ng-line bg-ng-bg text-ng"
-          }`}
-        >
-          {name}
-        </span>
-      );
-    })}
-  </>
-);
-
-const PARAGRAPH = "text-pretty text-read-md text-ink-soft leading-[1.95]";
-
-/** 列名。主キーは実線、外部キーは破線の下線（本試験の関係スキーマの書き方）。 */
-// 文字の下線（text-decoration）は空欄の枠（inline-block）の下に引かれないので、下の枠線で引く。
-const Column = ({ column, marks }: { column: DbColumn; marks: Marks }) => (
-  <span
-    className={
-      column.key === "pk"
-        ? "inline-block border-ink-soft border-b pb-0.5 leading-[1.6]"
-        : column.key === "fk"
-          ? "inline-block border-ink-soft border-b border-dashed pb-0.5 leading-[1.6]"
-          : undefined
-    }
-  >
-    <DrillText text={column.name} marks={marks} />
-  </span>
-);
-
-const Block = ({ block, marks }: { block: DbBlock; marks: Marks }) => {
-  switch (block.kind) {
-    case "er":
-      return (
-        <ErFigure
-          caption={block.caption}
-          entities={block.entities}
-          relations={block.relations}
-          marks={marks}
-        />
-      );
-    case "p":
-      return (
-        <p className={`${PARAGRAPH} indent-[1em]`}>
-          <DrillText text={block.text} marks={marks} />
-        </p>
-      );
-    case "schema":
-      return (
-        <figure className="flex flex-col gap-1.5 py-1">
-          <div className="flex flex-col gap-1.5 rounded-md border border-edge bg-panel px-4 py-3 text-read-md text-ink-soft leading-[2.1]">
-            {block.schemas.map((schema) => (
-              <p key={schema.name}>
-                {schema.name}（
-                {schema.columns.map((column, i) => (
-                  <span key={column.name}>
-                    {i > 0 && "，"}
-                    <Column column={column} marks={marks} />
-                  </span>
-                ))}
-                ）
-              </p>
-            ))}
-          </div>
-          <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>
-          <p className="text-center text-read-xs text-muted">
-            実線の下線は主キー，破線の下線は外部キーを表す。主キーの一部である外部キーには破線を付けない。
-          </p>
-        </figure>
-      );
-    case "code":
-      return (
-        <figure className="flex flex-col gap-1.5 py-1">
-          <pre className="overflow-x-auto rounded-md border border-edge bg-panel px-4 py-3 font-mono text-ink-soft text-read-sm leading-[2.1]">
-            {block.lines.map((line, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: 行は静的で並べ替えず、同じ行が並ぶこともある
-              <span key={i} className="block min-h-[1lh] whitespace-pre">
-                <DrillText text={line} marks={marks} />
-              </span>
-            ))}
-          </pre>
-          <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>
-        </figure>
-      );
-    case "table":
-      return (
-        <figure className="flex flex-col gap-1.5 py-1">
-          <figcaption className="text-center text-read-sm text-ink">{block.caption}</figcaption>
-          <div className="overflow-x-auto">
-            <table className="mx-auto border-collapse text-read-sm">
-              <thead>
-                <tr>
-                  {block.headers.map((header) => (
-                    <th
-                      key={header}
-                      scope="col"
-                      className="whitespace-nowrap border border-edge bg-canvas px-3 py-1.5 text-center font-bold text-ink"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {block.rows.map((row, rowIndex) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: 表は静的で並べ替えないため添字で足りる
-                  <tr key={rowIndex}>
-                    {row.map((cell, i) => (
-                      <td
-                        // biome-ignore lint/suspicious/noArrayIndexKey: 同じ行に同じ値が並ぶのでセルの値はキーにできない
-                        key={i}
-                        className="whitespace-nowrap border border-edge px-3 py-1.5 text-ink-soft"
-                      >
-                        <DrillText text={cell} marks={marks} />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </figure>
-      );
-  }
-};
+import type { FillDrillStore } from "../store";
+import { useFillDrillRecord } from "../store";
+import type { FillBlank, FillDrill, Marks } from "../types";
 
 /** 「イ　1 対多」のように、記号に中身を添える。 */
-const answerLabel = (blank: DbBlank): string => {
+const answerLabel = (blank: FillBlank): string => {
   const choice = blank.choices?.find((c) => c.key === blank.answer);
   return choice ? `${choice.key}　${choice.text}` : blank.answer;
 };
 
 type BlankFieldProps = {
-  drillId: string;
-  blank: DbBlank;
+  blank: FillBlank;
   value: string;
   correct: boolean | undefined;
+  onChange: (value: string) => void;
 };
 
 /** 空欄 1 つの答える欄。答え合わせの後は、正誤・正解・解説を下に出す。 */
-const BlankField = ({ drillId, blank, value, correct }: BlankFieldProps) => {
+const BlankField = ({ blank, value, correct, onChange }: BlankFieldProps) => {
   const label = `空欄${blank.key} の答え`;
   const chosen = blank.choices?.find((choice) => choice.key === value);
   return (
@@ -183,7 +36,7 @@ const BlankField = ({ drillId, blank, value, correct }: BlankFieldProps) => {
           <select
             aria-label={label}
             value={value}
-            onChange={(event) => dbDrillStore.setAnswer(drillId, blank.key, event.target.value)}
+            onChange={(event) => onChange(event.target.value)}
             className={`w-full cursor-pointer truncate rounded-lg border bg-surface px-3 py-2 text-read-sm ${
               value === "" ? "border-edge-strong text-muted-soft" : "border-accent/60 text-ink"
             }`}
@@ -209,7 +62,7 @@ const BlankField = ({ drillId, blank, value, correct }: BlankFieldProps) => {
           autoComplete="off"
           autoCapitalize="characters"
           spellCheck={false}
-          onChange={(event) => dbDrillStore.setAnswer(drillId, blank.key, event.target.value)}
+          onChange={(event) => onChange(event.target.value)}
           className="w-full rounded-lg border border-edge-strong bg-surface px-3 py-2 font-mono text-read-sm text-ink"
         />
       )}
@@ -236,21 +89,31 @@ const BlankField = ({ drillId, blank, value, correct }: BlankFieldProps) => {
   );
 };
 
-type DbDrillReaderProps = {
-  drill: DbDrill;
+type FillDrillReaderProps<Block> = {
+  drill: FillDrill<string, Block>;
   /** 一覧の中での番号（1 から）。 */
   no: number;
+  store: FillDrillStore;
+  /** 本文のかたまり 1 つを描く（ドリルごとの図はここで描き分ける）。 */
+  renderBlock: (block: Block, marks: Marks) => ReactNode;
   onBack: () => void;
   /** 次の問題へ。最後の問題では undefined。 */
   onNext?: () => void;
 };
 
 /**
- * 穴埋めドリル 1 問を解く画面。左に問題文（関係スキーマ・SQL 文・表）、右に空欄ごとの答える欄。
+ * 穴埋めドリル 1 問を解く画面。左に問題文（図・表・SQL 文など）、右に空欄ごとの答える欄。
  * 「答え合わせ」で空欄ごとに正誤を出し、本文の空欄にも正誤の色を付ける。
  */
-export const DbDrillReader = ({ drill, no, onBack, onNext }: DbDrillReaderProps) => {
-  const record = useDbDrillRecord();
+export const FillDrillReader = <Block,>({
+  drill,
+  no,
+  store,
+  renderBlock,
+  onBack,
+  onNext,
+}: FillDrillReaderProps<Block>) => {
+  const record = useFillDrillRecord(store);
   const answers = record.answers[drill.id] ?? {};
   const [checked, setChecked] = useState(false);
 
@@ -263,7 +126,7 @@ export const DbDrillReader = ({ drill, no, onBack, onNext }: DbDrillReaderProps)
 
   const check = () => {
     setChecked(true);
-    dbDrillStore.saveResult(drill.id, correctCount, drill.blanks.length);
+    store.saveResult(drill.id, correctCount, drill.blanks.length);
   };
 
   return (
@@ -291,7 +154,7 @@ export const DbDrillReader = ({ drill, no, onBack, onNext }: DbDrillReaderProps)
 
             {drill.body.map((block, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: 本文は静的で並べ替えないため添字で足りる
-              <Block key={i} block={block} marks={marks} />
+              <Fragment key={i}>{renderBlock(block, marks)}</Fragment>
             ))}
 
             {checked && (
@@ -331,10 +194,10 @@ export const DbDrillReader = ({ drill, no, onBack, onNext }: DbDrillReaderProps)
           {drill.blanks.map((blank) => (
             <BlankField
               key={blank.key}
-              drillId={drill.id}
               blank={blank}
               value={answers[blank.key] ?? ""}
               correct={marks?.[blank.key]}
+              onChange={(value) => store.setAnswer(drill.id, blank.key, value)}
             />
           ))}
         </section>
@@ -370,7 +233,7 @@ export const DbDrillReader = ({ drill, no, onBack, onNext }: DbDrillReaderProps)
               <button
                 type="button"
                 onClick={() => {
-                  dbDrillStore.clearAnswers(drill.id);
+                  store.clearAnswers(drill.id);
                   setChecked(false);
                 }}
                 className="cursor-pointer rounded-[7px] px-3 py-1.5 text-[12px] text-muted-soft hover:bg-canvas"

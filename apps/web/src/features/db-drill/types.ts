@@ -1,5 +1,9 @@
+import type { FillBlank, FillChoice, FillDrill, TextBlock } from "@/features/fill-drill/types";
+
 /**
  * 応用情報 午後 問6（データベース）向けの、SQL 文と表の穴埋めドリルの形。
+ * 段落・表・SQL 文と空欄の形は穴埋めドリル共通（fill-drill/types.ts）で、ここでは
+ * E-R 図と関係スキーマを足す。
  *
  * 本文の文字列では、空欄を `{{a}}` で書く（描画側が枠に直す）。空欄の名前は、その問の
  * 解答欄（DbBlank の key）と同じにする。
@@ -44,39 +48,22 @@ export type DbRelation =
   | { from: string; to: string; kind: "1:1" | "1:N" | "N:M" }
   | { from: string; to: string; blank: string };
 
-/** 本文の 1 かたまり。 */
+/**
+ * 本文の 1 かたまり。段落（p）・表（table）・SQL 文（code）は共通の形で、
+ * 表は行の例や SQL の実行結果に使う。
+ */
 export type DbBlock =
   /** E-R 図。下に関連の線と下線の凡例を付ける。 */
   | { kind: "er"; caption: string; entities: DbEntity[]; relations: DbRelation[] }
-  /** 段落。 */
-  | { kind: "p"; text: string }
   /** 関係スキーマの並び（図の「関係スキーマ」）。下に主キー・外部キーの凡例を付ける。 */
   | { kind: "schema"; caption: string; schemas: DbSchema[] }
-  /** 表のデータ（行の例や、SQL の実行結果）。セルの中でも空欄が使える。 */
-  | { kind: "table"; caption: string; headers: string[]; rows: string[][] }
-  /** SQL 文。1 行ずつ持ち、等幅で行頭の空白も残して組む。 */
-  | { kind: "code"; caption: string; lines: string[] };
+  | TextBlock;
 
 /** 選ぶ欄の選択肢 1 つ。 */
-export type DbChoice = { key: string; text: string };
+export type DbChoice = FillChoice;
 
 /** 空欄 1 つ。選択肢があれば選ぶ欄、無ければ書く欄にする。 */
-export type DbBlank = {
-  /** 空欄の名前（本文の `{{a}}` の a）。 */
-  key: string;
-  /** 答え方の補足（「SQL のキーワード」「列名」など）。 */
-  hint: string;
-  choices?: DbChoice[];
-  /** 正解。選ぶ欄は選択肢の記号、書く欄は答えの書き方の代表。 */
-  answer: string;
-  /**
-   * 書く欄で、answer のほかに正解にする書き方（「LEFT JOIN」と「LEFT OUTER JOIN」など）。
-   * 大文字・小文字、全角・半角、空白の違いは採点側で吸収するので、ここには書かない。
-   */
-  accepts?: string[];
-  /** 解説（なぜその答えになるか）。 */
-  explain: string;
-};
+export type DbBlank = FillBlank;
 
 /** ドリルの分野。一覧の絞り込みに使う。 */
 export type DbTopic =
@@ -91,14 +78,4 @@ export type DbTopic =
   | "DB の方式と応用";
 
 /** ドリル 1 問。 */
-export type DbDrill = {
-  /** 問題 ID（db-drill-01 など）。書いた答えと記録のキーに使う。 */
-  id: string;
-  topic: DbTopic;
-  title: string;
-  body: DbBlock[];
-  /** 空欄。本文に出てくる順に並べる。 */
-  blanks: DbBlank[];
-  /** 答え合わせの後に出す、この問で押さえたいこと。 */
-  points: string[];
-};
+export type DbDrill = FillDrill<DbTopic, DbBlock>;

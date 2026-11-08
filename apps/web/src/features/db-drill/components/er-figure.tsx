@@ -1,3 +1,4 @@
+import type { Marks } from "@/features/fill-drill/types";
 import { ArrowHead, LINE_TONE, SvgFrame, shorten } from "@/features/quiz/components/figure-svg";
 import type { Box } from "@/features/quiz/figure-layout";
 import { FONT, textWidth } from "@/features/quiz/figure-layout";
@@ -13,9 +14,6 @@ import {
   NAME_H,
 } from "../er-layout";
 import type { DbColumn, DbEntity, DbRelation } from "../types";
-
-/** 答え合わせの後、空欄ごとの正誤。答え合わせ前は undefined。 */
-export type Marks = Record<string, boolean> | undefined;
 
 const BLANK_TONE = {
   none: { rect: "fill-surface stroke-ink", text: "fill-ink" },

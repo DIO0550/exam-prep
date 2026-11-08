@@ -1,29 +1,27 @@
 import { describe, expect, it } from "vitest";
 
+import { blanksInText, textsOf } from "@/features/fill-drill/blanks";
+import { isCorrect } from "@/features/fill-drill/grade";
+
 import { DB_DRILLS, DB_TOPICS } from "./drills";
 import { erProblems } from "./er-layout";
-import { isCorrect } from "./grade";
 import type { DbBlock } from "./types";
-
-const BLANK = /\{\{([^}]+)\}\}/g;
 
 /** 本文に出てくる空欄の名前を、出てくる順に集める。 */
 const blanksIn = (block: DbBlock): string[] => {
   if (block.kind === "er") {
     // 図の中は、エンティティ（名前・属性）の順、次に関連の順に数える。
     const texts = block.entities.flatMap((e) => [e.name, ...e.attrs.map((a) => a.name)]);
-    const inTexts = texts.flatMap((text) => [...text.matchAll(BLANK)].map((m) => m[1] ?? ""));
-    return [...inTexts, ...block.relations.flatMap((r) => ("blank" in r ? [r.blank] : []))];
+    return [
+      ...texts.flatMap(blanksInText),
+      ...block.relations.flatMap((r) => ("blank" in r ? [r.blank] : [])),
+    ];
   }
   const texts =
-    block.kind === "p"
-      ? [block.text]
-      : block.kind === "code"
-        ? block.lines
-        : block.kind === "table"
-          ? block.rows.flat()
-          : block.schemas.flatMap((schema) => schema.columns.map((column) => column.name));
-  return texts.flatMap((text) => [...text.matchAll(BLANK)].map((match) => match[1] ?? ""));
+    block.kind === "schema"
+      ? block.schemas.flatMap((schema) => schema.columns.map((column) => column.name))
+      : textsOf(block);
+  return texts.flatMap(blanksInText);
 };
 
 describe("SQL・表の穴埋めドリル", () => {
