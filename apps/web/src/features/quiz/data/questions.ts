@@ -37,6 +37,9 @@ import { CTFL_MOCK_6 } from "./ctfl-mock-6";
 import { CTFL_MOCK_7 } from "./ctfl-mock-7";
 import { CTFL_MOCK_8 } from "./ctfl-mock-8";
 import { CTFL_MOCK_9 } from "./ctfl-mock-9";
+import { CTFL_MOCK_10 } from "./ctfl-mock-10";
+import { CTFL_MOCK_11 } from "./ctfl-mock-11";
+import { CTFL_MOCK_12 } from "./ctfl-mock-12";
 import { CTFL_TERM_1 } from "./ctfl-term-1";
 import { E_CH1 } from "./e-ch1";
 import { E_CH2 } from "./e-ch2";
@@ -214,6 +217,24 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   { id: "ctfl-mock-7", exam: "CTFL", label: "模擬試験7（サンプル形式）", questions: CTFL_MOCK_7 },
   { id: "ctfl-mock-8", exam: "CTFL", label: "模擬試験8（サンプル形式）", questions: CTFL_MOCK_8 },
   { id: "ctfl-mock-9", exam: "CTFL", label: "模擬試験9（サンプル形式）", questions: CTFL_MOCK_9 },
+  {
+    id: "ctfl-mock-10",
+    exam: "CTFL",
+    label: "模擬試験10（サンプル形式）",
+    questions: CTFL_MOCK_10,
+  },
+  {
+    id: "ctfl-mock-11",
+    exam: "CTFL",
+    label: "模擬試験11（サンプル形式）",
+    questions: CTFL_MOCK_11,
+  },
+  {
+    id: "ctfl-mock-12",
+    exam: "CTFL",
+    label: "模擬試験12（サンプル形式）",
+    questions: CTFL_MOCK_12,
+  },
   // CTFL と同じく、用語問題、章別（シラバスの大項目ごと）、模擬試験の順に置く。
   { id: "e-term-1", exam: "E", label: "用語問題1（キーワード）", questions: E_TERM_1 },
   { id: "e-ch1", exam: "E", label: "第1章 数学的基礎", questions: E_CH1 },
