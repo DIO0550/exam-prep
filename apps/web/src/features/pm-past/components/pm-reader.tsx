@@ -299,10 +299,79 @@ const Part = ({ part }: { part: PmQuestionPart }) => (
   </section>
 );
 
+/** 解答欄で選ぶ属性名の下線。"" は下線なし。 */
+export type KeyLine = "" | KeyMark;
+
+/** 選んだ下線を残すときの欄の名前（「設問1 b（下線）」）。書いた属性名とは別に持つ。 */
+export const keyLineSlotKey = (slotKey: string): string => `${slotKey}（下線）`;
+
+/** 残した値を下線として読む。下線なしと読めない値は下線なし。 */
+export const parseKeyLine = (value: string | undefined): KeyLine =>
+  value === "主" || value === "外" ? value : "";
+
+/** 解答例の下線。解答例全体が `[[主:…]]`・`[[外:…]]` ならその印、印が無ければ下線なし。 */
+export const answerKeyLine = (answer: string): KeyLine => {
+  const match = answer.match(/^\[\[([^\]]+)\]\]$/);
+  return match ? (parseUnderline(match[1] ?? "").key ?? "") : "";
+};
+
+const keyLineLabel = (line: KeyLine): string =>
+  line === "" ? "下線なし" : `${KEY_MARKS[line].label}（${KEY_MARKS[line].line}）`;
+
+const KEY_LINES: KeyLine[] = ["", "主", "外"];
+
+type KeyLinePickerProps = { id: string; slot: PmAnswerSlot; line: KeyLine };
+
+/**
+ * 属性名に引く下線を選ぶ切り替え（なし・主キー・外部キー）。本試験では属性名に下線を引いて答えるので、
+ * 文字の欄とは別に選ばせる。選択肢の文字そのものに実線・破線を引いて、線の違いを見せる。
+ */
+const KeyLinePicker = ({ id, slot, line }: KeyLinePickerProps) => {
+  const name = useId();
+  return (
+    <div
+      role="radiogroup"
+      aria-label={`${slot.key} の下線`}
+      className="flex flex-wrap items-center gap-1.5"
+    >
+      <span aria-hidden="true" className="mr-0.5 text-[11px] text-muted">
+        下線
+      </span>
+      {KEY_LINES.map((option) => (
+        <label
+          key={option}
+          className="cursor-pointer rounded-full border border-edge-strong px-2.5 py-0.5 text-[12px] text-muted has-[:checked]:border-accent/60 has-[:checked]:bg-accent-soft has-[:checked]:font-bold has-[:checked]:text-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent"
+        >
+          <input
+            type="radio"
+            name={name}
+            value={option}
+            checked={line === option}
+            onChange={() => pmAnswerStore.set(id, keyLineSlotKey(slot.key), option)}
+            className="sr-only"
+          />
+          {option === "" ? (
+            "なし"
+          ) : (
+            <>
+              <span className={`${UNDERLINE} ${option === "外" ? "decoration-dashed" : ""}`}>
+                {KEY_MARKS[option].label}
+              </span>
+              （{KEY_MARKS[option].line}）
+            </>
+          )}
+        </label>
+      ))}
+    </div>
+  );
+};
+
 type SlotProps = {
   id: string;
   slot: PmAnswerSlot;
   value: string;
+  /** 下線も答える欄で選んだ下線。 */
+  line: KeyLine;
   revealed: boolean;
 };
 
@@ -322,8 +391,9 @@ const answerLabel = (slot: PmAnswerSlot): string =>
  * 自前のメニュー（SelectMenu）では開いたリストが画面の幅からはみ出すため。
  * 閉じた箱では長い選択肢が切れるので、選んだものの全文を下に添える。
  */
-const Slot = ({ id, slot, value, revealed }: SlotProps) => {
+const Slot = ({ id, slot, value, line, revealed }: SlotProps) => {
   const correct = slot.choices ? value === slot.answer : undefined;
+  const expectedLine = answerKeyLine(slot.answer);
   const chosen = slot.choices?.find((choice) => choice.key === value);
   // 「30字以内」の欄は、書いた字数を数えて、超えたら分かるようにする。
   const limitMatch = slot.hint.match(/(\d+)字以内/);
@@ -390,6 +460,7 @@ const Slot = ({ id, slot, value, revealed }: SlotProps) => {
               </span>
             </p>
           )}
+          {slot.keyUnderline && <KeyLinePicker id={id} slot={slot} line={line} />}
         </>
       )}
 
@@ -413,6 +484,19 @@ const Slot = ({ id, slot, value, revealed }: SlotProps) => {
           <span className="font-bold text-ink">
             <PmText text={answerLabel(slot)} />
           </span>
+          {/* 属性名の文字は自己採点だが、下線は選んだものと解答例を突き合わせて正誤を出す。 */}
+          {slot.keyUnderline && (
+            <span className="flex basis-full flex-wrap items-baseline gap-x-2 pt-1 text-read-xs">
+              <span className={`font-bold ${line === expectedLine ? "text-ok" : "text-ng"}`}>
+                {line === expectedLine ? "○ 下線" : "× 下線"}
+              </span>
+              <span className="text-ink-soft">
+                {line === expectedLine
+                  ? keyLineLabel(expectedLine)
+                  : `選んだのは${keyLineLabel(line)}、解答例は${keyLineLabel(expectedLine)}`}
+              </span>
+            </span>
+          )}
         </div>
       )}
     </div>
@@ -633,6 +717,11 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
   const slots = transcript.parts.flatMap((part) => part.slots);
   const choiceSlots = slots.filter((slot) => slot.choices);
   const choiceCorrect = choiceSlots.filter((slot) => answers[slot.key] === slot.answer).length;
+  const lineOf = (slot: PmAnswerSlot): KeyLine => parseKeyLine(answers[keyLineSlotKey(slot.key)]);
+  const lineSlots = slots.filter((slot) => slot.keyUnderline);
+  const lineCorrect = lineSlots.filter(
+    (slot) => lineOf(slot) === answerKeyLine(slot.answer),
+  ).length;
 
   return (
     <>
@@ -712,6 +801,7 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                   id={id}
                   slot={slot}
                   value={answers[slot.key] ?? ""}
+                  line={lineOf(slot)}
                   revealed={revealed}
                 />
               ))}
@@ -721,8 +811,15 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
           {revealed ? (
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-panel px-4 py-3">
+                {/* 自動で採点できる欄（記号・下線）だけを数える。その欄が無い問では出さない。 */}
                 <span className="text-[12.5px] text-ink">
-                  記号の欄 {choiceCorrect}/{choiceSlots.length} 正解
+                  {[
+                    choiceSlots.length > 0 &&
+                      `記号の欄 ${choiceCorrect}/${choiceSlots.length} 正解`,
+                    lineSlots.length > 0 && `下線 ${lineCorrect}/${lineSlots.length} 正解`,
+                  ]
+                    .filter(Boolean)
+                    .join(" ・ ")}
                 </span>
                 <ScoreInput id={id} source={source} attempt={attempt} />
               </div>

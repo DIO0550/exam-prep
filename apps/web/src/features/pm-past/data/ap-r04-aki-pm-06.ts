@@ -224,6 +224,7 @@ export const AP_R04_AKI_PM_06: PmTranscript = {
         {
           key: "設問1 a",
           hint: "属性名（下線も凡例に倣う）",
+          keyUnderline: true,
           answer: "年月",
           explain:
             "表 2 の項番 2 の要件は、請求を「年月ごと，部署ごと」に管理できるようにすること。請求には部署を表す請求先部署 ID はあるが、年月を表す属性がない。a は年月（主キーでも外部キーでもないので下線なし）。",
@@ -272,6 +273,7 @@ export const AP_R04_AKI_PM_06: PmTranscript = {
         {
           key: "設問1 c",
           hint: "属性名（下線も凡例に倣う。c と d は順不同）",
+          keyUnderline: true,
           answer: "[[外:従業員 ID]]",
           explain:
             "利用は、どの従業員がどの情報端末を使っているかを表すエンティティで、従業員と情報端末の両方から 1 対多の矢印が来ている。利用には両者を参照する外部キーが要る。c は従業員 ID（d は情報端末 ID、順不同）。主キーは利用 ID なので、破線の下線を付ける。",
@@ -297,6 +299,7 @@ export const AP_R04_AKI_PM_06: PmTranscript = {
         {
           key: "設問1 d",
           hint: "属性名（下線も凡例に倣う。c と d は順不同）",
+          keyUnderline: true,
           answer: "[[外:情報端末 ID]]",
           explain:
             "情報端末から利用への 1 対多の矢印に対応する外部キー。d は情報端末 ID（c は従業員 ID、順不同）で、破線の下線を付ける。",

@@ -293,7 +293,8 @@ export const AP_R06_AKI_PM_06: PmTranscript = {
         },
         {
           key: "設問1 c",
-          hint: "属性名",
+          hint: "属性名（下線も凡例に倣う）",
+          keyUnderline: true,
           answer: "追跡番号",
           explain:
             "S 社は発送した商品の追跡番号を管理する（項番 5）。追跡番号は発送 1 件ごとに決まる番号なので、発送エンティティの属性になる。",
