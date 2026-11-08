@@ -160,6 +160,18 @@ describe.each(Object.values(PM_TRANSCRIPTS))("書き起こし $id", (t) => {
     }
   });
 
+  it("順不同の記号の欄は、同じ設問に同じ補足の欄が 2 つ以上あり、解答例が重ならない", () => {
+    // 自動採点（grading.ts）は、同じ設問で補足が同じ記号の欄を 1 組と見る
+    for (const part of t.parts) {
+      for (const slot of part.slots) {
+        if (!slot.choices || !slot.hint.includes("順不同")) continue;
+        const group = part.slots.filter((other) => other.choices && other.hint === slot.hint);
+        expect(group.length, slot.key).toBeGreaterThan(1);
+        expect(new Set(group.map((other) => other.answer)).size, slot.key).toBe(group.length);
+      }
+    }
+  });
+
   it("「◯字以内」の欄は、解答例がその字数に収まる", () => {
     for (const slot of t.parts.flatMap((part) => part.slots)) {
       const limit = slot.hint.match(/^(\d+)字以内$/);

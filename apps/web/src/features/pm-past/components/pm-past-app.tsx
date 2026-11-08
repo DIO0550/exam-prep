@@ -5,8 +5,13 @@ import { useState } from "react";
 
 import { SiteFooter } from "@/features/quiz/components/site-footer";
 
+import type { PmAnswers } from "../answers";
+import { usePmAnswers } from "../answers";
 import type { PmExam, PmProblem } from "../data";
 import { PM_EXAMS, PM_PROBLEMS, pmProblemId, pmSourceLabel } from "../data";
+import { gradeTranscript } from "../grading";
+import type { PmMarks } from "../marks";
+import { usePmMarks } from "../marks";
 import type { PmRecord } from "../record";
 import { summarize } from "../record";
 import { pmRecordStore, usePmRecord } from "../store";
@@ -28,6 +33,8 @@ const ALL = 0;
  */
 export const PmPastApp = ({ sidebar }: { sidebar?: ReactNode }) => {
   const record = usePmRecord();
+  const answers = usePmAnswers();
+  const marks = usePmMarks();
   const [problemNo, setProblemNo] = useState(ALL);
   // 書き起こした問題を開いているとき、その回と問。
   const [opened, setOpened] = useState<{ pmExam: PmExam; problem: PmProblem } | null>(null);
@@ -74,7 +81,9 @@ export const PmPastApp = ({ sidebar }: { sidebar?: ReactNode }) => {
               <p>
                 問題冊子と解答例は IPA が公開している PDF
                 を開いて使います。「このサイトで解く」がある問は、問題文を書き起こしてあり、左に問題文・右に解答欄を並べて解けます。
-                解き終えたら解答例と見比べて自己採点し、点数を記録してください。記録はこのブラウザにだけ残ります。
+                解き終えたら解答例と見比べて自己採点し、点数を記録してください。このサイトで解いた問は、解答欄ごとに
+                ○×
+                を付けると、正解の欄の割合から点数の目安が入ります。記録はこのブラウザにだけ残ります。
               </p>
               <p className="mt-1.5 text-muted-soft">
                 問1（情報セキュリティ）は必須、問2〜11 から 4 問を選んで解答します。 午後の解答例は
@@ -92,6 +101,8 @@ export const PmPastApp = ({ sidebar }: { sidebar?: ReactNode }) => {
                   pmExam={pmExam}
                   problems={problems}
                   record={record}
+                  answers={answers}
+                  marks={marks}
                   onOpen={(problem) => setOpened({ pmExam, problem })}
                 />
               ))}
@@ -175,14 +186,27 @@ type PmExamCardProps = {
   pmExam: PmExam;
   problems: PmProblem[];
   record: PmRecord;
+  answers: PmAnswers;
+  marks: PmMarks;
   onOpen: (problem: PmProblem) => void;
+};
+
+/**
+ * 書き起こした問で、× の付いた欄の数。解き直す問を一覧で見つけられるようにする。
+ * 解いた記録（解答例を見ると付く）がある問だけ数える。解答例を見る前に、選んだ記号の正誤を
+ * 一覧で漏らさないため。
+ */
+const wrongSlots = (id: string, record: PmRecord, answers: PmAnswers, marks: PmMarks): number => {
+  const transcript = PM_TRANSCRIPTS[id];
+  if (!transcript || !record.attempts[id]) return 0;
+  return gradeTranscript(transcript, answers[id] ?? {}, marks[id] ?? {}).ng;
 };
 
 const PDF_LINK =
   "rounded-[7px] border border-edge-strong bg-surface px-3 py-1.5 font-medium text-[12px] text-accent hover:bg-canvas";
 
 /** 1 回分。IPA の PDF へのリンクと、問ごとの記録の行を並べる。 */
-const PmExamCard = ({ pmExam, problems, record, onOpen }: PmExamCardProps) => (
+const PmExamCard = ({ pmExam, problems, record, answers, marks, onOpen }: PmExamCardProps) => (
   <section
     aria-label={pmExam.label}
     className="overflow-hidden rounded-2xl border border-line bg-surface"
@@ -208,6 +232,7 @@ const PmExamCard = ({ pmExam, problems, record, onOpen }: PmExamCardProps) => (
           pmExam={pmExam}
           problem={problem}
           attempt={record.attempts[pmProblemId(pmExam, problem.no)]}
+          wrong={wrongSlots(pmProblemId(pmExam, problem.no), record, answers, marks)}
           onOpen={() => onOpen(problem)}
         />
       ))}
@@ -219,11 +244,13 @@ type PmProblemRowProps = {
   pmExam: PmExam;
   problem: PmProblem;
   attempt: PmRecord["attempts"][string] | undefined;
+  /** × を付けた欄の数（書き起こした問だけ）。 */
+  wrong: number;
   onOpen: () => void;
 };
 
 /** 1 問分の行。解いた印と自己採点の点数を付けられる。書き起こしがある問は、このサイトで解ける。 */
-const PmProblemRow = ({ pmExam, problem, attempt, onOpen }: PmProblemRowProps) => {
+const PmProblemRow = ({ pmExam, problem, attempt, wrong, onOpen }: PmProblemRowProps) => {
   const id = pmProblemId(pmExam, problem.no);
   const source = pmSourceLabel(pmExam, problem.no);
 
@@ -235,6 +262,11 @@ const PmProblemRow = ({ pmExam, problem, attempt, onOpen }: PmProblemRowProps) =
         {problem.required && (
           <span className="rounded bg-chip px-1.5 py-0.5 font-bold text-[10px] text-muted">
             必須
+          </span>
+        )}
+        {wrong > 0 && (
+          <span className="rounded bg-ng-soft px-1.5 py-0.5 font-bold text-[10px] text-ng">
+            × {wrong}欄
           </span>
         )}
       </span>

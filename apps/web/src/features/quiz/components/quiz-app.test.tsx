@@ -1192,10 +1192,14 @@ describe("QuizApp", () => {
     expect(answers.queryByText("解答例")).not.toBeInTheDocument();
 
     await user.click(answers.getByRole("button", { name: "解答例を見る" }));
-    expect(answers.getAllByText("○ 正解").length).toBe(1);
-    expect(answers.getAllByText("× 不正解").length).toBe(4);
+    // 選んだ記号の欄は自動で ○×。記述の欄と、選んでいない記号の欄には自分で ○× を付ける
+    expect(answers.queryByRole("group", { name: "設問1 a の自己採点" })).not.toBeInTheDocument();
+    expect(answers.getByRole("group", { name: "設問2 c の自己採点" })).toBeInTheDocument();
+    expect(answers.getByRole("group", { name: "設問1 d の自己採点" })).toBeInTheDocument();
     expect(answers.getAllByText(/^オ\s+SBOM$/, { selector: "span" })).toHaveLength(2);
-    expect(answers.getByText("記号の欄 1/5 正解")).toBeInTheDocument();
+    expect(answers.getByRole("region", { name: "自己採点" })).toHaveTextContent(
+      /○ 1 ・ × 2 ・ 未採点 5（全 8 欄）記号の欄 1\/5 正解/,
+    );
 
     // 境目は ← → でも動かせる
     const handle = screen.getByRole("button", { name: /^解答欄の幅を変える（今 400px/ });

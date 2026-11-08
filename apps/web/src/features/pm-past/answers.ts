@@ -51,6 +51,14 @@ export const withoutAnswers = (answers: PmAnswers, id: string): PmAnswers => {
   return rest;
 };
 
+/** 1 問のうち、渡した欄の答えだけを消す（× を付けた欄だけ解き直すとき）。 */
+export const withoutSlotAnswers = (answers: PmAnswers, id: string, keys: string[]): PmAnswers => {
+  const kept = Object.fromEntries(
+    Object.entries(answers[id] ?? {}).filter(([key]) => !keys.includes(key)),
+  );
+  return { ...answers, [id]: kept };
+};
+
 const load = (): PmAnswers => {
   if (typeof window === "undefined") return {};
   try {
@@ -87,6 +95,8 @@ export const pmAnswerStore = {
   set: (id: string, key: string, value: string): void =>
     store.set(withAnswer(store.snapshot(), id, key, value)),
   clearProblem: (id: string): void => store.set(withoutAnswers(store.snapshot(), id)),
+  clearSlots: (id: string, keys: string[]): void =>
+    store.set(withoutSlotAnswers(store.snapshot(), id, keys)),
   clear: store.reset,
 };
 

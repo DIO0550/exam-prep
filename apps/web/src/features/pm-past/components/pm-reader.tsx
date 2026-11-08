@@ -8,6 +8,19 @@ import { OriginalFigure } from "@/features/quiz/components/question-figure";
 import { pmAnswerStore, usePmAnswers } from "../answers";
 import type { PmExam, PmProblem } from "../data";
 import { pmProblemId, pmSourceLabel } from "../data";
+import type { PmGrading, PmSlotGrade } from "../grading";
+import { gradeTranscript, PM_POINTS_PER_PROBLEM, wrongSlotKeys } from "../grading";
+import type { KeyLine } from "../key-line";
+import {
+  answerKeyLine,
+  KEY_MARKS,
+  keyLineSlotKey,
+  parseKeyLine,
+  parseUnderline,
+} from "../key-line";
+import type { PmMark } from "../marks";
+import { pmMarkStore, usePmMarks } from "../marks";
+import type { PmAttempt } from "../record";
 import { pmRecordStore, usePmRecord } from "../store";
 import type {
   PmAnswerSlot,
@@ -21,20 +34,6 @@ import { ScoreInput } from "./score-input";
 
 /** 本文中の空欄（`{{a}}`）と下線（`[[…]]`、`[[主:…]]`、`[[外:…]]`）を見つける。 */
 const MARKUP = /(\{\{[^}]+\}\}|\[\[[^\]]+\]\])/;
-
-/** 主キー・外部キーの書き方（`[[主:…]]`・`[[外:…]]`）の印と、その読み方・下線の線種。 */
-const KEY_MARKS = {
-  主: { label: "主キー", line: "実線" },
-  外: { label: "外部キー", line: "破線" },
-} as const;
-
-type KeyMark = keyof typeof KEY_MARKS;
-
-/** `[[…]]` の中身を、主キー・外部キーの印と属性名に分ける。印が無ければ普通の下線。 */
-export const parseUnderline = (inner: string): { key?: KeyMark; text: string } => {
-  const match = inner.match(/^(主|外):(.+)$/);
-  return match ? { key: match[1] as KeyMark, text: match[2] ?? "" } : { text: inner };
-};
 
 const UNDERLINE = "underline decoration-1 underline-offset-[5px]";
 
@@ -299,34 +298,18 @@ const Part = ({ part }: { part: PmQuestionPart }) => (
   </section>
 );
 
-/** 解答欄で選ぶ属性名の下線。"" は下線なし。 */
-export type KeyLine = "" | KeyMark;
-
-/** 選んだ下線を残すときの欄の名前（「設問1 b（下線）」）。書いた属性名とは別に持つ。 */
-export const keyLineSlotKey = (slotKey: string): string => `${slotKey}（下線）`;
-
-/** 残した値を下線として読む。下線なしと読めない値は下線なし。 */
-export const parseKeyLine = (value: string | undefined): KeyLine =>
-  value === "主" || value === "外" ? value : "";
-
-/** 解答例の下線。解答例全体が `[[主:…]]`・`[[外:…]]` ならその印、印が無ければ下線なし。 */
-export const answerKeyLine = (answer: string): KeyLine => {
-  const match = answer.match(/^\[\[([^\]]+)\]\]$/);
-  return match ? (parseUnderline(match[1] ?? "").key ?? "") : "";
-};
-
 const keyLineLabel = (line: KeyLine): string =>
   line === "" ? "下線なし" : `${KEY_MARKS[line].label}（${KEY_MARKS[line].line}）`;
 
 const KEY_LINES: KeyLine[] = ["", "主", "外"];
 
-type KeyLinePickerProps = { id: string; slot: PmAnswerSlot; line: KeyLine };
+type KeyLinePickerProps = { slot: PmAnswerSlot; line: KeyLine; onPick: (line: KeyLine) => void };
 
 /**
  * 属性名に引く下線を選ぶ切り替え（なし・主キー・外部キー）。本試験では属性名に下線を引いて答えるので、
  * 文字の欄とは別に選ばせる。選択肢の文字そのものに実線・破線を引いて、線の違いを見せる。
  */
-const KeyLinePicker = ({ id, slot, line }: KeyLinePickerProps) => {
+const KeyLinePicker = ({ slot, line, onPick }: KeyLinePickerProps) => {
   const name = useId();
   return (
     <div
@@ -347,7 +330,7 @@ const KeyLinePicker = ({ id, slot, line }: KeyLinePickerProps) => {
             name={name}
             value={option}
             checked={line === option}
-            onChange={() => pmAnswerStore.set(id, keyLineSlotKey(slot.key), option)}
+            onChange={() => onPick(option)}
             className="sr-only"
           />
           {option === "" ? (
@@ -367,13 +350,66 @@ const KeyLinePicker = ({ id, slot, line }: KeyLinePickerProps) => {
 };
 
 type SlotProps = {
-  id: string;
   slot: PmAnswerSlot;
   value: string;
   /** 下線も答える欄で選んだ下線。 */
   line: KeyLine;
   revealed: boolean;
+  grade: PmSlotGrade;
+  onAnswer: (value: string) => void;
+  onLine: (line: KeyLine) => void;
+  onMark: (mark: PmMark | undefined) => void;
 };
+
+const MARK_LABEL: Record<PmMark, string> = { ok: "○ 正解", ng: "× 不正解" };
+
+/** 欄の答え合わせの枠の色。○× が付くまでは色を付けない。 */
+const gradeTone = (mark: PmMark | undefined): string =>
+  mark === "ok"
+    ? "border-ok-line bg-ok-bg"
+    : mark === "ng"
+      ? "border-ng-line bg-ng-bg"
+      : "border-line bg-panel";
+
+/**
+ * 記述の欄（と、記号を選ばずに紙で解いた欄）に、解答例と見比べて自分で ○× を付けるボタン。
+ * 押してある方をもう一度押すと、付けていない状態に戻る。
+ */
+const MarkButtons = ({
+  slotKey,
+  mark,
+  onMark,
+}: {
+  slotKey: string;
+  mark: PmMark | undefined;
+  onMark: (mark: PmMark | undefined) => void;
+}) => (
+  <fieldset className="m-0 flex items-center gap-1.5 border-0 p-0">
+    <legend className="sr-only">{slotKey} の自己採点</legend>
+    <span aria-hidden="true" className="mr-0.5 text-[11px] text-muted">
+      自己採点
+    </span>
+    {(["ok", "ng"] as const).map((value) => {
+      const pressed = mark === value;
+      const on = value === "ok" ? "border-ok bg-ok text-surface" : "border-ng bg-ng text-surface";
+      const off =
+        value === "ok"
+          ? "border-ok-line bg-surface text-ok hover:bg-ok-soft"
+          : "border-ng-line bg-surface text-ng hover:bg-ng-soft";
+      return (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={pressed}
+          onClick={() => onMark(pressed ? undefined : value)}
+          className={`cursor-pointer rounded-[7px] border px-2.5 py-1 font-bold text-[12px] ${pressed ? on : off}`}
+        >
+          {MARK_LABEL[value]}
+        </button>
+      );
+    })}
+  </fieldset>
+);
 
 /** 「ク 境界防御」のように、記号に中身を添える。 */
 const choiceLabel = (choices: PmChoice[], key: string): string => {
@@ -391,8 +427,7 @@ const answerLabel = (slot: PmAnswerSlot): string =>
  * 自前のメニュー（SelectMenu）では開いたリストが画面の幅からはみ出すため。
  * 閉じた箱では長い選択肢が切れるので、選んだものの全文を下に添える。
  */
-const Slot = ({ id, slot, value, line, revealed }: SlotProps) => {
-  const correct = slot.choices ? value === slot.answer : undefined;
+const Slot = ({ slot, value, line, revealed, grade, onAnswer, onLine, onMark }: SlotProps) => {
   const expectedLine = answerKeyLine(slot.answer);
   const chosen = slot.choices?.find((choice) => choice.key === value);
   // 「30字以内」の欄は、書いた字数を数えて、超えたら分かるようにする。
@@ -418,7 +453,7 @@ const Slot = ({ id, slot, value, line, revealed }: SlotProps) => {
           <select
             aria-label={`${slot.key} の答え`}
             value={value}
-            onChange={(event) => pmAnswerStore.set(id, slot.key, event.target.value)}
+            onChange={(event) => onAnswer(event.target.value)}
             className={`w-full cursor-pointer truncate rounded-lg border bg-surface px-3 py-2 text-read-sm ${
               value === "" ? "border-edge-strong text-muted-soft" : "border-accent/60 text-ink"
             }`}
@@ -444,7 +479,7 @@ const Slot = ({ id, slot, value, line, revealed }: SlotProps) => {
             aria-describedby={over > 0 ? overId : undefined}
             value={value}
             rows={2}
-            onChange={(event) => pmAnswerStore.set(id, slot.key, event.target.value)}
+            onChange={(event) => onAnswer(event.target.value)}
             className={`w-full resize-y rounded-lg border px-3 py-2 text-read-sm text-ink leading-[1.7] ${
               over > 0 ? "border-ng bg-ng-bg" : "border-edge-strong bg-surface"
             }`}
@@ -460,43 +495,47 @@ const Slot = ({ id, slot, value, line, revealed }: SlotProps) => {
               </span>
             </p>
           )}
-          {slot.keyUnderline && <KeyLinePicker id={id} slot={slot} line={line} />}
+          {slot.keyUnderline && <KeyLinePicker slot={slot} line={line} onPick={onLine} />}
         </>
       )}
 
-      {/* 欄の下には答え合わせだけを出す。解説は解答欄の下の「解説」にまとめる。 */}
+      {/*
+        欄の下には答え合わせだけを出す。解説は解答欄の下の「解説」にまとめる。
+        選んだ記号は自動で ○× を付け、記述の欄（と記号を選んでいない欄）は自分で付ける。
+      */}
       {revealed && (
         <div
-          className={`flex flex-wrap items-baseline gap-x-2 rounded-lg border px-3.5 py-2 text-read-sm ${
-            correct === undefined
-              ? "border-line bg-panel"
-              : correct
-                ? "border-ok-line bg-ok-bg"
-                : "border-ng-line bg-ng-bg"
-          }`}
+          className={`flex flex-col gap-2 rounded-lg border px-3.5 py-2 text-read-sm ${gradeTone(grade.mark)}`}
         >
-          {correct !== undefined && (
-            <span className={`font-bold ${correct ? "text-ok" : "text-ng"}`}>
-              {correct ? "○ 正解" : "× 不正解"}
-            </span>
-          )}
-          <span className="text-muted">解答例</span>
-          <span className="font-bold text-ink">
-            <PmText text={answerLabel(slot)} />
-          </span>
-          {/* 属性名の文字は自己採点だが、下線は選んだものと解答例を突き合わせて正誤を出す。 */}
-          {slot.keyUnderline && (
-            <span className="flex basis-full flex-wrap items-baseline gap-x-2 pt-1 text-read-xs">
-              <span className={`font-bold ${line === expectedLine ? "text-ok" : "text-ng"}`}>
-                {line === expectedLine ? "○ 下線" : "× 下線"}
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            {grade.auto && grade.mark && (
+              <span className={`font-bold ${grade.mark === "ok" ? "text-ok" : "text-ng"}`}>
+                {MARK_LABEL[grade.mark]}
               </span>
-              <span className="text-ink-soft">
-                {line === expectedLine
-                  ? keyLineLabel(expectedLine)
-                  : `選んだのは${keyLineLabel(line)}、解答例は${keyLineLabel(expectedLine)}`}
-              </span>
+            )}
+            <span className="text-muted">解答例</span>
+            <span className="font-bold text-ink">
+              <PmText text={answerLabel(slot)} />
             </span>
-          )}
+            {/*
+              属性名の文字は自己採点だが、下線は選んだものと解答例を突き合わせて正誤を出す。
+              下線が違えば、属性名が合っていても欄ごと × にする（採点の側で決める）。
+              属性名を書いていない（紙で解いた）欄は、下線も選んでいないので出さない。
+            */}
+            {slot.keyUnderline && value !== "" && (
+              <span className="flex basis-full flex-wrap items-baseline gap-x-2 pt-1 text-read-xs">
+                <span className={`font-bold ${line === expectedLine ? "text-ok" : "text-ng"}`}>
+                  {line === expectedLine ? "○ 下線" : "× 下線"}
+                </span>
+                <span className="text-ink-soft">
+                  {line === expectedLine
+                    ? keyLineLabel(expectedLine)
+                    : `選んだのは${keyLineLabel(line)}、解答例は${keyLineLabel(expectedLine)}`}
+                </span>
+              </span>
+            )}
+          </div>
+          {!grade.auto && <MarkButtons slotKey={slot.key} mark={grade.mark} onMark={onMark} />}
         </div>
       )}
     </div>
@@ -622,6 +661,88 @@ const Glossary = ({ part }: { part: PmQuestionPart }) =>
     </div>
   ) : null;
 
+/** 解説の見出しに添える、その欄に付いた ○×。間違えた欄の解説を探しやすくするため。 */
+const MarkBadge = ({ mark }: { mark: PmMark | undefined }) =>
+  mark ? (
+    <span
+      className={`rounded px-1.5 py-0.5 font-bold text-[11px] ${
+        mark === "ok" ? "bg-ok-soft text-ok" : "bg-ng-soft text-ng"
+      }`}
+    >
+      {MARK_LABEL[mark]}
+    </span>
+  ) : null;
+
+/** 小数第 1 位までの点数を、整数ならそのまま、そうでなければ小数で書く。 */
+const formatPoints = (points: number): string =>
+  Number.isInteger(points) ? String(points) : points.toFixed(1);
+
+type GradeSummaryProps = {
+  grading: PmGrading;
+  id: string;
+  source: string;
+  attempt: PmAttempt | undefined;
+};
+
+/**
+ * 欄ごとの ○× の集計と、そこから出した点数の目安。
+ * 目安は、全部の欄に ○× が付いたときに、正解の欄の割合で 1 問の配点を按分したもの。
+ */
+const GradeSummary = ({ grading, id, source, attempt }: GradeSummaryProps) => {
+  const { total, ok, ng, ungraded, score, points, choices, lines } = grading;
+  const recorded = score !== undefined && attempt?.score === score;
+  // 自動で突き合わせた欄（記号・下線）の内訳。その欄が無い問では出さない。
+  const autoCounts = [
+    choices.total > 0 && `記号の欄 ${choices.ok}/${choices.total} 正解`,
+    lines.total > 0 && `下線 ${lines.ok}/${lines.total} 正解`,
+  ].filter(Boolean);
+  return (
+    <section
+      aria-label="自己採点"
+      className="flex flex-col gap-2.5 rounded-xl border border-line bg-panel px-4 py-3"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[12.5px] text-ink tabular-nums">
+            自己採点 <span className="font-bold text-ok">○ {ok}</span> ・{" "}
+            <span className="font-bold text-ng">× {ng}</span>
+            {ungraded > 0 && ` ・ 未採点 ${ungraded}`}（全 {total} 欄）
+          </span>
+          {autoCounts.length > 0 && (
+            <span className="text-[11px] text-muted tabular-nums">{autoCounts.join(" ・ ")}</span>
+          )}
+        </div>
+        <ScoreInput id={id} source={source} attempt={attempt} />
+      </div>
+      {score === undefined || points === undefined ? (
+        <p className="text-pretty text-[11.5px] text-muted leading-[1.7]">
+          記述の欄は解答例と見比べて ○ か ×
+          を付けてください。全部の欄に付けると、正解の欄の割合から点数の目安を出して記録します。
+        </p>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+          <p className="text-[12.5px] text-ink tabular-nums">
+            目安 <span className="font-bold">{score}点</span>
+            <span className="text-muted">
+              （本番の配点では {PM_POINTS_PER_PROBLEM}点中 {formatPoints(points)}点）
+            </span>
+            {recorded && <span className="ml-1.5 text-[11px] text-muted-soft">記録済み</span>}
+          </p>
+          {!recorded && (
+            <button
+              type="button"
+              onClick={() => pmRecordStore.setScore(id, score)}
+              className="cursor-pointer rounded-[7px] border border-edge-strong bg-surface px-2.5 py-1 font-bold text-[11.5px] text-accent hover:bg-canvas"
+            >
+              {score}点で記録し直す
+            </button>
+          )}
+        </div>
+      )}
+    </section>
+  );
+};
+
 /** 解答欄の幅（px）。狭すぎると選ぶ欄が切れ、広すぎると問題文が読みにくくなる。 */
 export const ANSWER_WIDTH_MIN = 320;
 export const ANSWER_WIDTH_MAX = 900;
@@ -705,23 +826,55 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
   const id = pmProblemId(pmExam, problem.no);
   const source = pmSourceLabel(pmExam, problem.no);
   const answers = usePmAnswers()[id] ?? {};
+  const marks = usePmMarks()[id] ?? {};
   const attempt = usePmRecord().attempts[id];
   const [revealed, setRevealed] = useState(false);
   const answerWidth = useAnswerWidth();
+  const grading = gradeTranscript(transcript, answers, marks);
+  const wrongKeys = wrongSlotKeys(grading);
+
+  /**
+   * 全部の欄に ○× が付いたら、点数の目安を記録する。ただし点数がまだ無いときだけ。
+   * 手で直した点数や、解き直す前の点数を、黙って書き換えないようにするため
+   * （付け直したいときは「…点で記録し直す」を押す）。
+   */
+  const recordFirstScore = () => {
+    const next = gradeTranscript(
+      transcript,
+      pmAnswerStore.snapshot()[id] ?? {},
+      pmMarkStore.snapshot()[id] ?? {},
+    );
+    if (next.score !== undefined && pmRecordStore.snapshot().attempts[id]?.score === undefined) {
+      pmRecordStore.setScore(id, next.score);
+    }
+  };
 
   const reveal = () => {
     setRevealed(true);
     if (!attempt) pmRecordStore.markSolved(id);
+    recordFirstScore();
   };
 
-  const slots = transcript.parts.flatMap((part) => part.slots);
-  const choiceSlots = slots.filter((slot) => slot.choices);
-  const choiceCorrect = choiceSlots.filter((slot) => answers[slot.key] === slot.answer).length;
   const lineOf = (slot: PmAnswerSlot): KeyLine => parseKeyLine(answers[keyLineSlotKey(slot.key)]);
-  const lineSlots = slots.filter((slot) => slot.keyUnderline);
-  const lineCorrect = lineSlots.filter(
-    (slot) => lineOf(slot) === answerKeyLine(slot.answer),
-  ).length;
+
+  const answer = (key: string, value: string) => {
+    pmAnswerStore.set(id, key, value);
+    // 解答例を見ながら記号や下線を選び直すと ○× が変わる
+    if (revealed) recordFirstScore();
+  };
+
+  const mark = (key: string, value: PmMark | undefined) => {
+    pmMarkStore.set(id, key, value);
+    recordFirstScore();
+  };
+
+  /** × の欄の答えと印だけを消して、解答例を隠す。○ の欄はそのまま残す。 */
+  const retryWrong = () => {
+    // 属性名の欄は、選んだ下線も選び直してもらう
+    pmAnswerStore.clearSlots(id, [...wrongKeys, ...wrongKeys.map(keyLineSlotKey)]);
+    pmMarkStore.clearSlots(id, wrongKeys);
+    setRevealed(false);
+  };
 
   return (
     <>
@@ -798,11 +951,14 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
               {part.slots.map((slot) => (
                 <Slot
                   key={slot.key}
-                  id={id}
                   slot={slot}
                   value={answers[slot.key] ?? ""}
                   line={lineOf(slot)}
                   revealed={revealed}
+                  grade={grading.slots[slot.key] ?? { mark: undefined, auto: false }}
+                  onAnswer={(value) => answer(slot.key, value)}
+                  onLine={(value) => answer(keyLineSlotKey(slot.key), value)}
+                  onMark={(value) => mark(slot.key, value)}
                 />
               ))}
             </section>
@@ -810,22 +966,13 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
 
           {revealed ? (
             <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-panel px-4 py-3">
-                {/* 自動で採点できる欄（記号・下線）だけを数える。その欄が無い問では出さない。 */}
-                <span className="text-[12.5px] text-ink">
-                  {[
-                    choiceSlots.length > 0 &&
-                      `記号の欄 ${choiceCorrect}/${choiceSlots.length} 正解`,
-                    lineSlots.length > 0 && `下線 ${lineCorrect}/${lineSlots.length} 正解`,
-                  ]
-                    .filter(Boolean)
-                    .join(" ・ ")}
-                </span>
-                <ScoreInput id={id} source={source} attempt={attempt} />
-              </div>
-              <p className="text-[11px] text-muted-soft leading-[1.7]">
+              <GradeSummary grading={grading} id={id} source={source} attempt={attempt} />
+              <p className="text-pretty text-[11px] text-muted-soft leading-[1.7]">
                 解答例は IPA
-                が示した例で、唯一の正解ではありません。記述の欄は解答例と見比べて自己採点してください。
+                が示した例で、唯一の正解ではありません。選んだ記号と属性名の下線には、自動で ○×
+                を付けています。点数の目安は、どの欄も同じ重さとして按分したものです（IPA
+                が公表している配点は 1 問 {PM_POINTS_PER_PROBLEM}{" "}
+                点までで、設問・欄ごとの配点は公表されていません）。
               </p>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -835,10 +982,20 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                 >
                   解答例を隠す
                 </button>
+                {wrongKeys.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={retryWrong}
+                    className="cursor-pointer rounded-[7px] border border-ng-line bg-surface px-3 py-1.5 font-bold text-[12px] text-ng hover:bg-ng-soft"
+                  >
+                    × の欄だけ解き直す（{wrongKeys.length}欄）
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {
                     pmAnswerStore.clearProblem(id);
+                    pmMarkStore.clearProblem(id);
                     setRevealed(false);
                   }}
                   className="cursor-pointer rounded-[7px] px-3 py-1.5 text-[12px] text-muted-soft hover:bg-canvas"
@@ -865,6 +1022,7 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                       >
                         <div className="flex flex-wrap items-baseline gap-x-2.5">
                           <h4 className="font-bold text-[13.5px] text-ink">{slot.key}</h4>
+                          <MarkBadge mark={grading.slots[slot.key]?.mark} />
                           <span className="text-read-sm text-muted">解答例</span>
                           <span className="font-bold text-read-sm text-ink">
                             <PmText text={answerLabel(slot)} />
