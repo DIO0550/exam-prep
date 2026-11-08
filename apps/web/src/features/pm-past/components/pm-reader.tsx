@@ -19,10 +19,30 @@ import type {
 } from "../types";
 import { ScoreInput } from "./score-input";
 
-/** 本文中の空欄（`{{a}}`）と下線（`[[…]]`）を見つける。 */
+/** 本文中の空欄（`{{a}}`）と下線（`[[…]]`、`[[主:…]]`、`[[外:…]]`）を見つける。 */
 const MARKUP = /(\{\{[^}]+\}\}|\[\[[^\]]+\]\])/;
 
-/** 本文の文字列を、空欄は枠、下線部は下線にして描く。 */
+/** 主キー・外部キーの書き方（`[[主:…]]`・`[[外:…]]`）の印と、その読み方・下線の線種。 */
+const KEY_MARKS = {
+  主: { label: "主キー", line: "実線" },
+  外: { label: "外部キー", line: "破線" },
+} as const;
+
+type KeyMark = keyof typeof KEY_MARKS;
+
+/** `[[…]]` の中身を、主キー・外部キーの印と属性名に分ける。印が無ければ普通の下線。 */
+export const parseUnderline = (inner: string): { key?: KeyMark; text: string } => {
+  const match = inner.match(/^(主|外):(.+)$/);
+  return match ? { key: match[1] as KeyMark, text: match[2] ?? "" } : { text: inner };
+};
+
+const UNDERLINE = "underline decoration-1 underline-offset-[5px]";
+
+/**
+ * 本文の文字列を、空欄は枠、下線部は下線にして描く。
+ * 主キーは実線、外部キーは破線の下線（本試験の E-R 図・関係スキーマの書き方）。
+ * 下線の種類は読み上げでは伝わらないので、「（主キー）」などを読み上げ用に添える。
+ */
 export const PmText = ({ text }: { text: string }) => {
   const pieces = text.split(MARKUP);
   return (
@@ -43,9 +63,23 @@ export const PmText = ({ text }: { text: string }) => {
           );
         }
         if (piece.startsWith("[[") && piece.endsWith("]]")) {
+          const underline = parseUnderline(piece.slice(2, -2));
+          if (!underline.key) {
+            return (
+              <span key={key} className={UNDERLINE}>
+                {underline.text}
+              </span>
+            );
+          }
+          const mark = KEY_MARKS[underline.key];
           return (
-            <span key={key} className="underline decoration-1 underline-offset-[5px]">
-              {piece.slice(2, -2)}
+            <span
+              key={key}
+              title={`${mark.label}（${mark.line}の下線）`}
+              className={`${UNDERLINE} ${underline.key === "外" ? "decoration-dashed" : ""}`}
+            >
+              {underline.text}
+              <span className="sr-only">（{mark.label}）</span>
             </span>
           );
         }
@@ -55,9 +89,15 @@ export const PmText = ({ text }: { text: string }) => {
   );
 };
 
-/** 代替テキスト用に、空欄を「空欄a」に、下線の印を外した文字列にする。 */
-const plainText = (text: string): string =>
-  text.replace(/\{\{([^}]+)\}\}/g, "空欄$1").replace(/\[\[|\]\]/g, "");
+/**
+ * 代替テキスト用に、空欄を「空欄a」に、主キー・外部キーを「受診者ID（主キー）」のような言葉に直し、
+ * 下線の印を外した文字列にする。
+ */
+export const plainText = (text: string): string =>
+  text.replace(/\{\{([^}]+)\}\}/g, "空欄$1").replace(/\[\[([^\]]+)\]\]/g, (_, inner: string) => {
+    const underline = parseUnderline(inner);
+    return underline.key ? `${underline.text}（${KEY_MARKS[underline.key].label}）` : inner;
+  });
 
 /** セルの値を比べるための文字列（改行して並ぶ箇条書きは 1 つにつなぐ）。 */
 const cellKey = (cell: PmCell | undefined): string | undefined =>
@@ -414,7 +454,9 @@ const SlotExplain = ({ slot }: { slot: PmAnswerSlot }) => (
             >
               {i + 1}
             </span>
-            <p className={EXPLAIN_TEXT}>{step}</p>
+            <p className={EXPLAIN_TEXT}>
+              <PmText text={step} />
+            </p>
           </li>
         ))}
       </ol>
@@ -430,7 +472,9 @@ const SlotExplain = ({ slot }: { slot: PmAnswerSlot }) => (
               >
                 {note.key}
               </dt>
-              <dd className={EXPLAIN_TEXT}>{note.note}</dd>
+              <dd className={EXPLAIN_TEXT}>
+                <PmText text={note.note} />
+              </dd>
             </div>
           ))}
         </dl>
@@ -442,7 +486,7 @@ const SlotExplain = ({ slot }: { slot: PmAnswerSlot }) => (
         <ul className="flex list-disc flex-col gap-1 pl-5">
           {slot.points.map((point) => (
             <li key={point} className={EXPLAIN_TEXT}>
-              {point}
+              <PmText text={point} />
             </li>
           ))}
         </ul>
@@ -457,7 +501,7 @@ const SlotExplain = ({ slot }: { slot: PmAnswerSlot }) => (
               key={pitfall}
               className="rounded-md border border-flag/30 bg-flag-soft px-3 py-1.5 text-pretty text-read-sm text-ink-soft leading-[1.75]"
             >
-              {pitfall}
+              <PmText text={pitfall} />
             </li>
           ))}
         </ul>
@@ -468,7 +512,7 @@ const SlotExplain = ({ slot }: { slot: PmAnswerSlot }) => (
       <ExplainSection title="押さえておきたい知識">
         {slot.knowledge.map((item) => (
           <p key={item} className={EXPLAIN_TEXT}>
-            {item}
+            <PmText text={item} />
           </p>
         ))}
       </ExplainSection>
@@ -485,7 +529,9 @@ const Glossary = ({ part }: { part: PmQuestionPart }) =>
         {part.glossary.map((entry) => (
           <div key={entry.key} className="contents">
             <dt className="font-bold text-read-sm text-ink">{entry.key}</dt>
-            <dd className={EXPLAIN_TEXT}>{entry.note}</dd>
+            <dd className={EXPLAIN_TEXT}>
+              <PmText text={entry.note} />
+            </dd>
           </div>
         ))}
       </dl>
@@ -728,7 +774,7 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                           </span>
                         </div>
                         <p className="text-pretty text-read-sm text-ink leading-[1.85]">
-                          {slot.explain}
+                          <PmText text={slot.explain} />
                         </p>
                         <SlotExplain slot={slot} />
                       </article>
@@ -739,7 +785,7 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                 <section className="flex flex-col gap-1.5">
                   <h3 className="font-bold text-[13px] text-ink">出題趣旨（IPA）</h3>
                   <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
-                    {transcript.intent}
+                    <PmText text={transcript.intent} />
                   </p>
                 </section>
                 <section className="flex flex-col gap-1.5">
@@ -750,7 +796,7 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                         key={item}
                         className="text-pretty text-read-sm text-ink-soft leading-[1.85]"
                       >
-                        {item}
+                        <PmText text={item} />
                       </li>
                     ))}
                   </ol>
@@ -758,7 +804,7 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                 <section className="flex flex-col gap-1.5">
                   <h3 className="font-bold text-[13px] text-ink">読みどころ</h3>
                   <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
-                    {transcript.overview}
+                    <PmText text={transcript.overview} />
                   </p>
                 </section>
               </section>

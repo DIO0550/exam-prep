@@ -74,6 +74,22 @@ describe.each(Object.values(PM_TRANSCRIPTS))("書き起こし $id", (t) => {
     }
   });
 
+  it("主キー・外部キーは [[主:…]]・[[外:…]] で書き、〔主〕などの別の書き方は使わない", () => {
+    for (const text of allTexts(t)) {
+      expect(text).not.toMatch(/〔主〕|〔外〕|［主］|［外］|［主キー］|［外部キー］/);
+      // 「主：」「外部キー:」など、印の書き間違いは下線のまま描かれてしまうので見つける
+      for (const [, inner] of text.matchAll(/\[\[([^\]]+)\]\]/g)) {
+        if (/^[^:：]{1,4}[:：]/.test(inner ?? "")) expect(inner).toMatch(/^(主|外):\S/);
+      }
+    }
+  });
+
+  it("下線付きの解答例は言葉で添えず、下線の書き方で書く", () => {
+    for (const slot of t.parts.flatMap((part) => part.slots)) {
+      expect(slot.answer, slot.key).not.toMatch(/下線付き/);
+    }
+  });
+
   it("設問で問う空欄は、どれも本文にある", () => {
     const inBody = new Set(t.body.flatMap(textsOf).flatMap(blanksIn));
     for (const part of t.parts) {
