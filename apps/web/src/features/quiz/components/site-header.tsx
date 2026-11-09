@@ -133,22 +133,25 @@ export const SiteHeader = ({
 
       <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 py-2.5">
         {/* 選択肢と解説の出し方は問題を解くときだけのもの。単語帳・午後過去問・穴埋めドリルでは出さない。 */}
-        {screen !== "vocab" && screen !== "pm-past" && screen !== "db-drill" && (
-          <>
-            <Toggle
-              label="選択肢"
-              options={SHUFFLE_OPTIONS}
-              value={shuffle}
-              onChange={onShuffleChange}
-            />
-            <Toggle
-              label="解説表示"
-              options={FEEDBACK_OPTIONS}
-              value={feedback}
-              onChange={onFeedbackChange}
-            />
-          </>
-        )}
+        {screen !== "vocab" &&
+          screen !== "pm-past" &&
+          screen !== "db-drill" &&
+          screen !== "nw-drill" && (
+            <>
+              <Toggle
+                label="選択肢"
+                options={SHUFFLE_OPTIONS}
+                value={shuffle}
+                onChange={onShuffleChange}
+              />
+              <Toggle
+                label="解説表示"
+                options={FEEDBACK_OPTIONS}
+                value={feedback}
+                onChange={onFeedbackChange}
+              />
+            </>
+          )}
         <Toggle
           label="文字サイズ"
           options={TEXT_SCALE_OPTIONS}

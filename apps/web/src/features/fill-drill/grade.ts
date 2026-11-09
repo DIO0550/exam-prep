@@ -1,11 +1,12 @@
-import type { DbBlank } from "./types";
+import type { FillBlank } from "./types";
 
 /**
  * 書いた答えを比べるための形にそろえる。
  *
- * - 全角・半角の違い（「ＧＲＯＵＰ　ＢＹ」「，」）は NFKC でそろえる
- * - SQL のキーワードは大文字・小文字を区別しないので、大文字にそろえる
- * - 空白の数は問わない。記号（括弧・カンマ・ピリオド・比較演算子・*）の前後の空白は消す
+ * - 全角・半角の違い（「ＧＲＯＵＰ　ＢＹ」「，」「１９２．１６８」）は NFKC でそろえる
+ * - SQL のキーワードやプロトコル名は大文字・小文字を区別しないので、大文字にそろえる
+ * - 空白の数は問わない。記号（括弧・カンマ・ピリオド・比較演算子・*・スラッシュ・コロン・
+ *   ＋・－）の前後の空白は消す（「192.168.1.0 / 24」も「192.168.1.0/24」と同じに見る）
  * - 末尾のセミコロンは問わない
  */
 export const normalizeAnswer = (value: string): string =>
@@ -15,10 +16,10 @@ export const normalizeAnswer = (value: string): string =>
     .replace(/;+\s*$/, "")
     .replace(/\s+/g, " ")
     .trim()
-    .replace(/\s*([(),.=<>*])\s*/g, "$1");
+    .replace(/\s*([(),.=<>*/:+-])\s*/g, "$1");
 
 /** 欄に書いた（選んだ）答えが正解か。空の欄は不正解。 */
-export const isCorrect = (blank: DbBlank, value: string): boolean => {
+export const isCorrect = (blank: FillBlank, value: string): boolean => {
   if (value.trim() === "") return false;
   if (blank.choices) return value === blank.answer;
   const given = normalizeAnswer(value);
@@ -28,5 +29,5 @@ export const isCorrect = (blank: DbBlank, value: string): boolean => {
 };
 
 /** 1 問分の採点。正解した欄の数を返す。 */
-export const countCorrect = (blanks: DbBlank[], answers: Record<string, string>): number =>
+export const countCorrect = (blanks: FillBlank[], answers: Record<string, string>): number =>
   blanks.filter((blank) => isCorrect(blank, answers[blank.key] ?? "")).length;
