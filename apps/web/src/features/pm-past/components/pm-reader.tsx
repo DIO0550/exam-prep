@@ -9,7 +9,7 @@ import { pmAnswerStore, usePmAnswers } from "../answers";
 import type { PmExam, PmProblem } from "../data";
 import { pmProblemId, pmSourceLabel } from "../data";
 import type { PmGrading, PmSlotGrade } from "../grading";
-import { gradeTranscript, PM_POINTS_PER_PROBLEM, wrongSlotKeys } from "../grading";
+import { gradeTranscript, PM_POINTS_PER_PROBLEM, retrySlotKeys } from "../grading";
 import type { KeyLine } from "../key-line";
 import {
   answerKeyLine,
@@ -361,41 +361,58 @@ type SlotProps = {
   onMark: (mark: PmMark | undefined) => void;
 };
 
-const MARK_LABEL: Record<PmMark, string> = { ok: "○ 正解", ng: "× 不正解" };
+const MARK_LABEL: Record<PmMark, string> = { ok: "○ 正解", partial: "△ 部分点", ng: "× 不正解" };
 
-/** 欄の答え合わせの枠の色。○× が付くまでは色を付けない。 */
+/** 印ごとの色。ボタンを押したとき（on）・押していないとき（off）・枠（tone）・解説の印（badge）。 */
+const MARK_STYLE: Record<PmMark, { on: string; off: string; tone: string; badge: string }> = {
+  ok: {
+    on: "border-ok bg-ok text-surface",
+    off: "border-ok-line bg-surface text-ok hover:bg-ok-soft",
+    tone: "border-ok-line bg-ok-bg",
+    badge: "bg-ok-soft text-ok",
+  },
+  partial: {
+    on: "border-flag bg-flag text-surface",
+    off: "border-flag/40 bg-surface text-flag-ink hover:bg-flag-soft",
+    tone: "border-flag/40 bg-flag-soft",
+    badge: "bg-flag-soft text-flag-ink",
+  },
+  ng: {
+    on: "border-ng bg-ng text-surface",
+    off: "border-ng-line bg-surface text-ng hover:bg-ng-soft",
+    tone: "border-ng-line bg-ng-bg",
+    badge: "bg-ng-soft text-ng",
+  },
+};
+
+/** 欄の答え合わせの枠の色。印が付くまでは色を付けない。 */
 const gradeTone = (mark: PmMark | undefined): string =>
-  mark === "ok"
-    ? "border-ok-line bg-ok-bg"
-    : mark === "ng"
-      ? "border-ng-line bg-ng-bg"
-      : "border-line bg-panel";
+  mark ? MARK_STYLE[mark].tone : "border-line bg-panel";
 
 /**
- * 記述の欄（と、記号を選ばずに紙で解いた欄）に、解答例と見比べて自分で ○× を付けるボタン。
+ * 記述の欄（と、記号を選ばずに紙で解いた欄）に、解答例と見比べて自分で ○△× を付けるボタン。
  * 押してある方をもう一度押すと、付けていない状態に戻る。
+ * △（部分点）は記述の欄だけ。記号は合っているか違っているかのどちらかなので出さない。
  */
 const MarkButtons = ({
   slotKey,
   mark,
+  partial,
   onMark,
 }: {
   slotKey: string;
   mark: PmMark | undefined;
+  partial: boolean;
   onMark: (mark: PmMark | undefined) => void;
 }) => (
-  <fieldset className="m-0 flex items-center gap-1.5 border-0 p-0">
+  <fieldset className="m-0 flex flex-wrap items-center gap-1.5 border-0 p-0">
     <legend className="sr-only">{slotKey} の自己採点</legend>
     <span aria-hidden="true" className="mr-0.5 text-[11px] text-muted">
       自己採点
     </span>
-    {(["ok", "ng"] as const).map((value) => {
+    {(partial ? (["ok", "partial", "ng"] as const) : (["ok", "ng"] as const)).map((value) => {
       const pressed = mark === value;
-      const on = value === "ok" ? "border-ok bg-ok text-surface" : "border-ng bg-ng text-surface";
-      const off =
-        value === "ok"
-          ? "border-ok-line bg-surface text-ok hover:bg-ok-soft"
-          : "border-ng-line bg-surface text-ng hover:bg-ng-soft";
+      const { on, off } = MARK_STYLE[value];
       return (
         <button
           key={value}
@@ -501,7 +518,7 @@ const Slot = ({ slot, value, line, revealed, grade, onAnswer, onLine, onMark }: 
 
       {/*
         欄の下には答え合わせだけを出す。解説は解答欄の下の「解説」にまとめる。
-        選んだ記号は自動で ○× を付け、記述の欄（と記号を選んでいない欄）は自分で付ける。
+        選んだ記号は自動で ○× を付け、記述の欄（と記号を選んでいない欄）は自分で ○△× を付ける。
       */}
       {revealed && (
         <div
@@ -535,7 +552,14 @@ const Slot = ({ slot, value, line, revealed, grade, onAnswer, onLine, onMark }: 
               </span>
             )}
           </div>
-          {!grade.auto && <MarkButtons slotKey={slot.key} mark={grade.mark} onMark={onMark} />}
+          {!grade.auto && (
+            <MarkButtons
+              slotKey={slot.key}
+              mark={grade.mark}
+              partial={!slot.choices}
+              onMark={onMark}
+            />
+          )}
         </div>
       )}
     </div>
@@ -661,14 +685,10 @@ const Glossary = ({ part }: { part: PmQuestionPart }) =>
     </div>
   ) : null;
 
-/** 解説の見出しに添える、その欄に付いた ○×。間違えた欄の解説を探しやすくするため。 */
+/** 解説の見出しに添える、その欄に付いた ○△×。間違えた欄の解説を探しやすくするため。 */
 const MarkBadge = ({ mark }: { mark: PmMark | undefined }) =>
   mark ? (
-    <span
-      className={`rounded px-1.5 py-0.5 font-bold text-[11px] ${
-        mark === "ok" ? "bg-ok-soft text-ok" : "bg-ng-soft text-ng"
-      }`}
-    >
+    <span className={`rounded px-1.5 py-0.5 font-bold text-[11px] ${MARK_STYLE[mark].badge}`}>
       {MARK_LABEL[mark]}
     </span>
   ) : null;
@@ -685,11 +705,11 @@ type GradeSummaryProps = {
 };
 
 /**
- * 欄ごとの ○× の集計と、そこから出した点数の目安。
- * 目安は、全部の欄に ○× が付いたときに、正解の欄の割合で 1 問の配点を按分したもの。
+ * 欄ごとの ○△× の集計と、そこから出した点数の目安。
+ * 目安は、全部の欄に印が付いたときに、○ を 1 欄・△ を半欄と数えた割合で 1 問の配点を按分したもの。
  */
 const GradeSummary = ({ grading, id, source, attempt }: GradeSummaryProps) => {
-  const { total, ok, ng, ungraded, score, points, choices, lines } = grading;
+  const { total, ok, partial, ng, ungraded, score, points, choices, lines } = grading;
   const recorded = score !== undefined && attempt?.score === score;
   // 自動で突き合わせた欄（記号・下線）の内訳。その欄が無い問では出さない。
   const autoCounts = [
@@ -705,6 +725,11 @@ const GradeSummary = ({ grading, id, source, attempt }: GradeSummaryProps) => {
         <div className="flex flex-col gap-0.5">
           <span className="text-[12.5px] text-ink tabular-nums">
             自己採点 <span className="font-bold text-ok">○ {ok}</span> ・{" "}
+            {partial > 0 && (
+              <>
+                <span className="font-bold text-flag-ink">△ {partial}</span> ・{" "}
+              </>
+            )}
             <span className="font-bold text-ng">× {ng}</span>
             {ungraded > 0 && ` ・ 未採点 ${ungraded}`}（全 {total} 欄）
           </span>
@@ -716,8 +741,9 @@ const GradeSummary = ({ grading, id, source, attempt }: GradeSummaryProps) => {
       </div>
       {score === undefined || points === undefined ? (
         <p className="text-pretty text-[11.5px] text-muted leading-[1.7]">
-          記述の欄は解答例と見比べて ○ か ×
-          を付けてください。全部の欄に付けると、正解の欄の割合から点数の目安を出して記録します。
+          記述の欄は解答例と見比べて ○・△（要点の一部だけ書けた）・×
+          を付けてください。全部の欄に付けると、○ を 1 欄・△
+          を半欄として数えた割合から点数の目安を出して記録します。
         </p>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
@@ -831,10 +857,10 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
   const [revealed, setRevealed] = useState(false);
   const answerWidth = useAnswerWidth();
   const grading = gradeTranscript(transcript, answers, marks);
-  const wrongKeys = wrongSlotKeys(grading);
+  const retryKeys = retrySlotKeys(grading);
 
   /**
-   * 全部の欄に ○× が付いたら、点数の目安を記録する。ただし点数がまだ無いときだけ。
+   * 全部の欄に印が付いたら、点数の目安を記録する。ただし点数がまだ無いときだけ。
    * 手で直した点数や、解き直す前の点数を、黙って書き換えないようにするため
    * （付け直したいときは「…点で記録し直す」を押す）。
    */
@@ -868,11 +894,11 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
     recordFirstScore();
   };
 
-  /** × の欄の答えと印だけを消して、解答例を隠す。○ の欄はそのまま残す。 */
+  /** × と △ の欄の答えと印だけを消して、解答例を隠す。○ の欄はそのまま残す。 */
   const retryWrong = () => {
     // 属性名の欄は、選んだ下線も選び直してもらう
-    pmAnswerStore.clearSlots(id, [...wrongKeys, ...wrongKeys.map(keyLineSlotKey)]);
-    pmMarkStore.clearSlots(id, wrongKeys);
+    pmAnswerStore.clearSlots(id, [...retryKeys, ...retryKeys.map(keyLineSlotKey)]);
+    pmMarkStore.clearSlots(id, retryKeys);
     setRevealed(false);
   };
 
@@ -970,9 +996,9 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
               <p className="text-pretty text-[11px] text-muted-soft leading-[1.7]">
                 解答例は IPA
                 が示した例で、唯一の正解ではありません。選んだ記号と属性名の下線には、自動で ○×
-                を付けています。点数の目安は、どの欄も同じ重さとして按分したものです（IPA
-                が公表している配点は 1 問 {PM_POINTS_PER_PROBLEM}{" "}
-                点までで、設問・欄ごとの配点は公表されていません）。
+                を付けています。点数の目安は、どの欄も同じ重さとし、△
+                を半分として按分したものです（IPA が公表している配点は 1 問 {PM_POINTS_PER_PROBLEM}{" "}
+                点までで、設問・欄ごとの配点や部分点の付け方は公表されていません）。
               </p>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -982,13 +1008,14 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
                 >
                   解答例を隠す
                 </button>
-                {wrongKeys.length > 0 && (
+                {retryKeys.length > 0 && (
                   <button
                     type="button"
                     onClick={retryWrong}
                     className="cursor-pointer rounded-[7px] border border-ng-line bg-surface px-3 py-1.5 font-bold text-[12px] text-ng hover:bg-ng-soft"
                   >
-                    × の欄だけ解き直す（{wrongKeys.length}欄）
+                    {grading.partial > 0 ? "× と △ の欄を解き直す" : "× の欄だけ解き直す"}（
+                    {retryKeys.length}欄）
                   </button>
                 )}
                 <button

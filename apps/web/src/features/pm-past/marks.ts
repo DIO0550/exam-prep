@@ -5,15 +5,17 @@ import { useSyncExternalStore } from "react";
 import { createLocalStore } from "@/features/quiz/local-store";
 
 /**
- * 解答例と見比べて、欄ごとに自分で付けた ○（正解）・×（不正解）。問題 ID → 欄の名前 → 印。
+ * 解答例と見比べて、欄ごとに自分で付けた ○（正解）・△（部分点）・×（不正解）。
+ * 問題 ID → 欄の名前 → 印。
  *
  * 記述の欄は機械では採点できないので、本人が付ける。記号の欄は選んだ記号で自動で決まるので、
- * 選んでいない（紙で解いた）ときだけ印を持つ。
+ * 選んでいない（紙で解いた）ときだけ印を持つ。△ は、要点の一部だけ書けた記述の欄に付ける
+ * （自動で決まる欄は ○ か × のどちらか）。
  *
  * 書いた答え（answers.ts）・解いた記録と点数（store.ts）とは別のキーに置く。
  * 答えを消して解き直すときは、印もいっしょに消す。
  */
-export type PmMark = "ok" | "ng";
+export type PmMark = "ok" | "partial" | "ng";
 
 export type PmMarks = Record<string, Record<string, PmMark>>;
 
@@ -24,7 +26,8 @@ const EMPTY: PmMarks = {};
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-const isMark = (value: unknown): value is PmMark => value === "ok" || value === "ng";
+const isMark = (value: unknown): value is PmMark =>
+  value === "ok" || value === "partial" || value === "ng";
 
 /** 保存された値を読む。形の合わない項目は捨てる。 */
 export const parsePmMarks = (raw: unknown): PmMarks => {

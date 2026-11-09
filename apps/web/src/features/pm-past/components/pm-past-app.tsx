@@ -82,8 +82,8 @@ export const PmPastApp = ({ sidebar }: { sidebar?: ReactNode }) => {
                 問題冊子と解答例は IPA が公開している PDF
                 を開いて使います。「このサイトで解く」がある問は、問題文を書き起こしてあり、左に問題文・右に解答欄を並べて解けます。
                 解き終えたら解答例と見比べて自己採点し、点数を記録してください。このサイトで解いた問は、解答欄ごとに
-                ○×
-                を付けると、正解の欄の割合から点数の目安が入ります。記録はこのブラウザにだけ残ります。
+                ○・△・× を付けると、正解の欄の割合（△
+                は半分）から点数の目安が入ります。記録はこのブラウザにだけ残ります。
               </p>
               <p className="mt-1.5 text-muted-soft">
                 問1（情報セキュリティ）は必須、問2〜11 から 4 問を選んで解答します。 午後の解答例は
@@ -192,14 +192,28 @@ type PmExamCardProps = {
 };
 
 /**
- * 書き起こした問で、× の付いた欄の数。解き直す問を一覧で見つけられるようにする。
+ * 書き起こした問で、× と △ の付いた欄の数。解き直す問を一覧で見つけられるようにする。
  * 解いた記録（解答例を見ると付く）がある問だけ数える。解答例を見る前に、選んだ記号の正誤を
  * 一覧で漏らさないため。
  */
-const wrongSlots = (id: string, record: PmRecord, answers: PmAnswers, marks: PmMarks): number => {
+const retryCounts = (
+  id: string,
+  record: PmRecord,
+  answers: PmAnswers,
+  marks: PmMarks,
+): RetryCounts => {
   const transcript = PM_TRANSCRIPTS[id];
-  if (!transcript || !record.attempts[id]) return 0;
-  return gradeTranscript(transcript, answers[id] ?? {}, marks[id] ?? {}).ng;
+  if (!transcript || !record.attempts[id]) return { ng: 0, partial: 0 };
+  const { ng, partial } = gradeTranscript(transcript, answers[id] ?? {}, marks[id] ?? {});
+  return { ng, partial };
+};
+
+type RetryCounts = { ng: number; partial: number };
+
+/** 一覧に出す「× 2 ・ △ 1欄」。どちらも無ければ空。 */
+const retryLabel = ({ ng, partial }: RetryCounts): string => {
+  const parts = [ng > 0 && `× ${ng}`, partial > 0 && `△ ${partial}`].filter(Boolean);
+  return parts.length > 0 ? `${parts.join(" ・ ")}欄` : "";
 };
 
 const PDF_LINK =
@@ -232,7 +246,7 @@ const PmExamCard = ({ pmExam, problems, record, answers, marks, onOpen }: PmExam
           pmExam={pmExam}
           problem={problem}
           attempt={record.attempts[pmProblemId(pmExam, problem.no)]}
-          wrong={wrongSlots(pmProblemId(pmExam, problem.no), record, answers, marks)}
+          retry={retryLabel(retryCounts(pmProblemId(pmExam, problem.no), record, answers, marks))}
           onOpen={() => onOpen(problem)}
         />
       ))}
@@ -244,13 +258,13 @@ type PmProblemRowProps = {
   pmExam: PmExam;
   problem: PmProblem;
   attempt: PmRecord["attempts"][string] | undefined;
-  /** × を付けた欄の数（書き起こした問だけ）。 */
-  wrong: number;
+  /** × と △ を付けた欄の数の表記（「× 2 ・ △ 1欄」）。書き起こした問だけ。無ければ空。 */
+  retry: string;
   onOpen: () => void;
 };
 
 /** 1 問分の行。解いた印と自己採点の点数を付けられる。書き起こしがある問は、このサイトで解ける。 */
-const PmProblemRow = ({ pmExam, problem, attempt, wrong, onOpen }: PmProblemRowProps) => {
+const PmProblemRow = ({ pmExam, problem, attempt, retry, onOpen }: PmProblemRowProps) => {
   const id = pmProblemId(pmExam, problem.no);
   const source = pmSourceLabel(pmExam, problem.no);
 
@@ -264,9 +278,9 @@ const PmProblemRow = ({ pmExam, problem, attempt, wrong, onOpen }: PmProblemRowP
             必須
           </span>
         )}
-        {wrong > 0 && (
+        {retry !== "" && (
           <span className="rounded bg-ng-soft px-1.5 py-0.5 font-bold text-[10px] text-ng">
-            × {wrong}欄
+            {retry}
           </span>
         )}
       </span>

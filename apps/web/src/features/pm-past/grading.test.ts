@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { withoutSlotAnswers } from "./answers";
-import { gradeTranscript, judgeChoiceSlots, wrongSlotKeys } from "./grading";
+import { gradeTranscript, judgeChoiceSlots, retrySlotKeys } from "./grading";
 import { parsePmMarks, withMark, withoutMarks } from "./marks";
 import type { PmAnswerSlot, PmQuestionPart, PmTranscript } from "./types";
 
@@ -79,7 +79,26 @@ describe("1 問の採点", () => {
     const done = gradeTranscript(t, { a: "ウ" }, { b: "ok", c: "ng" });
     // 3 欄中 2 欄 → 100 点換算で 67 点、1 問 20 点では 13.3 点
     expect(done).toMatchObject({ ok: 2, ng: 1, ungraded: 0, score: 67, points: 13.3 });
-    expect(wrongSlotKeys(done)).toEqual(["c"]);
+    expect(retrySlotKeys(done)).toEqual(["c"]);
+  });
+
+  it("△（部分点）は半欄として数え、解き直す欄に入れる", () => {
+    const t = transcript([part([slot("a", "ウ"), text("b", "x"), text("c", "y"), text("d", "z")])]);
+    const grading = gradeTranscript(t, { a: "ウ" }, { b: "partial", c: "partial", d: "ng" });
+    // ○ 1 ＋ △ 2 × 0.5 ＝ 2 欄分 / 4 欄 → 50 点、1 問 20 点では 10 点
+    expect(grading).toMatchObject({
+      ok: 1,
+      partial: 2,
+      ng: 1,
+      ungraded: 0,
+      score: 50,
+      points: 10,
+    });
+    expect(retrySlotKeys(grading)).toEqual(["b", "c", "d"]);
+    // 印が付いていない欄があるうちは点数を出さない
+    const unfinished = gradeTranscript(t, { a: "ウ" }, { b: "partial" });
+    expect(unfinished).toMatchObject({ partial: 1, ungraded: 2 });
+    expect(unfinished.score).toBeUndefined();
   });
 
   it("属性名の欄は、書いてあって下線が違えば × と決め、下線が合えば属性名は本人が見る", () => {
@@ -113,8 +132,8 @@ describe("自己採点の印の保存", () => {
 
   it("保存された値は、形の合わない項目を捨てて読む", () => {
     expect(parsePmMarks(null)).toEqual({});
-    expect(parsePmMarks({ p1: { a: "ok", b: "maybe", c: true }, p2: "x" })).toEqual({
-      p1: { a: "ok" },
+    expect(parsePmMarks({ p1: { a: "ok", b: "maybe", c: true, d: "partial" }, p2: "x" })).toEqual({
+      p1: { a: "ok", d: "partial" },
     });
   });
 
