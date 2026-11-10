@@ -44,6 +44,31 @@ import { DB_DRILL_43 } from "./data/db-drill-43";
 import { DB_DRILL_44 } from "./data/db-drill-44";
 import { DB_DRILL_45 } from "./data/db-drill-45";
 import { DB_DRILL_46 } from "./data/db-drill-46";
+import { DB_DRILL_47 } from "./data/db-drill-47";
+import { DB_DRILL_48 } from "./data/db-drill-48";
+import { DB_DRILL_49 } from "./data/db-drill-49";
+import { DB_DRILL_50 } from "./data/db-drill-50";
+import { DB_DRILL_51 } from "./data/db-drill-51";
+import { DB_DRILL_52 } from "./data/db-drill-52";
+import { DB_DRILL_53 } from "./data/db-drill-53";
+import { DB_DRILL_54 } from "./data/db-drill-54";
+import { DB_DRILL_55 } from "./data/db-drill-55";
+import { DB_DRILL_56 } from "./data/db-drill-56";
+import { DB_DRILL_57 } from "./data/db-drill-57";
+import { DB_DRILL_58 } from "./data/db-drill-58";
+import { DB_DRILL_59 } from "./data/db-drill-59";
+import { DB_DRILL_60 } from "./data/db-drill-60";
+import { DB_DRILL_61 } from "./data/db-drill-61";
+import { DB_DRILL_62 } from "./data/db-drill-62";
+import { DB_DRILL_63 } from "./data/db-drill-63";
+import { DB_DRILL_64 } from "./data/db-drill-64";
+import { DB_DRILL_65 } from "./data/db-drill-65";
+import { DB_DRILL_66 } from "./data/db-drill-66";
+import { DB_DRILL_67 } from "./data/db-drill-67";
+import { DB_DRILL_68 } from "./data/db-drill-68";
+import { DB_DRILL_69 } from "./data/db-drill-69";
+import { DB_DRILL_70 } from "./data/db-drill-70";
+import { DB_DRILL_71 } from "./data/db-drill-71";
 import type { DbDrill, DbTopic } from "./types";
 
 /**
@@ -110,6 +135,31 @@ const ALL_DRILLS: DbDrill[] = [
   DB_DRILL_44,
   DB_DRILL_45,
   DB_DRILL_46,
+  DB_DRILL_47,
+  DB_DRILL_48,
+  DB_DRILL_49,
+  DB_DRILL_50,
+  DB_DRILL_51,
+  DB_DRILL_52,
+  DB_DRILL_53,
+  DB_DRILL_54,
+  DB_DRILL_55,
+  DB_DRILL_56,
+  DB_DRILL_57,
+  DB_DRILL_58,
+  DB_DRILL_59,
+  DB_DRILL_60,
+  DB_DRILL_61,
+  DB_DRILL_62,
+  DB_DRILL_63,
+  DB_DRILL_64,
+  DB_DRILL_65,
+  DB_DRILL_66,
+  DB_DRILL_67,
+  DB_DRILL_68,
+  DB_DRILL_69,
+  DB_DRILL_70,
+  DB_DRILL_71,
 ];
 
 /**
