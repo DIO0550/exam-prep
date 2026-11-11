@@ -41,6 +41,24 @@ export const NW_DRILL_12: NwDrill = {
       answer: "NS",
       explain:
         "ゾーンを管理する権威 DNS サーバを示すのは NS レコード。上位の jp のサーバにも同じ NS が登録され、問合せがここへ案内される。",
+      steps: [
+        "@ はゾーンの名前 example.jp. そのもの。その右側に DNS サーバの名前 ns1.example.jp. が書かれている。",
+        "「このゾーンを管理する権威 DNS サーバはこれ」を示すのが NS レコード。",
+        "次の行の「ns1 IN A 203.0.113.10」で、そのサーバのアドレスも引けるようにしている。",
+      ],
+      figure: {
+        type: "table",
+        caption: "リソースレコードの種類と、図 1 での例",
+        headers: ["タイプ", "対応付けるもの", "図 1 の例"],
+        rows: [
+          ["NS", "ゾーン → 権威 DNS サーバの名前", "@ → ns1.example.jp."],
+          ["A", "名前 → IPv4 アドレス", "www → 203.0.113.20"],
+          ["AAAA", "名前 → IPv6 アドレス", "（図 1 には無い）"],
+          ["MX", "メールのドメイン → メールサーバ（優先度付き）", "@ → 10 mail.example.jp."],
+          ["CNAME", "別名 → 正式な名前", "shop → www.example.jp."],
+          ["PTR", "IP アドレス → 名前（逆引き）", "20.113.0.203.in-addr.arpa. → www"],
+        ],
+      },
     },
     {
       key: "b",
@@ -48,6 +66,11 @@ export const NW_DRILL_12: NwDrill = {
       answer: "A",
       explain:
         "ホスト名に IPv4 アドレスを対応付けるのは A レコード。IPv6 アドレスなら AAAA レコード。",
+      steps: [
+        "www の右側が IPv4 アドレス（203.0.113.20）になっている。",
+        "名前に IPv4 アドレスを対応付けるのは A レコード（空欄 a の表）。",
+        "IPv6 アドレスなら AAAA レコードを使う。",
+      ],
     },
     {
       key: "c",
@@ -55,6 +78,28 @@ export const NW_DRILL_12: NwDrill = {
       answer: "MX",
       explain:
         "メールの宛先ドメイン（@example.jp）のメールサーバを示すのは MX レコード。10 は優先度で、値が小さいサーバほど先に使われる。",
+      steps: [
+        "@（example.jp）の右側に「10 mail.example.jp.」と、数字とメールサーバの名前が書かれている。",
+        "「@example.jp 宛てのメールはこのサーバへ」を示すのが MX レコード。10 は優先度で、値が小さいサーバほど先に使われる。",
+        "MX の右側は名前で書き、そのアドレスは別の A レコード（mail IN A 203.0.113.25）で引く。",
+      ],
+      figure: {
+        type: "sequence",
+        caption: "user@example.jp 宛てのメールは、MX → A の順に引いて送り先を決める",
+        actors: ["送信側のメールサーバ", "DNS", "mail.example.jp"],
+        steps: [
+          { from: "送信側のメールサーバ", to: "DNS", label: "example.jp の MX は？" },
+          { from: "DNS", to: "送信側のメールサーバ", label: "10 mail.example.jp.", dashed: true },
+          { from: "送信側のメールサーバ", to: "DNS", label: "mail.example.jp の A は？" },
+          { from: "DNS", to: "送信側のメールサーバ", label: "203.0.113.25", dashed: true },
+          {
+            from: "送信側のメールサーバ",
+            to: "mail.example.jp",
+            label: "SMTP でメールを渡す",
+            tone: "accent",
+          },
+        ],
+      },
     },
     {
       key: "d",
@@ -62,6 +107,11 @@ export const NW_DRILL_12: NwDrill = {
       answer: "CNAME",
       explain:
         "別名を正式な名前に対応付けるのは CNAME。shop.example.jp を引くと www.example.jp に置き換えられ、その A レコードの 203.0.113.20 が返る。",
+      steps: [
+        "本文に「shop.example.jp は www.example.jp の別名」とあり、shop の右側は www.example.jp. という名前になっている。",
+        "別名を正式な名前に対応付けるのは CNAME レコード。",
+        "shop.example.jp を引くと www.example.jp に置き換えられ、その A レコードの 203.0.113.20 が返る。",
+      ],
     },
     {
       key: "e",
@@ -69,6 +119,11 @@ export const NW_DRILL_12: NwDrill = {
       answer: "PTR",
       explain:
         "逆引き（アドレス → 名前）は PTR レコード。20.113.0.203.in-addr.arpa. のように、アドレスを逆順に並べた名前に書く。",
+      steps: [
+        "「IP アドレスから名前を引く」のが逆引き。",
+        "逆引きは PTR レコードで、アドレスを逆順に並べた 20.113.0.203.in-addr.arpa. という名前に書く。",
+        "名前からアドレスを引く正引き（A レコード）とは、向きが逆。",
+      ],
     },
   ],
   points: [
