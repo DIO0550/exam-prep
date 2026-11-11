@@ -121,6 +121,14 @@ describe("ネットワークの穴埋めドリル", () => {
         for (const blank of drill.blanks) expect(blank.explain).not.toBe("");
       });
 
+      it("どの空欄にも、答えまでの考え方が 2 段階以上ある", () => {
+        for (const blank of drill.blanks) {
+          const steps = blank.steps ?? [];
+          expect(steps.length, `空欄 ${blank.key}`).toBeGreaterThanOrEqual(2);
+          for (const step of steps) expect(step.trim(), `空欄 ${blank.key}`).not.toBe("");
+        }
+      });
+
       it("解説の図は書き方に誤りが無い", () => {
         for (const blank of drill.blanks) {
           if (!blank.figure) continue;
