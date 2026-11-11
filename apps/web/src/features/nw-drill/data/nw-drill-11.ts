@@ -96,6 +96,31 @@ export const NW_DRILL_11: NwDrill = {
       answer: "ア",
       explain:
         "ブロードキャストは同じ VLAN（ブロードキャストドメイン）の中にしか届かず、ルータや L3SW は転送しない。",
+      steps: [
+        "PC はまだ DHCP サーバのアドレスを知らないので、DHCPDISCOVER を全員宛てのブロードキャストで送る。",
+        "ブロードキャストが届くのは同じ VLAN（ブロードキャストドメイン）の中だけ。L3SW やルータは、ブロードキャストを別の VLAN へ転送しない。",
+        "DHCP サーバは VLAN 100 にいるので、VLAN 10 や VLAN 20 の PC のブロードキャストは、そのままでは届かない。",
+      ],
+      figure: {
+        type: "diagram",
+        caption: "ブロードキャストは L3SW で止まり、VLAN 100 の DHCP サーバに届かない",
+        nodes: [
+          {
+            id: "dhcp",
+            label: "DHCP サーバ",
+            col: 1.5,
+            row: 0,
+            note: "VLAN 100",
+            notePlace: "right",
+          },
+          { id: "l3", label: "L3SW", col: 1.5, row: 1.4 },
+          { id: "pc10", label: "VLAN 10 の PC", col: 0, row: 2.8 },
+        ],
+        edges: [
+          { from: "pc10", to: "l3", label: "DHCPDISCOVER（全員宛て）" },
+          { from: "l3", to: "dhcp", label: "転送しない", tone: "ng", blocked: true },
+        ],
+      },
     },
     {
       key: "b",
@@ -109,6 +134,33 @@ export const NW_DRILL_11: NwDrill = {
       answer: "ア",
       explain:
         "DHCP リレーエージェントは、受け取った DHCP のブロードキャストを、設定した DHCP サーバ宛てのユニキャストにして中継する。サーバの返事も PC へ取り次ぐ。",
+      steps: [
+        "届かないのは「ブロードキャストだから」。DHCP サーバ宛てのユニキャストに変えて中継すれば、L3SW を越えて届く。",
+        "この中継をするのが DHCP リレーエージェント。L3SW に DHCP サーバのアドレス（192.168.100.10）を設定しておく。",
+        "NAPT はアドレスの変換、プロキシ ARP は他のネットワーク宛ての ARP に代わりに答える仕組み、VRRP はゲートウェイの冗長化で、DHCP の中継はしない。",
+      ],
+      figure: {
+        type: "sequence",
+        caption: "L3SW の DHCP リレーエージェントが、ユニキャストに変えて中継する",
+        actors: ["VLAN 10 の PC", "L3SW（リレー）", "DHCP サーバ"],
+        steps: [
+          { from: "VLAN 10 の PC", to: "L3SW（リレー）", label: "DHCPDISCOVER（全員宛て）" },
+          {
+            from: "L3SW（リレー）",
+            to: "DHCP サーバ",
+            label: "サーバ宛てに転送（giaddr＝192.168.10.254）",
+            tone: "accent",
+          },
+          {
+            from: "DHCP サーバ",
+            to: "L3SW（リレー）",
+            label: "DHCPOFFER（VLAN 10 用から）",
+            dashed: true,
+          },
+          { from: "L3SW（リレー）", to: "VLAN 10 の PC", label: "PC へ取り次ぐ", dashed: true },
+          { divider: "REQUEST と ACK も同じように中継する" },
+        ],
+      },
     },
     {
       key: "c",
@@ -116,6 +168,11 @@ export const NW_DRILL_11: NwDrill = {
       answer: "192.168.10.254",
       explain:
         "VLAN 10 の PC の要求は、L3SW の VLAN 10 のインタフェースで受け取る。そのアドレス 192.168.10.254 が giaddr に入る。",
+      steps: [
+        "本文に、giaddr には「メッセージを受け取ったインタフェースの IP アドレス」を入れるとある。",
+        "VLAN 10 の PC の要求は、L3SW の VLAN 10 のインタフェースで受け取る。表 1 から、そのアドレスは 192.168.10.254。",
+        "PC のアドレス（まだ無い）や、DHCP サーバ側のインタフェースの 192.168.100.254 を入れるのではない。",
+      ],
     },
     {
       key: "d",
@@ -129,6 +186,20 @@ export const NW_DRILL_11: NwDrill = {
       answer: "イ",
       explain:
         "giaddr が 192.168.20.254 なら、要求は 192.168.20.0/24 から来たと分かる。そのサブネットのスコープ（VLAN 20 用）から貸し出す。",
+      steps: [
+        "giaddr の 192.168.20.254 は、L3SW の VLAN 20 のインタフェースのアドレス。",
+        "つまり要求は 192.168.20.0/24（VLAN 20）から来たと分かる。DHCP サーバは、giaddr と同じサブネットのスコープを選ぶ。",
+        "表 2 の「VLAN 20 用」（192.168.20.1〜200）から貸し出す。サーバ自身がいるサブネットのスコープではない。",
+      ],
+      figure: {
+        type: "table",
+        caption: "giaddr で、どのスコープから貸すかが決まる",
+        headers: ["要求の出どころ", "giaddr", "選ぶスコープ"],
+        rows: [
+          ["VLAN 10 の PC", "192.168.10.254", "VLAN 10 用（192.168.10.1〜200）"],
+          ["VLAN 20 の PC", "192.168.20.254", "VLAN 20 用（192.168.20.1〜200）"],
+        ],
+      },
     },
     {
       key: "e",
@@ -136,6 +207,11 @@ export const NW_DRILL_11: NwDrill = {
       answer: "192.168.20.254",
       explain:
         "VLAN 20 の PC が他のサブネットへ送るときの出口は、L3SW の VLAN 20 のインタフェース 192.168.20.254。",
+      steps: [
+        "デフォルトゲートウェイは、PC が他のサブネットへ送るときの出口で、PC と同じサブネットにある必要がある。",
+        "VLAN 20 の PC（192.168.20.0/24）の出口は、L3SW の VLAN 20 のインタフェース。表 1 から 192.168.20.254。",
+        "VLAN 10 用のスコープが 192.168.10.254 を配っているのと同じ考え方。",
+      ],
     },
   ],
   points: [

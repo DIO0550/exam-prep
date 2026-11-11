@@ -3,26 +3,37 @@
 import type { ReactNode } from "react";
 import { Fragment, useState } from "react";
 
+import { AnswerPane } from "@/features/quiz/components/answer-pane";
+import { useAnswerWidth } from "@/features/quiz/hooks/use-answer-width";
+
 import { countCorrect, isCorrect } from "../grade";
 import type { FillDrillStore } from "../store";
 import { useFillDrillRecord } from "../store";
 import type { FillBlank, FillDrill, Marks } from "../types";
+import { BlankExplain, choiceLabel, explainId } from "./blank-explain";
 
-/** 「イ　1 対多」のように、記号に中身を添える。 */
-const answerLabel = (blank: FillBlank): string => {
-  const choice = blank.choices?.find((c) => c.key === blank.answer);
-  return choice ? `${choice.key}　${choice.text}` : blank.answer;
+/** 左の解説の、その欄のところまで送る（狭い画面では縦に並ぶので、ページごと動く）。 */
+const scrollToExplain = (id: string): void => {
+  document.getElementById(id)?.scrollIntoView?.({ behavior: "smooth", block: "start" });
 };
+
+/** 解答欄の幅を覚える先。SQL・表とネットワークのドリルで同じ幅を使う。 */
+const ANSWER_WIDTH_KEY = "exam-prep:fill-drill-answer-width:v1";
 
 type BlankFieldProps = {
   blank: FillBlank;
   value: string;
   correct: boolean | undefined;
   onChange: (value: string) => void;
+  /** 左の解説のこの欄へ移る。 */
+  onShowExplain: () => void;
 };
 
-/** 空欄 1 つの答える欄。答え合わせの後は、正誤・正解・解説を下に出す。 */
-const BlankField = ({ blank, value, correct, onChange }: BlankFieldProps) => {
+/**
+ * 空欄 1 つの答える欄。答え合わせの後は、正誤と正解を下に出す。
+ * 解説は図や手順を載せるので、幅のある左（問題文の下）に出し、ここからはそこへ飛べるようにする。
+ */
+const BlankField = ({ blank, value, correct, onChange, onShowExplain }: BlankFieldProps) => {
   const label = `空欄${blank.key} の答え`;
   const chosen = blank.choices?.find((choice) => choice.key === value);
   return (
@@ -77,12 +88,19 @@ const BlankField = ({ blank, value, correct, onChange }: BlankFieldProps) => {
               {correct ? "○ 正解" : "× 不正解"}
             </span>
             <span className="text-muted">正解</span>
-            <span className="font-bold text-ink">{answerLabel(blank)}</span>
+            <span className="font-bold text-ink">{choiceLabel(blank, blank.answer)}</span>
           </div>
           {blank.accepts && (
             <span className="text-[11.5px] text-muted">{blank.accepts.join("、")} でも正解</span>
           )}
-          <p className="text-pretty text-ink-soft leading-[1.8]">{blank.explain}</p>
+          <button
+            type="button"
+            onClick={onShowExplain}
+            aria-label={`空欄${blank.key} の解説を見る`}
+            className="self-start cursor-pointer rounded-[7px] border border-edge-strong bg-surface px-2.5 py-1 font-bold text-[11.5px] text-accent hover:bg-canvas"
+          >
+            解説を見る
+          </button>
         </div>
       )}
     </div>
@@ -103,7 +121,9 @@ type FillDrillReaderProps<Block> = {
 
 /**
  * 穴埋めドリル 1 問を解く画面。左に問題文（図・表・SQL 文など）、右に空欄ごとの答える欄。
+ * 境目をつまむと解答欄の幅を変えられる（午後の過去問題と同じ部品）。
  * 「答え合わせ」で空欄ごとに正誤を出し、本文の空欄にも正誤の色を付ける。
+ * 解説（考え方の手順と図）は、問題文の下に空欄ごとに並べる。
  */
 export const FillDrillReader = <Block,>({
   drill,
@@ -116,6 +136,7 @@ export const FillDrillReader = <Block,>({
   const record = useFillDrillRecord(store);
   const answers = record.answers[drill.id] ?? {};
   const [checked, setChecked] = useState(false);
+  const answerWidth = useAnswerWidth(ANSWER_WIDTH_KEY);
 
   const marks: Marks = checked
     ? Object.fromEntries(
@@ -131,7 +152,11 @@ export const FillDrillReader = <Block,>({
 
   return (
     <>
-      <div className="flex min-w-0 flex-col md:flex-1 md:overflow-y-auto md:overscroll-contain">
+      <div
+        className={`flex min-w-0 flex-col md:flex-1 md:overflow-y-auto md:overscroll-contain ${
+          answerWidth.dragging ? "select-none" : ""
+        }`}
+      >
         <main className="flex justify-center px-7 pb-16">
           <article className="flex w-full max-w-[820px] flex-col gap-5">
             <header className="flex flex-col gap-2 border-line border-b pt-5 pb-3.5">
@@ -159,6 +184,24 @@ export const FillDrillReader = <Block,>({
 
             {checked && (
               <section
+                aria-label="解説"
+                className="mt-4 flex flex-col gap-4 border-line border-t-2 pt-5"
+              >
+                <h2 className="font-bold text-[15px]">解説</h2>
+                {drill.blanks.map((blank) => (
+                  <BlankExplain
+                    key={blank.key}
+                    drillId={drill.id}
+                    blank={blank}
+                    value={answers[blank.key] ?? ""}
+                    correct={marks?.[blank.key] ?? false}
+                  />
+                ))}
+              </section>
+            )}
+
+            {checked && (
+              <section
                 aria-label="この問のまとめ"
                 className="mt-2 flex flex-col gap-2 rounded-xl border border-line bg-panel px-5 py-4"
               >
@@ -167,7 +210,7 @@ export const FillDrillReader = <Block,>({
                   {drill.points.map((point) => (
                     <li
                       key={point}
-                      className="text-pretty text-read-sm text-ink-soft leading-[1.8]"
+                      className="text-pretty text-read-md text-ink-soft leading-[1.85]"
                     >
                       {point}
                     </li>
@@ -179,10 +222,7 @@ export const FillDrillReader = <Block,>({
         </main>
       </div>
 
-      <aside
-        aria-label="解答欄"
-        className="flex flex-col gap-4 border-line border-t bg-surface px-5 pt-5 pb-10 md:min-h-0 md:w-[400px] md:flex-none md:overflow-y-auto md:overscroll-contain md:border-t-0 md:border-l"
-      >
+      <AnswerPane answerWidth={answerWidth}>
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="font-bold text-[14px]">解答欄</h2>
           <span className="text-[11px] text-muted-soft">
@@ -198,6 +238,7 @@ export const FillDrillReader = <Block,>({
               value={answers[blank.key] ?? ""}
               correct={marks?.[blank.key]}
               onChange={(value) => store.setAnswer(drill.id, blank.key, value)}
+              onShowExplain={() => scrollToExplain(explainId(drill.id, blank.key))}
             />
           ))}
         </section>
@@ -213,6 +254,9 @@ export const FillDrillReader = <Block,>({
             >
               {correctCount}/{drill.blanks.length} 正解
             </div>
+            <p className="text-[11.5px] text-muted-soft leading-[1.7]">
+              解説は問題文の下に、空欄ごとに出ています（「解説を見る」でその欄へ移れます）。
+            </p>
             <div className="flex flex-wrap gap-2">
               {onNext && (
                 <button
@@ -251,7 +295,7 @@ export const FillDrillReader = <Block,>({
             答え合わせ
           </button>
         )}
-      </aside>
+      </AnswerPane>
     </>
   );
 };
