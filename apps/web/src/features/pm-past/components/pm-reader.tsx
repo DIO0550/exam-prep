@@ -1,9 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 
+import { AnswerPane } from "@/features/quiz/components/answer-pane";
 import { OriginalFigure } from "@/features/quiz/components/question-figure";
+import { useAnswerWidth } from "@/features/quiz/hooks/use-answer-width";
 
 import { pmAnswerStore, usePmAnswers } from "../answers";
 import type { PmExam, PmProblem } from "../data";
@@ -769,73 +771,8 @@ const GradeSummary = ({ grading, id, source, attempt }: GradeSummaryProps) => {
   );
 };
 
-/** 解答欄の幅（px）。狭すぎると選ぶ欄が切れ、広すぎると問題文が読みにくくなる。 */
-export const ANSWER_WIDTH_MIN = 320;
-export const ANSWER_WIDTH_MAX = 900;
-const DEFAULT_ANSWER_WIDTH = 400;
-const KEY_STEP = 40;
-/** 問題文の側に最低限残す幅。 */
-const BODY_WIDTH_MIN = 360;
+/** 解答欄の幅を覚える先。穴埋めドリルとは解答欄の中身が違うので、別に覚える。 */
 const ANSWER_WIDTH_KEY = "exam-prep:pm-past-answer-width:v1";
-
-const clampAnswerWidth = (width: number): number => {
-  const max =
-    typeof window === "undefined"
-      ? ANSWER_WIDTH_MAX
-      : Math.min(ANSWER_WIDTH_MAX, Math.max(ANSWER_WIDTH_MIN, window.innerWidth - BODY_WIDTH_MIN));
-  return Math.min(max, Math.max(ANSWER_WIDTH_MIN, Math.round(width)));
-};
-
-/** 前に合わせた幅を読む。読めなければ既定の幅。端末ごとの好みなので localStorage で足りる。 */
-const loadAnswerWidth = (): number => {
-  try {
-    const saved = Number(window.localStorage.getItem(ANSWER_WIDTH_KEY));
-    return saved > 0 ? clampAnswerWidth(saved) : DEFAULT_ANSWER_WIDTH;
-  } catch {
-    return DEFAULT_ANSWER_WIDTH;
-  }
-};
-
-const saveAnswerWidth = (width: number): void => {
-  try {
-    window.localStorage.setItem(ANSWER_WIDTH_KEY, String(width));
-  } catch {
-    // 保存できなくても、この画面のあいだは合わせた幅のまま使える。
-  }
-};
-
-/**
- * 解答欄の幅。境目をつまんで動かしている間は画面の中だけで変え、手を離したときに覚える。
- * 解答欄は右端に寄せてあるので、幅は「画面の右端からポインタまで」で決まる。
- */
-const useAnswerWidth = () => {
-  const [width, setWidth] = useState(loadAnswerWidth);
-  const [dragging, setDragging] = useState(false);
-
-  useEffect(() => {
-    if (!dragging) return;
-    const onMove = (event: PointerEvent): void => {
-      event.preventDefault();
-      setWidth(clampAnswerWidth(window.innerWidth - event.clientX));
-    };
-    const onUp = (): void => setDragging(false);
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-    };
-  }, [dragging]);
-
-  useEffect(() => {
-    if (!dragging) saveAnswerWidth(width);
-  }, [dragging, width]);
-
-  const nudge = (delta: number) => setWidth((prev) => clampAnswerWidth(prev + delta));
-  return { width, dragging, startDrag: () => setDragging(true), nudge };
-};
 
 type PmReaderProps = {
   pmExam: PmExam;
@@ -855,7 +792,7 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
   const marks = usePmMarks()[id] ?? {};
   const attempt = usePmRecord().attempts[id];
   const [revealed, setRevealed] = useState(false);
-  const answerWidth = useAnswerWidth();
+  const answerWidth = useAnswerWidth(ANSWER_WIDTH_KEY);
   const grading = gradeTranscript(transcript, answers, marks);
   const retryKeys = retrySlotKeys(grading);
 
@@ -941,167 +878,141 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
         </main>
       </div>
 
-      {/* 解答欄の外枠。つまむところをスクロールに巻き込まないよう、スクロールは内側の aside に持たせる。 */}
-      <div
-        style={{ ["--answer-width" as string]: `${answerWidth.width}px` }}
-        className="relative flex flex-col md:min-h-0 md:flex-[0_0_var(--answer-width)]"
-      >
-        {/* 境目をつまんで、問題文と解答欄の幅の配分を変える。狭い画面では縦に並ぶので出さない。 */}
-        <button
-          type="button"
-          aria-label={`解答欄の幅を変える（今 ${answerWidth.width}px。← → でも変えられる）`}
-          onPointerDown={(event) => {
-            event.preventDefault();
-            answerWidth.startDrag();
-          }}
-          onKeyDown={(event) => {
-            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-            event.preventDefault();
-            answerWidth.nudge(event.key === "ArrowLeft" ? KEY_STEP : -KEY_STEP);
-          }}
-          className={`-left-1.5 absolute inset-y-0 z-10 hidden w-3 cursor-col-resize touch-none border-none p-0 md:block ${
-            answerWidth.dragging ? "bg-accent-soft" : "bg-transparent hover:bg-accent-soft"
-          }`}
-        />
-        <aside
-          aria-label="解答欄"
-          className="flex flex-col gap-4 border-line border-t bg-surface px-5 pt-5 pb-10 md:min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-contain md:border-t-0 md:border-l"
-        >
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="font-bold text-[14px]">解答欄</h2>
-            <span className="text-[11px] text-muted-soft">書いた答えはこのブラウザに残ります</span>
-          </div>
+      <AnswerPane answerWidth={answerWidth}>
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-bold text-[14px]">解答欄</h2>
+          <span className="text-[11px] text-muted-soft">書いた答えはこのブラウザに残ります</span>
+        </div>
 
-          {transcript.parts.map((part) => (
-            <section key={part.label} className="rounded-xl border border-line px-4 py-3.5">
-              {part.slots.map((slot) => (
-                <Slot
-                  key={slot.key}
-                  slot={slot}
-                  value={answers[slot.key] ?? ""}
-                  line={lineOf(slot)}
-                  revealed={revealed}
-                  grade={grading.slots[slot.key] ?? { mark: undefined, auto: false }}
-                  onAnswer={(value) => answer(slot.key, value)}
-                  onLine={(value) => answer(keyLineSlotKey(slot.key), value)}
-                  onMark={(value) => mark(slot.key, value)}
-                />
-              ))}
-            </section>
-          ))}
+        {transcript.parts.map((part) => (
+          <section key={part.label} className="rounded-xl border border-line px-4 py-3.5">
+            {part.slots.map((slot) => (
+              <Slot
+                key={slot.key}
+                slot={slot}
+                value={answers[slot.key] ?? ""}
+                line={lineOf(slot)}
+                revealed={revealed}
+                grade={grading.slots[slot.key] ?? { mark: undefined, auto: false }}
+                onAnswer={(value) => answer(slot.key, value)}
+                onLine={(value) => answer(keyLineSlotKey(slot.key), value)}
+                onMark={(value) => mark(slot.key, value)}
+              />
+            ))}
+          </section>
+        ))}
 
-          {revealed ? (
-            <div className="flex flex-col gap-4">
-              <GradeSummary grading={grading} id={id} source={source} attempt={attempt} />
-              <p className="text-pretty text-[11px] text-muted-soft leading-[1.7]">
-                解答例は IPA
-                が示した例で、唯一の正解ではありません。選んだ記号と属性名の下線には、自動で ○×
-                を付けています。点数の目安は、どの欄も同じ重さとし、△
-                を半分として按分したものです（IPA が公表している配点は 1 問 {PM_POINTS_PER_PROBLEM}{" "}
-                点までで、設問・欄ごとの配点や部分点の付け方は公表されていません）。
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRevealed(false)}
-                  className="cursor-pointer rounded-[7px] border border-edge-strong px-3 py-1.5 text-[12px] text-muted hover:bg-canvas"
-                >
-                  解答例を隠す
-                </button>
-                {retryKeys.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={retryWrong}
-                    className="cursor-pointer rounded-[7px] border border-ng-line bg-surface px-3 py-1.5 font-bold text-[12px] text-ng hover:bg-ng-soft"
-                  >
-                    {grading.partial > 0 ? "× と △ の欄を解き直す" : "× の欄だけ解き直す"}（
-                    {retryKeys.length}欄）
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    pmAnswerStore.clearProblem(id);
-                    pmMarkStore.clearProblem(id);
-                    setRevealed(false);
-                  }}
-                  className="cursor-pointer rounded-[7px] px-3 py-1.5 text-[12px] text-muted-soft hover:bg-canvas"
-                >
-                  答えを消して解き直す
-                </button>
-              </div>
-
-              <section
-                aria-label="解説"
-                className="mt-4 flex flex-col gap-5 border-line border-t-2 pt-5"
+        {revealed ? (
+          <div className="flex flex-col gap-4">
+            <GradeSummary grading={grading} id={id} source={source} attempt={attempt} />
+            <p className="text-pretty text-[11px] text-muted-soft leading-[1.7]">
+              解答例は IPA
+              が示した例で、唯一の正解ではありません。選んだ記号と属性名の下線には、自動で ○×
+              を付けています。点数の目安は、どの欄も同じ重さとし、△
+              を半分として按分したものです（IPA が公表している配点は 1 問 {PM_POINTS_PER_PROBLEM}{" "}
+              点までで、設問・欄ごとの配点や部分点の付け方は公表されていません）。
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setRevealed(false)}
+                className="cursor-pointer rounded-[7px] border border-edge-strong px-3 py-1.5 text-[12px] text-muted hover:bg-canvas"
               >
-                <h2 className="font-bold text-[15px]">解説</h2>
-                {transcript.parts.map((part) => (
-                  <section key={part.label} className="flex flex-col gap-4">
-                    <h3 className="border-accent border-l-[3px] pl-2.5 font-bold text-[14px] text-ink">
-                      {part.label}
-                    </h3>
-                    {part.slots.map((slot) => (
-                      <article
-                        key={slot.key}
-                        aria-label={`${slot.key} の解説`}
-                        className="flex flex-col gap-3 rounded-xl border border-line px-4 py-3.5"
-                      >
-                        <div className="flex flex-wrap items-baseline gap-x-2.5">
-                          <h4 className="font-bold text-[13.5px] text-ink">{slot.key}</h4>
-                          <MarkBadge mark={grading.slots[slot.key]?.mark} />
-                          <span className="text-read-sm text-muted">解答例</span>
-                          <span className="font-bold text-read-sm text-ink">
-                            <PmText text={answerLabel(slot)} />
-                          </span>
-                        </div>
-                        <p className="text-pretty text-read-sm text-ink leading-[1.85]">
-                          <PmText text={slot.explain} />
-                        </p>
-                        <SlotExplain slot={slot} />
-                      </article>
-                    ))}
-                    <Glossary part={part} />
-                  </section>
-                ))}
-                <section className="flex flex-col gap-1.5">
-                  <h3 className="font-bold text-[13px] text-ink">出題趣旨（IPA）</h3>
-                  <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
-                    <PmText text={transcript.intent} />
-                  </p>
-                </section>
-                <section className="flex flex-col gap-1.5">
-                  <h3 className="font-bold text-[13px] text-ink">この問の解き方</h3>
-                  <ol className="flex list-decimal flex-col gap-1.5 pl-5">
-                    {transcript.approach.map((item) => (
-                      <li
-                        key={item}
-                        className="text-pretty text-read-sm text-ink-soft leading-[1.85]"
-                      >
-                        <PmText text={item} />
-                      </li>
-                    ))}
-                  </ol>
-                </section>
-                <section className="flex flex-col gap-1.5">
-                  <h3 className="font-bold text-[13px] text-ink">読みどころ</h3>
-                  <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
-                    <PmText text={transcript.overview} />
-                  </p>
-                </section>
-              </section>
+                解答例を隠す
+              </button>
+              {retryKeys.length > 0 && (
+                <button
+                  type="button"
+                  onClick={retryWrong}
+                  className="cursor-pointer rounded-[7px] border border-ng-line bg-surface px-3 py-1.5 font-bold text-[12px] text-ng hover:bg-ng-soft"
+                >
+                  {grading.partial > 0 ? "× と △ の欄を解き直す" : "× の欄だけ解き直す"}（
+                  {retryKeys.length}欄）
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  pmAnswerStore.clearProblem(id);
+                  pmMarkStore.clearProblem(id);
+                  setRevealed(false);
+                }}
+                className="cursor-pointer rounded-[7px] px-3 py-1.5 text-[12px] text-muted-soft hover:bg-canvas"
+              >
+                答えを消して解き直す
+              </button>
             </div>
-          ) : (
-            <button
-              type="button"
-              onClick={reveal}
-              className="cursor-pointer rounded-lg bg-accent px-4 py-2.5 font-bold text-[13px] text-surface hover:bg-accent-hover"
+
+            <section
+              aria-label="解説"
+              className="mt-4 flex flex-col gap-5 border-line border-t-2 pt-5"
             >
-              解答例を見る
-            </button>
-          )}
-        </aside>
-      </div>
+              <h2 className="font-bold text-[15px]">解説</h2>
+              {transcript.parts.map((part) => (
+                <section key={part.label} className="flex flex-col gap-4">
+                  <h3 className="border-accent border-l-[3px] pl-2.5 font-bold text-[14px] text-ink">
+                    {part.label}
+                  </h3>
+                  {part.slots.map((slot) => (
+                    <article
+                      key={slot.key}
+                      aria-label={`${slot.key} の解説`}
+                      className="flex flex-col gap-3 rounded-xl border border-line px-4 py-3.5"
+                    >
+                      <div className="flex flex-wrap items-baseline gap-x-2.5">
+                        <h4 className="font-bold text-[13.5px] text-ink">{slot.key}</h4>
+                        <MarkBadge mark={grading.slots[slot.key]?.mark} />
+                        <span className="text-read-sm text-muted">解答例</span>
+                        <span className="font-bold text-read-sm text-ink">
+                          <PmText text={answerLabel(slot)} />
+                        </span>
+                      </div>
+                      <p className="text-pretty text-read-sm text-ink leading-[1.85]">
+                        <PmText text={slot.explain} />
+                      </p>
+                      <SlotExplain slot={slot} />
+                    </article>
+                  ))}
+                  <Glossary part={part} />
+                </section>
+              ))}
+              <section className="flex flex-col gap-1.5">
+                <h3 className="font-bold text-[13px] text-ink">出題趣旨（IPA）</h3>
+                <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
+                  <PmText text={transcript.intent} />
+                </p>
+              </section>
+              <section className="flex flex-col gap-1.5">
+                <h3 className="font-bold text-[13px] text-ink">この問の解き方</h3>
+                <ol className="flex list-decimal flex-col gap-1.5 pl-5">
+                  {transcript.approach.map((item) => (
+                    <li
+                      key={item}
+                      className="text-pretty text-read-sm text-ink-soft leading-[1.85]"
+                    >
+                      <PmText text={item} />
+                    </li>
+                  ))}
+                </ol>
+              </section>
+              <section className="flex flex-col gap-1.5">
+                <h3 className="font-bold text-[13px] text-ink">読みどころ</h3>
+                <p className="text-pretty text-read-sm text-ink-soft leading-[1.85]">
+                  <PmText text={transcript.overview} />
+                </p>
+              </section>
+            </section>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={reveal}
+            className="cursor-pointer rounded-lg bg-accent px-4 py-2.5 font-bold text-[13px] text-surface hover:bg-accent-hover"
+          >
+            解答例を見る
+          </button>
+        )}
+      </AnswerPane>
     </>
   );
 };

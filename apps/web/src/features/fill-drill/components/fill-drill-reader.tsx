@@ -3,6 +3,9 @@
 import type { ReactNode } from "react";
 import { Fragment, useState } from "react";
 
+import { AnswerPane } from "@/features/quiz/components/answer-pane";
+import { useAnswerWidth } from "@/features/quiz/hooks/use-answer-width";
+
 import { countCorrect, isCorrect } from "../grade";
 import type { FillDrillStore } from "../store";
 import { useFillDrillRecord } from "../store";
@@ -13,6 +16,9 @@ const answerLabel = (blank: FillBlank): string => {
   const choice = blank.choices?.find((c) => c.key === blank.answer);
   return choice ? `${choice.key}　${choice.text}` : blank.answer;
 };
+
+/** 解答欄の幅を覚える先。SQL・表とネットワークのドリルで同じ幅を使う。 */
+const ANSWER_WIDTH_KEY = "exam-prep:fill-drill-answer-width:v1";
 
 type BlankFieldProps = {
   blank: FillBlank;
@@ -103,6 +109,7 @@ type FillDrillReaderProps<Block> = {
 
 /**
  * 穴埋めドリル 1 問を解く画面。左に問題文（図・表・SQL 文など）、右に空欄ごとの答える欄。
+ * 境目をつまむと解答欄の幅を変えられる（午後の過去問題と同じ部品）。
  * 「答え合わせ」で空欄ごとに正誤を出し、本文の空欄にも正誤の色を付ける。
  */
 export const FillDrillReader = <Block,>({
@@ -116,6 +123,7 @@ export const FillDrillReader = <Block,>({
   const record = useFillDrillRecord(store);
   const answers = record.answers[drill.id] ?? {};
   const [checked, setChecked] = useState(false);
+  const answerWidth = useAnswerWidth(ANSWER_WIDTH_KEY);
 
   const marks: Marks = checked
     ? Object.fromEntries(
@@ -131,7 +139,11 @@ export const FillDrillReader = <Block,>({
 
   return (
     <>
-      <div className="flex min-w-0 flex-col md:flex-1 md:overflow-y-auto md:overscroll-contain">
+      <div
+        className={`flex min-w-0 flex-col md:flex-1 md:overflow-y-auto md:overscroll-contain ${
+          answerWidth.dragging ? "select-none" : ""
+        }`}
+      >
         <main className="flex justify-center px-7 pb-16">
           <article className="flex w-full max-w-[820px] flex-col gap-5">
             <header className="flex flex-col gap-2 border-line border-b pt-5 pb-3.5">
@@ -179,10 +191,7 @@ export const FillDrillReader = <Block,>({
         </main>
       </div>
 
-      <aside
-        aria-label="解答欄"
-        className="flex flex-col gap-4 border-line border-t bg-surface px-5 pt-5 pb-10 md:min-h-0 md:w-[400px] md:flex-none md:overflow-y-auto md:overscroll-contain md:border-t-0 md:border-l"
-      >
+      <AnswerPane answerWidth={answerWidth}>
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="font-bold text-[14px]">解答欄</h2>
           <span className="text-[11px] text-muted-soft">
@@ -251,7 +260,7 @@ export const FillDrillReader = <Block,>({
             答え合わせ
           </button>
         )}
-      </aside>
+      </AnswerPane>
     </>
   );
 };

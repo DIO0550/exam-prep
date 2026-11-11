@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
@@ -67,5 +67,34 @@ describe("ネットワークの穴埋めドリル", () => {
 
     await user.click(screen.getByRole("button", { name: "← 穴埋めドリルの一覧へ" }));
     expect(screen.getByText(/^3\/5 正解/)).toBeInTheDocument();
+  });
+
+  it("解答欄の境目をつまんで幅を変えられ、変えた幅は次に開いた問でも使う", async () => {
+    const user = userEvent.setup();
+    await openDrills(user);
+    const solve = (index: number) => {
+      const button = screen.getAllByRole("button", { name: / を解く$/ })[index];
+      if (!button) throw new Error("解くボタンが足りない");
+      return user.click(button);
+    };
+    await solve(0);
+
+    const handle = screen.getByRole("button", { name: /^解答欄の幅を変える（今 400px/ });
+    // 解答欄は右端に寄せてあるので、幅は画面の右端（jsdom では 1024px）からポインタまで
+    fireEvent.pointerDown(handle);
+    fireEvent.pointerMove(window, { clientX: 500 });
+    fireEvent.pointerUp(window);
+    expect(handle).toHaveAccessibleName(/今 524px/);
+    // ← → でも変えられる
+    handle.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(handle).toHaveAccessibleName(/今 484px/);
+    expect(window.localStorage.getItem("exam-prep:fill-drill-answer-width:v1")).toBe("484");
+
+    await user.click(screen.getByRole("button", { name: "← 穴埋めドリルの一覧へ" }));
+    await solve(1);
+    expect(screen.getByRole("button", { name: /^解答欄の幅を変える/ })).toHaveAccessibleName(
+      /今 484px/,
+    );
   });
 });
