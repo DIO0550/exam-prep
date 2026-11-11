@@ -41,7 +41,7 @@ describe("ネットワークの穴埋めドリル", () => {
     // 構成図は機器・アドレス・つながりを代替テキストに持つ
     const figure = screen.getByRole("img", { name: /^図 1　A 社のネットワーク構成。/ });
     expect(figure).toHaveAccessibleName(/LAN1（192\.168\.1\.0\/24）/);
-    expect(figure).toHaveAccessibleName(/インターネット－ルータ R1（203\.0\.113\.0\/30）/);
+    expect(figure).toHaveAccessibleName(/ISP のルータ－ルータ R1（203\.0\.113\.0\/30）/);
     expect(figure.querySelectorAll("rect").length).toBeGreaterThan(4);
 
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
