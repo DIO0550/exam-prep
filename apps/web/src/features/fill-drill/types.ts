@@ -6,6 +6,8 @@
  * 解答欄（FillBlank の key）と同じにする。
  */
 
+import type { Figure } from "@/features/quiz/types";
+
 /** 選ぶ欄の選択肢 1 つ。 */
 export type FillChoice = { key: string; text: string };
 
@@ -23,8 +25,15 @@ export type FillBlank = {
    * 大文字・小文字、全角・半角、空白の違いは採点側で吸収するので、ここには書かない。
    */
   accepts?: string[];
-  /** 解説（なぜその答えになるか）。 */
+  /** 解説（なぜその答えになるか）。答え合わせの後、問題文の下の「解説」に出す。 */
   explain: string;
+  /**
+   * 答えまでの考え方。本文のどこを見て、何をどう考えると答えにたどり着くかを、順に 1 文ずつ書く。
+   * 解説の 1 段落だけでは飛んでしまう途中の考えを、ここで補う。
+   */
+  steps?: string[];
+  /** 解説に添える図（やり取りの順番・ビットの並び・計算の式など）。本サイトで組んだもの。 */
+  figure?: Figure;
 };
 
 /** どのドリルでも使う本文のかたまり。 */
