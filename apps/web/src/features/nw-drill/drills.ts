@@ -28,11 +28,24 @@ import { NW_DRILL_27 } from "./data/nw-drill-27";
 import { NW_DRILL_28 } from "./data/nw-drill-28";
 import { NW_DRILL_29 } from "./data/nw-drill-29";
 import { NW_DRILL_30 } from "./data/nw-drill-30";
+import { NW_DRILL_31 } from "./data/nw-drill-31";
+import { NW_DRILL_32 } from "./data/nw-drill-32";
+import { NW_DRILL_33 } from "./data/nw-drill-33";
+import { NW_DRILL_34 } from "./data/nw-drill-34";
+import { NW_DRILL_35 } from "./data/nw-drill-35";
+import { NW_DRILL_36 } from "./data/nw-drill-36";
+import { NW_DRILL_37 } from "./data/nw-drill-37";
+import { NW_DRILL_38 } from "./data/nw-drill-38";
+import { NW_DRILL_39 } from "./data/nw-drill-39";
+import { NW_DRILL_40 } from "./data/nw-drill-40";
+import { NW_DRILL_41 } from "./data/nw-drill-41";
+import { NW_DRILL_42 } from "./data/nw-drill-42";
 import type { NwDrill, NwTopic } from "./types";
 
 /**
  * 一覧に並べる分野の順。午後 問5 の事例でよく見る順（構成と経路 → アドレス設計 → LAN →
- * DHCP・DNS → FW → 冗長化）の後に、TCP/IP、無線 LAN と VPN、伝送時間の計算、IPv6 などを置く。
+ * DHCP・DNS → FW → 冗長化）の後に、TCP/IP、無線 LAN と VPN、伝送時間の計算、IPv6 などを置き、
+ * 最後に障害の切り分けと監視（ARP・SNMP・QoS）を置く。
  */
 export const NW_TOPICS: NwTopic[] = [
   "構成と経路制御",
@@ -45,6 +58,7 @@ export const NW_TOPICS: NwTopic[] = [
   "無線 LAN と VPN",
   "伝送時間と性能",
   "IPv6 と新しい技術",
+  "運用管理と障害対応",
 ];
 
 /** 書いた順の全問。ID の番号は書いた順で、一覧の並びとは関係しない。 */
@@ -79,6 +93,18 @@ const ALL_DRILLS: NwDrill[] = [
   NW_DRILL_28,
   NW_DRILL_29,
   NW_DRILL_30,
+  NW_DRILL_31,
+  NW_DRILL_32,
+  NW_DRILL_33,
+  NW_DRILL_34,
+  NW_DRILL_35,
+  NW_DRILL_36,
+  NW_DRILL_37,
+  NW_DRILL_38,
+  NW_DRILL_39,
+  NW_DRILL_40,
+  NW_DRILL_41,
+  NW_DRILL_42,
 ];
 
 /**
