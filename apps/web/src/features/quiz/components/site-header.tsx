@@ -17,6 +17,21 @@ const NAV_ITEMS: NavItem[] = [
   { label: "単語帳", target: "vocab", actives: ["vocab"] },
 ];
 
+/**
+ * 問題集の演習ではない画面（単語帳・午後過去問・穴埋めドリル）。選択肢の並びと解説の出し方の
+ * 切り替えは、問題を解くときだけのものなので、これらの画面では出さない。
+ */
+const TOOL_SCREENS: ReadonlySet<Screen> = new Set<Screen>([
+  "vocab",
+  "pm-past",
+  "db-drill",
+  "nw-drill",
+  "sec-drill",
+  "arch-drill",
+  "sm-drill",
+  "audit-drill",
+]);
+
 type ToggleOption<T> = { label: string; value: T };
 
 const FEEDBACK_OPTIONS: ToggleOption<FeedbackMode>[] = [
@@ -133,25 +148,22 @@ export const SiteHeader = ({
 
       <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 py-2.5">
         {/* 選択肢と解説の出し方は問題を解くときだけのもの。単語帳・午後過去問・穴埋めドリルでは出さない。 */}
-        {screen !== "vocab" &&
-          screen !== "pm-past" &&
-          screen !== "db-drill" &&
-          screen !== "nw-drill" && (
-            <>
-              <Toggle
-                label="選択肢"
-                options={SHUFFLE_OPTIONS}
-                value={shuffle}
-                onChange={onShuffleChange}
-              />
-              <Toggle
-                label="解説表示"
-                options={FEEDBACK_OPTIONS}
-                value={feedback}
-                onChange={onFeedbackChange}
-              />
-            </>
-          )}
+        {!TOOL_SCREENS.has(screen) && (
+          <>
+            <Toggle
+              label="選択肢"
+              options={SHUFFLE_OPTIONS}
+              value={shuffle}
+              onChange={onShuffleChange}
+            />
+            <Toggle
+              label="解説表示"
+              options={FEEDBACK_OPTIONS}
+              value={feedback}
+              onChange={onFeedbackChange}
+            />
+          </>
+        )}
         <Toggle
           label="文字サイズ"
           options={TEXT_SCALE_OPTIONS}
