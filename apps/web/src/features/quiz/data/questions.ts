@@ -8,7 +8,11 @@ import { AP_PM_ARCH_1 } from "./ap-pm-arch-1";
 import { AP_PM_AUDIT_1 } from "./ap-pm-audit-1";
 import { AP_PM_DB_1 } from "./ap-pm-db-1";
 import { AP_PM_NW_1 } from "./ap-pm-nw-1";
+import { AP_PM_NW_2 } from "./ap-pm-nw-2";
+import { AP_PM_NW_3 } from "./ap-pm-nw-3";
 import { AP_PM_SEC_1 } from "./ap-pm-sec-1";
+import { AP_PM_SEC_2 } from "./ap-pm-sec-2";
+import { AP_PM_SEC_3 } from "./ap-pm-sec-3";
 import { AP_PM_SM_1 } from "./ap-pm-sm-1";
 import { AP_R01_AKI_AM } from "./ap-r01-aki-am";
 import { AP_R02_OCT_AM } from "./ap-r02-oct-am";
@@ -120,6 +124,8 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
   // 応用情報の午後（書き下ろし）。事例文を設問ごとに持たせてあり、事例ごとに 6 問続く。
   // 並びは本試験の問番号の順（情報セキュリティ → システムアーキテクチャ → … → システム監査）。
   { id: "ap-pm-sec-1", exam: "APPM", label: "情報セキュリティ1", questions: AP_PM_SEC_1 },
+  { id: "ap-pm-sec-2", exam: "APPM", label: "情報セキュリティ2", questions: AP_PM_SEC_2 },
+  { id: "ap-pm-sec-3", exam: "APPM", label: "情報セキュリティ3", questions: AP_PM_SEC_3 },
   {
     id: "ap-pm-arch-1",
     exam: "APPM",
@@ -127,6 +133,8 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
     questions: AP_PM_ARCH_1,
   },
   { id: "ap-pm-nw-1", exam: "APPM", label: "ネットワーク1", questions: AP_PM_NW_1 },
+  { id: "ap-pm-nw-2", exam: "APPM", label: "ネットワーク2", questions: AP_PM_NW_2 },
+  { id: "ap-pm-nw-3", exam: "APPM", label: "ネットワーク3", questions: AP_PM_NW_3 },
   { id: "ap-pm-db-1", exam: "APPM", label: "データベース1", questions: AP_PM_DB_1 },
   { id: "ap-pm-sm-1", exam: "APPM", label: "ITサービスマネジメント1", questions: AP_PM_SM_1 },
   { id: "ap-pm-audit-1", exam: "APPM", label: "システム監査1", questions: AP_PM_AUDIT_1 },
