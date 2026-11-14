@@ -1,7 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { useId, useState } from "react";
+import type { ReactNode, RefObject } from "react";
+import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { AnswerPane } from "@/features/quiz/components/answer-pane";
 import { NoteButton } from "@/features/quiz/components/note-button";
@@ -39,6 +39,13 @@ import type {
   PmQuestionPart,
   PmTranscript,
 } from "../types";
+import {
+  imageUnderlineMarks,
+  markOfRef,
+  UNDERLINE_REF,
+  underlineMark,
+  underlineMarksOf,
+} from "../underline-marks";
 import { ScoreInput } from "./score-input";
 
 /** 本文中の空欄（`{{a}}`）と下線（`[[…]]`、`[[主:…]]`、`[[外:…]]`）を見つける。 */
@@ -46,12 +53,62 @@ const MARKUP = /(\{\{[^}]+\}\}|\[\[[^\]]+\]\])/;
 
 const UNDERLINE = "underline decoration-1 underline-offset-[5px]";
 
+type UnderlineJump = {
+  /** 本文に下線部がある印（飛べる先）。 */
+  marks: ReadonlySet<string>;
+  /** 飛んだ先として、いま色を付けている印。 */
+  flashed: string | undefined;
+  /** 本文のその下線部まで送る。from は押したところ（「元の場所に戻る」で戻る先）。 */
+  jump: (mark: string, from: HTMLElement) => void;
+};
+
+/** 設問・解説の「下線①」を、本文の下線部へ飛ぶボタンにするための入れ物。外では普通の文字。 */
+const UnderlineJumpContext = createContext<UnderlineJump | null>(null);
+
+/** 本文（飛ぶ先）を描いているか。設問・解説の引用にある下線部は、飛ぶ先にしない。 */
+const UnderlineTargetContext = createContext(false);
+
+/** 飛んだ先に付ける色。少しの間だけ付けて、どこに来たかを分かるようにする。 */
+const FLASH = "bg-flag/20";
+const TARGET = "scroll-my-24 outline-none transition-colors duration-700";
+
+/** 「下線①」を押すと、本文のその下線部へ飛ぶ。 */
+const UnderlineRef = ({ text, jump }: { text: string; jump: UnderlineJump }) => (
+  <button
+    type="button"
+    title="本文のこの下線部へ移る"
+    onClick={(event) => jump.jump(markOfRef(text), event.currentTarget)}
+    className="cursor-pointer rounded-[4px] bg-accent-soft px-[3px] text-accent hover:bg-accent/15"
+  >
+    {text}
+  </button>
+);
+
+/** 文字の中の「下線①」を、本文に飛べるものだけボタンにする。 */
+const RefText = ({ text }: { text: string }) => {
+  const jump = useContext(UnderlineJumpContext);
+  if (!jump) return text;
+  return text.split(UNDERLINE_REF).map((piece, i) =>
+    // split の組で分けたので、奇数番目が「下線①」
+    i % 2 === 1 && jump.marks.has(markOfRef(piece)) ? (
+      // biome-ignore lint/suspicious/noArrayIndexKey: 文字列を切った並びで、順番は変わらない
+      <UnderlineRef key={i} text={piece} jump={jump} />
+    ) : (
+      piece
+    ),
+  );
+};
+
 /**
  * 本文の文字列を、空欄は枠、下線部は下線にして描く。
  * 主キーは実線、外部キーは破線の下線（本試験の E-R 図・関係スキーマの書き方）。
  * 下線の種類は読み上げでは伝わらないので、「（主キー）」などを読み上げ用に添える。
+ *
+ * 解く画面の中では、設問・解説の「下線①」を押すと本文の下線部①へ飛べる（UnderlineJumpContext）。
  */
 export const PmText = ({ text }: { text: string }) => {
+  const jump = useContext(UnderlineJumpContext);
+  const target = useContext(UnderlineTargetContext);
   const pieces = text.split(MARKUP);
   return (
     <>
@@ -73,7 +130,18 @@ export const PmText = ({ text }: { text: string }) => {
         if (piece.startsWith("[[") && piece.endsWith("]]")) {
           const underline = parseUnderline(piece.slice(2, -2));
           if (!underline.key) {
-            return (
+            // 本文の「①…」の下線部は、設問・解説の「下線①」から飛んでくる先にする
+            const mark = target ? underlineMark(underline.text) : undefined;
+            return mark ? (
+              <span
+                key={key}
+                data-underline={mark}
+                tabIndex={-1}
+                className={`${UNDERLINE} ${TARGET} box-decoration-clone ${jump?.flashed === mark ? FLASH : ""}`}
+              >
+                {underline.text}
+              </span>
+            ) : (
               <span key={key} className={UNDERLINE}>
                 {underline.text}
               </span>
@@ -91,7 +159,11 @@ export const PmText = ({ text }: { text: string }) => {
             </span>
           );
         }
-        return <span key={key}>{piece}</span>;
+        return (
+          <span key={key}>
+            <RefText text={piece} />
+          </span>
+        );
       })}
     </>
   );
@@ -163,6 +235,8 @@ const CellText = ({ cell }: { cell: PmCell }) =>
 const PARAGRAPH = "text-pretty text-read-md text-ink-soft leading-[1.95]";
 
 const Block = ({ block }: { block: PmBlock }) => {
+  const jump = useContext(UnderlineJumpContext);
+  const target = useContext(UnderlineTargetContext);
   switch (block.kind) {
     case "heading":
       return <h3 className="pt-3 font-bold text-read-md text-ink">〔{block.text}〕</h3>;
@@ -190,12 +264,20 @@ const Block = ({ block }: { block: PmBlock }) => {
           ))}
         </dl>
       );
-    case "image":
+    case "image": {
+      // 図の中に下線部があるときは、その図ごとを飛ぶ先にする（下線は画像の中にあるため）
+      const marks = target ? imageUnderlineMarks(block.image.alt) : [];
+      const flashed = jump?.flashed !== undefined && marks.includes(jump.flashed);
       return (
-        <div className="flex justify-center py-2">
+        <div
+          data-underline={marks.length > 0 ? marks.join(" ") : undefined}
+          tabIndex={marks.length > 0 ? -1 : undefined}
+          className={`flex justify-center rounded-lg py-2 ${marks.length > 0 ? TARGET : ""} ${flashed ? FLASH : ""}`}
+        >
           <OriginalFigure image={{ ...block.image, alt: plainText(block.image.alt) }} />
         </div>
       );
+    }
     case "code":
       return (
         <figure className="flex flex-col gap-1.5 py-1">
@@ -781,6 +863,53 @@ const GradeSummary = ({ grading, id, source, attempt }: GradeSummaryProps) => {
 /** 解答欄の幅を覚える先。穴埋めドリルとは解答欄の中身が違うので、別に覚える。 */
 const ANSWER_WIDTH_KEY = "exam-prep:pm-past-answer-width:v1";
 
+/** 飛んだ先の色を付けておく時間（ms）。 */
+const FLASH_MS = 1800;
+
+/** 動きを減らす設定なら、飛ぶときもすぐ移る。jsdom には matchMedia が無いので任意呼び出し。 */
+const scrollBehavior = (): ScrollBehavior =>
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+
+/** そこまで送ってフォーカスを移す。jsdom には scrollIntoView が無いので任意呼び出し。 */
+const bringIntoView = (element: HTMLElement): void => {
+  element.scrollIntoView?.({ behavior: scrollBehavior(), block: "center" });
+  element.focus({ preventScroll: true });
+};
+
+/**
+ * 設問・解説の「下線①」から本文の下線部へ飛ぶ仕組み。
+ * 飛んだ先には少しの間だけ色を付け、押したところを「元の場所に戻る」の戻り先として覚える。
+ */
+const useUnderlineJump = (body: PmBlock[], bodyRef: RefObject<HTMLElement | null>) => {
+  const marks = useMemo(() => underlineMarksOf(body), [body]);
+  // 同じ印へもう一度飛んだときも色を付け直せるよう、飛ぶたびに新しい値にする
+  const [flash, setFlash] = useState<{ mark: string } | undefined>();
+  const [returnTo, setReturnTo] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!flash) return;
+    const timer = window.setTimeout(() => setFlash(undefined), FLASH_MS);
+    return () => window.clearTimeout(timer);
+  }, [flash]);
+
+  const jump = (mark: string, from: HTMLElement): void => {
+    // 印は ①〜⑳ と（ア）の形だけなので、そのまま属性セレクタに入れられる
+    const target = bodyRef.current?.querySelector<HTMLElement>(`[data-underline~="${mark}"]`);
+    if (!target) return;
+    bringIntoView(target);
+    setFlash({ mark });
+    setReturnTo(from);
+  };
+
+  const goBack = (): void => {
+    if (returnTo?.isConnected) bringIntoView(returnTo);
+    setReturnTo(null);
+  };
+
+  const context: UnderlineJump = { marks, flashed: flash?.mark, jump };
+  return { context, canGoBack: returnTo !== null, goBack };
+};
+
 type PmReaderProps = {
   pmExam: PmExam;
   problem: PmProblem;
@@ -816,6 +945,8 @@ export const PmReader = ({
   const { noteWidth } = useProgress();
   const [revealed, setRevealed] = useState(false);
   const answerWidth = useAnswerWidth(ANSWER_WIDTH_KEY);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const underlineJump = useUnderlineJump(transcript.body, bodyRef);
   const grading = gradeTranscript(transcript, answers, marks);
   const retryKeys = retrySlotKeys(grading);
 
@@ -863,7 +994,7 @@ export const PmReader = ({
   };
 
   return (
-    <>
+    <UnderlineJumpContext value={underlineJump.context}>
       <div
         className={`flex min-w-0 flex-col md:flex-1 md:overflow-y-auto md:overscroll-contain ${
           answerWidth.dragging ? "select-none" : ""
@@ -895,16 +1026,34 @@ export const PmReader = ({
             </header>
 
             <p className={PARAGRAPH}>{transcript.lead}</p>
-            {transcript.body.map((block, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: 本文は静的で並べ替えないため添字で足りる
-              <Block key={i} block={block} />
-            ))}
+            {/* 本文だけを飛ぶ先にする。設問・解説が本文を引いたところは飛ぶ先にしない。 */}
+            <div ref={bodyRef} className="contents">
+              <UnderlineTargetContext value={true}>
+                {transcript.body.map((block, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: 本文は静的で並べ替えないため添字で足りる
+                  <Block key={i} block={block} />
+                ))}
+              </UnderlineTargetContext>
+            </div>
 
             <div className="mt-4 flex flex-col gap-6 border-line border-t pt-5">
               {transcript.parts.map((part) => (
                 <Part key={part.label} part={part} />
               ))}
             </div>
+
+            {/* 飛ぶ前に押したところ（多くは本文の下の設問）へ戻る。問題文の欄の下に貼り付けておく。 */}
+            {underlineJump.canGoBack && (
+              <div className="pointer-events-none sticky bottom-5 flex justify-center">
+                <button
+                  type="button"
+                  onClick={underlineJump.goBack}
+                  className="pointer-events-auto cursor-pointer rounded-full border border-edge-strong bg-surface px-4 py-2 font-bold text-[12px] text-accent shadow-[0_4px_14px_rgba(22,24,29,0.14)] hover:bg-canvas"
+                >
+                  ↩ 元の場所に戻る
+                </button>
+              </div>
+            )}
           </article>
         </main>
       </div>
@@ -1059,6 +1208,6 @@ export const PmReader = ({
           onClose={onToggleNotes}
         />
       )}
-    </>
+    </UnderlineJumpContext>
   );
 };

@@ -394,3 +394,73 @@ describe("メモ", () => {
     expect(saved()).toBe("364");
   });
 });
+
+describe("下線部へ飛ぶ", () => {
+  const readerOf = (id: string, no: number) => {
+    const pmExam = PM_EXAMS.find((e) => pmProblemId(e, no) === id);
+    const problem = PM_PROBLEMS.find((p) => p.no === no);
+    const transcript = PM_TRANSCRIPTS[id];
+    if (!pmExam || !problem || !transcript) throw new Error(`${id} が見つからない`);
+    return (
+      <PmReader
+        pmExam={pmExam}
+        problem={problem}
+        transcript={transcript}
+        notesOpen={false}
+        onToggleNotes={() => {}}
+        onBack={() => {}}
+      />
+    );
+  };
+  const targetsOf = (mark: string) =>
+    document.querySelectorAll<HTMLElement>(`[data-underline~="${mark}"]`);
+
+  it("設問の「下線①」を押すと本文の下線部①へ移って色を付け、「元の場所に戻る」で設問へ戻る", async () => {
+    const user = userEvent.setup();
+    render(readerOf("ap-r07-aki-pm-01", 1));
+
+    const [target] = targetsOf("①");
+    expect(target).toHaveTextContent(/^①/);
+    // 左の設問（設問3）の文の中の「下線①」
+    const [ref] = screen.getAllByRole("button", { name: "下線①" });
+    if (!ref) throw new Error("設問の「下線①」が無い");
+    expect(ref.closest("p")).toHaveTextContent(/^本文中の下線①について/);
+
+    expect(screen.queryByRole("button", { name: "↩ 元の場所に戻る" })).not.toBeInTheDocument();
+    await user.click(ref);
+    expect(target).toHaveFocus();
+    expect(target).toHaveClass("bg-flag/20");
+
+    await user.click(screen.getByRole("button", { name: "↩ 元の場所に戻る" }));
+    expect(ref).toHaveFocus();
+    expect(screen.queryByRole("button", { name: "↩ 元の場所に戻る" })).not.toBeInTheDocument();
+  });
+
+  it("解説が本文を引いたところは飛ぶ先にせず、解説の「下線②」からも本文へ飛べる", async () => {
+    const user = userEvent.setup();
+    render(readerOf("ap-r07-aki-pm-01", 1));
+    const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
+    await user.click(answers.getByRole("button", { name: "解答例を見る" }));
+
+    // 本文の下線部だけが飛ぶ先（解説の「本文の手がかり」に同じ下線部があっても増えない）
+    expect(targetsOf("②")).toHaveLength(1);
+    const explain = within(answers.getByRole("region", { name: "解説" }));
+    await user.click(explain.getAllByRole("button", { name: "下線②" })[0] as HTMLElement);
+    expect(targetsOf("②")[0]).toHaveFocus();
+  });
+
+  it("図の中の下線部は、その図へ飛ぶ", async () => {
+    const user = userEvent.setup();
+    render(readerOf("ap-r02-oct-pm-01", 1));
+
+    const [figure] = targetsOf("②");
+    expect(figure?.querySelector("img")).not.toBeNull();
+    await user.click(screen.getAllByRole("button", { name: "下線②" })[0] as HTMLElement);
+    expect(figure).toHaveFocus();
+  });
+
+  it("印の無い下線（「適切でないもの」）や、解く画面の外の PmText はボタンにしない", () => {
+    render(<PmText text="本文中の下線①について，[[適切でないもの]]を選べ" />);
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+});
