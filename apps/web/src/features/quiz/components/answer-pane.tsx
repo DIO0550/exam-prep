@@ -14,6 +14,15 @@ type AnswerPaneProps = {
 };
 
 /**
+ * 解答欄の右端の位置。右にメモの枠が開いていれば、画面の右端より内側になる。
+ * 描かれていない（幅が測れない）ときは画面の右端とみなす。
+ */
+const rightEdgeOf = (handle: HTMLElement): number => {
+  const rect = handle.parentElement?.getBoundingClientRect();
+  return rect && rect.width > 0 ? rect.right : window.innerWidth;
+};
+
+/**
  * 左に問題文・右に解答欄の画面の、右側の解答欄。左の境目をつまんで幅を変えられる。
  * 午後の過去問題と穴埋めドリルで同じものを使う。
  */
@@ -29,12 +38,15 @@ export const AnswerPane = ({ answerWidth, children }: AnswerPaneProps) => (
       aria-label={`解答欄の幅を変える（今 ${answerWidth.width}px。← → でも変えられる）`}
       onPointerDown={(event) => {
         event.preventDefault();
-        answerWidth.startDrag();
+        answerWidth.startDrag(rightEdgeOf(event.currentTarget));
       }}
       onKeyDown={(event) => {
         if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
         event.preventDefault();
-        answerWidth.nudge(event.key === "ArrowLeft" ? KEY_STEP : -KEY_STEP);
+        answerWidth.nudge(
+          event.key === "ArrowLeft" ? KEY_STEP : -KEY_STEP,
+          rightEdgeOf(event.currentTarget),
+        );
       }}
       className={`-left-1.5 absolute inset-y-0 z-10 hidden w-3 cursor-col-resize touch-none border-none p-0 md:block ${
         answerWidth.dragging ? "bg-accent-soft" : "bg-transparent hover:bg-accent-soft"
