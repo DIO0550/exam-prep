@@ -9,11 +9,16 @@ const DEFAULT_ANSWER_WIDTH = 400;
 /** 問題文の側に最低限残す幅。 */
 const BODY_WIDTH_MIN = 360;
 
-const clampAnswerWidth = (width: number): number => {
+/**
+ * 幅を端の値に収める。right は解答欄の右端の位置（px）。
+ * 右にメモの枠が開いていればその左端になるので、問題文に残す幅もそこから測る。
+ */
+const clampAnswerWidth = (width: number, right?: number): number => {
+  const edge = right ?? (typeof window === "undefined" ? undefined : window.innerWidth);
   const max =
-    typeof window === "undefined"
+    edge === undefined
       ? ANSWER_WIDTH_MAX
-      : Math.min(ANSWER_WIDTH_MAX, Math.max(ANSWER_WIDTH_MIN, window.innerWidth - BODY_WIDTH_MIN));
+      : Math.min(ANSWER_WIDTH_MAX, Math.max(ANSWER_WIDTH_MIN, edge - BODY_WIDTH_MIN));
   return Math.min(max, Math.max(ANSWER_WIDTH_MIN, Math.round(width)));
 };
 
@@ -39,27 +44,33 @@ export type AnswerWidth = {
   width: number;
   /** 境目をつまんで動かしている最中か。 */
   dragging: boolean;
-  startDrag: () => void;
-  /** キーで少しずつ広げる・狭める（正で広がる）。 */
-  nudge: (delta: number) => void;
+  /** つまみ始める。right はそのときの解答欄の右端の位置（px）。 */
+  startDrag: (right: number) => void;
+  /** キーで少しずつ広げる・狭める（正で広がる）。right は解答欄の右端の位置（px）。 */
+  nudge: (delta: number, right: number) => void;
 };
 
 /**
  * 左に問題文・右に解答欄の画面で、解答欄の幅を持つ。
  * 境目をつまんで動かしている間は画面の中だけで変え、手を離したときに storageKey へ覚える。
- * 解答欄は右端に寄せてあるので、幅は「画面の右端からポインタまで」で決まる。
+ *
+ * 幅は「解答欄の右端からポインタまで」で決まる。右端は画面の右端とは限らない
+ * （午後の過去問題では、さらに右にメモの枠が開く）ので、つまみ始めたときの位置を受け取る。
+ * メモの枠は解答欄をつまんでいる間は動かないので、右端も動かない。
  */
 export const useAnswerWidth = (storageKey: string): AnswerWidth => {
   const [width, setWidth] = useState(() => loadAnswerWidth(storageKey));
-  const [dragging, setDragging] = useState(false);
+  // つまんでいる間の、解答欄の右端。つまんでいないときは null。
+  const [dragRight, setDragRight] = useState<number | null>(null);
+  const dragging = dragRight !== null;
 
   useEffect(() => {
-    if (!dragging) return;
+    if (dragRight === null) return;
     const onMove = (event: PointerEvent): void => {
       event.preventDefault();
-      setWidth(clampAnswerWidth(window.innerWidth - event.clientX));
+      setWidth(clampAnswerWidth(dragRight - event.clientX, dragRight));
     };
-    const onUp = (): void => setDragging(false);
+    const onUp = (): void => setDragRight(null);
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onUp);
@@ -68,12 +79,13 @@ export const useAnswerWidth = (storageKey: string): AnswerWidth => {
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onUp);
     };
-  }, [dragging]);
+  }, [dragRight]);
 
   useEffect(() => {
     if (!dragging) saveAnswerWidth(storageKey, width);
   }, [dragging, storageKey, width]);
 
-  const nudge = (delta: number) => setWidth((prev) => clampAnswerWidth(prev + delta));
-  return { width, dragging, startDrag: () => setDragging(true), nudge };
+  const nudge = (delta: number, right: number) =>
+    setWidth((prev) => clampAnswerWidth(prev + delta, right));
+  return { width, dragging, startDrag: setDragRight, nudge };
 };

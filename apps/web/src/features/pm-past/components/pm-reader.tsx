@@ -4,8 +4,15 @@ import type { ReactNode } from "react";
 import { useId, useState } from "react";
 
 import { AnswerPane } from "@/features/quiz/components/answer-pane";
+import { NoteButton } from "@/features/quiz/components/note-button";
+import { NotePanel } from "@/features/quiz/components/note-panel";
 import { OriginalFigure } from "@/features/quiz/components/question-figure";
 import { useAnswerWidth } from "@/features/quiz/hooks/use-answer-width";
+import { useNotes } from "@/features/quiz/hooks/use-notes";
+import { useProgress } from "@/features/quiz/hooks/use-progress";
+import { isEmptyNote, noteOf } from "@/features/quiz/notes/note";
+import { noteStore } from "@/features/quiz/notes/store";
+import { progressStore } from "@/features/quiz/progress/store";
 
 import { pmAnswerStore, usePmAnswers } from "../answers";
 import type { PmExam, PmProblem } from "../data";
@@ -778,19 +785,35 @@ type PmReaderProps = {
   pmExam: PmExam;
   problem: PmProblem;
   transcript: PmTranscript;
+  /** メモの枠が開いているか。別の問を開き直しても開いたままにするので、一覧の側で持つ。 */
+  notesOpen: boolean;
+  onToggleNotes: () => void;
   onBack: () => void;
 };
 
 /**
  * 書き起こした午後の問題を解く画面。左に問題文と設問、右に答える欄を置く。
  * 「解答例を見る」で欄ごとに IPA の解答例と本サイトの解説を出す。
+ *
+ * 「メモ」を押すと、解答欄のさらに右に演習と同じメモの枠（自由入力と手書き）が開く。
+ * メモは問ごとに、演習のメモと同じ保存先へ問題 ID（"ap-r06-aki-pm-05"）で置く。
+ * 枠の幅・「メモだけ消す」・書き出しと取り込みも演習と同じものが効く。
  */
-export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps) => {
+export const PmReader = ({
+  pmExam,
+  problem,
+  transcript,
+  notesOpen,
+  onToggleNotes,
+  onBack,
+}: PmReaderProps) => {
   const id = pmProblemId(pmExam, problem.no);
   const source = pmSourceLabel(pmExam, problem.no);
   const answers = usePmAnswers()[id] ?? {};
   const marks = usePmMarks()[id] ?? {};
   const attempt = usePmRecord().attempts[id];
+  const note = noteOf(useNotes(), id);
+  const { noteWidth } = useProgress();
   const [revealed, setRevealed] = useState(false);
   const answerWidth = useAnswerWidth(ANSWER_WIDTH_KEY);
   const grading = gradeTranscript(transcript, answers, marks);
@@ -849,13 +872,21 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
         <main className="flex justify-center px-7 pb-16">
           <article className="flex w-full max-w-[820px] flex-col gap-5">
             <header className="flex flex-col gap-2 border-line border-b pt-5 pb-3.5">
-              <button
-                type="button"
-                onClick={onBack}
-                className="self-start cursor-pointer rounded-[7px] px-2 py-1 text-[12px] text-accent hover:bg-hover"
-              >
-                ← 午後過去問の一覧へ
-              </button>
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="cursor-pointer rounded-[7px] px-2 py-1 text-[12px] text-accent hover:bg-hover"
+                >
+                  ← 午後過去問の一覧へ
+                </button>
+                <NoteButton
+                  size="sm"
+                  open={notesOpen}
+                  written={!isEmptyNote(note)}
+                  onToggle={onToggleNotes}
+                />
+              </div>
               <div className="flex flex-wrap items-baseline gap-3">
                 <span className="font-bold text-[12px] text-accent">問{problem.no}</span>
                 <h1 className="font-bold text-[16px] leading-[1.5]">{problem.field}</h1>
@@ -1013,6 +1044,21 @@ export const PmReader = ({ pmExam, problem, transcript, onBack }: PmReaderProps)
           </button>
         )}
       </AnswerPane>
+
+      {notesOpen && (
+        <NotePanel
+          label={`${pmExam.label} 問${problem.no}`}
+          sideFrom="lg"
+          width={noteWidth}
+          onResize={progressStore.setNoteWidth}
+          note={note}
+          onChangeText={(text) => noteStore.setText(id, text)}
+          onAddStroke={(stroke) => noteStore.addStroke(id, stroke)}
+          onUndoStroke={() => noteStore.undoStroke(id)}
+          onClearSketch={() => noteStore.clearSketch(id)}
+          onClose={onToggleNotes}
+        />
+      )}
     </>
   );
 };
