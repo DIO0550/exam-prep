@@ -863,7 +863,7 @@ const GradeSummary = ({ grading, id, source, attempt }: GradeSummaryProps) => {
 /** 解答欄の幅を覚える先。穴埋めドリルとは解答欄の中身が違うので、別に覚える。 */
 const ANSWER_WIDTH_KEY = "exam-prep:pm-past-answer-width:v1";
 
-/** 問題文の欄の右下に浮かせるボタンの見た目。 */
+/** 問題文の欄の右上（狭い画面では画面の右下）に浮かせるボタンの見た目。 */
 const FLOATING = "pointer-events-auto rounded-[9px] shadow-[0_4px_14px_rgba(22,24,29,0.14)]";
 
 /** 飛んだ先の色を付けておく時間（ms）。 */
@@ -927,7 +927,7 @@ type PmReaderProps = {
  * 書き起こした午後の問題を解く画面。左に問題文と設問、右に答える欄を置く。
  * 「解答例を見る」で欄ごとに IPA の解答例と本サイトの解説を出す。
  *
- * 問題文の欄の右下に浮かせた「メモ」を押すと、解答欄のさらに右に演習と同じメモの枠（自由入力と手書き）が開く。
+ * 問題文の欄の右上に浮かせた「メモ」を押すと、解答欄のさらに右に演習と同じメモの枠（自由入力と手書き）が開く。
  * メモは問ごとに、演習のメモと同じ保存先へ問題 ID（"ap-r06-aki-pm-05"）で置く。
  * 枠の幅・「メモだけ消す」・書き出しと取り込みも演習と同じものが効く。
  */
@@ -1005,6 +1005,31 @@ export const PmReader = ({
       >
         <main className="flex justify-center px-7 pb-16">
           <article className="flex w-full max-w-[820px] flex-col gap-5">
+            {/*
+              メモと「元の場所に戻る」は、どこまで読み進めていても押せるよう、問題文の欄の右上に貼り付けておく。
+              高さを 0 にして本文の上に重ね、行の並びは押し下げない（並びの隙間 gap-5 も打ち消す）。
+              問題文と解答欄が縦に並ぶ狭い画面では、上はサイトの見出しが貼り付いて隠れるので、画面の右下に置く。
+              メモの枠が下から出ているときは、その下に隠れる（枠に閉じるボタンがある）。
+            */}
+            <div className="pointer-events-none z-30 flex items-start justify-end gap-2 max-md:fixed max-md:right-4 max-md:bottom-4 md:sticky md:top-3 md:-mb-5 md:h-0">
+              {underlineJump.canGoBack && (
+                <button
+                  type="button"
+                  onClick={underlineJump.goBack}
+                  className={`${FLOATING} cursor-pointer border border-edge-strong bg-surface px-4 py-3 font-bold text-[12px] text-accent hover:bg-canvas`}
+                >
+                  ↩ 元の場所に戻る
+                </button>
+              )}
+              <span className={FLOATING}>
+                <NoteButton
+                  size="md"
+                  open={notesOpen}
+                  written={!isEmptyNote(note)}
+                  onToggle={onToggleNotes}
+                />
+              </span>
+            </div>
             <header className="flex flex-col gap-2 border-line border-b pt-5 pb-3.5">
               <button
                 type="button"
@@ -1035,31 +1060,6 @@ export const PmReader = ({
               {transcript.parts.map((part) => (
                 <Part key={part.label} part={part} />
               ))}
-            </div>
-
-            {/*
-              メモと「元の場所に戻る」は、どこまで読み進めていても押せるよう、問題文の欄の右下に貼り付けておく。
-              問題文と解答欄が縦に並ぶ狭い画面では、解答欄まで下りても出ているよう、画面の右下に置く。
-              メモの枠が下から出ているときは、その下に隠れる（枠に閉じるボタンがある）。
-            */}
-            <div className="pointer-events-none z-30 flex items-center justify-end gap-2 max-md:fixed max-md:right-4 max-md:bottom-4 md:sticky md:bottom-5">
-              {underlineJump.canGoBack && (
-                <button
-                  type="button"
-                  onClick={underlineJump.goBack}
-                  className={`${FLOATING} cursor-pointer border border-edge-strong bg-surface px-4 py-3 font-bold text-[12px] text-accent hover:bg-canvas`}
-                >
-                  ↩ 元の場所に戻る
-                </button>
-              )}
-              <span className={FLOATING}>
-                <NoteButton
-                  size="md"
-                  open={notesOpen}
-                  written={!isEmptyNote(note)}
-                  onToggle={onToggleNotes}
-                />
-              </span>
             </div>
           </article>
         </main>
