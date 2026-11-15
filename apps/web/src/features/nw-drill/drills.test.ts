@@ -1,15 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { blanksInText, textsOf } from "@/features/fill-drill/blanks";
+import { figureProblems } from "@/features/fill-drill/figure-problems";
 import { isCorrect } from "@/features/fill-drill/grade";
-import {
-  chartProblems,
-  diagramProblems,
-  karnaughProblems,
-  sequenceProblems,
-  vennProblems,
-} from "@/features/quiz/figure-layout";
-import type { Figure } from "@/features/quiz/types";
+import { diagramProblems } from "@/features/quiz/figure-layout";
 
 import { NW_DRILLS, NW_TOPICS } from "./drills";
 import { networkDescription } from "./figure-text";
@@ -23,31 +17,6 @@ const figureTexts = (block: Extract<NwBlock, { kind: "figure" }>): string[] => {
     ...edges.map((edge) => edge.label ?? ""),
     ...groups.map((group) => group.label),
   ];
-};
-
-/** 解説の図の書き間違い（部品の重なり・登場人物の抜け・表の列数の食い違いなど）。 */
-const figureProblems = (figure: Figure): string[] => {
-  const problems: string[] = [];
-  if (figure.caption.trim() === "") problems.push("見出しが空");
-  if (/^(図|表)\s*[：:]/.test(figure.caption))
-    problems.push("見出しに「図：」「表：」を書いている");
-  if (figure.type === "diagram") problems.push(...diagramProblems(figure));
-  if (figure.type === "sequence") problems.push(...sequenceProblems(figure));
-  if (figure.type === "chart") problems.push(...chartProblems(figure));
-  if (figure.type === "venn") problems.push(...vennProblems(figure));
-  if (figure.type === "karnaugh") problems.push(...karnaughProblems(figure));
-  if (figure.type === "table") {
-    for (const row of figure.rows) {
-      if (row.length !== figure.headers.length) problems.push(`表の行の列数が違う：${row[0]}`);
-    }
-  }
-  if (figure.type === "array") {
-    const width = figure.headers?.length ?? figure.rows[0]?.cells.length;
-    for (const row of figure.rows) {
-      if (row.cells.length !== width) problems.push(`配列の段の長さが違う：${row.label}`);
-    }
-  }
-  return problems;
 };
 
 /** 本文に出てくる空欄の名前を、出てくる順に集める。構成図には空欄を置かない。 */

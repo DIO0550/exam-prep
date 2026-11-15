@@ -2,6 +2,8 @@
 
 import { useCallback, useMemo, useState } from "react";
 
+import type { PmDrillScreen } from "@/features/pm-drill/types";
+
 import { isMultipleChoice, matchesAnswer, selectionsOf, toggleSelection } from "../answers";
 import { choiceOrder } from "../choice-order";
 import { drawQuestions } from "../draw";
@@ -31,7 +33,8 @@ export type Screen =
   | "vocab"
   | "pm-past"
   | "db-drill"
-  | "nw-drill";
+  | "nw-drill"
+  | PmDrillScreen;
 
 /** 解説を問題と同じ画面に出すか、解答後に解説画面へ移るか。 */
 export type FeedbackMode = "inline" | "page";

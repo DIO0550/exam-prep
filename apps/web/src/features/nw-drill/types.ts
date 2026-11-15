@@ -23,7 +23,8 @@ export type NwTopic =
   | "TCP/IP とアプリケーション"
   | "無線 LAN と VPN"
   | "伝送時間と性能"
-  | "IPv6 と新しい技術";
+  | "IPv6 と新しい技術"
+  | "運用管理と障害対応";
 
 /** ドリル 1 問。 */
 export type NwDrill = FillDrill<NwTopic, NwBlock>;

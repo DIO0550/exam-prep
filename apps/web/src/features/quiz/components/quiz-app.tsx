@@ -10,6 +10,9 @@ import { DbDrillApp } from "@/features/db-drill/components/db-drill-app";
 import { dbDrillStore } from "@/features/db-drill/store";
 import { NwDrillApp } from "@/features/nw-drill/components/nw-drill-app";
 import { nwDrillStore } from "@/features/nw-drill/store";
+import { PM_DRILL_BOOKS, PM_DRILL_ORDER } from "@/features/pm-drill/books";
+import { PmDrillApp } from "@/features/pm-drill/components/pm-drill-app";
+import { pmDrillStores } from "@/features/pm-drill/store";
 import { pmAnswerStore } from "@/features/pm-past/answers";
 import { PmPastApp } from "@/features/pm-past/components/pm-past-app";
 import { pmMarkStore } from "@/features/pm-past/marks";
@@ -53,8 +56,8 @@ const SECONDS_PER_QUESTION: Record<string, number> = { GAIP: 60, APPM: 180 };
 
 /**
  * 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。
- * 午後の過去問題を解いた記録と、穴埋めドリル（SQL・表、ネットワーク）の記録も学習記録の一つなので、
- * ここに含める。
+ * 午後の過去問題を解いた記録と、穴埋めドリル（セキュリティ・アーキテクチャ・ネットワーク・SQL・表・
+ * サービスマネジメント・監査）の記録も学習記録の一つなので、ここに含める。
  */
 const clearEverything = (): void => {
   progressStore.clear();
@@ -64,6 +67,7 @@ const clearEverything = (): void => {
   pmMarkStore.clear();
   dbDrillStore.clear();
   nwDrillStore.clear();
+  for (const id of PM_DRILL_ORDER) pmDrillStores[id].clear();
 };
 
 export const QuizApp = () => {
@@ -98,12 +102,22 @@ export const QuizApp = () => {
     const first = questionSetsOf(EXAMS[index]?.code ?? "")[0];
     if (first) progressStore.selectSet(first.id);
   };
-  // 応用情報 午後の過去問ページと穴埋めドリル（SQL・表、ネットワーク）は、試験の一覧の
-  // 「応用情報技術者試験 午後」の下に置く。問題集ではないので、開いている間はどの試験も選択中にしない。
+  // 応用情報 午後の過去問ページと穴埋めドリルは、試験の一覧の「応用情報技術者試験 午後」の下に置く。
+  // 問題集ではないので、開いている間はどの試験も選択中にしない。
   const pmPastOpen = session.screen === "pm-past";
   const dbDrillOpen = session.screen === "db-drill";
   const nwDrillOpen = session.screen === "nw-drill";
-  const extraOpen = pmPastOpen || dbDrillOpen || nwDrillOpen;
+  const pmDrillOpen = PM_DRILL_ORDER.find((id) => PM_DRILL_BOOKS[id].screen === session.screen);
+  const extraOpen = pmPastOpen || dbDrillOpen || nwDrillOpen || pmDrillOpen !== undefined;
+  /** 午後の穴埋めドリル（問1・4・10・11）の左の一覧の行。 */
+  const pmDrillRow = (id: (typeof PM_DRILL_ORDER)[number]) => ({
+    after: "APPM",
+    badge: "穴埋",
+    name: PM_DRILL_BOOKS[id].sidebarName,
+    sub: PM_DRILL_BOOKS[id].sidebarSub,
+    selected: pmDrillOpen === id,
+    onSelect: () => session.setScreen(PM_DRILL_BOOKS[id].screen),
+  });
   const sidebar = (
     <ExamSidebar
       exams={EXAMS}
@@ -124,14 +138,9 @@ export const QuizApp = () => {
           selected: pmPastOpen,
           onSelect: () => session.setScreen("pm-past"),
         },
-        {
-          after: "APPM",
-          badge: "穴埋",
-          name: "応用情報 SQL・表 穴埋め",
-          sub: "午後 問6 対策 ・ 自動採点",
-          selected: dbDrillOpen,
-          onSelect: () => session.setScreen("db-drill"),
-        },
+        // 穴埋めドリルは本試験の問番号の順（問1・4・5・6・10・11）に並べる。
+        pmDrillRow("sec"),
+        pmDrillRow("arch"),
         {
           after: "APPM",
           badge: "穴埋",
@@ -140,6 +149,16 @@ export const QuizApp = () => {
           selected: nwDrillOpen,
           onSelect: () => session.setScreen("nw-drill"),
         },
+        {
+          after: "APPM",
+          badge: "穴埋",
+          name: "応用情報 SQL・表 穴埋め",
+          sub: "午後 問6 対策 ・ 自動採点",
+          selected: dbDrillOpen,
+          onSelect: () => session.setScreen("db-drill"),
+        },
+        pmDrillRow("sm"),
+        pmDrillRow("audit"),
       ]}
     />
   );
@@ -187,6 +206,9 @@ export const QuizApp = () => {
         ) : session.screen === "nw-drill" ? (
           // ネットワークの穴埋めドリルも同じ形（画面の部品は fill-drill/ で共通）。
           <NwDrillApp sidebar={sidebar} />
+        ) : pmDrillOpen !== undefined ? (
+          // セキュリティ・アーキテクチャ・サービスマネジメント・監査の穴埋めドリルも同じ形。
+          <PmDrillApp book={pmDrillOpen} sidebar={sidebar} />
         ) : (
           <>
             {sidebar}
