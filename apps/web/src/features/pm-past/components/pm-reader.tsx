@@ -47,6 +47,7 @@ import {
   underlineMark,
   underlineMarksOf,
 } from "../underline-marks";
+import { MarkerTools, useMarkerTool } from "./marker-tools";
 import { ScoreInput } from "./score-input";
 
 /** 本文中の空欄（`{{a}}`）と下線（`[[…]]`、`[[主:…]]`、`[[外:…]]`）を見つける。 */
@@ -993,6 +994,9 @@ type PmReaderProps = {
  * 問題文の欄の右上に浮かせた「メモ」を押すと、解答欄のさらに右に演習と同じメモの枠（自由入力と手書き）が開く。
  * メモは問ごとに、演習のメモと同じ保存先へ問題 ID（"ap-r06-aki-pm-05"）で置く。
  * 枠の幅・「メモだけ消す」・書き出しと取り込みも演習と同じものが効く。
+ *
+ * その下の「マーカー」を押すと、問題文と設問の文字をなぞってマーカー（蛍光ペン）を引ける（marker-tools.tsx）。
+ * 引いた所は問ごとに残る。
  */
 export const PmReader = ({
   pmExam,
@@ -1013,6 +1017,9 @@ export const PmReader = ({
   const answerWidth = useAnswerWidth(ANSWER_WIDTH_KEY);
   const bodyRef = useRef<HTMLDivElement>(null);
   const underlineJump = useUnderlineJump(transcript.body, bodyRef);
+  // マーカーを引ける所（問題文と設問）。解答欄・解説には引かない。
+  const markerAreaRef = useRef<HTMLDivElement>(null);
+  const marker = useMarkerTool(id, markerAreaRef);
   const grading = gradeTranscript(transcript, answers, marks);
   const retryKeys = retrySlotKeys(grading);
 
@@ -1067,13 +1074,13 @@ export const PmReader = ({
         }`}
       >
         {/*
-          メモと「元の場所に戻る」は、どこまで読み進めていても押せるよう、問題文の欄の右上に貼り付けておく。
+          マーカー・メモと「元の場所に戻る」は、どこまで読み進めていても押せるよう、問題文の欄の右上に貼り付けておく。
           本文の幅の右端ではなく欄の右端に寄せ、広い画面では本文の横の余白に置く（本文に重ならない）。
           高さを 0 にして本文の上に重ね、行の並びは押し下げない。
           問題文と解答欄が縦に並ぶ狭い画面では、上はサイトの見出しが貼り付いて隠れるので、画面の右下に置く。
           メモの枠が下から出ているときは、その下に隠れる（枠に閉じるボタンがある）。
         */}
-        <div className="pointer-events-none z-30 flex items-start justify-end gap-2 max-md:fixed max-md:right-4 max-md:bottom-4 md:sticky md:top-3 md:h-0 md:px-4">
+        <div className="pointer-events-none z-30 flex justify-end gap-2 max-md:fixed max-md:right-4 max-md:bottom-4 max-md:items-end md:sticky md:top-3 md:h-0 md:items-start md:px-4">
           {underlineJump.canGoBack && (
             <button
               type="button"
@@ -1083,14 +1090,18 @@ export const PmReader = ({
               ↩ 元の場所に戻る
             </button>
           )}
-          <span className={FLOATING}>
-            <NoteButton
-              size="md"
-              open={notesOpen}
-              written={!isEmptyNote(note)}
-              onToggle={onToggleNotes}
-            />
-          </span>
+          {/* メモの下にマーカー。縦に並べて、広い画面では本文の横の余白に収める */}
+          <div className="flex flex-col items-end gap-2">
+            <span className={FLOATING}>
+              <NoteButton
+                size="md"
+                open={notesOpen}
+                written={!isEmptyNote(note)}
+                onToggle={onToggleNotes}
+              />
+            </span>
+            {marker.supported && <MarkerTools marker={marker} floating={FLOATING} />}
+          </div>
         </div>
         <main className="flex justify-center px-7 pb-16">
           <article className="flex w-full max-w-[820px] flex-col gap-5">
@@ -1109,21 +1120,24 @@ export const PmReader = ({
               <span className="text-[11.5px] text-muted-soft">出典：{source}</span>
             </header>
 
-            <p className={PARAGRAPH}>{transcript.lead}</p>
-            {/* 本文だけを飛ぶ先にする。設問・解説が本文を引いたところは飛ぶ先にしない。 */}
-            <div ref={bodyRef} className="contents">
-              <UnderlineTargetContext value={true}>
-                {transcript.body.map((block, i) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: 本文は静的で並べ替えないため添字で足りる
-                  <Block key={i} block={block} />
-                ))}
-              </UnderlineTargetContext>
-            </div>
+            {/* マーカーは問題文と設問に引ける。場所はこの中の文字の何文字目かで覚える（marker-range.ts）。 */}
+            <div ref={markerAreaRef} className={`contents ${marker.selectionClass}`}>
+              <p className={PARAGRAPH}>{transcript.lead}</p>
+              {/* 本文だけを飛ぶ先にする。設問・解説が本文を引いたところは飛ぶ先にしない。 */}
+              <div ref={bodyRef} className="contents">
+                <UnderlineTargetContext value={true}>
+                  {transcript.body.map((block, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: 本文は静的で並べ替えないため添字で足りる
+                    <Block key={i} block={block} />
+                  ))}
+                </UnderlineTargetContext>
+              </div>
 
-            <div className="mt-4 flex flex-col gap-6 border-line border-t pt-5">
-              {transcript.parts.map((part) => (
-                <Part key={part.label} part={part} />
-              ))}
+              <div className="mt-4 flex flex-col gap-6 border-line border-t pt-5">
+                {transcript.parts.map((part) => (
+                  <Part key={part.label} part={part} />
+                ))}
+              </div>
             </div>
           </article>
         </main>
