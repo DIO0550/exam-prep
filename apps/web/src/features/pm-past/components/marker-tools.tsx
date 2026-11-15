@@ -233,11 +233,10 @@ const HINT: Record<"color" | "eraser", string> = {
 
 /** 道具の枠の中の、文字のボタン（消しゴム・全部消す）。 */
 const SMALL_BUTTON =
-  "w-full cursor-pointer rounded-md border px-0.5 py-1 font-bold text-[10.5px] leading-[1.25]";
+  "flex-none cursor-pointer whitespace-nowrap rounded-[7px] border px-2.5 py-1 font-bold text-[11px]";
 
 /**
  * この問のマーカーを全部消すボタン。押し間違いで消えないよう 2 段階にする（ConfirmClearButton と同じ考え）。
- * 道具の枠は細いので、確かめる 2 つのボタンは縦に並べる。
  */
 const ClearAll = ({ onClear }: { onClear: () => void }) => {
   const [armed, setArmed] = useState(false);
@@ -250,14 +249,12 @@ const ClearAll = ({ onClear }: { onClear: () => void }) => {
         onClick={() => setArmed(true)}
         className={`${SMALL_BUTTON} border-transparent text-muted-soft hover:bg-hover`}
       >
-        全部
-        <br />
-        消す
+        全部消す
       </button>
     );
   }
   return (
-    <>
+    <span className="flex flex-none items-center gap-1">
       <button
         type="button"
         aria-label="この問のマーカーを全部消す（確定）"
@@ -267,7 +264,7 @@ const ClearAll = ({ onClear }: { onClear: () => void }) => {
         }}
         className={`${SMALL_BUTTON} border-ng-line bg-ng-soft text-ng hover:bg-ng-bg`}
       >
-        消す
+        全部消す
       </button>
       <button
         type="button"
@@ -276,23 +273,22 @@ const ClearAll = ({ onClear }: { onClear: () => void }) => {
       >
         やめる
       </button>
-    </>
+    </span>
   );
 };
 
 /**
- * 問題文の欄の右上（狭い画面では右下）に浮かせる「マーカー」と、持っている間に出す道具の枠。
- * メモのボタンと縦に並べ、広い画面では本文の横の余白に収まる細さにする（本文の文字に重ねない）。
- * 道具の枠は、広い画面ではボタンの下、狭い画面ではメモのボタンの上に出す（画面の下端に置いているため）。
- * 並べる親は縦の flex にしておく（狭い画面の並びは order で入れ替える）。
+ * 解く画面の上のバー（狭い画面では下のバー）に置く「マーカー」と、持っている間に出す色と消しゴム。
+ * 色の並びは「マーカー」の左に出す（押しても「マーカー」と「メモ」の位置が動かないように）。
+ * バーが 1 行に収まらない幅では、別の段に出す。並べる親は折り返す横の flex にしておく。
  */
 export const MarkerTools = ({
   marker,
-  floating,
+  buttonClass,
 }: {
   marker: MarkerToolState;
-  /** 浮かせるボタンの見た目（影と角丸）。メモのボタンとそろえる。 */
-  floating: string;
+  /** バーのボタンの形（メモのボタンとそろえる）。 */
+  buttonClass: string;
 }) => {
   const { tool, color, count } = marker;
   const holding = tool !== null;
@@ -303,16 +299,64 @@ export const MarkerTools = ({
       <style href="pm-past-markers" precedence="default">
         {HIGHLIGHT_CSS}
       </style>
+
+      {holding && (
+        // 広い画面（xl 以上）は「マーカー」の左に並べる。それより狭いと 1 行に収まらないので段を分け、
+        // 問題文の上のバーでは下の段の右寄せ、画面の下のバー（スマホ）では上の段の真ん中に出す。
+        <div className="flex min-w-0 max-md:order-first max-md:basis-full max-md:justify-center md:max-xl:order-last md:max-xl:basis-full md:max-xl:justify-end">
+          <fieldset
+            title={hint}
+            className="m-0 flex min-w-0 flex-wrap items-center gap-1.5 rounded-[9px] border border-line bg-panel px-2 py-1"
+          >
+            <legend className="sr-only">マーカーの道具</legend>
+            <p className="sr-only">{hint}</p>
+            {MARKER_COLORS.map((option) => {
+              const pressed = tool === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  aria-pressed={pressed}
+                  aria-label={`${COLOR_LABEL[option]}のマーカー`}
+                  title={`${COLOR_LABEL[option]}のマーカー`}
+                  onPointerDown={marker.grab}
+                  onClick={() => marker.pick(option)}
+                  className={`size-6 flex-none cursor-pointer rounded-full border border-ink/15 ${SWATCH[option]} ${
+                    pressed ? "ring-2 ring-accent ring-offset-1" : "hover:border-ink/40"
+                  }`}
+                />
+              );
+            })}
+            <span aria-hidden="true" className="mx-0.5 h-4 w-px flex-none bg-edge-strong" />
+            <button
+              type="button"
+              aria-pressed={tool === "eraser"}
+              title={HINT.eraser}
+              onPointerDown={marker.grab}
+              onClick={() => marker.pick("eraser")}
+              className={`${SMALL_BUTTON} ${
+                tool === "eraser"
+                  ? "border-accent bg-accent-soft text-accent"
+                  : "border-edge-strong bg-surface text-muted hover:bg-hover"
+              }`}
+            >
+              消しゴム
+            </button>
+            {count > 0 && <ClearAll onClear={marker.clear} />}
+          </fieldset>
+        </div>
+      )}
+
       <button
         type="button"
         aria-pressed={holding}
         title={HINT.color}
         onPointerDown={marker.grab}
         onClick={marker.toggle}
-        className={`${floating} flex cursor-pointer items-center gap-1.5 whitespace-nowrap border px-3 py-3 font-bold text-[12px] ${
+        className={`${buttonClass} flex items-center gap-1.5 ${
           holding
             ? "border-accent bg-accent-soft text-accent"
-            : "border-edge bg-surface text-muted-soft"
+            : "border-edge bg-surface text-muted-soft hover:bg-hover"
         }`}
       >
         <span
@@ -323,51 +367,6 @@ export const MarkerTools = ({
         />
         マーカー
       </button>
-
-      {holding && (
-        <fieldset
-          title={hint}
-          className={`${floating} m-0 flex w-[60px] min-w-0 flex-col items-center gap-2 border border-line bg-surface p-2 max-md:order-first`}
-        >
-          <legend className="sr-only">マーカーの道具</legend>
-          <p className="sr-only">{hint}</p>
-          {MARKER_COLORS.map((option) => {
-            const pressed = tool === option;
-            return (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={pressed}
-                aria-label={`${COLOR_LABEL[option]}のマーカー`}
-                title={`${COLOR_LABEL[option]}のマーカー`}
-                onPointerDown={marker.grab}
-                onClick={() => marker.pick(option)}
-                className={`size-7 flex-none cursor-pointer rounded-full border border-ink/15 ${SWATCH[option]} ${
-                  pressed ? "ring-2 ring-accent ring-offset-2" : "hover:border-ink/40"
-                }`}
-              />
-            );
-          })}
-          <span aria-hidden="true" className="h-px w-full flex-none bg-line" />
-          <button
-            type="button"
-            aria-pressed={tool === "eraser"}
-            title={HINT.eraser}
-            onPointerDown={marker.grab}
-            onClick={() => marker.pick("eraser")}
-            className={`${SMALL_BUTTON} ${
-              tool === "eraser"
-                ? "border-accent bg-accent-soft text-accent"
-                : "border-edge-strong bg-surface text-muted hover:bg-hover"
-            }`}
-          >
-            消し
-            <br />
-            ゴム
-          </button>
-          {count > 0 && <ClearAll onClear={marker.clear} />}
-        </fieldset>
-      )}
     </>
   );
 };
