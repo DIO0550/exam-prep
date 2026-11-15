@@ -9,9 +9,32 @@ import { SketchPad } from "./sketch-pad";
 /** キーで広げ縮めするときの 1 回分。 */
 const KEY_STEP = 24;
 
+/**
+ * 右に並べる幅の境目ごとの組み方。境目より狭い画面では、画面の下から出す
+ * （本文の流れに置くと、フッターより後ろに積まれてしまう）。
+ *
+ * 演習の画面は md から右に並べる。午後の過去問題は問題文と解答欄がすでに横に並んでいて、
+ * md の幅でさらにメモを並べると問題文がほとんど読めない幅まで潰れるので、lg から並べる。
+ * Tailwind はクラス名を文字列のまま拾うので、組み立てずに両方を書き切っておく。
+ */
+const LAYOUTS = {
+  md: {
+    aside:
+      "max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-50 max-md:max-h-[70dvh] max-md:overflow-y-auto max-md:pb-5 max-md:shadow-[0_-6px_20px_rgba(22,24,29,0.14)] md:flex-[0_0_var(--note-width)] md:overflow-y-auto md:overscroll-contain md:border-t-0 md:border-l",
+    handle: "md:block",
+  },
+  lg: {
+    aside:
+      "max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-50 max-lg:max-h-[70dvh] max-lg:overflow-y-auto max-lg:pb-5 max-lg:shadow-[0_-6px_20px_rgba(22,24,29,0.14)] lg:flex-[0_0_var(--note-width)] lg:overflow-y-auto lg:overscroll-contain lg:border-t-0 lg:border-l",
+    handle: "lg:block",
+  },
+} as const;
+
 type NotePanelProps = {
-  /** 見出しに出す通し番号（0 始まり）。 */
-  index: number;
+  /** 見出しに出す、どの問題のメモか（「問 01」「令和7年度 秋期 問1」）。 */
+  label: string;
+  /** この幅から右に並べる。既定は md。 */
+  sideFrom?: keyof typeof LAYOUTS;
   /** 保存してある枠の幅（px）。 */
   width: number;
   /** 手を離したときに、新しい幅を覚えてもらう。 */
@@ -31,7 +54,8 @@ type NotePanelProps = {
  * メモの目的だから。1 枚の下書き帳にすると、どの問題のものか分からなくなる。
  */
 export const NotePanel = ({
-  index,
+  label,
+  sideFrom = "md",
   width,
   onResize,
   note,
@@ -42,6 +66,7 @@ export const NotePanel = ({
   onClose,
 }: NotePanelProps) => {
   const empty = note.strokes.length === 0;
+  const layout = LAYOUTS[sideFrom];
 
   // ドラッグ中は画面の中だけで動かし、手を離したときに覚える
   // （1px 動くたびに保存すると、書き込みが増えるわりに得るものが無い）。
@@ -91,12 +116,11 @@ export const NotePanel = ({
     "cursor-pointer rounded-[7px] border border-edge bg-surface px-2.5 py-[5px] font-medium text-[11px] text-muted-soft hover:bg-hover disabled:cursor-not-allowed disabled:text-disabled";
 
   return (
-    // 幅があるときは右端で別にスクロールする枠。
-    // 狭いときは画面の下から出す（本文の流れに置くと、フッターより後ろに積まれてしまう）。
+    // 幅があるときは右端で別にスクロールする枠。狭いときは画面の下から出す（LAYOUTS）。
     <aside
       aria-label="メモ"
       style={{ ["--note-width" as string]: `${shown}px` }}
-      className="relative flex flex-col gap-3 self-stretch border-line border-t bg-panel px-4 pt-4 pb-8 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-50 max-md:max-h-[70dvh] max-md:overflow-y-auto max-md:pb-5 max-md:shadow-[0_-6px_20px_rgba(22,24,29,0.14)] md:flex-[0_0_var(--note-width)] md:overflow-y-auto md:overscroll-contain md:border-t-0 md:border-l"
+      className={`relative flex flex-col gap-3 self-stretch border-line border-t bg-panel px-4 pt-4 pb-8 ${layout.aside}`}
     >
       {/* 左端をつまんで広げる。狭い画面では下から出すので、つまむところは出さない。 */}
       <button
@@ -108,14 +132,12 @@ export const NotePanel = ({
           setDragging(true);
         }}
         onKeyDown={onKeyDown}
-        className={`-left-1.5 absolute inset-y-0 z-10 hidden w-3 cursor-col-resize touch-none border-none bg-transparent p-0 md:block ${
+        className={`-left-1.5 absolute inset-y-0 z-10 hidden w-3 cursor-col-resize touch-none border-none bg-transparent p-0 ${layout.handle} ${
           dragging ? "bg-accent-soft" : "hover:bg-accent-soft"
         }`}
       />
       <div className="flex items-center justify-between gap-2">
-        <h2 className="font-bold text-[10.5px] text-muted tracking-[0.12em]">
-          メモ　問 {String(index + 1).padStart(2, "0")}
-        </h2>
+        <h2 className="font-bold text-[10.5px] text-muted tracking-[0.12em]">メモ　{label}</h2>
         <button
           type="button"
           onClick={onClose}
@@ -152,7 +174,7 @@ export const NotePanel = ({
       </div>
 
       <p className="text-[10.5px] text-muted-soft leading-[1.8]">
-        メモは問題ごとに、このブラウザだけに保存される。「学習記録を消す」で一緒に消える。
+        メモは問題ごとに、このブラウザだけに保存される。学習ホームの「メモだけ消す」「学習記録を消す」で消える。
       </p>
     </aside>
   );

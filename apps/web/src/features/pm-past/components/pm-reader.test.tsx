@@ -1,6 +1,11 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { noteOf } from "@/features/quiz/notes/note";
+import { NOTES_KEY } from "@/features/quiz/notes/storage";
+import { noteStore } from "@/features/quiz/notes/store";
+import { progressStore } from "@/features/quiz/progress/store";
 
 import { PM_ANSWERS_KEY, pmAnswerStore } from "../answers";
 import { PM_EXAMS, PM_PROBLEMS, pmProblemId } from "../data";
@@ -8,6 +13,7 @@ import { answerKeyLine, parseKeyLine, parseUnderline } from "../key-line";
 import { PM_MARKS_KEY, pmMarkStore } from "../marks";
 import { PM_RECORD_KEY, pmRecordStore } from "../store";
 import { PM_TRANSCRIPTS } from "../transcripts";
+import { PmPastApp } from "./pm-past-app";
 import { PmReader, PmText, plainText } from "./pm-reader";
 
 afterEach(() => {
@@ -16,6 +22,10 @@ afterEach(() => {
   pmAnswerStore.clear();
   pmMarkStore.clear();
   pmRecordStore.clear();
+  noteStore.clear();
+  progressStore.clear();
+  vi.restoreAllMocks();
+  window.localStorage.clear();
 });
 
 describe("主キー・外部キーの書き方", () => {
@@ -65,7 +75,14 @@ describe("解答欄で下線を選ぶ", () => {
     if (!pmExam || !problem || !transcript) throw new Error("R2 10月 問6 が見つからない");
     const user = userEvent.setup();
     render(
-      <PmReader pmExam={pmExam} problem={problem} transcript={transcript} onBack={() => {}} />,
+      <PmReader
+        pmExam={pmExam}
+        problem={problem}
+        transcript={transcript}
+        notesOpen={false}
+        onToggleNotes={() => {}}
+        onBack={() => {}}
+      />,
     );
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
 
@@ -117,7 +134,14 @@ describe("欄ごとの自己採点", () => {
     if (!pmExam || !problem || !transcript) throw new Error("R7 秋 問1 が見つからない");
     const user = userEvent.setup();
     render(
-      <PmReader pmExam={pmExam} problem={problem} transcript={transcript} onBack={() => {}} />,
+      <PmReader
+        pmExam={pmExam}
+        problem={problem}
+        transcript={transcript}
+        notesOpen={false}
+        onToggleNotes={() => {}}
+        onBack={() => {}}
+      />,
     );
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
     await user.selectOptions(answers.getByRole("combobox", { name: "設問1 a の答え" }), "ク");
@@ -176,7 +200,14 @@ describe("欄ごとの自己採点", () => {
     if (!pmExam || !problem || !transcript) throw new Error("R7 秋 問1 が見つからない");
     const user = userEvent.setup();
     render(
-      <PmReader pmExam={pmExam} problem={problem} transcript={transcript} onBack={() => {}} />,
+      <PmReader
+        pmExam={pmExam}
+        problem={problem}
+        transcript={transcript}
+        notesOpen={false}
+        onToggleNotes={() => {}}
+        onBack={() => {}}
+      />,
     );
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
     await user.selectOptions(answers.getByRole("combobox", { name: "設問1 a の答え" }), "ク");
@@ -223,7 +254,14 @@ describe("欄ごとの自己採点", () => {
     if (!pmExam || !problem || !transcript) throw new Error("R7 秋 問1 が見つからない");
     const user = userEvent.setup();
     render(
-      <PmReader pmExam={pmExam} problem={problem} transcript={transcript} onBack={() => {}} />,
+      <PmReader
+        pmExam={pmExam}
+        problem={problem}
+        transcript={transcript}
+        notesOpen={false}
+        onToggleNotes={() => {}}
+        onBack={() => {}}
+      />,
     );
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
     await user.selectOptions(answers.getByRole("combobox", { name: "設問1 a の答え" }), "ク");
@@ -265,5 +303,164 @@ describe("欄ごとの自己採点", () => {
       "設問3 (1)": "ok",
       "設問3 (3)": "ok",
     });
+  });
+});
+
+describe("メモ", () => {
+  const openProblem = async (user: ReturnType<typeof userEvent.setup>, source: string) => {
+    await user.click(screen.getByRole("button", { name: `${source} をこのサイトで解く` }));
+  };
+  const R7_AKI_1 = "令和7年度 秋期 応用情報技術者試験 午後 問1";
+  const R7_AKI_4 = "令和7年度 秋期 応用情報技術者試験 午後 問4";
+
+  it("「メモ」で解答欄の右にメモを開け、書いたメモは問ごとに演習のメモと同じ保存先に残る", async () => {
+    const user = userEvent.setup();
+    render(<PmPastApp />);
+    await openProblem(user, R7_AKI_1);
+
+    expect(screen.queryByRole("complementary", { name: "メモ" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "メモ" }));
+
+    const panel = within(screen.getByRole("complementary", { name: "メモ" }));
+    expect(panel.getByRole("heading", { name: "メモ　令和7年度 秋期 問1" })).toBeInTheDocument();
+    expect(panel.getByLabelText("メモ（手書き）")).toBeInTheDocument();
+    await user.type(panel.getByLabelText("メモ（文章）"), "攻撃者の視点で読む");
+
+    // 問題 ID で、演習のメモと同じところ（"exam-prep:notes:v1"）に残す
+    expect(noteOf(noteStore.snapshot(), "ap-r07-aki-pm-01").text).toBe("攻撃者の視点で読む");
+    expect(JSON.parse(window.localStorage.getItem(NOTES_KEY) ?? "{}").notes).toHaveProperty(
+      "ap-r07-aki-pm-01",
+    );
+
+    // 一覧に戻って別の問を開いても、メモの枠は開いたまま。中身はその問のもの（空）
+    await user.click(screen.getByRole("button", { name: "← 午後過去問の一覧へ" }));
+    await openProblem(user, R7_AKI_4);
+    expect(screen.getByRole("heading", { name: "メモ　令和7年度 秋期 問4" })).toBeInTheDocument();
+    expect(screen.getByLabelText("メモ（文章）")).toHaveValue("");
+
+    // 元の問に戻ると、書いたメモが出る
+    await user.click(screen.getByRole("button", { name: "← 午後過去問の一覧へ" }));
+    await openProblem(user, R7_AKI_1);
+    expect(screen.getByLabelText("メモ（文章）")).toHaveValue("攻撃者の視点で読む");
+
+    // 答えを消して解き直しても、メモは消さない
+    await user.click(screen.getByRole("button", { name: "解答例を見る" }));
+    await user.click(screen.getByRole("button", { name: "答えを消して解き直す" }));
+    expect(screen.getByLabelText("メモ（文章）")).toHaveValue("攻撃者の視点で読む");
+
+    await user.click(screen.getByRole("button", { name: "メモを閉じる" }));
+    expect(screen.queryByRole("complementary", { name: "メモ" })).not.toBeInTheDocument();
+  });
+
+  it("メモの幅は演習のメモと同じ値を使い、つまんで変えると演習にも効く", async () => {
+    const user = userEvent.setup();
+    render(<PmPastApp />);
+    await openProblem(user, R7_AKI_1);
+    await user.click(screen.getByRole("button", { name: "メモ" }));
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: /メモの幅を変える/ }));
+    fireEvent.pointerMove(window, { clientX: window.innerWidth - 480 });
+    fireEvent.pointerUp(window);
+
+    expect(progressStore.snapshot().noteWidth).toBe(480);
+  });
+
+  it("メモを開いていると、解答欄の幅は解答欄の右端（メモの左端）からポインタまでで決まる", async () => {
+    const user = userEvent.setup();
+    render(<PmPastApp />);
+    await openProblem(user, R7_AKI_1);
+    await user.click(screen.getByRole("button", { name: "メモ" }));
+
+    // 画面は 1024px、右に 300px のメモが開いていて、解答欄の右端は 724px にある
+    const handle = screen.getByRole("button", { name: /^解答欄の幅を変える/ });
+    const pane = handle.parentElement;
+    if (!pane) throw new Error("解答欄の外枠が無い");
+    vi.spyOn(pane, "getBoundingClientRect").mockReturnValue(
+      DOMRect.fromRect({ x: 324, y: 0, width: 400, height: 800 }),
+    );
+    expect(window.innerWidth).toBe(1024);
+    const saved = () => window.localStorage.getItem("exam-prep:pm-past-answer-width:v1");
+
+    fireEvent.pointerDown(handle);
+    fireEvent.pointerMove(window, { clientX: 364 });
+    fireEvent.pointerUp(window);
+    // 画面の右端から測ると 660px になってしまう。解答欄の右端から測って 360px
+    expect(saved()).toBe("360");
+
+    // 広げられるのは、メモの左端までのうち問題文に 360px を残すところまで（724 − 360 ＝ 364px）
+    fireEvent.pointerDown(handle);
+    fireEvent.pointerMove(window, { clientX: 0 });
+    fireEvent.pointerUp(window);
+    expect(saved()).toBe("364");
+  });
+});
+
+describe("下線部へ飛ぶ", () => {
+  const readerOf = (id: string, no: number) => {
+    const pmExam = PM_EXAMS.find((e) => pmProblemId(e, no) === id);
+    const problem = PM_PROBLEMS.find((p) => p.no === no);
+    const transcript = PM_TRANSCRIPTS[id];
+    if (!pmExam || !problem || !transcript) throw new Error(`${id} が見つからない`);
+    return (
+      <PmReader
+        pmExam={pmExam}
+        problem={problem}
+        transcript={transcript}
+        notesOpen={false}
+        onToggleNotes={() => {}}
+        onBack={() => {}}
+      />
+    );
+  };
+  const targetsOf = (mark: string) =>
+    document.querySelectorAll<HTMLElement>(`[data-underline~="${mark}"]`);
+
+  it("設問の「下線①」を押すと本文の下線部①へ移って色を付け、「元の場所に戻る」で設問へ戻る", async () => {
+    const user = userEvent.setup();
+    render(readerOf("ap-r07-aki-pm-01", 1));
+
+    const [target] = targetsOf("①");
+    expect(target).toHaveTextContent(/^①/);
+    // 左の設問（設問3）の文の中の「下線①」
+    const [ref] = screen.getAllByRole("button", { name: "下線①" });
+    if (!ref) throw new Error("設問の「下線①」が無い");
+    expect(ref.closest("p")).toHaveTextContent(/^本文中の下線①について/);
+
+    expect(screen.queryByRole("button", { name: "↩ 元の場所に戻る" })).not.toBeInTheDocument();
+    await user.click(ref);
+    expect(target).toHaveFocus();
+    expect(target).toHaveClass("bg-flag/20");
+
+    await user.click(screen.getByRole("button", { name: "↩ 元の場所に戻る" }));
+    expect(ref).toHaveFocus();
+    expect(screen.queryByRole("button", { name: "↩ 元の場所に戻る" })).not.toBeInTheDocument();
+  });
+
+  it("解説が本文を引いたところは飛ぶ先にせず、解説の「下線②」からも本文へ飛べる", async () => {
+    const user = userEvent.setup();
+    render(readerOf("ap-r07-aki-pm-01", 1));
+    const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
+    await user.click(answers.getByRole("button", { name: "解答例を見る" }));
+
+    // 本文の下線部だけが飛ぶ先（解説の「本文の手がかり」に同じ下線部があっても増えない）
+    expect(targetsOf("②")).toHaveLength(1);
+    const explain = within(answers.getByRole("region", { name: "解説" }));
+    await user.click(explain.getAllByRole("button", { name: "下線②" })[0] as HTMLElement);
+    expect(targetsOf("②")[0]).toHaveFocus();
+  });
+
+  it("図の中の下線部は、その図へ飛ぶ", async () => {
+    const user = userEvent.setup();
+    render(readerOf("ap-r02-oct-pm-01", 1));
+
+    const [figure] = targetsOf("②");
+    expect(figure?.querySelector("img")).not.toBeNull();
+    await user.click(screen.getAllByRole("button", { name: "下線②" })[0] as HTMLElement);
+    expect(figure).toHaveFocus();
+  });
+
+  it("印の無い下線（「適切でないもの」）や、解く画面の外の PmText はボタンにしない", () => {
+    render(<PmText text="本文中の下線①について，[[適切でないもの]]を選べ" />);
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

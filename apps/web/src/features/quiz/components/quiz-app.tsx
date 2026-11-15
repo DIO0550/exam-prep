@@ -414,7 +414,7 @@ export const QuizApp = () => {
 
             {notesVisible && session.current && (
               <NotePanel
-                index={session.index}
+                label={`問 ${String(session.index + 1).padStart(2, "0")}`}
                 width={record.noteWidth}
                 onResize={progressStore.setNoteWidth}
                 note={session.note}

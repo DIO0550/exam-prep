@@ -38,6 +38,8 @@ export const PmPastApp = ({ sidebar }: { sidebar?: ReactNode }) => {
   const [problemNo, setProblemNo] = useState(ALL);
   // 書き起こした問題を開いているとき、その回と問。
   const [opened, setOpened] = useState<{ pmExam: PmExam; problem: PmProblem } | null>(null);
+  // 解いている問の右に開くメモ。一覧に戻って別の問を開いても、開いたままにする（演習と同じ）。
+  const [notesOpen, setNotesOpen] = useState(false);
   const problems = problemNo === ALL ? PM_PROBLEMS : PM_PROBLEMS.filter((p) => p.no === problemNo);
   const total = PM_EXAMS.length * PM_PROBLEMS.length;
   const overall = summarize(
@@ -52,6 +54,8 @@ export const PmPastApp = ({ sidebar }: { sidebar?: ReactNode }) => {
         pmExam={opened.pmExam}
         problem={opened.problem}
         transcript={openedTranscript}
+        notesOpen={notesOpen}
+        onToggleNotes={() => setNotesOpen((open) => !open)}
         onBack={() => setOpened(null)}
       />
     );
