@@ -487,6 +487,24 @@ describe("下線部へ飛ぶ", () => {
     expect(screen.queryByRole("button", { name: "↩ 元の場所に戻る" })).not.toBeInTheDocument();
   });
 
+  it("「元の場所に戻る」は × で、戻らずに消せる", async () => {
+    const user = userEvent.setup();
+    render(readerOf("ap-r07-aki-pm-01", 1));
+    const [target] = targetsOf("①");
+    const [ref] = screen.getAllByRole("button", { name: "下線①" });
+    if (!ref || !target) throw new Error("「下線①」が無い");
+
+    await user.click(ref);
+    expect(target).toHaveFocus();
+    await user.click(screen.getByRole("button", { name: "「元の場所に戻る」を消す" }));
+    expect(screen.queryByRole("button", { name: "↩ 元の場所に戻る" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "「元の場所に戻る」を消す" }),
+    ).not.toBeInTheDocument();
+    // 設問へは戻らない
+    expect(ref).not.toHaveFocus();
+  });
+
   it("解説が本文を引いたところは飛ぶ先にせず、解説の「下線②」からも本文へ飛べる", async () => {
     const user = userEvent.setup();
     render(readerOf("ap-r07-aki-pm-01", 1));

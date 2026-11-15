@@ -974,8 +974,11 @@ const useUnderlineJump = (body: PmBlock[], bodyRef: RefObject<HTMLElement | null
     setReturnTo(null);
   };
 
+  /** 戻らずに「元の場所に戻る」を消す。飛んだ先から読み進めるときに、バーから片付けられるように。 */
+  const dismiss = (): void => setReturnTo(null);
+
   const context: UnderlineJump = { marks, flashed: flash?.mark, jump };
-  return { context, canGoBack: returnTo !== null, goBack };
+  return { context, canGoBack: returnTo !== null, goBack, dismiss };
 };
 
 type PmReaderProps = {
@@ -1095,14 +1098,27 @@ export const PmReader = ({
                 {pmExam.label} 問{problem.no}　{problem.field}
               </span>
             </span>
+            {/* 「下線①」から飛んだ後だけ出す。右の × で、戻らずに消せる */}
             {underlineJump.canGoBack && (
-              <button
-                type="button"
-                onClick={underlineJump.goBack}
-                className={`${BAR_BUTTON} border-edge-strong bg-surface text-accent hover:bg-hover`}
-              >
-                ↩ 元の場所に戻る
-              </button>
+              <span className="flex flex-none items-stretch">
+                <button
+                  type="button"
+                  onClick={underlineJump.goBack}
+                  className={`${BAR_BUTTON} rounded-r-none border-edge-strong bg-surface text-accent hover:bg-hover`}
+                >
+                  {/* スマホの下のバーは 1 行に収めたいので「↩ 戻る」と短く見せる（読み上げは全部） */}
+                  ↩ <span className="max-md:sr-only">元の場所に</span>戻る
+                </button>
+                <button
+                  type="button"
+                  aria-label="「元の場所に戻る」を消す"
+                  title="戻らずに消す"
+                  onClick={underlineJump.dismiss}
+                  className="flex-none cursor-pointer rounded-r-[7px] border border-edge-strong border-l-0 bg-surface px-2 text-[12px] text-muted-soft leading-none hover:bg-hover hover:text-ink"
+                >
+                  ×
+                </button>
+              </span>
             )}
             {marker.supported && <MarkerTools marker={marker} buttonClass={BAR_BUTTON} />}
             <NoteButton
