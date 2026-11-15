@@ -528,16 +528,71 @@ const choiceLabel = (choices: PmChoice[], key: string): string => {
 const answerLabel = (slot: PmAnswerSlot): string =>
   slot.choices ? choiceLabel(slot.choices, slot.answer) : slot.answer;
 
+/** 選択肢がどれもこの字数以内なら、横に並べる（記号と短い語）。長い文を含むなら 1 行ずつ縦に並べる。 */
+const SHORT_CHOICE = 16;
+
+type ChoiceRadiosProps = {
+  slotKey: string;
+  choices: PmChoice[];
+  value: string;
+  onAnswer: (value: string) => void;
+};
+
 /**
- * 答える欄 1 つ。解答群があれば選ぶ欄、無ければ文字を書く欄にする。
- *
- * 選ぶ欄は OS の `<select>` にしている。選択肢が長い文（「…を審査する。」）になる設問があり、
- * 自前のメニュー（SelectMenu）では開いたリストが画面の幅からはみ出すため。
- * 閉じた箱では長い選択肢が切れるので、選んだものの全文を下に添える。
+ * 解答群から 1 つ選ぶラジオボタン。選択肢を全部見せたまま、1 回押すだけで選べるようにする。
+ * 短い語の解答群（「ア CASB」）は横に詰めて並べ、文の解答群（「ア …を審査する。」）は全文が読めるよう縦に並べる。
+ * ラジオボタンは選んだものを外せないので、選んだ後は「選択を外す」で何も選んでいない状態に戻せる
+ * （選ばずに紙で解いた欄は、自分で ○× を付ける）。
  */
+const ChoiceRadios = ({ slotKey, choices, value, onAnswer }: ChoiceRadiosProps) => {
+  const name = useId();
+  const short = choices.every((choice) => [...choice.text].length <= SHORT_CHOICE);
+  return (
+    <div className="flex flex-col items-start gap-1.5">
+      <div
+        role="radiogroup"
+        aria-label={`${slotKey} の答え`}
+        className={short ? "flex flex-wrap gap-1.5" : "flex w-full flex-col gap-1.5"}
+      >
+        {choices.map((choice) => (
+          <label
+            key={choice.key}
+            className={`flex cursor-pointer gap-2 border border-edge-strong bg-surface text-ink-soft hover:border-accent/40 has-[:checked]:border-accent/60 has-[:checked]:bg-accent-soft has-[:checked]:text-ink ${
+              short
+                ? "items-center rounded-full py-1 pr-3 pl-2 text-read-xs"
+                : "items-start rounded-lg px-3 py-2 text-read-xs leading-[1.7]"
+            }`}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={choice.key}
+              checked={value === choice.key}
+              onChange={() => onAnswer(choice.key)}
+              className={`size-3.5 flex-none cursor-pointer accent-accent ${short ? "" : "mt-[5px]"}`}
+            />
+            {/* 読み上げで記号と中身が続かないよう空白を挟む（flex の中なので見た目は変わらない）。 */}
+            <span className="flex-none font-bold">{choice.key}</span>{" "}
+            <span className="text-pretty">{choice.text}</span>
+          </label>
+        ))}
+      </div>
+      {value !== "" && (
+        <button
+          type="button"
+          onClick={() => onAnswer("")}
+          className="cursor-pointer text-[11px] text-muted underline underline-offset-2 hover:text-ink"
+        >
+          選択を外す
+        </button>
+      )}
+    </div>
+  );
+};
+
+/** 答える欄 1 つ。解答群があればラジオボタンで選ぶ欄、無ければ文字を書く欄にする。 */
 const Slot = ({ slot, value, line, revealed, grade, onAnswer, onLine, onMark }: SlotProps) => {
   const expectedLine = answerKeyLine(slot.answer);
-  const chosen = slot.choices?.find((choice) => choice.key === value);
   // 「30字以内」の欄は、書いた字数を数えて、超えたら分かるようにする。
   const limitMatch = slot.hint.match(/(\d+)字以内/);
   const limit = limitMatch ? Number(limitMatch[1]) : undefined;
@@ -557,28 +612,7 @@ const Slot = ({ slot, value, line, revealed, grade, onAnswer, onLine, onMark }: 
       </div>
 
       {slot.choices ? (
-        <>
-          <select
-            aria-label={`${slot.key} の答え`}
-            value={value}
-            onChange={(event) => onAnswer(event.target.value)}
-            className={`w-full cursor-pointer truncate rounded-lg border bg-surface px-3 py-2 text-read-sm ${
-              value === "" ? "border-edge-strong text-muted-soft" : "border-accent/60 text-ink"
-            }`}
-          >
-            <option value="">選んでください</option>
-            {slot.choices.map((choice) => (
-              <option key={choice.key} value={choice.key}>
-                {choiceLabel(slot.choices ?? [], choice.key)}
-              </option>
-            ))}
-          </select>
-          {chosen && chosen.text.length > 16 && (
-            <p className="text-pretty text-read-xs text-ink-soft leading-[1.7]">
-              {chosen.key}　{chosen.text}
-            </p>
-          )}
-        </>
+        <ChoiceRadios slotKey={slot.key} choices={slot.choices} value={value} onAnswer={onAnswer} />
       ) : (
         <>
           <textarea
@@ -1003,33 +1037,34 @@ export const PmReader = ({
           answerWidth.dragging ? "select-none" : ""
         }`}
       >
+        {/*
+          メモと「元の場所に戻る」は、どこまで読み進めていても押せるよう、問題文の欄の右上に貼り付けておく。
+          本文の幅の右端ではなく欄の右端に寄せ、広い画面では本文の横の余白に置く（本文に重ならない）。
+          高さを 0 にして本文の上に重ね、行の並びは押し下げない。
+          問題文と解答欄が縦に並ぶ狭い画面では、上はサイトの見出しが貼り付いて隠れるので、画面の右下に置く。
+          メモの枠が下から出ているときは、その下に隠れる（枠に閉じるボタンがある）。
+        */}
+        <div className="pointer-events-none z-30 flex items-start justify-end gap-2 max-md:fixed max-md:right-4 max-md:bottom-4 md:sticky md:top-3 md:h-0 md:px-4">
+          {underlineJump.canGoBack && (
+            <button
+              type="button"
+              onClick={underlineJump.goBack}
+              className={`${FLOATING} cursor-pointer border border-edge-strong bg-surface px-4 py-3 font-bold text-[12px] text-accent hover:bg-canvas`}
+            >
+              ↩ 元の場所に戻る
+            </button>
+          )}
+          <span className={FLOATING}>
+            <NoteButton
+              size="md"
+              open={notesOpen}
+              written={!isEmptyNote(note)}
+              onToggle={onToggleNotes}
+            />
+          </span>
+        </div>
         <main className="flex justify-center px-7 pb-16">
           <article className="flex w-full max-w-[820px] flex-col gap-5">
-            {/*
-              メモと「元の場所に戻る」は、どこまで読み進めていても押せるよう、問題文の欄の右上に貼り付けておく。
-              高さを 0 にして本文の上に重ね、行の並びは押し下げない（並びの隙間 gap-5 も打ち消す）。
-              問題文と解答欄が縦に並ぶ狭い画面では、上はサイトの見出しが貼り付いて隠れるので、画面の右下に置く。
-              メモの枠が下から出ているときは、その下に隠れる（枠に閉じるボタンがある）。
-            */}
-            <div className="pointer-events-none z-30 flex items-start justify-end gap-2 max-md:fixed max-md:right-4 max-md:bottom-4 md:sticky md:top-3 md:-mb-5 md:h-0">
-              {underlineJump.canGoBack && (
-                <button
-                  type="button"
-                  onClick={underlineJump.goBack}
-                  className={`${FLOATING} cursor-pointer border border-edge-strong bg-surface px-4 py-3 font-bold text-[12px] text-accent hover:bg-canvas`}
-                >
-                  ↩ 元の場所に戻る
-                </button>
-              )}
-              <span className={FLOATING}>
-                <NoteButton
-                  size="md"
-                  open={notesOpen}
-                  written={!isEmptyNote(note)}
-                  onToggle={onToggleNotes}
-                />
-              </span>
-            </div>
             <header className="flex flex-col gap-2 border-line border-b pt-5 pb-3.5">
               <button
                 type="button"
