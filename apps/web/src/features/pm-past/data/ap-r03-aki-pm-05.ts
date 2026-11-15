@@ -291,6 +291,8 @@ export const AP_R03_AKI_PM_05: PmTranscript = {
         {
           key: "設問2 (1)",
           hint: "記号（全て）",
+          choices: Q2_1_CHOICES,
+          multiple: true,
           answer: "イ，ウ，エ",
           explain:
             "1000BASE-T は UTP ケーブルの 4 対 8 本を全て使って 1G ビット／秒で通信する方式で、カテゴリ 5e 以上のケーブルが必要になる。上位のカテゴリは下位の方式にも使えるので、カテゴリ 5e、6、6a が該当する。カテゴリ 3 は 10BASE-T までしか通せない。",

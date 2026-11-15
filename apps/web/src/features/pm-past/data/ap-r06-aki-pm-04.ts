@@ -242,6 +242,8 @@ export const AP_R06_AKI_PM_04: PmTranscript = {
         {
           key: "設問1 (1)",
           hint: "記号（全て）",
+          choices: Q1_1_CHOICES,
+          multiple: true,
           answer: "ア，イ，エ，オ",
           explain:
             "整数演算は、整数どうしの計算。ア・イ・エ・オは整数だけで計算し、結果も整数になる（イの 300×200÷100 は割り切れて 600）。ウ・カは 3.00 や 0.10 のような小数点付きの数を使うので、浮動小数点演算になる。",

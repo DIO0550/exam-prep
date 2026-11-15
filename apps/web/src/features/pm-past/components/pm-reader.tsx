@@ -15,6 +15,7 @@ import { noteStore } from "@/features/quiz/notes/store";
 import { progressStore } from "@/features/quiz/progress/store";
 
 import { pmAnswerStore, usePmAnswers } from "../answers";
+import { joinChoiceKeys, splitChoiceKeys } from "../choice-keys";
 import type { PmExam, PmProblem } from "../data";
 import { pmProblemId, pmSourceLabel } from "../data";
 import type { PmGrading, PmSlotGrade } from "../grading";
@@ -525,13 +526,73 @@ const choiceLabel = (choices: PmChoice[], key: string): string => {
   return choice ? `${choice.key}　${choice.text}` : key;
 };
 
-const answerLabel = (slot: PmAnswerSlot): string =>
-  slot.choices ? choiceLabel(slot.choices, slot.answer) : slot.answer;
+/** 解答例の記号に中身を添える。「全て選べ」の欄は、記号ごとに「／」で区切る（中身の文に「，」が入るため）。 */
+const answerLabel = (slot: PmAnswerSlot): string => {
+  if (!slot.choices) return slot.answer;
+  if (!slot.multiple) return choiceLabel(slot.choices, slot.answer);
+  const choices = slot.choices;
+  return splitChoiceKeys(slot.answer)
+    .map((key) => choiceLabel(choices, key))
+    .join(" ／ ");
+};
+
+/** 選択肢がどれもこの字数以内なら、横に並べる（記号と短い語）。長い文を含むなら 1 行ずつ縦に並べる。 */
+const SHORT_CHOICE = 16;
+
+type ChoiceChecksProps = {
+  slotKey: string;
+  choices: PmChoice[];
+  value: string;
+  onAnswer: (value: string) => void;
+};
 
 /**
- * 答える欄 1 つ。解答群があれば選ぶ欄、無ければ文字を書く欄にする。
+ * 解答群から「全て選べ」の欄のチェックボックス。選択肢を全部見せたまま、当てはまるものに印を付ける。
+ * 短い語の解答群（「ア カテゴリ 5e」）は横に詰めて並べ、文の解答群（「ア …を暗号化する。」）は全文が読めるよう縦に並べる。
+ * 選んだ記号は解答群の順に「ア，ウ」とつないで残す（解答例と同じ書き方。choice-keys.ts）。
+ */
+const ChoiceChecks = ({ slotKey, choices, value, onAnswer }: ChoiceChecksProps) => {
+  const picked = new Set(splitChoiceKeys(value));
+  const short = choices.every((choice) => [...choice.text].length <= SHORT_CHOICE);
+  const toggle = (key: string) => {
+    const next = new Set(picked);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    onAnswer(joinChoiceKeys(choices, next));
+  };
+  return (
+    <fieldset
+      className={`m-0 min-w-0 border-0 p-0 ${short ? "flex flex-wrap gap-1.5" : "flex flex-col gap-1.5"}`}
+    >
+      <legend className="sr-only">{slotKey} の答え</legend>
+      {choices.map((choice) => (
+        <label
+          key={choice.key}
+          className={`flex cursor-pointer gap-2 border border-edge-strong bg-surface text-ink-soft hover:border-accent/40 has-[:checked]:border-accent/60 has-[:checked]:bg-accent-soft has-[:checked]:text-ink ${
+            short
+              ? "items-center rounded-lg py-1 pr-3 pl-2 text-read-xs"
+              : "items-start rounded-lg px-3 py-2 text-read-xs leading-[1.7]"
+          }`}
+        >
+          <input
+            type="checkbox"
+            checked={picked.has(choice.key)}
+            onChange={() => toggle(choice.key)}
+            className={`size-3.5 flex-none cursor-pointer accent-accent ${short ? "" : "mt-[5px]"}`}
+          />
+          {/* 読み上げで記号と中身が続かないよう空白を挟む（flex の中なので見た目は変わらない）。 */}
+          <span className="flex-none font-bold">{choice.key}</span>{" "}
+          <span className="text-pretty">{choice.text}</span>
+        </label>
+      ))}
+    </fieldset>
+  );
+};
+
+/**
+ * 答える欄 1 つ。解答群があれば選ぶ欄（「全て選べ」の欄はチェックボックス）、無ければ文字を書く欄にする。
  *
- * 選ぶ欄は OS の `<select>` にしている。選択肢が長い文（「…を審査する。」）になる設問があり、
+ * 1 つ選ぶ欄は OS の `<select>` にしている。選択肢が長い文（「…を審査する。」）になる設問があり、
  * 自前のメニュー（SelectMenu）では開いたリストが画面の幅からはみ出すため。
  * 閉じた箱では長い選択肢が切れるので、選んだものの全文を下に添える。
  */
@@ -556,7 +617,9 @@ const Slot = ({ slot, value, line, revealed, grade, onAnswer, onLine, onMark }: 
         </span>
       </div>
 
-      {slot.choices ? (
+      {slot.choices && slot.multiple ? (
+        <ChoiceChecks slotKey={slot.key} choices={slot.choices} value={value} onAnswer={onAnswer} />
+      ) : slot.choices ? (
         <>
           <select
             aria-label={`${slot.key} の答え`}
@@ -1003,33 +1066,34 @@ export const PmReader = ({
           answerWidth.dragging ? "select-none" : ""
         }`}
       >
+        {/*
+          メモと「元の場所に戻る」は、どこまで読み進めていても押せるよう、問題文の欄の右上に貼り付けておく。
+          本文の幅の右端ではなく欄の右端に寄せ、広い画面では本文の横の余白に置く（本文に重ならない）。
+          高さを 0 にして本文の上に重ね、行の並びは押し下げない。
+          問題文と解答欄が縦に並ぶ狭い画面では、上はサイトの見出しが貼り付いて隠れるので、画面の右下に置く。
+          メモの枠が下から出ているときは、その下に隠れる（枠に閉じるボタンがある）。
+        */}
+        <div className="pointer-events-none z-30 flex items-start justify-end gap-2 max-md:fixed max-md:right-4 max-md:bottom-4 md:sticky md:top-3 md:h-0 md:px-4">
+          {underlineJump.canGoBack && (
+            <button
+              type="button"
+              onClick={underlineJump.goBack}
+              className={`${FLOATING} cursor-pointer border border-edge-strong bg-surface px-4 py-3 font-bold text-[12px] text-accent hover:bg-canvas`}
+            >
+              ↩ 元の場所に戻る
+            </button>
+          )}
+          <span className={FLOATING}>
+            <NoteButton
+              size="md"
+              open={notesOpen}
+              written={!isEmptyNote(note)}
+              onToggle={onToggleNotes}
+            />
+          </span>
+        </div>
         <main className="flex justify-center px-7 pb-16">
           <article className="flex w-full max-w-[820px] flex-col gap-5">
-            {/*
-              メモと「元の場所に戻る」は、どこまで読み進めていても押せるよう、問題文の欄の右上に貼り付けておく。
-              高さを 0 にして本文の上に重ね、行の並びは押し下げない（並びの隙間 gap-5 も打ち消す）。
-              問題文と解答欄が縦に並ぶ狭い画面では、上はサイトの見出しが貼り付いて隠れるので、画面の右下に置く。
-              メモの枠が下から出ているときは、その下に隠れる（枠に閉じるボタンがある）。
-            */}
-            <div className="pointer-events-none z-30 flex items-start justify-end gap-2 max-md:fixed max-md:right-4 max-md:bottom-4 md:sticky md:top-3 md:-mb-5 md:h-0">
-              {underlineJump.canGoBack && (
-                <button
-                  type="button"
-                  onClick={underlineJump.goBack}
-                  className={`${FLOATING} cursor-pointer border border-edge-strong bg-surface px-4 py-3 font-bold text-[12px] text-accent hover:bg-canvas`}
-                >
-                  ↩ 元の場所に戻る
-                </button>
-              )}
-              <span className={FLOATING}>
-                <NoteButton
-                  size="md"
-                  open={notesOpen}
-                  written={!isEmptyNote(note)}
-                  onToggle={onToggleNotes}
-                />
-              </span>
-            </div>
             <header className="flex flex-col gap-2 border-line border-b pt-5 pb-3.5">
               <button
                 type="button"

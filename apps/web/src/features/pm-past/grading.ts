@@ -1,3 +1,4 @@
+import { sameChoiceKeys } from "./choice-keys";
 import { answerKeyLine, keyLineSlotKey, parseKeyLine } from "./key-line";
 import type { PmMark } from "./marks";
 import type { PmAnswerSlot, PmQuestionPart, PmTranscript } from "./types";
@@ -66,6 +67,11 @@ export const judgeChoiceSlots = (
   for (const slot of part.slots) {
     const value = answers[slot.key] ?? "";
     if (!slot.choices || value === "") continue;
+    // 「全て選べ」の欄は、選んだ記号の組が解答例の組と同じときだけ正解（一部だけ合っていても ×）
+    if (slot.multiple) {
+      judged[slot.key] = sameChoiceKeys(value, slot.answer);
+      continue;
+    }
     if (!isUnordered(slot.hint)) {
       judged[slot.key] = value === slot.answer;
       continue;

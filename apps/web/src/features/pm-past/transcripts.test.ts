@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { parsePmAnswers, withAnswer, withoutAnswers } from "./answers";
+import { joinChoiceKeys, splitChoiceKeys } from "./choice-keys";
 import {
   rowSpansOfColumn,
   rowSpansOfFirstColumn,
@@ -114,8 +115,29 @@ describe.each(Object.values(PM_TRANSCRIPTS))("書き起こし $id", (t) => {
       expect(slot.answer).not.toBe("");
       expect(slot.explain).not.toBe("");
       if (slot.choices) {
-        expect(slot.choices.map((c) => c.key)).toContain(slot.answer);
-        expect(new Set(slot.choices.map((c) => c.key)).size).toBe(slot.choices.length);
+        const keys = slot.choices.map((c) => c.key);
+        expect(new Set(keys).size).toBe(slot.choices.length);
+        if (slot.multiple) {
+          // 「全て選べ」の欄は、解答例も解答群の記号を解答群の順に「，」でつないだもの（画面で選んだ答えと同じ書き方）
+          for (const key of splitChoiceKeys(slot.answer)) expect(keys, slot.key).toContain(key);
+          expect(joinChoiceKeys(slot.choices, splitChoiceKeys(slot.answer)), slot.key).toBe(
+            slot.answer,
+          );
+        } else {
+          expect(keys).toContain(slot.answer);
+        }
+      }
+      if (slot.multiple) expect(slot.choices, slot.key).toBeDefined();
+    }
+  });
+
+  it("解答群から「全て選べ」の欄は、設問に載せた解答群を持つチェックボックスの欄にしてある", () => {
+    for (const part of t.parts) {
+      const shown = [part.choices, ...(part.items ?? []).map((item) => item.choices)];
+      for (const slot of part.slots) {
+        if (slot.hint === "記号（全て）") expect(slot.multiple, slot.key).toBe(true);
+        if (!slot.multiple) continue;
+        expect(shown, slot.key).toContainEqual(slot.choices);
       }
     }
   });

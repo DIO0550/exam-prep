@@ -121,6 +121,57 @@ describe("解答欄で下線を選ぶ", () => {
   });
 });
 
+describe("解答群から「全て選べ」の欄", () => {
+  const ID = "ap-r04-haru-pm-01";
+  const pmExam = PM_EXAMS.find((e) => pmProblemId(e, 1) === ID);
+  const problem = PM_PROBLEMS.find((p) => p.no === 1);
+  const transcript = PM_TRANSCRIPTS[ID];
+
+  it("チェックボックスで当てはまるものを全部選び、組が解答例と同じなら自動で ○ にする", async () => {
+    if (!pmExam || !problem || !transcript) throw new Error("R4 春 問1 が見つからない");
+    const user = userEvent.setup();
+    render(
+      <PmReader
+        pmExam={pmExam}
+        problem={problem}
+        transcript={transcript}
+        notesOpen={false}
+        onToggleNotes={() => {}}
+        onBack={() => {}}
+      />,
+    );
+    const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
+    const slot = within(answers.getByRole("group", { name: "設問3 の答え" }));
+    expect(slot.getAllByRole("checkbox")).toHaveLength(4);
+
+    // 押した順ではなく、解答群の順に「イ，ウ」と残す（解答例と同じ書き方）
+    await user.click(slot.getByRole("checkbox", { name: "ウ 名称" }));
+    await user.click(slot.getByRole("checkbox", { name: "イ バージョン" }));
+    expect(slot.getByRole("checkbox", { name: "イ バージョン" })).toBeChecked();
+    const saved = () => JSON.parse(window.localStorage.getItem(PM_ANSWERS_KEY) ?? "{}")[ID];
+    expect(saved()).toMatchObject({ 設問3: "イ，ウ" });
+
+    await user.click(answers.getByRole("button", { name: "解答例を見る" }));
+    // 選んだ組で自動採点するので、自分で付けるボタンは出さない
+    expect(answers.queryByRole("group", { name: "設問3 の自己採点" })).not.toBeInTheDocument();
+    const explain = within(answers.getByRole("region", { name: "解説" }));
+    expect(explain.getByRole("article", { name: "設問3 の解説" })).toHaveTextContent("○ 正解");
+    // 解答例は、記号ごとに中身を添えて「／」で区切る
+    expect(answers.getAllByText(/^イ\s+バージョン ／ ウ\s+名称$/).length).toBeGreaterThan(0);
+
+    // 一つ外すと、足りないので ×
+    await user.click(slot.getByRole("checkbox", { name: "ウ 名称" }));
+    expect(saved()).toMatchObject({ 設問3: "イ" });
+    expect(explain.getByRole("article", { name: "設問3 の解説" })).toHaveTextContent("× 不正解");
+
+    // 全部外すと、選んでいない（紙で解いた）欄として自分で ○× を付ける
+    await user.click(slot.getByRole("checkbox", { name: "イ バージョン" }));
+    expect(saved()?.設問3).toBeUndefined();
+    const marks = within(answers.getByRole("group", { name: "設問3 の自己採点" }));
+    expect(marks.queryByRole("button", { name: "△ 部分点" })).not.toBeInTheDocument();
+  });
+});
+
 describe("欄ごとの自己採点", () => {
   const pmExam = PM_EXAMS.find((e) => pmProblemId(e, 1) === "ap-r07-aki-pm-01");
   const problem = PM_PROBLEMS.find((p) => p.no === 1);
