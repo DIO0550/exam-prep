@@ -79,6 +79,14 @@
   --color-series-3: #1baf7a;
   --color-series-4: #4a3aa7;
 
+  /* 午後過去問の問題文に引くマーカー（蛍光ペン）。上に乗る文字（ink）が読める淡さにする。
+     引いた所を塗る ::highlight(...) は、ここの CSS の変換（Lightning CSS）が読めずに落とすので、
+     features/pm-past/components/marker-tools.tsx の <style> に書いてある。 */
+  --color-marker-yellow: #fff06b;
+  --color-marker-pink: #ffc8e0;
+  --color-marker-green: #c4efb8;
+  --color-marker-blue: #c8e2ff;
+
   --animate-rise-in: rise-in 0.3s ease both;
 }
 

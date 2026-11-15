@@ -15,6 +15,7 @@ import { PmDrillApp } from "@/features/pm-drill/components/pm-drill-app";
 import { pmDrillStores } from "@/features/pm-drill/store";
 import { pmAnswerStore } from "@/features/pm-past/answers";
 import { PmPastApp } from "@/features/pm-past/components/pm-past-app";
+import { pmMarkerStore } from "@/features/pm-past/markers";
 import { pmMarkStore } from "@/features/pm-past/marks";
 import { pmRecordStore } from "@/features/pm-past/store";
 import { VocabApp } from "@/features/vocab/components/vocab-app";
@@ -56,7 +57,7 @@ const SECONDS_PER_QUESTION: Record<string, number> = { GAIP: 60, APPM: 180 };
 
 /**
  * 「学習記録を消す」で消すもの。メモも本人がこのブラウザに残したものなので一緒に消す。
- * 午後の過去問題を解いた記録と、穴埋めドリル（セキュリティ・アーキテクチャ・ネットワーク・SQL・表・
+ * 午後の過去問題を解いた記録（書いた答え・○△×・問題文に引いたマーカーも）と、穴埋めドリル（セキュリティ・アーキテクチャ・ネットワーク・SQL・表・
  * サービスマネジメント・監査）の記録も学習記録の一つなので、ここに含める。
  */
 const clearEverything = (): void => {
@@ -65,6 +66,7 @@ const clearEverything = (): void => {
   pmRecordStore.clear();
   pmAnswerStore.clear();
   pmMarkStore.clear();
+  pmMarkerStore.clear();
   dbDrillStore.clear();
   nwDrillStore.clear();
   for (const id of PM_DRILL_ORDER) pmDrillStores[id].clear();

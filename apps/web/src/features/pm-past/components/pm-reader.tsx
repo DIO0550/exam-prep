@@ -47,6 +47,7 @@ import {
   underlineMark,
   underlineMarksOf,
 } from "../underline-marks";
+import { MarkerTools, useMarkerTool } from "./marker-tools";
 import { ScoreInput } from "./score-input";
 
 /** 本文中の空欄（`{{a}}`）と下線（`[[…]]`、`[[主:…]]`、`[[外:…]]`）を見つける。 */
@@ -926,8 +927,9 @@ const GradeSummary = ({ grading, id, source, attempt }: GradeSummaryProps) => {
 /** 解答欄の幅を覚える先。穴埋めドリルとは解答欄の中身が違うので、別に覚える。 */
 const ANSWER_WIDTH_KEY = "exam-prep:pm-past-answer-width:v1";
 
-/** 問題文の欄の右上（狭い画面では画面の右下）に浮かせるボタンの見た目。 */
-const FLOATING = "pointer-events-auto rounded-[9px] shadow-[0_4px_14px_rgba(22,24,29,0.14)]";
+/** 解く画面のバーに並べるボタンの形。メモのボタン（NoteButton の sm）とそろえる。 */
+const BAR_BUTTON =
+  "cursor-pointer whitespace-nowrap rounded-[7px] border px-[11px] py-[7px] font-bold text-[11px]";
 
 /** 飛んだ先の色を付けておく時間（ms）。 */
 const FLASH_MS = 1800;
@@ -972,8 +974,11 @@ const useUnderlineJump = (body: PmBlock[], bodyRef: RefObject<HTMLElement | null
     setReturnTo(null);
   };
 
+  /** 戻らずに「元の場所に戻る」を消す。飛んだ先から読み進めるときに、バーから片付けられるように。 */
+  const dismiss = (): void => setReturnTo(null);
+
   const context: UnderlineJump = { marks, flashed: flash?.mark, jump };
-  return { context, canGoBack: returnTo !== null, goBack };
+  return { context, canGoBack: returnTo !== null, goBack, dismiss };
 };
 
 type PmReaderProps = {
@@ -990,9 +995,12 @@ type PmReaderProps = {
  * 書き起こした午後の問題を解く画面。左に問題文と設問、右に答える欄を置く。
  * 「解答例を見る」で欄ごとに IPA の解答例と本サイトの解説を出す。
  *
- * 問題文の欄の右上に浮かせた「メモ」を押すと、解答欄のさらに右に演習と同じメモの枠（自由入力と手書き）が開く。
+ * 問題文の欄の上のバー（狭い画面では画面の下のバー）の「メモ」を押すと、解答欄のさらに右に演習と同じメモの枠（自由入力と手書き）が開く。
  * メモは問ごとに、演習のメモと同じ保存先へ問題 ID（"ap-r06-aki-pm-05"）で置く。
  * 枠の幅・「メモだけ消す」・書き出しと取り込みも演習と同じものが効く。
+ *
+ * その左の「マーカー」を押すと、問題文と設問の文字をなぞってマーカー（蛍光ペン）を引ける（marker-tools.tsx）。
+ * 引いた所は問ごとに残る。
  */
 export const PmReader = ({
   pmExam,
@@ -1013,6 +1021,9 @@ export const PmReader = ({
   const answerWidth = useAnswerWidth(ANSWER_WIDTH_KEY);
   const bodyRef = useRef<HTMLDivElement>(null);
   const underlineJump = useUnderlineJump(transcript.body, bodyRef);
+  // マーカーを引ける所（問題文と設問）。解答欄・解説には引かない。
+  const markerAreaRef = useRef<HTMLDivElement>(null);
+  const marker = useMarkerTool(id, markerAreaRef);
   const grading = gradeTranscript(transcript, answers, marks);
   const retryKeys = retrySlotKeys(grading);
 
@@ -1067,41 +1078,60 @@ export const PmReader = ({
         }`}
       >
         {/*
-          メモと「元の場所に戻る」は、どこまで読み進めていても押せるよう、問題文の欄の右上に貼り付けておく。
-          本文の幅の右端ではなく欄の右端に寄せ、広い画面では本文の横の余白に置く（本文に重ならない）。
-          高さを 0 にして本文の上に重ね、行の並びは押し下げない。
-          問題文と解答欄が縦に並ぶ狭い画面では、上はサイトの見出しが貼り付いて隠れるので、画面の右下に置く。
+          一覧へ戻る・元の場所に戻る・マーカー・メモは、1 本のバーにまとめる（ナビゲーションバーのように）。
+          どこまで読み進めていても押せるよう、広い画面では問題文の欄の上に貼り付ける。
+          問題文と解答欄が縦に並ぶ狭い画面では、上はサイトの見出しが貼り付いているので、画面の下に置く。
           メモの枠が下から出ているときは、その下に隠れる（枠に閉じるボタンがある）。
         */}
-        <div className="pointer-events-none z-30 flex items-start justify-end gap-2 max-md:fixed max-md:right-4 max-md:bottom-4 md:sticky md:top-3 md:h-0 md:px-4">
-          {underlineJump.canGoBack && (
+        <div className="z-30 border-line bg-surface/95 backdrop-blur-sm max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:border-t max-md:pb-[env(safe-area-inset-bottom)] max-md:shadow-[0_-4px_14px_rgba(22,24,29,0.10)] md:sticky md:top-0 md:border-b">
+          <div className="mx-auto flex w-full max-w-[876px] flex-wrap items-center gap-2 px-4 py-2 md:px-7">
             <button
               type="button"
-              onClick={underlineJump.goBack}
-              className={`${FLOATING} cursor-pointer border border-edge-strong bg-surface px-4 py-3 font-bold text-[12px] text-accent hover:bg-canvas`}
+              onClick={onBack}
+              className={`${BAR_BUTTON} border-transparent text-accent hover:bg-hover`}
             >
-              ↩ 元の場所に戻る
+              ← <span className="max-md:sr-only">午後過去問の</span>一覧へ
             </button>
-          )}
-          <span className={FLOATING}>
+            {/* 広い画面では、読み進めても今どの問かが分かるよう、バーにも問を出す */}
+            <span className="min-w-0 flex-1 truncate text-[11.5px] text-muted-soft">
+              <span className="max-xl:hidden">
+                {pmExam.label} 問{problem.no}　{problem.field}
+              </span>
+            </span>
+            {/* 「下線①」から飛んだ後だけ出す。右の × で、戻らずに消せる */}
+            {underlineJump.canGoBack && (
+              <span className="flex flex-none items-stretch">
+                <button
+                  type="button"
+                  onClick={underlineJump.goBack}
+                  className={`${BAR_BUTTON} rounded-r-none border-edge-strong bg-surface text-accent hover:bg-hover`}
+                >
+                  {/* スマホの下のバーは 1 行に収めたいので「↩ 戻る」と短く見せる（読み上げは全部） */}
+                  ↩ <span className="max-md:sr-only">元の場所に</span>戻る
+                </button>
+                <button
+                  type="button"
+                  aria-label="「元の場所に戻る」を消す"
+                  title="戻らずに消す"
+                  onClick={underlineJump.dismiss}
+                  className="flex-none cursor-pointer rounded-r-[7px] border border-edge-strong border-l-0 bg-surface px-2 text-[12px] text-muted-soft leading-none hover:bg-hover hover:text-ink"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {marker.supported && <MarkerTools marker={marker} buttonClass={BAR_BUTTON} />}
             <NoteButton
-              size="md"
+              size="sm"
               open={notesOpen}
               written={!isEmptyNote(note)}
               onToggle={onToggleNotes}
             />
-          </span>
+          </div>
         </div>
         <main className="flex justify-center px-7 pb-16">
           <article className="flex w-full max-w-[820px] flex-col gap-5">
             <header className="flex flex-col gap-2 border-line border-b pt-5 pb-3.5">
-              <button
-                type="button"
-                onClick={onBack}
-                className="self-start cursor-pointer rounded-[7px] px-2 py-1 text-[12px] text-accent hover:bg-hover"
-              >
-                ← 午後過去問の一覧へ
-              </button>
               <div className="flex flex-wrap items-baseline gap-3">
                 <span className="font-bold text-[12px] text-accent">問{problem.no}</span>
                 <h1 className="font-bold text-[16px] leading-[1.5]">{problem.field}</h1>
@@ -1109,21 +1139,24 @@ export const PmReader = ({
               <span className="text-[11.5px] text-muted-soft">出典：{source}</span>
             </header>
 
-            <p className={PARAGRAPH}>{transcript.lead}</p>
-            {/* 本文だけを飛ぶ先にする。設問・解説が本文を引いたところは飛ぶ先にしない。 */}
-            <div ref={bodyRef} className="contents">
-              <UnderlineTargetContext value={true}>
-                {transcript.body.map((block, i) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: 本文は静的で並べ替えないため添字で足りる
-                  <Block key={i} block={block} />
-                ))}
-              </UnderlineTargetContext>
-            </div>
+            {/* マーカーは問題文と設問に引ける。場所はこの中の文字の何文字目かで覚える（marker-range.ts）。 */}
+            <div ref={markerAreaRef} className={`contents ${marker.selectionClass}`}>
+              <p className={PARAGRAPH}>{transcript.lead}</p>
+              {/* 本文だけを飛ぶ先にする。設問・解説が本文を引いたところは飛ぶ先にしない。 */}
+              <div ref={bodyRef} className="contents">
+                <UnderlineTargetContext value={true}>
+                  {transcript.body.map((block, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: 本文は静的で並べ替えないため添字で足りる
+                    <Block key={i} block={block} />
+                  ))}
+                </UnderlineTargetContext>
+              </div>
 
-            <div className="mt-4 flex flex-col gap-6 border-line border-t pt-5">
-              {transcript.parts.map((part) => (
-                <Part key={part.label} part={part} />
-              ))}
+              <div className="mt-4 flex flex-col gap-6 border-line border-t pt-5">
+                {transcript.parts.map((part) => (
+                  <Part key={part.label} part={part} />
+                ))}
+              </div>
             </div>
           </article>
         </main>
@@ -1264,6 +1297,9 @@ export const PmReader = ({
           </button>
         )}
       </AnswerPane>
+
+      {/* 狭い画面では画面の下にバーがあるので、解答欄の最後がバーに隠れないよう、その分だけ空ける */}
+      <div aria-hidden="true" className="h-24 flex-none md:hidden" />
 
       {notesOpen && (
         <NotePanel
