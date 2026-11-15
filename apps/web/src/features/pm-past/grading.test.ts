@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { withoutSlotAnswers } from "./answers";
+import { joinChoiceKeys, sameChoiceKeys, splitChoiceKeys } from "./choice-keys";
 import { gradeTranscript, judgeChoiceSlots, retrySlotKeys } from "./grading";
 import { parsePmMarks, withMark, withoutMarks } from "./marks";
 import type { PmAnswerSlot, PmQuestionPart, PmTranscript } from "./types";
@@ -46,6 +47,37 @@ describe("記号の欄の自動採点", () => {
     });
     expect(judgeChoiceSlots(p, { a: "ウ", b: "ウ" })).toEqual({ a: true, b: false });
     expect(judgeChoiceSlots(p, { a: "ア", b: "エ" })).toEqual({ a: false, b: true });
+  });
+
+  it("「全て選べ」の欄は、選んだ記号の組が解答例の組とちょうど同じときだけ正解（並び順は問わない）", () => {
+    const multi = { hint: "記号（全て）", multiple: true };
+    const p = part([
+      slot("a", "ア，ウ", multi),
+      slot("b", "イ，ウ，エ", multi),
+      slot("c", "エ", multi),
+    ]);
+    expect(judgeChoiceSlots(p, { a: "ア，ウ", b: "イ，ウ", c: "エ" })).toEqual({
+      a: true,
+      // 足りない（一部だけ合っている）
+      b: false,
+      c: true,
+    });
+    expect(judgeChoiceSlots(p, { a: "ウ，ア", b: "イ，ウ，エ，ア" })).toEqual({
+      a: true,
+      // 余計なものまで選んでいる
+      b: false,
+    });
+  });
+});
+
+describe("「全て選べ」の答えの書き方", () => {
+  it("選んだ記号を解答群の順に「，」でつなぎ、分けるときは空を落とす", () => {
+    expect(joinChoiceKeys(CHOICES, ["エ", "ア", "カ"])).toBe("ア，エ");
+    expect(joinChoiceKeys(CHOICES, [])).toBe("");
+    expect(splitChoiceKeys("ア，エ")).toEqual(["ア", "エ"]);
+    expect(splitChoiceKeys("")).toEqual([]);
+    expect(sameChoiceKeys("エ，ア", "ア，エ")).toBe(true);
+    expect(sameChoiceKeys("ア", "ア，エ")).toBe(false);
   });
 });
 

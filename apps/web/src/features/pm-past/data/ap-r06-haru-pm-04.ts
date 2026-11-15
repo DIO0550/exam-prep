@@ -269,6 +269,8 @@ export const AP_R06_HARU_PM_04: PmTranscript = {
         {
           key: "設問1",
           hint: "記号（全て）",
+          choices: Q1_CHOICES,
+          multiple: true,
           answer: "イ，エ",
           explain:
             "表示速度を上げる静的ファイルの最適化は、ファイルを小さくして転送を速くすること。コードの余分な改行やコメントを削る（イ、ミニファイ）のと、画像を PNG や SVG のような Web 向けの小さな形式にする（エ）が該当する。BMP や TIFF（ウ）はかえって大きくなり、パイプライン処理（ア）やバイトコード（オ）は静的ファイルの最適化の手段ではない。",

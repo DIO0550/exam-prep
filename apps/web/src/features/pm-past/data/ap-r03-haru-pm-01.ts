@@ -171,6 +171,8 @@ export const AP_R03_HARU_PM_01: PmTranscript = {
         {
           key: "設問1",
           hint: "記号（全て）",
+          choices: DNS_SERVER_CHOICES,
+          multiple: true,
           answer: "ウ，エ",
           explain:
             "Y 社の PC は Z 社の DNS サーバに名前解決を頼み、Z 社の DNS サーバがルートサーバから順にたどって、最後に R 社の権威 DNS サーバに A レコードを問い合わせる。改ざんされていたのは R 社の権威 DNS サーバの A レコードなので、偽の IP アドレスは R 社の権威 DNS サーバから Z 社の DNS サーバへ、Z 社の DNS サーバから Y 社の PC へと返された。",

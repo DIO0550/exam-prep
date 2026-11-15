@@ -420,6 +420,8 @@ export const AP_R05_HARU_PM_10: PmTranscript = {
         {
           key: "設問3 (1)",
           hint: "記号（全て）",
+          choices: Q3_1_CHOICES,
+          multiple: true,
           answer: "イ，エ",
           explain:
             "IaaS は、仮想マシン（CPU・メモリ・ストレージ・ネットワーク）を提供するサービス。事業者（M 社）が構築・管理するのは、物理基盤と、その上の仮想化基盤まで。ゲスト OS から上（ミドルウェア、アプリケーション）は利用者（L 社）が構築・管理する。",

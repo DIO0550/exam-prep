@@ -1166,22 +1166,18 @@ describe("QuizApp", () => {
 
     // 右は解答欄。書いた答えはこのブラウザに残る
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
-    // 解答群から選ぶ欄は、記号に中身を添えたラジオボタンから選ぶ
-    const slotA = within(answers.getByRole("radiogroup", { name: "設問1 a の答え" }));
-    await user.click(slotA.getByRole("radio", { name: "ク 境界防御" }));
-    expect(slotA.getByRole("radio", { name: "ク 境界防御" })).toBeChecked();
-    await user.click(
-      within(answers.getByRole("radiogroup", { name: "設問1 b の答え" })).getByRole("radio", {
-        name: "ア CASB",
+    // 解答群から選ぶ欄は、記号に中身を添えた選択肢から選ぶ
+    const slotA = answers.getByRole("combobox", { name: "設問1 a の答え" });
+    expect(within(slotA).getByRole("option", { name: "ク　境界防御" })).toBeInTheDocument();
+    await user.selectOptions(slotA, "ク");
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問1 b の答え" }), "ア");
+    // 長い選択肢は、選んだものの全文を欄の下に出す
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問3 (1) の答え" }), "イ");
+    expect(
+      answers.getByText(/^イ\s+Z 社グループ各社でセキュリティインシデントが発生した場合/, {
+        selector: "p",
       }),
-    );
-    // 長い選択肢も、全文をラジオボタンに添える
-    const slot31 = within(answers.getByRole("radiogroup", { name: "設問3 (1) の答え" }));
-    await user.click(
-      slot31.getByRole("radio", {
-        name: /^イ Z 社グループ各社でセキュリティインシデントが発生した場合/,
-      }),
-    );
+    ).toBeInTheDocument();
     // 字数制限を超えると、超えた字数と、はみ出した部分を出す
     const slotC = answers.getByRole("textbox", { name: "設問2 c の答え" });
     await user.type(slotC, "初期設定のまま");

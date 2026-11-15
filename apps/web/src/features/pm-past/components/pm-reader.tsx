@@ -15,6 +15,7 @@ import { noteStore } from "@/features/quiz/notes/store";
 import { progressStore } from "@/features/quiz/progress/store";
 
 import { pmAnswerStore, usePmAnswers } from "../answers";
+import { joinChoiceKeys, splitChoiceKeys } from "../choice-keys";
 import type { PmExam, PmProblem } from "../data";
 import { pmProblemId, pmSourceLabel } from "../data";
 import type { PmGrading, PmSlotGrade } from "../grading";
@@ -525,13 +526,20 @@ const choiceLabel = (choices: PmChoice[], key: string): string => {
   return choice ? `${choice.key}　${choice.text}` : key;
 };
 
-const answerLabel = (slot: PmAnswerSlot): string =>
-  slot.choices ? choiceLabel(slot.choices, slot.answer) : slot.answer;
+/** 解答例の記号に中身を添える。「全て選べ」の欄は、記号ごとに「／」で区切る（中身の文に「，」が入るため）。 */
+const answerLabel = (slot: PmAnswerSlot): string => {
+  if (!slot.choices) return slot.answer;
+  if (!slot.multiple) return choiceLabel(slot.choices, slot.answer);
+  const choices = slot.choices;
+  return splitChoiceKeys(slot.answer)
+    .map((key) => choiceLabel(choices, key))
+    .join(" ／ ");
+};
 
 /** 選択肢がどれもこの字数以内なら、横に並べる（記号と短い語）。長い文を含むなら 1 行ずつ縦に並べる。 */
 const SHORT_CHOICE = 16;
 
-type ChoiceRadiosProps = {
+type ChoiceChecksProps = {
   slotKey: string;
   choices: PmChoice[];
   value: string;
@@ -539,60 +547,58 @@ type ChoiceRadiosProps = {
 };
 
 /**
- * 解答群から 1 つ選ぶラジオボタン。選択肢を全部見せたまま、1 回押すだけで選べるようにする。
- * 短い語の解答群（「ア CASB」）は横に詰めて並べ、文の解答群（「ア …を審査する。」）は全文が読めるよう縦に並べる。
- * ラジオボタンは選んだものを外せないので、選んだ後は「選択を外す」で何も選んでいない状態に戻せる
- * （選ばずに紙で解いた欄は、自分で ○× を付ける）。
+ * 解答群から「全て選べ」の欄のチェックボックス。選択肢を全部見せたまま、当てはまるものに印を付ける。
+ * 短い語の解答群（「ア カテゴリ 5e」）は横に詰めて並べ、文の解答群（「ア …を暗号化する。」）は全文が読めるよう縦に並べる。
+ * 選んだ記号は解答群の順に「ア，ウ」とつないで残す（解答例と同じ書き方。choice-keys.ts）。
  */
-const ChoiceRadios = ({ slotKey, choices, value, onAnswer }: ChoiceRadiosProps) => {
-  const name = useId();
+const ChoiceChecks = ({ slotKey, choices, value, onAnswer }: ChoiceChecksProps) => {
+  const picked = new Set(splitChoiceKeys(value));
   const short = choices.every((choice) => [...choice.text].length <= SHORT_CHOICE);
+  const toggle = (key: string) => {
+    const next = new Set(picked);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    onAnswer(joinChoiceKeys(choices, next));
+  };
   return (
-    <div className="flex flex-col items-start gap-1.5">
-      <div
-        role="radiogroup"
-        aria-label={`${slotKey} の答え`}
-        className={short ? "flex flex-wrap gap-1.5" : "flex w-full flex-col gap-1.5"}
-      >
-        {choices.map((choice) => (
-          <label
-            key={choice.key}
-            className={`flex cursor-pointer gap-2 border border-edge-strong bg-surface text-ink-soft hover:border-accent/40 has-[:checked]:border-accent/60 has-[:checked]:bg-accent-soft has-[:checked]:text-ink ${
-              short
-                ? "items-center rounded-full py-1 pr-3 pl-2 text-read-xs"
-                : "items-start rounded-lg px-3 py-2 text-read-xs leading-[1.7]"
-            }`}
-          >
-            <input
-              type="radio"
-              name={name}
-              value={choice.key}
-              checked={value === choice.key}
-              onChange={() => onAnswer(choice.key)}
-              className={`size-3.5 flex-none cursor-pointer accent-accent ${short ? "" : "mt-[5px]"}`}
-            />
-            {/* 読み上げで記号と中身が続かないよう空白を挟む（flex の中なので見た目は変わらない）。 */}
-            <span className="flex-none font-bold">{choice.key}</span>{" "}
-            <span className="text-pretty">{choice.text}</span>
-          </label>
-        ))}
-      </div>
-      {value !== "" && (
-        <button
-          type="button"
-          onClick={() => onAnswer("")}
-          className="cursor-pointer text-[11px] text-muted underline underline-offset-2 hover:text-ink"
+    <fieldset
+      className={`m-0 min-w-0 border-0 p-0 ${short ? "flex flex-wrap gap-1.5" : "flex flex-col gap-1.5"}`}
+    >
+      <legend className="sr-only">{slotKey} の答え</legend>
+      {choices.map((choice) => (
+        <label
+          key={choice.key}
+          className={`flex cursor-pointer gap-2 border border-edge-strong bg-surface text-ink-soft hover:border-accent/40 has-[:checked]:border-accent/60 has-[:checked]:bg-accent-soft has-[:checked]:text-ink ${
+            short
+              ? "items-center rounded-lg py-1 pr-3 pl-2 text-read-xs"
+              : "items-start rounded-lg px-3 py-2 text-read-xs leading-[1.7]"
+          }`}
         >
-          選択を外す
-        </button>
-      )}
-    </div>
+          <input
+            type="checkbox"
+            checked={picked.has(choice.key)}
+            onChange={() => toggle(choice.key)}
+            className={`size-3.5 flex-none cursor-pointer accent-accent ${short ? "" : "mt-[5px]"}`}
+          />
+          {/* 読み上げで記号と中身が続かないよう空白を挟む（flex の中なので見た目は変わらない）。 */}
+          <span className="flex-none font-bold">{choice.key}</span>{" "}
+          <span className="text-pretty">{choice.text}</span>
+        </label>
+      ))}
+    </fieldset>
   );
 };
 
-/** 答える欄 1 つ。解答群があればラジオボタンで選ぶ欄、無ければ文字を書く欄にする。 */
+/**
+ * 答える欄 1 つ。解答群があれば選ぶ欄（「全て選べ」の欄はチェックボックス）、無ければ文字を書く欄にする。
+ *
+ * 1 つ選ぶ欄は OS の `<select>` にしている。選択肢が長い文（「…を審査する。」）になる設問があり、
+ * 自前のメニュー（SelectMenu）では開いたリストが画面の幅からはみ出すため。
+ * 閉じた箱では長い選択肢が切れるので、選んだものの全文を下に添える。
+ */
 const Slot = ({ slot, value, line, revealed, grade, onAnswer, onLine, onMark }: SlotProps) => {
   const expectedLine = answerKeyLine(slot.answer);
+  const chosen = slot.choices?.find((choice) => choice.key === value);
   // 「30字以内」の欄は、書いた字数を数えて、超えたら分かるようにする。
   const limitMatch = slot.hint.match(/(\d+)字以内/);
   const limit = limitMatch ? Number(limitMatch[1]) : undefined;
@@ -611,8 +617,31 @@ const Slot = ({ slot, value, line, revealed, grade, onAnswer, onLine, onMark }: 
         </span>
       </div>
 
-      {slot.choices ? (
-        <ChoiceRadios slotKey={slot.key} choices={slot.choices} value={value} onAnswer={onAnswer} />
+      {slot.choices && slot.multiple ? (
+        <ChoiceChecks slotKey={slot.key} choices={slot.choices} value={value} onAnswer={onAnswer} />
+      ) : slot.choices ? (
+        <>
+          <select
+            aria-label={`${slot.key} の答え`}
+            value={value}
+            onChange={(event) => onAnswer(event.target.value)}
+            className={`w-full cursor-pointer truncate rounded-lg border bg-surface px-3 py-2 text-read-sm ${
+              value === "" ? "border-edge-strong text-muted-soft" : "border-accent/60 text-ink"
+            }`}
+          >
+            <option value="">選んでください</option>
+            {slot.choices.map((choice) => (
+              <option key={choice.key} value={choice.key}>
+                {choiceLabel(slot.choices ?? [], choice.key)}
+              </option>
+            ))}
+          </select>
+          {chosen && chosen.text.length > 16 && (
+            <p className="text-pretty text-read-xs text-ink-soft leading-[1.7]">
+              {chosen.key}　{chosen.text}
+            </p>
+          )}
+        </>
       ) : (
         <>
           <textarea

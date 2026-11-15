@@ -28,20 +28,6 @@ afterEach(() => {
   window.localStorage.clear();
 });
 
-type Queries = ReturnType<typeof within>;
-
-/** 解答群の欄（「設問1 a」）の、記号 key（「ク」）のラジオボタン。 */
-const choiceOf = (answers: Queries, slotKey: string, key: string): HTMLInputElement =>
-  within(answers.getByRole("radiogroup", { name: `${slotKey} の答え` })).getByRole("radio", {
-    name: new RegExp(`^${key} `),
-  });
-
-/** 解答群の欄で選んであるラジオボタン。何も選んでいなければ undefined。 */
-const checkedOf = (answers: Queries, slotKey: string): HTMLInputElement | undefined =>
-  within(answers.getByRole("radiogroup", { name: `${slotKey} の答え` }))
-    .getAllByRole<HTMLInputElement>("radio")
-    .find((radio) => radio.checked);
-
 describe("主キー・外部キーの書き方", () => {
   it("[[主:…]]・[[外:…]] を印と属性名に分け、印の無い [[…]] は普通の下線にする", () => {
     expect(parseUnderline("主:受診者ID")).toEqual({ key: "主", text: "受診者ID" });
@@ -135,14 +121,14 @@ describe("解答欄で下線を選ぶ", () => {
   });
 });
 
-describe("解答群から選ぶ欄", () => {
-  const pmExam = PM_EXAMS.find((e) => pmProblemId(e, 1) === "ap-r07-aki-pm-01");
+describe("解答群から「全て選べ」の欄", () => {
+  const ID = "ap-r04-haru-pm-01";
+  const pmExam = PM_EXAMS.find((e) => pmProblemId(e, 1) === ID);
   const problem = PM_PROBLEMS.find((p) => p.no === 1);
-  const transcript = PM_TRANSCRIPTS["ap-r07-aki-pm-01"];
-  const ID = "ap-r07-aki-pm-01";
+  const transcript = PM_TRANSCRIPTS[ID];
 
-  it("選択肢をラジオボタンで全部並べ、1 回押すと選べる。選んだ後は「選択を外す」で戻せる", async () => {
-    if (!pmExam || !problem || !transcript) throw new Error("R7 秋 問1 が見つからない");
+  it("チェックボックスで当てはまるものを全部選び、組が解答例と同じなら自動で ○ にする", async () => {
+    if (!pmExam || !problem || !transcript) throw new Error("R4 春 問1 が見つからない");
     const user = userEvent.setup();
     render(
       <PmReader
@@ -155,31 +141,34 @@ describe("解答群から選ぶ欄", () => {
       />,
     );
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
-    // 短い語の解答群は、記号と語をいっしょに並べる（解答群のア〜サの 11 個）
-    const a = within(answers.getByRole("radiogroup", { name: "設問1 a の答え" }));
-    expect(a.getAllByRole("radio")).toHaveLength(11);
-    expect(a.getByRole("radio", { name: "ク 境界防御" })).not.toBeChecked();
-    // 文の解答群も、全文を読めるように並べる
-    expect(
-      within(answers.getByRole("radiogroup", { name: "設問3 (1) の答え" })).getByRole("radio", {
-        name: /^イ Z 社グループ各社でセキュリティインシデントが発生した場合/,
-      }),
-    ).toBeInTheDocument();
-    // 何も選んでいないうちは、外すボタンを出さない
-    expect(answers.queryByRole("button", { name: "選択を外す" })).not.toBeInTheDocument();
+    const slot = within(answers.getByRole("group", { name: "設問3 の答え" }));
+    expect(slot.getAllByRole("checkbox")).toHaveLength(4);
 
-    await user.click(a.getByRole("radio", { name: "ク 境界防御" }));
-    expect(a.getByRole("radio", { name: "ク 境界防御" })).toBeChecked();
-    expect(JSON.parse(window.localStorage.getItem(PM_ANSWERS_KEY) ?? "{}")[ID]).toMatchObject({
-      "設問1 a": "ク",
-    });
-    // 同じ欄の別の記号を押すと、選び直しになる
-    await user.click(a.getByRole("radio", { name: "コ ゼロトラスト" }));
-    expect(checkedOf(answers, "設問1 a")).toBe(a.getByRole("radio", { name: "コ ゼロトラスト" }));
+    // 押した順ではなく、解答群の順に「イ，ウ」と残す（解答例と同じ書き方）
+    await user.click(slot.getByRole("checkbox", { name: "ウ 名称" }));
+    await user.click(slot.getByRole("checkbox", { name: "イ バージョン" }));
+    expect(slot.getByRole("checkbox", { name: "イ バージョン" })).toBeChecked();
+    const saved = () => JSON.parse(window.localStorage.getItem(PM_ANSWERS_KEY) ?? "{}")[ID];
+    expect(saved()).toMatchObject({ 設問3: "イ，ウ" });
 
-    await user.click(answers.getByRole("button", { name: "選択を外す" }));
-    expect(checkedOf(answers, "設問1 a")).toBeUndefined();
-    expect(answers.queryByRole("button", { name: "選択を外す" })).not.toBeInTheDocument();
+    await user.click(answers.getByRole("button", { name: "解答例を見る" }));
+    // 選んだ組で自動採点するので、自分で付けるボタンは出さない
+    expect(answers.queryByRole("group", { name: "設問3 の自己採点" })).not.toBeInTheDocument();
+    const explain = within(answers.getByRole("region", { name: "解説" }));
+    expect(explain.getByRole("article", { name: "設問3 の解説" })).toHaveTextContent("○ 正解");
+    // 解答例は、記号ごとに中身を添えて「／」で区切る
+    expect(answers.getAllByText(/^イ\s+バージョン ／ ウ\s+名称$/).length).toBeGreaterThan(0);
+
+    // 一つ外すと、足りないので ×
+    await user.click(slot.getByRole("checkbox", { name: "ウ 名称" }));
+    expect(saved()).toMatchObject({ 設問3: "イ" });
+    expect(explain.getByRole("article", { name: "設問3 の解説" })).toHaveTextContent("× 不正解");
+
+    // 全部外すと、選んでいない（紙で解いた）欄として自分で ○× を付ける
+    await user.click(slot.getByRole("checkbox", { name: "イ バージョン" }));
+    expect(saved()?.設問3).toBeUndefined();
+    const marks = within(answers.getByRole("group", { name: "設問3 の自己採点" }));
+    expect(marks.queryByRole("button", { name: "△ 部分点" })).not.toBeInTheDocument();
   });
 });
 
@@ -206,8 +195,8 @@ describe("欄ごとの自己採点", () => {
       />,
     );
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
-    await user.click(choiceOf(answers, "設問1 a", "ク"));
-    await user.click(choiceOf(answers, "設問1 b", "ア"));
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問1 a の答え" }), "ク");
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問1 b の答え" }), "ア");
     await user.type(answers.getByRole("textbox", { name: "設問2 c の答え" }), "初期");
     // 解答例を見る前は、○× を付けるボタンを出さない
     expect(answers.queryByRole("group", { name: /の自己採点$/ })).not.toBeInTheDocument();
@@ -272,8 +261,8 @@ describe("欄ごとの自己採点", () => {
       />,
     );
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
-    await user.click(choiceOf(answers, "設問1 a", "ク"));
-    await user.click(choiceOf(answers, "設問1 b", "ア"));
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問1 a の答え" }), "ク");
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問1 b の答え" }), "ア");
     await user.type(answers.getByRole("textbox", { name: "設問2 c の答え" }), "初期");
     await user.type(answers.getByRole("textbox", { name: "設問3 (2) の答え" }), "見つかるから");
     await user.click(answers.getByRole("button", { name: "解答例を見る" }));
@@ -291,8 +280,8 @@ describe("欄ごとの自己採点", () => {
     await user.click(answers.getByRole("button", { name: "× の欄だけ解き直す（2欄）" }));
     // 解答例は隠れ、× の欄（設問1 b・設問3 (2)）だけが空になる
     expect(answers.getByRole("button", { name: "解答例を見る" })).toBeInTheDocument();
-    expect(choiceOf(answers, "設問1 a", "ク")).toBeChecked();
-    expect(checkedOf(answers, "設問1 b")).toBeUndefined();
+    expect(answers.getByRole("combobox", { name: "設問1 a の答え" })).toHaveValue("ク");
+    expect(answers.getByRole("combobox", { name: "設問1 b の答え" })).toHaveValue("");
     expect(answers.getByRole("textbox", { name: "設問2 c の答え" })).toHaveValue("初期");
     expect(answers.getByRole("textbox", { name: "設問3 (2) の答え" })).toHaveValue("");
     expect(JSON.parse(window.localStorage.getItem(PM_MARKS_KEY) ?? "{}")[ID]).toEqual({
@@ -326,8 +315,8 @@ describe("欄ごとの自己採点", () => {
       />,
     );
     const answers = within(screen.getByRole("complementary", { name: "解答欄" }));
-    await user.click(choiceOf(answers, "設問1 a", "ク"));
-    await user.click(choiceOf(answers, "設問1 b", "ア"));
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問1 a の答え" }), "ク");
+    await user.selectOptions(answers.getByRole("combobox", { name: "設問1 b の答え" }), "ア");
     await user.type(answers.getByRole("textbox", { name: "設問2 c の答え" }), "初期設定");
     await user.click(answers.getByRole("button", { name: "解答例を見る" }));
 
@@ -358,7 +347,7 @@ describe("欄ごとの自己採点", () => {
 
     // △ の欄も、× の欄といっしょに解き直せる
     await user.click(answers.getByRole("button", { name: "× と △ の欄を解き直す（4欄）" }));
-    expect(choiceOf(answers, "設問1 a", "ク")).toBeChecked();
+    expect(answers.getByRole("combobox", { name: "設問1 a の答え" })).toHaveValue("ク");
     expect(answers.getByRole("textbox", { name: "設問2 c の答え" })).toHaveValue("");
     expect(JSON.parse(window.localStorage.getItem(PM_MARKS_KEY) ?? "{}")[ID]).toEqual({
       "設問1 e": "ok",

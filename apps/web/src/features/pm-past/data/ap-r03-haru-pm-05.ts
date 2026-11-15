@@ -262,6 +262,8 @@ export const AP_R03_HARU_PM_05: PmTranscript = {
         {
           key: "設問1 (2)",
           hint: "記号（全て）",
+          choices: Q1_2_CHOICES,
+          multiple: true,
           answer: "ア，ケ",
           explain:
             "名前解決をするのは、旅行販売システムに自分で接続する機器。E 社販売店の PC は直接接続するので自分で名前を引く。販売代理会社では PC の代わりにプロキシサーバが接続するので、プロキシサーバが名前を引く。FW#3 が 53 番ポートを許可しているのも、このプロキシサーバの DNS の問合せのため。",

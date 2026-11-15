@@ -240,6 +240,8 @@ export const AP_R04_HARU_PM_01: PmTranscript = {
         {
           key: "設問3",
           hint: "記号（全て）",
+          choices: Q3_CHOICES,
+          multiple: true,
           answer: "イ，ウ",
           explain:
             "下線①の管理の目的は、利用している製品の脆弱性情報と修正プログラムの有無を確かめること。脆弱性情報は製品の名称と影響を受けるバージョンで公開されるので、名称とバージョンを管理しておけば照合できる。",
