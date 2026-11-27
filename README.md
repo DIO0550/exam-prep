@@ -501,7 +501,7 @@ pnpm visual:compare -- --expected visual-baseline --actual visual-actual --out v
 | 応用情報 午後 対策（`exam: "APPM"`） | 情報セキュリティ 3・システムアーキテクチャ 2・ネットワーク 3・データベース 2・ITサービスマネジメント 2・システム監査 2 セット（各 2 事例・12問、計168問） | **本サイトで書き下ろし** |
 | IPA 過去問題（`exam: "SC"`） | 情報処理安全確保支援士試験 午前Ⅱの12回分（令和元年度 秋期〜令和7年度 秋期、各25問・計300問） | 原本は IPA の公開 PDF |
 | Google Cloud 対策（`exam: "CDL"`） | Cloud Digital Leader 向けのシナリオ問題 4 セットとサービス確認問題 4 セット（各30問・計240問） | **本サイトで書き下ろし** |
-| Google Cloud 対策（`exam: "ACE"`） | Associate Cloud Engineer 向けの模擬試験 8 セット（各50問・計400問。複数選択を各8問含む） | **本サイトで書き下ろし** |
+| Google Cloud 対策（`exam: "ACE"`） | Associate Cloud Engineer 向けの模擬試験 9 セット（各50問・計450問。複数選択を各8問含む） | **本サイトで書き下ろし** |
 | 生成AIパスポート 対策（`exam: "GAIP"`） | 用語問題 1 セット（80問）・模擬試験 7 セット（各60問・計420問）・章別 6 セット（各20問・計120問）・GPT特化 1 セット（20問）の計640問 | **本サイトで書き下ろし** |
 | JSTQB Foundation Level 対策（`exam: "CTFL"`） | 用語問題 1 セット（94問）・章別 6 セット（計115問）・模擬試験 12 セット（各40問・計480問）の計689問 | **本サイトで書き下ろし** |
 | JDLA E資格 対策（`exam: "E"`） | 用語問題 1 セット（74問）・章別 5 セット（140問）・模擬試験 1 セット（50問）の計264問 | **本サイトで書き下ろし** |
@@ -537,7 +537,7 @@ IPA の午後の過去問題は、演習の問題集ではなく「午後過去�
 
 ### 書き下ろした問題
 
-Google Cloud 対策の 16（Cloud Digital Leader 8・Associate Cloud Engineer 8）、生成AIパスポート対策の 15、JSTQB Foundation Level 対策の 19、E資格対策の 7、応用情報 午後対策の 14、あわせて 71 の問題集は、
+Google Cloud 対策の 17（Cloud Digital Leader 8・Associate Cloud Engineer 9）、生成AIパスポート対策の 15、JSTQB Foundation Level 対策の 19、E資格対策の 7、応用情報 午後対策の 14、あわせて 72 の問題集は、
 **問題文・選択肢・正解・解説のすべてを本リポジトリで書いた**もの。
 どこかの認定試験の実際の設問ではなく、公式の模擬試験でもない。
 
@@ -642,6 +642,7 @@ Cloud Observability、Cloud Run functions などのコース資料と学習ガ�
 | 模擬試験6 | 移行と自動化。Migrate to Virtual Machines・Database Migration Service・Transfer Appliance・BigQuery Data Transfer Service での移し方と、Terraform の gcs バックエンドと import・Infrastructure Manager・gcloud の --filter と --format・クリーンアップ ポリシーなどで手作業を仕組みに置き換える方法 |
 | 模擬試験7 | コマンドと設定。gcloud（services・org-policies・compute・run・iam・identity）、kubectl、bq、Terraform の plan -out や for_each、Cloud Shell、予算のクレジットの扱い、インスタンス スケジュール、スヌーズなど、日々の作業で実際に打つコマンドと選ぶ設定 |
 | 模擬試験8 | サービスと機能の選び分け。Batch と Cloud Run ジョブ、Dataproc と Dataflow、Workflows と Cloud Composer、Datastream、DaemonSet と StatefulSet、停止と一時停止、BigQuery のクラスタ化・マテリアライズド ビュー・スナップショットとクローン、一時的な保持、合成モニター、Access Transparency、組織のポリシーの各制約、サービスごとの事前定義ロールなど、役割の近いものから要件に合うものを選ぶ |
+| 模擬試験9 | エラーと症状の読み解き。gcloud・kubectl・Terraform のエラー メッセージ（コンポーネント マネージャ、GPUS_ALL_REGIONS、リーエン、state lock、ロック ファイル、streaming buffer、not found in location、CORS、VPC Service Controls など）や、「届かない」「消えない」「0 行になる」といった症状から、権限・組織のポリシー・割り当て・ロケーション・経路・仕様上の待ち時間のどこが原因かを見分ける |
 
 各セット 50 問を、試験ガイドの配分（セクション1・4 が 20% 以下、セクション2・3 が 30% 以下）に合わせて
 10・15・15・10 に配り、どのセクションにも複数選択（4 つから 2 つ選ぶ）を 2 問ずつ入れてある（計 8 問）。
