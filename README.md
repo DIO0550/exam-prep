@@ -501,7 +501,7 @@ pnpm visual:compare -- --expected visual-baseline --actual visual-actual --out v
 | 応用情報 午後 対策（`exam: "APPM"`） | 情報セキュリティ 3・システムアーキテクチャ 2・ネットワーク 3・データベース 2・ITサービスマネジメント 2・システム監査 2 セット（各 2 事例・12問、計168問） | **本サイトで書き下ろし** |
 | IPA 過去問題（`exam: "SC"`） | 情報処理安全確保支援士試験 午前Ⅱの12回分（令和元年度 秋期〜令和7年度 秋期、各25問・計300問） | 原本は IPA の公開 PDF |
 | Google Cloud 対策（`exam: "CDL"`） | Cloud Digital Leader 向けのシナリオ問題 4 セットとサービス確認問題 4 セット（各30問・計240問） | **本サイトで書き下ろし** |
-| Google Cloud 対策（`exam: "ACE"`） | Associate Cloud Engineer 向けの模擬試験 6 セット（各50問・計300問。複数選択を各8問含む） | **本サイトで書き下ろし** |
+| Google Cloud 対策（`exam: "ACE"`） | Associate Cloud Engineer 向けの模擬試験 7 セット（各50問・計350問。複数選択を各8問含む） | **本サイトで書き下ろし** |
 | 生成AIパスポート 対策（`exam: "GAIP"`） | 用語問題 1 セット（80問）・模擬試験 7 セット（各60問・計420問）・章別 6 セット（各20問・計120問）・GPT特化 1 セット（20問）の計640問 | **本サイトで書き下ろし** |
 | JSTQB Foundation Level 対策（`exam: "CTFL"`） | 用語問題 1 セット（94問）・章別 6 セット（計115問）・模擬試験 12 セット（各40問・計480問）の計689問 | **本サイトで書き下ろし** |
 | JDLA E資格 対策（`exam: "E"`） | 用語問題 1 セット（74問）・章別 5 セット（140問）・模擬試験 1 セット（50問）の計264問 | **本サイトで書き下ろし** |
@@ -537,7 +537,7 @@ IPA の午後の過去問題は、演習の問題集ではなく「午後過去�
 
 ### 書き下ろした問題
 
-Google Cloud 対策の 14（Cloud Digital Leader 8・Associate Cloud Engineer 6）、生成AIパスポート対策の 15、JSTQB Foundation Level 対策の 19、E資格対策の 7、応用情報 午後対策の 14、あわせて 69 の問題集は、
+Google Cloud 対策の 15（Cloud Digital Leader 8・Associate Cloud Engineer 7）、生成AIパスポート対策の 15、JSTQB Foundation Level 対策の 19、E資格対策の 7、応用情報 午後対策の 14、あわせて 70 の問題集は、
 **問題文・選択肢・正解・解説のすべてを本リポジトリで書いた**もの。
 どこかの認定試験の実際の設問ではなく、公式の模擬試験でもない。
 
@@ -629,8 +629,8 @@ Google Cloud 対策の 14（Cloud Digital Leader 8・Associate Cloud Engineer 6�
 問題を書いた。事実の確認には Google Cloud のトレーニング資料（Essential Cloud Infrastructure、GKE、Terraform、
 Cloud Observability、Cloud Run functions などのコース資料と学習ガイド）を使ったが、**資料に載っている確認問題・
 理解度チェック・オリジナル問題は収録していない**。同じ論点を扱うときも、場面と問い方と選択肢を変えて別の問題にしてある。
-模擬試験5・6 は、試験ガイドの節を典拠に書き足したセットで、トレーニング資料との突き合わせはしていない。
-模擬試験1〜4 ですでに問うた論点は、場面だけ変えて同じ問い方では出していない。
+模擬試験5 以降は、試験ガイドの節を典拠に書き足したセットで、トレーニング資料との突き合わせはしていない。
+それより前のセットですでに問うた論点は、場面だけ変えて同じ問い方では出していない。
 
 | 問題集 | 問う層 |
 |---|---|
@@ -640,6 +640,7 @@ Cloud Observability、Cloud Run functions などのコース資料と学習ガ�
 | 模擬試験4 | 最小権限・費用・ガバナンスと、Cloud NGFW・Workforce Identity 連携・Gemini Cloud Assist など試験ガイドに新しく入った項目 |
 | 模擬試験5 | 可用性とデータ保護。止めない構成（ステートフル MIG、永続ディスクの非同期レプリケーション、サージ アップグレードなど）と、消さない・戻せる仕組み（リーエン、prevent_destroy、BigQuery のタイムトラベル、Pub/Sub のシーク、Dataflow のドレインなど） |
 | 模擬試験6 | 移行と自動化。Migrate to Virtual Machines・Database Migration Service・Transfer Appliance・BigQuery Data Transfer Service での移し方と、Terraform の gcs バックエンドと import・Infrastructure Manager・gcloud の --filter と --format・クリーンアップ ポリシーなどで手作業を仕組みに置き換える方法 |
+| 模擬試験7 | コマンドと設定。gcloud（services・org-policies・compute・run・iam・identity）、kubectl、bq、Terraform の plan -out や for_each、Cloud Shell、予算のクレジットの扱い、インスタンス スケジュール、スヌーズなど、日々の作業で実際に打つコマンドと選ぶ設定 |
 
 各セット 50 問を、試験ガイドの配分（セクション1・4 が 20% 以下、セクション2・3 が 30% 以下）に合わせて
 10・15・15・10 に配り、どのセクションにも複数選択（4 つから 2 つ選ぶ）を 2 問ずつ入れてある（計 8 問）。

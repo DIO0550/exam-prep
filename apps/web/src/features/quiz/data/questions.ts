@@ -6,6 +6,7 @@ import { ACE_MOCK_3 } from "./ace-mock-3";
 import { ACE_MOCK_4 } from "./ace-mock-4";
 import { ACE_MOCK_5 } from "./ace-mock-5";
 import { ACE_MOCK_6 } from "./ace-mock-6";
+import { ACE_MOCK_7 } from "./ace-mock-7";
 import { AP_PM_ARCH_1 } from "./ap-pm-arch-1";
 import { AP_PM_ARCH_2 } from "./ap-pm-arch-2";
 import { AP_PM_AUDIT_1 } from "./ap-pm-audit-1";
@@ -214,6 +215,7 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
     questions: ACE_MOCK_5,
   },
   { id: "ace-mock-6", exam: "ACE", label: "模擬試験6（移行と自動化）", questions: ACE_MOCK_6 },
+  { id: "ace-mock-7", exam: "ACE", label: "模擬試験7（コマンドと設定）", questions: ACE_MOCK_7 },
   { id: "gaip-term-1", exam: "GAIP", label: "用語問題1", questions: GAIP_TERM_1 },
   { id: "gaip-mock-1", exam: "GAIP", label: "模擬試験1", questions: GAIP_MOCK_1 },
   { id: "gaip-mock-2", exam: "GAIP", label: "模擬試験2", questions: GAIP_MOCK_2 },
