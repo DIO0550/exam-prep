@@ -9,6 +9,7 @@ import { ACE_MOCK_6 } from "./ace-mock-6";
 import { ACE_MOCK_7 } from "./ace-mock-7";
 import { ACE_MOCK_8 } from "./ace-mock-8";
 import { ACE_MOCK_9 } from "./ace-mock-9";
+import { ACE_MOCK_10 } from "./ace-mock-10";
 import { AP_PM_ARCH_1 } from "./ap-pm-arch-1";
 import { AP_PM_ARCH_2 } from "./ap-pm-arch-2";
 import { AP_PM_AUDIT_1 } from "./ap-pm-audit-1";
@@ -229,6 +230,12 @@ export const QUESTION_SETS: [QuestionSet, ...QuestionSet[]] = [
     exam: "ACE",
     label: "模擬試験9（エラーと症状の読み解き）",
     questions: ACE_MOCK_9,
+  },
+  {
+    id: "ace-mock-10",
+    exam: "ACE",
+    label: "模擬試験10（見落としやすい機能）",
+    questions: ACE_MOCK_10,
   },
   { id: "gaip-term-1", exam: "GAIP", label: "用語問題1", questions: GAIP_TERM_1 },
   { id: "gaip-mock-1", exam: "GAIP", label: "模擬試験1", questions: GAIP_MOCK_1 },
