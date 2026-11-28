@@ -1,0 +1,847 @@
+{
+  "reportVersion": "6377a3cae404a68e69efd43dfdb9627447bee586",
+  "pr": "26",
+  "changed": 34,
+  "new": 0,
+  "deleted": 0,
+  "passed": 16,
+  "maxImages": 10,
+  "maxDiffRatio": 0.0001,
+  "tolerance": 8,
+  "results": [
+    {
+      "name": "explain-array__desktop",
+      "label": "解説（配列図）",
+      "viewport": "desktop",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      }
+    },
+    {
+      "name": "explain-array__mobile",
+      "label": "解説（配列図）",
+      "viewport": "mobile",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      }
+    },
+    {
+      "name": "explain-chart__desktop",
+      "label": "解説（グラフ・損益分岐点）",
+      "viewport": "desktop",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      }
+    },
+    {
+      "name": "explain-chart__mobile",
+      "label": "解説（グラフ・損益分岐点）",
+      "viewport": "mobile",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      }
+    },
+    {
+      "name": "explain-compare__desktop",
+      "label": "解説（選択肢を並べたタイムチャート）",
+      "viewport": "desktop",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      }
+    },
+    {
+      "name": "explain-compare__mobile",
+      "label": "解説（選択肢を並べたタイムチャート）",
+      "viewport": "mobile",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      }
+    },
+    {
+      "name": "explain-diagram__desktop",
+      "label": "解説（構成図・アローダイアグラム）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.055821,
+      "changedPixels": 128612,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-diagram__mobile",
+      "label": "解説（構成図・アローダイアグラム）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.048704,
+      "changedPixels": 54451,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-karnaugh__desktop",
+      "label": "解説（カルノー図）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.011408,
+      "changedPixels": 26283,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-karnaugh__mobile",
+      "label": "解説（カルノー図）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.011726,
+      "changedPixels": 13110,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-quadrant__desktop",
+      "label": "解説（4 象限・横軸を左ほど高く）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.058572,
+      "changedPixels": 134951,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-quadrant__mobile",
+      "label": "解説（4 象限・横軸を左ほど高く）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.09345,
+      "changedPixels": 104477,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-sequence__desktop",
+      "label": "解説（シーケンス図）",
+      "viewport": "desktop",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      }
+    },
+    {
+      "name": "explain-sequence__mobile",
+      "label": "解説（シーケンス図）",
+      "viewport": "mobile",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      }
+    },
+    {
+      "name": "explain-sketch__desktop",
+      "label": "解説（図の見本）",
+      "viewport": "desktop",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      }
+    },
+    {
+      "name": "explain-sketch__mobile",
+      "label": "解説（図の見本）",
+      "viewport": "mobile",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      }
+    },
+    {
+      "name": "explain-starve__desktop",
+      "label": "解説（方式を並べたタイムチャート）",
+      "viewport": "desktop",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      }
+    },
+    {
+      "name": "explain-starve__mobile",
+      "label": "解説（方式を並べたタイムチャート）",
+      "viewport": "mobile",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      }
+    },
+    {
+      "name": "explain-timeline__desktop",
+      "label": "解説（タイムチャート）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.02394,
+      "changedPixels": 55157,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-timeline__mobile",
+      "label": "解説（タイムチャート）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.003713,
+      "changedPixels": 4151,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-tree__desktop",
+      "label": "解説（2 分木）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.010816,
+      "changedPixels": 24919,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-tree__mobile",
+      "label": "解説（2 分木）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.004725,
+      "changedPixels": 5283,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-venn__desktop",
+      "label": "解説（ベン図を選択肢ごとに並べる）",
+      "viewport": "desktop",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      }
+    },
+    {
+      "name": "explain-venn__mobile",
+      "label": "解説（ベン図を選択肢ごとに並べる）",
+      "viewport": "mobile",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      }
+    },
+    {
+      "name": "explain-xlarge__desktop",
+      "label": "解説（別画面・文字サイズ特大）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.011359,
+      "changedPixels": 26170,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "explain-xlarge__mobile",
+      "label": "解説（別画面・文字サイズ特大）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.011679,
+      "changedPixels": 13057,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "explain__desktop",
+      "label": "解説（別画面）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.011359,
+      "changedPixels": 26170,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "explain__mobile",
+      "label": "解説（別画面）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.011679,
+      "changedPixels": 13057,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "home-empty__desktop",
+      "label": "学習ホーム（記録なし）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.145122,
+      "changedPixels": 334361,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": true
+    },
+    {
+      "name": "home-empty__mobile",
+      "label": "学習ホーム（記録なし）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.142832,
+      "changedPixels": 159686,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2259
+      },
+      "published": true
+    },
+    {
+      "name": "home-progress__desktop",
+      "label": "学習ホーム（記録あり）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.21989,
+      "changedPixels": 506627,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": true
+    },
+    {
+      "name": "home-progress__mobile",
+      "label": "学習ホーム（記録あり）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.119891,
+      "changedPixels": 134038,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz-answered__desktop",
+      "label": "演習（解答後・同画面に解説）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.011359,
+      "changedPixels": 26170,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz-answered__mobile",
+      "label": "演習（解答後・同画面に解説）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.011679,
+      "changedPixels": 13057,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz-gcp__desktop",
+      "label": "演習（GCP シナリオ・別画面の解説）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.011359,
+      "changedPixels": 26170,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz-gcp__mobile",
+      "label": "演習（GCP シナリオ・別画面の解説）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.011679,
+      "changedPixels": 13057,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz-note__desktop",
+      "label": "演習（メモを開く）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.06096,
+      "changedPixels": 140452,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz-note__mobile",
+      "label": "演習（メモを開く）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.118396,
+      "changedPixels": 132367,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2347
+      },
+      "published": false
+    },
+    {
+      "name": "quiz-shuffled__desktop",
+      "label": "演習（選択肢シャッフル）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.011359,
+      "changedPixels": 26170,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz-shuffled__mobile",
+      "label": "演習（選択肢シャッフル）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.011679,
+      "changedPixels": 13057,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "published": false
+    },
+    {
+      "name": "quiz__desktop",
+      "label": "演習（未解答）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.12423,
+      "changedPixels": 286227,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": true
+    },
+    {
+      "name": "quiz__mobile",
+      "label": "演習（未解答）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.120674,
+      "changedPixels": 134914,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2347
+      },
+      "published": false
+    },
+    {
+      "name": "result__desktop",
+      "label": "結果",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.151661,
+      "changedPixels": 349426,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": true
+    },
+    {
+      "name": "result__mobile",
+      "label": "結果",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.262629,
+      "changedPixels": 267984,
+      "beforeSize": {
+        "width": 430,
+        "height": 2373
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 1943
+      },
+      "published": true
+    },
+    {
+      "name": "review__desktop",
+      "label": "問題一覧・見直し",
+      "viewport": "desktop",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      }
+    },
+    {
+      "name": "review__mobile",
+      "label": "問題一覧・見直し",
+      "viewport": "mobile",
+      "status": "passed",
+      "ratio": 0,
+      "changedPixels": 0,
+      "beforeSize": {
+        "width": 430,
+        "height": 2600
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 2600
+      }
+    },
+    {
+      "name": "vocab-card__desktop",
+      "label": "単語帳（めくる）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.145122,
+      "changedPixels": 334361,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": true
+    },
+    {
+      "name": "vocab-card__mobile",
+      "label": "単語帳（めくる）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.313216,
+      "changedPixels": 249567,
+      "beforeSize": {
+        "width": 430,
+        "height": 1853
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 1303
+      },
+      "published": true
+    },
+    {
+      "name": "vocab-setup__desktop",
+      "label": "単語帳（設定）",
+      "viewport": "desktop",
+      "status": "changed",
+      "ratio": 0.145122,
+      "changedPixels": 334361,
+      "beforeSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "afterSize": {
+        "width": 1440,
+        "height": 1600
+      },
+      "published": true
+    },
+    {
+      "name": "vocab-setup__mobile",
+      "label": "単語帳（設定）",
+      "viewport": "mobile",
+      "status": "changed",
+      "ratio": 0.274676,
+      "changedPixels": 249450,
+      "beforeSize": {
+        "width": 430,
+        "height": 2112
+      },
+      "afterSize": {
+        "width": 430,
+        "height": 1562
+      },
+      "published": true
+    }
+  ]
+}
