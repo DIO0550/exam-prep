@@ -97,6 +97,8 @@ export const pmAnswerStore = {
   clearProblem: (id: string): void => store.set(withoutAnswers(store.snapshot(), id)),
   clearSlots: (id: string, keys: string[]): void =>
     store.set(withoutSlotAnswers(store.snapshot(), id, keys)),
+  /** 答えをまるごと差し替える（書き出したファイルの取り込み）。 */
+  replace: (answers: PmAnswers): void => store.set(answers),
   clear: store.reset,
 };
 

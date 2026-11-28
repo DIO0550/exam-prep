@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useId, useRef, useState } from "react";
 
 import type { Backup, BackupParse } from "../backup";
@@ -24,6 +25,13 @@ type BackupPanelProps = {
   setLabel: string;
   onExportAll: () => void;
   onExportSet: () => void;
+  /**
+   * 「この回だけ」の回をこの枠の中で選ぶ部品。午後の過去問題の一覧のように、画面の上で回を
+   * 選んでいない所で渡す。渡すと、選ぶ部品と「この回だけ」のボタンを 1 段にまとめて出す。
+   */
+  setPicker?: ReactNode;
+  /** 応用情報の過去問題（午前・午後）をまとめて書き出す。応用情報の画面でだけ渡す。 */
+  onExportApPast?: () => void;
   /** 選ばれたファイルを読んで、取り込める形に直す。 */
   onRead: (file: File) => Promise<BackupParse>;
   onImport: (backup: Backup) => void;
@@ -32,7 +40,11 @@ type BackupPanelProps = {
 /** 取り込む前に出す説明。範囲によって、置き換えなのか重ね合わせなのかが変わる。 */
 const describe = (backup: Backup): string => {
   const counts = backupCounts(backup);
-  const parts = [`解答 ${counts.attempts}問`, `メモ ${counts.notes}問`];
+  const parts: string[] = [];
+  // 午後の 1 回分のファイルで「解答 0問」と出すと、何も入っていないように読めるので省く。
+  if (counts.attempts > 0 || counts.pm === 0) parts.push(`解答 ${counts.attempts}問`);
+  if (counts.pm > 0) parts.push(`午後の過去問 ${counts.pm}問`);
+  parts.push(`メモ ${counts.notes}問`);
   if (backup.scope.type === "all") parts.push(`あやふや ${counts.weak}語`);
   return `${scopeLabel(backup.scope)}・${parts.join(" / ")}`;
 };
@@ -46,6 +58,8 @@ export const BackupPanel = ({
   setLabel,
   onExportAll,
   onExportSet,
+  setPicker,
+  onExportApPast,
   onRead,
   onImport,
 }: BackupPanelProps) => {
@@ -93,19 +107,33 @@ export const BackupPanel = ({
           記録はこのブラウザにしか残りません。JSON ファイルにして持ち出せば、別の端末で続けたり、
           サイトデータを消す前に取っておいたりできます。
           <strong className="font-bold text-ink">全体</strong>
-          は解答・メモ・単語帳の「あやふや」・設定をまとめて出し、読み込むと今の記録を置き換えます。
+          は解答・メモ・単語帳の「あやふや」・設定・午後の過去問の記録をまとめて出し、読み込むと今の記録を置き換えます。
           <strong className="font-bold text-ink">この回だけ</strong>
-          は選んでいる回の解答とメモだけを出し、読み込んでもその回の分しか上書きしません
+          は選んでいる回の解答とメモ（午後の過去問は、書いた答え・○△×・点数・マーカーも）だけを出し、読み込んでもその回の分しか上書きしません
           （連続学習日数のような累計は回ごとに切り分けられないので、全体にだけ入ります）。
+          {onExportApPast && (
+            <>
+              <strong className="font-bold text-ink">応用情報の過去問をまとめて</strong>
+              は午前と午後の過去問の全部の回を 1
+              つのファイルにします。読み込んだときの扱いは「この回だけ」と同じで、ほかの試験の記録には触りません。
+            </>
+          )}
         </p>
 
         <div className="flex flex-wrap gap-2.5">
           <button type="button" onClick={onExportAll} className={BUTTON}>
             全体を書き出す
           </button>
-          <button type="button" onClick={onExportSet} className={BUTTON}>
-            この回だけ書き出す（{setLabel}）
-          </button>
+          {!setPicker && (
+            <button type="button" onClick={onExportSet} className={BUTTON}>
+              この回だけ書き出す（{setLabel}）
+            </button>
+          )}
+          {onExportApPast && (
+            <button type="button" onClick={onExportApPast} className={BUTTON}>
+              応用情報の過去問をまとめて書き出す（午前・午後）
+            </button>
+          )}
           <label htmlFor={inputId} className={BUTTON}>
             ファイルを読み込む
           </label>
@@ -121,6 +149,15 @@ export const BackupPanel = ({
           />
         </div>
 
+        {setPicker && (
+          <div className="flex flex-wrap items-end gap-2.5">
+            {setPicker}
+            <button type="button" onClick={onExportSet} className={BUTTON}>
+              この回だけ書き出す（{setLabel}）
+            </button>
+          </div>
+        )}
+
         {pending && (
           <div className="flex flex-col gap-2.5 rounded-xl border border-edge bg-canvas px-4 py-3.5">
             <p className="text-[12.5px] leading-[1.9]">
@@ -132,7 +169,7 @@ export const BackupPanel = ({
             <p className="text-[12px] text-muted-soft leading-[1.9]">
               {pending.scope.type === "all"
                 ? "今このブラウザに入っている記録・メモ・あやふやは、すべてこの内容に置き換わります。"
-                : "同じ問題の解答とメモは上書きされます。他の回の記録はそのまま残ります。"}
+                : "ファイルに入っている問題の記録（解答・メモなど）は上書きされます。ほかの回・ほかの試験の記録はそのまま残ります。"}
             </p>
             <div className="flex flex-wrap gap-2.5">
               <button type="button" onClick={apply} className={PRIMARY}>

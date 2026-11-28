@@ -105,6 +105,8 @@ export const pmMarkStore = {
   clearProblem: (id: string): void => store.set(withoutMarks(store.snapshot(), id)),
   clearSlots: (id: string, keys: string[]): void =>
     store.set(withoutMarks(store.snapshot(), id, keys)),
+  /** 印をまるごと差し替える（書き出したファイルの取り込み）。 */
+  replace: (marks: PmMarks): void => store.set(marks),
   clear: store.reset,
 };
 
