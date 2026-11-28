@@ -62,6 +62,8 @@ export const pmRecordStore = {
   setScore: (id: string, score: number | undefined): void =>
     store.set(withScore(store.snapshot(), id, score, today())),
   unmark: (id: string): void => store.set(withoutAttempt(store.snapshot(), id)),
+  /** 記録をまるごと差し替える（書き出したファイルの取り込み）。 */
+  replace: (record: PmRecord): void => store.set(record),
   clear: store.reset,
 };
 

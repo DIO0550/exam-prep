@@ -14,6 +14,8 @@ import type { TextScale } from "../quiz/text-scale";
 import { DEFAULT_TEXT_SCALE, isTextScale } from "../quiz/text-scale";
 import type { WeakRecord } from "../vocab/weak/weak";
 import { WEAK_VERSION } from "../vocab/weak/weak";
+import type { PmPastData } from "./pm-past";
+import { compactPmPast, mergePmPast, parsePmPast, pickPmPast, pmPastIds } from "./pm-past";
 
 /**
  * 学習記録の持ち出しと取り込み。
@@ -23,11 +25,13 @@ import { WEAK_VERSION } from "../vocab/weak/weak";
  * 出し入れできるようにする。
  *
  * 範囲は 2 つ。
- * - **全体**: 解答・メモ・単語帳の「あやふや」・設定をすべて。別の端末へ丸ごと移すためのもので、
- *   取り込むと今の記録は置き換わる。
- * - **個別**: 選んでいる回の解答とメモだけ。取り込むとその回の分だけが上書きされ、
- *   他の回の記録はそのまま残る。連続学習日数や直近の正答率のような積み上げの数字は、
- *   回ごとに切り分けられない（どの回で解いた 1 件かを持っていない）ので個別には入れない。
+ * - **全体**: 解答・メモ・単語帳の「あやふや」・設定・午後の過去問題の記録をすべて。別の端末へ
+ *   丸ごと移すためのもので、取り込むと今の記録は置き換わる。
+ * - **個別**: 渡した問題 ID の解答とメモ（午後の過去問題なら、書いた答え・○△×・点数・マーカーも）
+ *   だけ。演習の 1 回分、午後の過去問題の 1 回分、応用情報の過去問題すべて（scopes.ts）が
+ *   これに当たる。取り込むと入っている問題の分だけが上書きされ、ほかの記録はそのまま残る。
+ *   連続学習日数や直近の正答率のような積み上げの数字は、回ごとに切り分けられない
+ *   （どの回で解いた 1 件かを持っていない）ので個別には入れない。
  *   入れてしまうと、同じ日を二重に数えた連続日数になる。
  *
  * ここは JSON にできる値だけを扱う。ファイルの読み書き（transfer.ts）と
@@ -36,8 +40,15 @@ import { WEAK_VERSION } from "../vocab/weak/weak";
 
 export const BACKUP_KIND = "exam-prep:backup";
 
-/** ファイル形式の版。形を変えたら上げる。読めない版は取り込まない。 */
-export const BACKUP_VERSION = 1;
+/**
+ * ファイル形式の版。形を変えたら上げる。読めない版は取り込まない。
+ *
+ * 版 2 で午後の過去問題の記録（pmPast）を足した。版 1 のファイルはそれが無いだけなので、そのまま読む。
+ * 版を上げたのは、古い画面が版 2 のファイルを黙って午後抜きで取り込まないようにするため。
+ */
+export const BACKUP_VERSION = 2;
+
+const READABLE_VERSIONS: readonly unknown[] = [1, BACKUP_VERSION];
 
 /** 書き出した範囲。個別は回の ID と、画面に出す表記を持つ。 */
 export type BackupScope = { type: "all" } | { type: "set"; setId: string; label: string };
@@ -70,18 +81,32 @@ export type Backup = {
   settings?: BackupSettings;
   /** 単語帳で「あやふや」を付けた札の ID。 */
   vocabWeak?: string[];
+  /**
+   * 午後の過去問題の記録。全体のファイルには必ず入る。個別のファイルは、午後の問の記録が
+   * あるときだけ入る。版 1 のファイルには無い（全体を取り込んでも、午後の記録には触らない）。
+   */
+  pmPast?: PmPastData;
 };
 
-/** 記録のまとまり。書き出す元も、取り込んだ先も同じ 3 つ。 */
+/** 記録のまとまり。書き出す元も、取り込んだ先も同じ 4 つ。 */
 export type RecordSet = {
   record: ProgressRecord;
   notes: NoteRecord;
   weak: WeakRecord;
+  /** 午後の過去問題の記録（4 つの保存先をまとめたもの）。 */
+  pm: PmPastData;
 };
 
-/** 全体の書き出し。設定と積み上げ、単語帳まで含める。 */
+/** 個別に書き出す範囲。ID はファイル名に、label は取り込む前の確認に出る。 */
+export type BackupSetDef = {
+  id: string;
+  label: string;
+  questionIds: readonly string[];
+};
+
+/** 全体の書き出し。設定と積み上げ、単語帳、午後の過去問題まで含める。 */
 export const buildAllBackup = (
-  { record, notes, weak }: RecordSet,
+  { record, notes, weak, pm }: RecordSet,
   now: Date = new Date(),
 ): Backup => ({
   kind: BACKUP_KIND,
@@ -99,12 +124,13 @@ export const buildAllBackup = (
     noteWidth: record.noteWidth,
   },
   vocabWeak: [...weak.ids],
+  pmPast: compactPmPast(pm),
 });
 
-/** 個別の書き出し。渡した問題 ID の解答とメモだけを入れる。 */
+/** 個別の書き出し。渡した問題 ID の解答とメモ、午後の過去問題の記録だけを入れる。 */
 export const buildSetBackup = (
-  { record, notes }: Pick<RecordSet, "record" | "notes">,
-  set: { id: string; label: string; questionIds: readonly string[] },
+  { record, notes, pm }: Pick<RecordSet, "record" | "notes" | "pm">,
+  set: BackupSetDef,
   now: Date = new Date(),
 ): Backup => {
   const attempts: Record<string, Attempt> = {};
@@ -116,7 +142,7 @@ export const buildSetBackup = (
     if (note) picked[id] = note;
   }
 
-  return {
+  const backup: Backup = {
     kind: BACKUP_KIND,
     version: BACKUP_VERSION,
     exportedAt: now.toISOString(),
@@ -124,21 +150,29 @@ export const buildSetBackup = (
     attempts,
     notes: picked,
   };
+  // 午前の回のように午後の問を含まない範囲では、空の pmPast を持たせない（版 1 と同じ形のまま）。
+  const pmPast = pickPmPast(pm, set.questionIds);
+  if (pmPastIds(pmPast).length > 0) backup.pmPast = pmPast;
+  return backup;
 };
 
-/** 中身の件数。取り込む前の確認と、済んだあとの知らせに出す。 */
-export type BackupCounts = { attempts: number; notes: number; weak: number };
+/**
+ * 中身の件数。取り込む前の確認と、済んだあとの知らせに出す。
+ * pm は、午後の過去問題で何か記録（答え・○△×・点数・マーカーのどれか）のある問の数。
+ */
+export type BackupCounts = { attempts: number; notes: number; weak: number; pm: number };
 
 export const backupCounts = (backup: Backup): BackupCounts => ({
   attempts: Object.keys(backup.attempts).length,
   notes: Object.keys(backup.notes).length,
   weak: backup.vocabWeak?.length ?? 0,
+  pm: backup.pmPast ? pmPastIds(backup.pmPast).length : 0,
 });
 
 /** 何も入っていないファイルか。取り込んでも何も起きないので、押す前に伝える。 */
 export const isEmptyBackup = (backup: Backup): boolean => {
   const counts = backupCounts(backup);
-  return counts.attempts === 0 && counts.notes === 0 && counts.weak === 0;
+  return counts.attempts === 0 && counts.notes === 0 && counts.weak === 0 && counts.pm === 0;
 };
 
 /** 範囲の表記。「全体」か「個別（令和7年 秋期）」。 */
@@ -234,7 +268,7 @@ export const parseBackup = (raw: unknown): BackupParse => {
   if (value.kind !== BACKUP_KIND) {
     return fail("このサイトで書き出したファイルではありません。");
   }
-  if (value.version !== BACKUP_VERSION) {
+  if (!READABLE_VERSIONS.includes(value.version)) {
     return fail(`読めない版のファイルです（版 ${String(value.version)}）。`);
   }
 
@@ -255,6 +289,13 @@ export const parseBackup = (raw: unknown): BackupParse => {
     attempts,
     notes,
   };
+
+  // 午後の過去問題の記録は、どちらの範囲にも入りうる（版 1 のファイルには無い）。
+  if (value.pmPast !== undefined) {
+    const pmPast = parsePmPast(value.pmPast);
+    if (!pmPast) return fail("午後の過去問題の記録が壊れています。");
+    backup.pmPast = pmPast;
+  }
 
   // 全体のファイルだけが設定・積み上げ・単語帳を持つ。個別に入っていても使わない
   // （個別を取り込んだだけで設定や連続日数が置き換わるのは、頼んでいない変更になる）。
@@ -299,6 +340,7 @@ export const applyBackup = (backup: Backup, current: RecordSet): RecordSet => {
       },
       notes: mergeNotes(current.notes.notes, backup.notes),
       weak: current.weak,
+      pm: backup.pmPast ? mergePmPast(current.pm, backup.pmPast) : current.pm,
     };
   }
 
@@ -318,5 +360,7 @@ export const applyBackup = (backup: Backup, current: RecordSet): RecordSet => {
     },
     notes: mergeNotes({}, backup.notes),
     weak: { version: WEAK_VERSION, ids: backup.vocabWeak ?? [] },
+    // 版 1 の全体のファイルには午後の記録が無い。無いものを「空にする」とは読まず、今のまま残す。
+    pm: backup.pmPast ?? current.pm,
   };
 };

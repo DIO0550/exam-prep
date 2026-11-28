@@ -5,6 +5,7 @@ import { useMemo, useRef } from "react";
 
 import { BackupPanel } from "@/features/backup/components/backup-panel";
 import { exportAll, exportSet, importBackup } from "@/features/backup/restore";
+import { AP_PAST_BACKUP_SET } from "@/features/backup/scopes";
 import { downloadBackup, readBackupFile } from "@/features/backup/transfer";
 import { DbDrillApp } from "@/features/db-drill/components/db-drill-app";
 import { dbDrillStore } from "@/features/db-drill/store";
@@ -311,6 +312,12 @@ export const QuizApp = () => {
                                 ),
                               }),
                             )
+                          }
+                          // 応用情報（午前）では、午後の過去問題も合わせた全部の回を 1 つにまとめて出せる。
+                          onExportApPast={
+                            exam.code === "AP"
+                              ? () => downloadBackup(exportSet(AP_PAST_BACKUP_SET))
+                              : undefined
                           }
                           onRead={readBackupFile}
                           onImport={importBackup}

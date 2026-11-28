@@ -190,6 +190,8 @@ export const pmMarkerStore = {
   set: (id: string, markers: PmMarker[]): void =>
     store.set(withMarkers(store.snapshot(), id, markers)),
   clearProblem: (id: string): void => store.set(withMarkers(store.snapshot(), id, [])),
+  /** マーカーをまるごと差し替える（書き出したファイルの取り込み）。 */
+  replace: (markers: PmMarkers): void => store.set(markers),
   clear: store.reset,
 };
 

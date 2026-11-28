@@ -16,6 +16,7 @@ import type { PmRecord } from "../record";
 import { summarize } from "../record";
 import { pmRecordStore, usePmRecord } from "../store";
 import { PM_TRANSCRIPTS } from "../transcripts";
+import { PmPastBackup } from "./pm-past-backup";
 import { PmReader } from "./pm-reader";
 import { ScoreInput } from "./score-input";
 
@@ -111,6 +112,8 @@ export const PmPastApp = ({ sidebar }: { sidebar?: ReactNode }) => {
                 />
               ))}
             </div>
+
+            <PmPastBackup />
           </div>
         </main>
 
